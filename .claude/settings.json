@@ -1,0 +1,10 @@
+{
+  "model": "opusplan",
+  "permissions": {
+    "deny": [
+      "Read(./whatsapp-business-jaspers-market/package-lock.json)",
+      "Read(./whatsapp-business-jaspers-market/node_modules/**)",
+      "Read(./whatsapp-business-jaspers-market/.env)"
+    ]
+  }
+}
