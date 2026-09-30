@@ -15,6 +15,9 @@
 - Si un archivo ya fue leído en esta conversación y no cambió, no volverlo a leer.
 - Para búsquedas en más de 3 archivos, usar el subagente Explore.
 - Misma tarea y contexto lleno: /compact. Tarea nueva sin relación: /clear.
+- Leer solo los archivos necesarios; leer rangos de líneas en archivos largos.
+- Tareas de más de un archivo: plan corto primero, después ejecutar.
+- Verificar con `npm test` antes de dar algo por terminado.
 
 ## Respuestas
 - Una oración si alcanza con una oración.
