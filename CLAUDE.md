@@ -14,7 +14,7 @@
 ## Contexto
 - Si un archivo ya fue leído en esta conversación y no cambió, no volverlo a leer.
 - Para búsquedas en más de 3 archivos, usar el subagente Explore.
-- Si el contexto se llena, usar /compact en lugar de abrir una conversación nueva.
+- Misma tarea y contexto lleno: /compact. Tarea nueva sin relación: /clear.
 
 ## Respuestas
 - Una oración si alcanza con una oración.
