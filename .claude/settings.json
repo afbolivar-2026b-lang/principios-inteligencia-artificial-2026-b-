@@ -11,10 +11,24 @@
         "source": "github",
         "repo": "obra/superpowers"
       }
+    },
+    "anthropic-cybersecurity-skills": {
+      "source": {
+        "source": "github",
+        "repo": "mukul975/Anthropic-Cybersecurity-Skills"
+      }
+    },
+    "semgrep-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "semgrep/mcp-marketplace"
+      }
     }
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
-    "superpowers@superpowers-dev": true
+    "superpowers@superpowers-dev": true,
+    "cybersecurity-skills@anthropic-cybersecurity-skills": true,
+    "semgrep@semgrep-marketplace": true
   }
 }
