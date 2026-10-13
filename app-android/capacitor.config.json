@@ -1,0 +1,7 @@
+{
+  "appId": "co.andresbolivar.app",
+  "appName": "Andrés Bolívar",
+  "webDir": "www",
+  "android": { "backgroundColor": "#F4EFE7" },
+  "server": { "androidScheme": "https" }
+}

@@ -1,5 +1,5 @@
 /* Guarda la página para que abra sin internet. Siempre intenta primero la versión nueva. */
-const CACHE = "andres-bolivar-v1";
+const CACHE = "andres-bolivar-v2";
 const BASICOS = ["./", "index.html", "qrcode.js", "manifest.webmanifest", "icono-192.png", "icono-512.png", "404.html"];
 
 self.addEventListener("install", (e) => {
@@ -12,6 +12,8 @@ self.addEventListener("fetch", (e) => {
   const req = e.request, url = new URL(req.url);
   // Solo archivos de esta página (no Firebase, ni la IA, ni datos de clientes)
   if (req.method !== "GET" || url.origin !== location.origin) return;
+  if (url.pathname.includes("/descargas/")) return; // la APK no se guarda en el celular
+
   e.respondWith(
     fetch(req).then((res) => {
       if (res.ok) { const copia = res.clone(); caches.open(CACHE).then((c) => c.put(req, copia)); }

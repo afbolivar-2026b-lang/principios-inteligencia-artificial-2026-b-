@@ -637,6 +637,13 @@
   #sitio .rev-box h2 { margin-left: 0; }
   #sitio .rev-box > div { max-width: 640px; }
 
+  /* App para Android */
+  #sitio .app-links { margin: 14px 0 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 18px; font-size: .92rem; }
+  #sitio .app-links a, #sitio .app-links button { color: var(--negro); font: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+  .en-app .app-card, .en-app .app-titulo { display: none; }
+  .app-pasos { margin: 14px 0 10px; padding-left: 20px; color: var(--muted); }
+  .app-pasos li { margin-bottom: 4px; }
+
   /* Botones flotantes */
   .flotantes { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40; display: grid; justify-items: end; gap: 10px; }
   body.en-oficina .flotantes, body.en-login .flotantes { display: none; }
@@ -1059,6 +1066,7 @@
         <a class="btn" href="#metodo">Ver el método</a>
       </div>
       <p class="where reveal" style="--d:.4s">Atiendo por WhatsApp o voy hasta su negocio.</p>
+      <p class="app-links" id="appLinks" hidden><a id="apkHero" href="descargas/andres-bolivar.apk" download="andres-bolivar.apk" hidden>Descargar la app para Android</a><button type="button" id="instalarHero" hidden>Instalar la app en este celular</button></p>
     </div>
 
     <!-- Franja de arquitectura en concreto (dibujada, sin fotos externas) -->
@@ -1461,6 +1469,7 @@
             <button type="button" class="btn btn-line-claro" id="btnContacto">Guardar mi contacto</button>
             <button type="button" class="btn btn-line-claro" id="btnQR">Código QR</button>
             <button type="button" class="btn btn-line-claro" id="btnCompartir">Compartir esta página</button>
+            <a class="btn btn-line-claro" id="btnApk" href="descargas/andres-bolivar.apk" download="andres-bolivar.apk" hidden>Descargar la app (Android)</a>
             <a class="btn btn-line-claro" id="btnMaps" target="_blank" rel="noopener" href="#contacto" hidden>Vernos en Google Maps</a>
             <a class="btn btn-line-claro" id="btnResena" target="_blank" rel="noopener" href="#contacto" hidden>Déjeme una reseña en Google</a>
           </div>
@@ -2470,6 +2479,13 @@ function vDatos() {
     </div>
     ${vPagosCfg()}
     ${vRevendedores()}
+    <h2 class="o-h2 app-titulo">App para su celular</h2>
+    <div class="o-card app-card">
+      <p style="margin:0 0 10px">Con la app entra directo a su página y a Mi oficina desde un ícono, sin buscar en Google.</p>
+      <div class="actions">${S.hayApk ? `<a class="btn btn-primary btn-sm" href="descargas/andres-bolivar.apk" download="andres-bolivar.apk">Descargar la APK (Android)</a>` : ""}${S.instalable ? `<button class="btn btn-sm" data-act="instalarApp">Instalar desde el navegador</button>` : ""}</div>
+      <ol class="app-pasos"><li>Toque <b>Descargar la APK</b> en el celular.</li><li>Ábrala. Si Android pregunta, permita <b>instalar apps de esta fuente</b> (Chrome o Archivos).</li><li>Toque <b>Instalar</b>. Le queda el ícono negro con la B.</li></ol>
+      ${S.hayApk ? "" : `<p class="note-ui" style="margin:0">La APK se arma sola en GitHub cada vez que se actualiza la página (vea LEEME.md). Mientras tanto, en Chrome use «Agregar a la pantalla principal».</p>`}
+    </div>
     <p class="note-ui">Sesión iniciada como ${esc(S.user ? S.user.email : "")}.</p>`;
 }
 
@@ -4111,6 +4127,7 @@ const ACT = {
     await guardarTestimonios(((actual && actual.items) || []).filter((x) => x.id !== e.id)).catch(dbError);
     toast("Opinión quitada de su página");
   },
+  instalarApp() { instalarPWA(); },
   filtroEtapa(el) { S.etapaFiltro = el.dataset.k || ""; renderOficina(); },
   guardarSeguimiento(el) {
     const fecha = ($("#ce_seg") || {}).value || "", nota = (($("#ce_segNota") || {}).value || "").trim();
@@ -4534,6 +4551,22 @@ function horaColombia() { const d = new Date(Date.now() + (new Date().getTimezon
   const sc = document.createElement("script"); sc.type = "application/ld+json";
   sc.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: items });
   document.head.appendChild(sc);
+})();
+
+/* App para Android (APK) e instalación desde el navegador */
+const enApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+let avisoInstalar = null;
+function instalarPWA() { if (!avisoInstalar) return; avisoInstalar.prompt(); avisoInstalar.userChoice.finally(() => { avisoInstalar = null; S.instalable = false; $("#instalarHero").hidden = true; actualizarAppLinks(); }); }
+function actualizarAppLinks() { $("#appLinks").hidden = enApp || ($("#apkHero").hidden && $("#instalarHero").hidden); }
+(function appAndroid() {
+  if (enApp) { document.documentElement.classList.add("en-app"); return; }
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); avisoInstalar = e; S.instalable = true; $("#instalarHero").hidden = false; actualizarAppLinks(); });
+  $("#instalarHero").addEventListener("click", instalarPWA);
+  if (!location.protocol.startsWith("http")) return;
+  fetch("descargas/andres-bolivar.apk", { method: "HEAD", cache: "no-store" }).then((r) => {
+    if (!r.ok) return;
+    S.hayApk = true; $("#apkHero").hidden = false; $("#btnApk").hidden = false; actualizarAppLinks();
+  }).catch(() => {});
 })();
 
 /* App instalable y funciona sin conexión (solo en la página publicada, con https) */
