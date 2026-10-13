@@ -77,6 +77,9 @@ Vuelva a publicar la página (`firebase deploy --only hosting`) y el chat queda 
 
 ## 5. Cómo se usa
 
+- **Proyectos → Publicar con IA**: suba hasta 6 archivos del proyecto (pantallazos, fotos, el PDF de la propuesta o el archivo de la página) y toque **Analizar con IA**. La IA escribe el nombre, para quién es, la descripción y las funciones, y sugiere el precio (mínimo, recomendado y máximo), el tiempo de entrega y el soporte mensual. La página arma una **portada** con su primer pantallazo dentro de un marco de computador o de celular. Revise, corrija lo que quiera y toque **Guardar proyecto**. El precio es privado: nunca se publica en la página.
+  - Sin la IA activada, use **Seguir sin IA**: la portada se arma igual y el precio sale de su calculadora.
+  - La IA no dibuja fotos nuevas: la portada siempre usa sus pantallazos reales. Si no sube ninguno, se arma una portada solo con texto.
 - **Proyectos → Nuevo proyecto**: suba la foto, el nombre, para quién es y las funciones. Marque **Publicado en mi página** y guarde. Aparece de primero en la sección *Casos*.
 - Desde una propuesta **Aprobada**, el botón **Publicar como proyecto** llena el formulario automáticamente.
 - **Asistente → ¿En cuánto lo vendo?**: escoja el tipo y las funciones; le da el precio mínimo, recomendado y máximo, el tiempo y el soporte mensual. **Crear propuesta con este precio** arma la propuesta lista para editar.
