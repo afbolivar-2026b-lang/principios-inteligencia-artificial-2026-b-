@@ -210,7 +210,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 175. 🔵 Lista de mejoras solicitadas por clientes
 
 ## I. Seguridad y técnica (176–190)
-176. ⭐🔵 Reglas de Firestore por usuario *(ya incluidas en `firestore.rules`; falta publicarlas)*
+176. ✅ Reglas de Firestore por usuario *(ya incluidas en `firestore.rules`; falta publicarlas)* *(Etapa 4)*
 177. 🔵 Verificación en dos pasos
 178. 🔵 Cierre de sesión automático por inactividad
 179. 🔵 Registro de ingresos (quién entró y cuándo)
@@ -270,7 +270,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 225. 🟣 Preguntas frecuentes del sistema de cada cliente
 
 ## L. IA para crear contenido (226–245)
-226. ⭐🟣 Publicaciones de Instagram a partir de un proyecto publicado
+226. ✅ Publicaciones de Instagram a partir de un proyecto publicado *(Etapa 4)*
 227. 🟢 Carrusel de 5 imágenes con el antes y el después
 228. 🟢 Historias verticales (9:16) para WhatsApp e Instagram
 229. 🟢 Video vertical para TikTok y Reels
@@ -419,7 +419,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 360. 🟢 Sección de aliados: diseñadores, contadores, imprentas
 
 ## S. Crecimiento de su negocio (361–380)
-361. ⭐🔵 Programa de revendedores con comisión
+361. ✅ Programa de revendedores con comisión *(Etapa 4)*
 362. 🔵 Panel de comisiones por revendedor
 363. 🟠 Venta de plantillas a otros desarrolladores
 364. 🔵 Cursos cortos para comerciantes
@@ -441,7 +441,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 380. 🟢 Kit de marca personal
 
 ## T. Técnica y calidad (381–400)
-381. ⭐🟢 Generador de proyectos nuevos desde plantilla
+381. ✅ Generador de proyectos nuevos desde plantilla *(Etapa 4)*
 382. 🟢 Pruebas automáticas antes de entregar
 383. 🟢 Medidor de velocidad de páginas de clientes
 384. 🟢 Revisión automática de reglas de Firebase
@@ -687,7 +687,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 600. 🟢 Exportar la propuesta a Word
 
 ## AE. Precios y cotizaciones (601–620)
-601. ⭐🔵 Lista de precios propia de servicios
+601. ✅ Lista de precios propia de servicios *(Etapa 4)*
 602. 🔵 Cotización rápida de una página desde la lista
 603. 🔵 Descuento por pronto pago
 604. 🔵 Precio especial para fundaciones
@@ -797,7 +797,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 700. 🔵 Kilometraje y transporte por cliente
 
 ## AJ. Asistente IA: vender más (701–720)
-701. ⭐🟣 Práctica de ventas con un cliente difícil simulado
+701. ✅ Práctica de ventas con un cliente difícil simulado *(Etapa 4)*
 702. 🟣 Revisión de su mensaje antes de enviarlo
 703. 🟣 Ofertas por temporada para cada sector
 704. 🟣 Preparación de la visita: qué observar y qué preguntar
@@ -841,7 +841,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 740. 🟣 Corrección de ortografía en todo lo que publica
 
 ## AL. Asistente IA: análisis (741–760)
-741. ⭐🟣 Informe mensual de su negocio escrito por la IA
+741. ✅ Informe mensual de su negocio escrito por la IA *(Etapa 4)*
 742. 🟣 Preguntas sobre sus datos ("¿cuánto facturé en marzo?")
 743. 🟣 Clientes con riesgo de no pagar
 744. 🟣 Predicción de ingresos del próximo mes
@@ -913,7 +913,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 804. 🟢 Logo del cliente al inicio
 805. 🟢 Transiciones distintas (deslizar, zoom)
 806. 🟢 Texto final editable
-807. ⭐🟢 Grabar la pantalla del sistema funcionando
+807. ✅ Grabar la pantalla del sistema funcionando *(Etapa 4)*
 808. 🟢 Su cara en una esquina explicando
 809. 🟢 Recortar el video grabado
 810. 🟢 Unir varios videos cortos

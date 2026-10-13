@@ -144,3 +144,13 @@ Sin Storage, el video se puede crear y **descargar** igual, para mandarlo por Wh
   - la **meta** de 100 negocios.
 - **Avance del proyecto y portal del cliente**: cuando una propuesta queda **Aprobada**, se crea sola con sus etapas (las de "Plan de trabajo" o, si no hay, Diseño, Desarrollo, Pruebas y Entrega). Marque cada etapa como *Pendiente*, *En curso* o *Lista* y toque **Actualizar y avisar al cliente**: le llega el enlace por WhatsApp y ve el porcentaje y las etapas. El Panel muestra los **proyectos en curso** con su avance.
 - **Testimonios verificados**: cuando todas las etapas están *Lista*, el cliente puede dejar su opinión y sus estrellas en el mismo enlace. Solo quien firmó la propuesta puede opinar, y solo una vez. Usted la ve en la propuesta y, si el cliente lo autorizó, toca **Publicar en mi página**. Sale en la sección *Testimonios* como «Cliente verificado».
+- **Mi lista de precios**: en **Asistente → Mi lista de precios** escriba sus servicios con su precio. Con **Llenar con mis tarifas** arranca de las tarifas de la calculadora. Después, en cada propuesta, use **Agregar de mi lista de precios** y el servicio entra solo a la inversión.
+- **Propuestas desde plantilla**: en **Propuestas → Empezar desde una plantilla**, escoja el tipo de negocio (tienda, restaurante, parqueadero, finca, vigilancia, veterinaria o página web). La propuesta sale con el alcance, las etapas y el precio calculado con sus tarifas.
+- **Programa de revendedores**: en **Mis datos → Programa de revendedores**:
+  - ponga el porcentaje de comisión y agregue a cada revendedor con su WhatsApp;
+  - cada uno recibe un enlace con su código (`?ref=…`), y las solicitudes que lleguen por ahí salen con la etiqueta «Recomendado por…»;
+  - la página le calcula la comisión de lo que se apruebe;
+  - si marca **Invitar en mi página**, aparece la sección «Gane recomendando».
+- **Grabar pantalla**: en **Publicar con IA**, **Grabar pantalla** graba su sistema funcionando, en computador con Chrome o Edge. La grabación queda en los archivos del proyecto (la página saca 3 fotos de ella) y la puede descargar. En celular este botón no aparece, porque los celulares no permiten grabar la pantalla desde una página.
+- **Más ayudas de la IA** (cuando active el asistente): informe del mes, práctica de ventas con un cliente difícil y textos de Instagram, desde las sugerencias del chat o con el botón **Texto para Instagram con IA** en cada proyecto.
+- **Lo que falta**: está guardado, en orden, en `PENDIENTES.md`.

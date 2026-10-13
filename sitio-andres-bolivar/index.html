@@ -621,6 +621,22 @@
   #sitio .testi figcaption span { display: block; color: var(--gris); font-size: .92rem; }
   #sitio .testi .verif { margin-top: 8px; font-size: .68rem !important; letter-spacing: .18em; text-transform: uppercase; color: #3F6B4E !important; }
 
+  /* Etapa 4b */
+  .sv-lista { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+  .sv-lista li { display: grid; grid-template-columns: minmax(0, 1fr) 130px auto; gap: 8px; }
+  .sv-lista input { width: 100%; min-width: 0; font: inherit; font-size: 15px; color: var(--text); background: var(--field); border: 1px solid var(--line-strong); border-radius: 6px; padding: 9px 10px; }
+  @media (max-width: 480px) { .sv-lista li { grid-template-columns: minmax(0, 1fr) 104px auto; } }
+  .sv-add { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin: 0 0 14px; padding: 14px 16px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); }
+  .sv-add select { width: 100%; }
+  .plantillas { margin-bottom: 16px; }
+  .plantillas .kick { margin-bottom: 4px; }
+  .rv-lista { list-style: none; margin: 0 0 14px; padding: 0; border-top: 1px solid var(--line); }
+  .rv-lista li { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .rv-lista small { display: block; color: var(--muted); }
+  #sitio .rev-box { display: flex; justify-content: space-between; align-items: center; gap: 24px 48px; flex-wrap: wrap; }
+  #sitio .rev-box h2 { margin-left: 0; }
+  #sitio .rev-box > div { max-width: 640px; }
+
   /* Botones flotantes */
   .flotantes { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40; display: grid; justify-items: end; gap: 10px; }
   body.en-oficina .flotantes, body.en-login .flotantes { display: none; }
@@ -1424,6 +1440,14 @@
       </div>
     </section>
 
+    <section id="revendedores" hidden>
+      <div class="wrap rev-box">
+        <div><span class="kick">Gane recomendando</span><h2>¿Conoce un negocio que necesite esto?</h2>
+          <p class="section-lead" style="margin:0">Recomiéndeme y, si contrata, le doy el <b><span id="revPct">10</span> %</b> del valor del proyecto. Le doy un enlace con su nombre para que sepa quién llegó por usted.</p></div>
+        <a class="btn btn-dark" id="revWa" target="_blank" rel="noopener" href="#contacto">Quiero ser revendedor</a>
+      </div>
+    </section>
+
     <section id="contacto">
       <div class="wrap">
         <div class="cta-box reveal">
@@ -1658,7 +1682,7 @@ const S = {
   area: "sitio", fbPromise: null, fbError: null, authReady: false,
   A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
   clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false }, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
-  solicitudes: [], enlaces: [], etapaFiltro: "", testimonios: null,
+  solicitudes: [], enlaces: [], etapaFiltro: "", testimonios: null, servicios: null, revendedores: null, grabacion: null,
   app: null, appPromise: null, proyDraft: null, proyDraftId: null, chat: [], pensando: false, calc: null,
   view: { name: "panel", id: null }, quiet: false, q: "",
   draft: null, draftId: null,
@@ -1792,6 +1816,8 @@ function suscribir() {
     S.solicitudes = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
     S.loaded.s = true; marcarSolicitudes(); alCambiarDatos();
   }, (e) => { console.warn("Solicitudes:", e && e.code); S.loaded.s = true; }));
+  S.unsubs.push(F.onSnapshot(refDoc("config", "servicios"), (d) => { S.servicios = d.exists() && Array.isArray(d.data().items) ? d.data().items : []; }, errDatos));
+  S.unsubs.push(F.onSnapshot(refDoc("config", "revendedores"), (d) => { S.revendedores = d.exists() ? d.data() : { comision: 0, items: [] }; }, errDatos));
   S.unsubs.push(F.onSnapshot(refDoc("config", "tarifas"), (d) => {
     S.tarifas = d.exists() ? d.data() : null;
     S.loaded.t = true; alCambiarDatos();
@@ -2197,7 +2223,7 @@ function vSolicitudes() {
   return `<h2 class="o-h2">Solicitudes de su página <span class="aviso-n">${arr.length}</span></h2>
     <ul class="solis">${arr.map((x) => `<li class="o-card">
       <div class="soli-top"><div><b>${esc(x.nombre || "Sin nombre")}</b><small>${esc([x.negocio, x.sector].filter(Boolean).join(" · "))}</small></div><small>${esc(hace(x.creado))}</small></div>
-      <p class="soli-tags">${[x.tipo, x.presupuesto].filter(Boolean).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</p>
+      <p class="soli-tags">${[x.tipo, x.presupuesto, String(x.origen || "").startsWith("ref=") ? "Recomendado por " + ((revCfg().items.find((r) => "ref=" + r.codigo === x.origen) || {}).nombre || String(x.origen).slice(4)) : ""].filter(Boolean).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</p>
       ${has(x.detalle) ? `<p class="soli-det">${esc(x.detalle)}</p>` : ""}
       ${has(x.cotizacion) ? `<p class="note-ui" style="margin:0 0 10px">${esc(x.cotizacion)}</p>` : ""}
       <div class="actions">${waLink(x.telefono) ? `<a class="btn btn-sm btn-primary" href="${waLink(x.telefono)}?text=${encodeURIComponent(msgSolicitud(x))}" target="_blank" rel="noopener">Responder por WhatsApp</a>` : ""}
@@ -2299,6 +2325,8 @@ function vPropuestas() {
   return `
     <div class="o-head"><div><h1 class="o-h1">Propuestas</h1><p class="sub">${arr.length ? "Toque una para editarla o descargarla" : "Aquí quedan todas sus propuestas"}</p></div>
       <button class="btn btn-primary" data-act="nuevaPropuesta">Nueva propuesta</button></div>
+    <div class="o-card plantillas"><span class="kick">Empezar desde una plantilla</span><p class="sub" style="margin:0 0 10px">Trae el alcance, las etapas y el precio con sus tarifas. Solo ajuste lo de su cliente.</p>
+      <div class="chips">${Object.entries(PLANTILLAS).map(([k, x]) => `<button type="button" data-act="propuestaPlantilla" data-k="${k}">${esc(x.n)}</button>`).join("")}</div></div>
     ${arr.length ? listaPropuestas(arr, true)
       : `<div class="o-card o-empty"><p>Cree su primera propuesta. Después puede duplicarla para otros clientes y solo cambiar lo necesario.</p><button class="btn btn-primary" data-act="nuevaPropuesta">Crear propuesta</button></div>`}`;
 }
@@ -2408,6 +2436,7 @@ function vPropuesta(id) {
     </div>
     <div id="enlaceCard">${vEnlaceCard(d)}</div>
     <div id="avanceCard">${vAvanceCard(d)}</div>
+    ${vAgregarServicio()}
     ${vPagosPropuesta(d)}
     ${secs}
     <div class="actions" style="margin-top:24px">
@@ -2440,6 +2469,7 @@ function vDatos() {
       <div class="actions"><button class="btn btn-primary" data-act="guardarPerfil">Guardar mis datos</button></div>
     </div>
     ${vPagosCfg()}
+    ${vRevendedores()}
     <p class="note-ui">Sesión iniciada como ${esc(S.user ? S.user.email : "")}.</p>`;
 }
 
@@ -2575,6 +2605,122 @@ function bloqueMetodos() {
 const archivoSeguro = (t) => t.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) + ".pdf";
 function siguienteCobro() {
   return S.propuestas.reduce((m, p) => Math.max(m, ...(Array.isArray(p.cobros) ? p.cobros.map((x) => Number(x.num) || 0) : [0])), 0) + 1;
+}
+
+/* ================= Lista de precios propia ================= */
+const servicios = () => (Array.isArray(S.servicios) ? S.servicios : []);
+function vServicios() {
+  const arr = S.svDraft || servicios();
+  return `<h2 class="o-h2" style="margin-top:0">Mi lista de precios</h2>
+    <p class="sub" style="margin:0 0 12px">Sus servicios con su precio. En cada propuesta los agrega a la inversión con un toque.</p>
+    <ul class="sv-lista">${arr.map((x, i) => `<li><input data-sv="${i}" data-c="n" value="${esc(x.n)}" placeholder="Ej.: Página web con catálogo" aria-label="Servicio"><input data-sv="${i}" data-c="v" inputmode="numeric" value="${x.v ? esc(fmtCOP(Number(x.v))) : ""}" placeholder="$ 0" aria-label="Precio"><button type="button" class="btn btn-sm" data-act="quitarServicio" data-i="${i}" aria-label="Quitar">×</button></li>`).join("")}</ul>
+    <div class="actions"><button class="btn btn-sm" data-act="agregarServicio">Agregar servicio</button><button class="btn btn-sm btn-primary" data-act="guardarServicios">Guardar lista</button>${!arr.length ? `<button class="btn btn-sm" data-act="serviciosDeTarifas">Llenar con mis tarifas</button>` : ""}</div>`;
+}
+function pintarServicios() { const b = $("#serviciosBox"); if (b) b.innerHTML = vServicios(); }
+function vAgregarServicio() {
+  const arr = servicios(); if (!arr.length) return "";
+  return `<div class="sv-add"><label class="field" style="margin:0;flex:1"><span>Agregar de mi lista de precios</span><select id="svSel">${arr.map((x, i) => `<option value="${i}">${esc(x.n)} · ${esc(fmtCOP(Number(x.v) || 0))}</option>`).join("")}</select></label><button class="btn btn-sm" data-act="agregarAInversion">Agregar a la inversión</button></div>`;
+}
+
+/* ================= Propuestas desde plantilla ================= */
+const PLANTILLAS = {
+  tiendas: { n: "Tienda", tipo: "sistema", mods: ["inventario", "ventas", "fiados", "reportes", "catalogoWa"], titulo: "Sistema de ventas, inventario y fiados", subtitulo: "Las cuentas de la tienda, claras y en el celular.",
+    resumen: "Un sistema para registrar cada venta, saber qué productos se están acabando y llevar los fiados de cada cliente sin cuaderno.\n\nEl dueño ve desde el celular cuánto vendió en el día y cuánto le deben.",
+    modulos: "Ventas\n- Venta rápida con lector o búsqueda\n- Ventas de contado o fiadas\nInventario\n- Productos con foto y precio\n- Alerta de productos por acabarse\nFiados\n- Cuenta de cada cliente y abonos\n- Recordatorio de cobro por WhatsApp\nReportes\n- Ventas del día y del mes en PDF y Excel" },
+  restaurantes: { n: "Restaurante", tipo: "sistema", mods: ["ventas", "inventario", "clientes", "roles", "reportes"], titulo: "Pedidos, mesas y domicilios", subtitulo: "Atienda más rápido y cierre la caja sin errores.",
+    resumen: "Un sistema para tomar los pedidos por mesa o domicilio, mandarlos a la cocina y cerrar la caja del día con el total exacto.",
+    modulos: "Pedidos\n- Pedidos por mesa\n- Domicilios con dirección y valor\nCocina\n- Lista de pedidos por preparar\nCaja\n- Cierre del día por forma de pago\nReportes\n- Platos más vendidos" },
+  parqueaderos: { n: "Parqueadero", tipo: "sistema", mods: ["facturacion", "turnos", "roles", "reportes"], titulo: "Control de parqueadero", subtitulo: "Se anota la placa y el sistema cobra solo.",
+    resumen: "Un sistema para registrar la entrada y salida de cada vehículo, cobrar según el tiempo y manejar mensualidades y turnos del personal.",
+    modulos: "Entradas y salidas\n- Placa, tipo de vehículo y hora\n- Cobro automático por tiempo\nMensualidades\n- Carros, motos y buses\nTurnos\n- Recaudo por persona y turno\nReportes\n- Recaudo por día, semana y mes" },
+  fincas: { n: "Finca", tipo: "app", mods: ["inventario", "reportes", "offline"], titulo: "Gastos y producción de la finca", subtitulo: "Sepa cuánto invirtió de verdad en cada cosecha.",
+    resumen: "Una app para registrar insumos, jornales y transporte, aunque no haya señal, y saber el costo real de cada cosecha.",
+    modulos: "Gastos\n- Insumos, jornales y transporte\n- Funciona sin internet\nCosechas\n- Kilos y costo por kilo\nReportes\n- Gastos por mes y por lote" },
+  vigilancia: { n: "Empresa de vigilancia", tipo: "sistema", mods: ["turnos", "roles", "reportes"], titulo: "Turnos y horas extra", subtitulo: "Cada guarda registra su turno y el sistema calcula lo demás.",
+    resumen: "Un sistema para programar los turnos de cada guarda, sumar las horas extra y calcular el valor a pagar en cada quincena.",
+    modulos: "Turnos\n- Programación por puesto\n- Turnos de 12 horas, descansos y dominicales\nHoras extra\n- Cálculo automático\nPagos\n- Valor por guarda y quincena\nReportes\n- PDF y Excel" },
+  veterinarias: { n: "Veterinaria", tipo: "sistema", mods: ["clientes", "inventario", "ventas", "reportes"], titulo: "Sistema para la veterinaria", subtitulo: "Historias, vacunas y ventas en un solo lugar.",
+    resumen: "Un sistema con la historia de cada mascota, las vacunas pendientes, la agenda de citas y las ventas de productos.",
+    modulos: "Mascotas\n- Historia clínica y vacunas\n- Recordatorio de vacunas por WhatsApp\nCitas\n- Agenda del día\nVentas e inventario\n- Productos y medicamentos\nReportes\n- Ventas y servicios del mes" },
+  pagina: { n: "Página web", tipo: "landing", mods: ["dominio"], titulo: "Página web para su negocio", subtitulo: "Que lo encuentren en Google y le escriban al WhatsApp.",
+    resumen: "Una página para mostrar sus productos o servicios, precios, horario y ubicación, con botón directo a WhatsApp.",
+    modulos: "Página\n- Inicio, servicios y contacto\n- Botón de WhatsApp\n- Ubicación en Google Maps\nDominio\n- Dirección propia .com.co" },
+};
+function propuestaDePlantilla(k, clienteId) {
+  const pl = PLANTILLAS[k], t = tarifas(), r = calcular({ tipo: pl.tipo, complejidad: "normal", urgente: false, mods: pl.mods });
+  return Object.assign(propuestaBase(clienteId || ""), {
+    nombreProducto: pl.titulo.split(" ").slice(0, 2).join(" "), titulo: pl.titulo, subtitulo: pl.subtitulo, resumen: pl.resumen, modulos: pl.modulos,
+    etapas: ["Diseño | Pantallas y flujo aprobados | Siguiente", "Desarrollo | Funciones del alcance | Pendiente", "Pruebas | Pruebas con datos reales | Pendiente", "Entrega | Capacitación y publicación | Pendiente"].join("\n"),
+    inversion: r.lineas.map((l) => `${l[0]} | ${fmtCOP(l[1])}`).join("\n"), tiempoEntrega: r.sem + (r.sem === 1 ? " semana" : " semanas"),
+    costosNota: `Soporte mensual opcional: ${fmtCOP(r.soporte)}. Valores de referencia, sujetos a cambios de cada plataforma.`,
+  });
+}
+
+/* ================= Programa de revendedores ================= */
+const revCfg = () => Object.assign({ comision: 0, items: [] }, S.revendedores || {});
+const codigoRev = (n) => String(n || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 16) || "socio";
+const enlaceRev = (c) => location.href.split("#")[0].split("?")[0] + "?ref=" + encodeURIComponent(c);
+function resumenRev(cod) {
+  const sol = S.solicitudes.filter((x) => x.origen === "ref=" + cod).length;
+  const cl = S.clientes.filter((c) => c.referido === cod);
+  const aprob = S.propuestas.filter((p) => p.estado === "Aprobada" && cl.some((c) => c.id === p.clienteId));
+  const vendido = aprob.reduce((a, p) => a + totalInversion(p), 0);
+  return { sol, clientes: cl.length, vendido, comision: Math.round((vendido * (Number(revCfg().comision) || 0)) / 100) };
+}
+function vRevendedores() {
+  const c = revCfg();
+  return `<h2 class="o-h2">Programa de revendedores</h2>
+    <div class="o-card">
+      <p class="sub" style="margin:0 0 12px">Cada revendedor tiene su enlace. Las solicitudes que lleguen por ese enlace quedan marcadas con su nombre y la página le calcula la comisión de lo que se apruebe.</p>
+      <div class="grid2"><label class="field"><span>Comisión (% del valor del proyecto)</span><input id="rv_com" inputmode="decimal" value="${esc(c.comision || "")}" placeholder="Ej.: 10"></label>
+        <label class="check" style="margin-top:28px"><input type="checkbox" id="rv_pub"${c.publicar ? " checked" : ""}> Invitar en mi página a ser revendedor</label></div>
+      ${c.items.length ? `<ul class="rv-lista">${c.items.map((x, i) => { const r = resumenRev(x.codigo); return `<li><div><b>${esc(x.nombre)}</b><small>${esc(x.telefono || "")} · código ${esc(x.codigo)}</small><small>${r.sol} ${r.sol === 1 ? "solicitud" : "solicitudes"} · ${r.clientes} ${r.clientes === 1 ? "cliente" : "clientes"} · vendido ${esc(fmtCOP(r.vendido))} · <b>comisión ${esc(fmtCOP(r.comision))}</b></small></div>
+        <div class="actions"><button class="btn btn-sm" data-act="copiarRev" data-i="${i}">Copiar su enlace</button>${waLink(x.telefono) ? `<a class="btn btn-sm" target="_blank" rel="noopener" href="${waLink(x.telefono)}?text=${encodeURIComponent(`Hola ${x.nombre.split(" ")[0]}, este es su enlace para recomendarme. Por cada negocio que contrate por ahí, le doy el ${c.comision || 0} % del proyecto: ${enlaceRev(x.codigo)}`)}">Enviárselo</a>` : ""}<button class="btn btn-sm btn-danger" data-act="quitarRev" data-i="${i}">Quitar</button></div></li>`; }).join("")}</ul>` : ""}
+      <div class="grid2"><label class="field"><span>Nombre del revendedor</span><input id="rv_nom" maxlength="60" placeholder="Ej.: Carlos Méndez"></label><label class="field"><span>WhatsApp</span><input id="rv_tel" type="tel" maxlength="20" placeholder="310 000 0000"></label></div>
+      <div class="actions"><button class="btn btn-sm" data-act="agregarRev">Agregar revendedor</button><button class="btn btn-sm btn-primary" data-act="guardarRev">Guardar programa</button></div>
+    </div>`;
+}
+async function guardarRevendedores(c) {
+  await S.F.setDoc(refDoc("config", "revendedores"), c);
+  await S.F.setDoc(S.F.doc(S.fdb, "sitio", "revendedores"), { uid: S.user.uid, comision: c.publicar ? Number(c.comision) || 0 : 0, actualizado: Date.now() });
+}
+async function cargarRevPublico() {
+  const box = $("#revendedores"); if (!box) return;
+  try {
+    await cargarApp();
+    const d = await S.F.getDoc(S.F.doc(S.fdb, "sitio", "revendedores"));
+    const n = d.exists() ? Number(d.data().comision) || 0 : 0;
+    if (n > 0 && n <= 50) { $("#revPct").textContent = String(n).replace(".", ","); $("#revWa").href = waUrl("Hola Andrés, quiero ser revendedor de sus páginas y sistemas. ¿Cómo funciona?"); box.hidden = false; }
+  } catch (e) { if (e && e.code !== "sin-config") console.warn("Revendedores:", e); }
+}
+/* El código ?ref= se recuerda en este navegador para que la solicitud llegue con el revendedor */
+const refParam = (new URLSearchParams(location.search).get("ref") || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 16);
+if (refParam) ls.set("ref", refParam);
+const refActual = () => ls.get("ref") || "";
+
+/* ================= Grabar la pantalla ================= */
+const puedeGrabar = () => !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.MediaRecorder);
+async function grabarPantalla() {
+  const st = piaState();
+  if (S.grabacion) { S.grabacion.rec.stop(); return; }
+  let stream;
+  try { stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false }); }
+  catch (e) { toast("No se pudo grabar. Acepte el permiso para compartir la pantalla."); return; }
+  const tipo = tipoVideo(), trozos = [], rec = new MediaRecorder(stream, tipo ? { mimeType: tipo } : undefined);
+  rec.ondataavailable = (e) => { if (e.data && e.data.size) trozos.push(e.data); };
+  rec.onstop = async () => {
+    stream.getTracks().forEach((t) => t.stop());
+    S.grabacion = null;
+    const blob = new Blob(trozos, { type: rec.mimeType || "video/webm" });
+    const ext = /mp4/.test(blob.type) ? "mp4" : "webm";
+    const file = new File([blob], `grabacion-de-pantalla.${ext}`, { type: blob.type });
+    if (st.grabacionUrl) URL.revokeObjectURL(st.grabacionUrl);
+    st.grabacionUrl = URL.createObjectURL(blob); st.grabacionExt = ext;
+    toast("Grabación lista"); await agregarArchivos([file]);
+  };
+  stream.getVideoTracks()[0].addEventListener("ended", () => { if (rec.state !== "inactive") rec.stop(); });
+  S.grabacion = { rec }; rec.start(500); pintarPia();
+  toast("Grabando. Muestre su sistema y toque «Detener grabación».");
 }
 
 /* ================= Avance del proyecto, portal del cliente y testimonios ================= */
@@ -2843,7 +2989,7 @@ function vProyecto(id) {
         <label class="field"><span>Cliente (privado)</span><select data-pk="clienteId"><option value="">Sin cliente</option>${opts.map((c) => `<option value="${c.id}"${c.id === d.clienteId ? " selected" : ""}>${esc(nombreCliente(c))}</option>`).join("")}</select><small>No se muestra en la página.</small></label>
         <label class="field"><span>Orden</span><input data-pk="orden" type="number" inputmode="numeric" value="${esc(d.orden || 0)}"><small>Los números menores salen primero.</small></label>
       </div>
-      <div class="actions"><button class="btn btn-primary" data-act="guardarProyecto">Guardar proyecto</button></div>
+      <div class="actions"><button class="btn btn-primary" data-act="guardarProyecto">Guardar proyecto</button><button class="btn" data-act="instagramProyecto">Texto para Instagram con IA</button></div>
     </div>
     <div class="actions" style="margin-top:24px"><button class="btn btn-danger" data-act="eliminarProyecto">Eliminar proyecto</button></div>`;
 }
@@ -3000,6 +3146,9 @@ const SUGERENCIAS = [
   "¿Qué les puedo ofrecer a mis clientes este mes?",
   "Escríbame un mensaje de WhatsApp para ofrecer soporte mensual",
   "Descríbame para mi portafolio el último proyecto que aprobé",
+  "Escriba el informe de mi negocio de este mes: propuestas, cobros, clientes y qué mejorar el próximo mes",
+  "Hagamos una práctica de ventas: usted es un cliente difícil que dice que está muy caro y yo le respondo. Al final califíqueme",
+  "Escríbame 3 publicaciones de Instagram sobre mi último proyecto publicado, con hashtags de Neiva y el Huila",
 ];
 function contextoIA() {
   const t = tarifas(), pf = perfil();
@@ -3059,8 +3208,8 @@ function vAsistente() {
   return `
     <div class="o-head"><div><h1 class="o-h1">Asistente</h1><p class="sub">Precios, recomendaciones y una IA que conoce sus clientes.</p></div></div>
     <div class="asis">
-      <div class="o-card">${vCalc()}</div>
-      <div style="display:grid;gap:16px">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-content:start;min-width:0"><div class="o-card">${vCalc()}</div><div class="o-card" id="serviciosBox">${vServicios()}</div></div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:16px;min-width:0">
         <div class="o-card"><h2 class="o-h2">Recomendaciones para hoy</h2>${vRecos()}</div>
         <div class="o-card" id="chatBox">${vChat()}</div>
       </div>
@@ -3395,7 +3544,9 @@ function vPiaArchivos() {
     <div class="actions" style="margin-top:10px;justify-content:center">
       <button type="button" class="btn btn-sm" data-act="piaCamara"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h3l1.5-2.5h7L17 8h3v11H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="1.6"/></svg>Tomar foto</button>
       <input type="file" id="piaCam" accept="image/*" capture="environment" hidden>
+      ${puedeGrabar() ? `<button type="button" class="btn btn-sm${S.grabacion ? " btn-danger" : ""}" data-act="piaGrabar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="11" r="2.5" fill="currentColor"/><path d="M8 20h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>${S.grabacion ? "Detener grabación" : "Grabar pantalla"}</button>` : ""}
     </div>
+    ${st.grabacionUrl ? `<p class="note-ui" style="text-align:center">La grabación quedó en los archivos. <a href="${st.grabacionUrl}" download="grabacion-de-pantalla.${st.grabacionExt}">Descargar la grabación</a></p>` : ""}
     ${st.archivos.length ? `<ul class="archivos">${st.archivos.map((a, i) => `<li>${a.tipo === "imagen" ? `<img src="${a.prev}" alt="">` : `<span class="doc-ic">${a.tipo === "pdf" ? "PDF" : "TXT"}</span>`}<span>${esc(a.nombre)}</span><button type="button" data-act="piaQuitar" data-i="${i}" aria-label="Quitar ${esc(a.nombre)}">×</button></li>`).join("")}</ul>` : ""}
     <label class="field" style="margin-top:16px"><span>Cuéntele algo a la IA (opcional)</span><textarea id="piaNotas" rows="3" placeholder="Ej.: lo hice para la panadería de doña Rosa en Neiva; tiene pedidos por WhatsApp y catálogo con fotos.">${esc(st.notas)}</textarea></label>
     <div class="field"><span>Marco de la portada</span><div class="estilos">${[["auto", "Automático"], ["computador", "Computador"], ["celular", "Celular"]].map(([k, n]) => `<label><input type="radio" name="piaEstilo" value="${k}"${st.estilo === k ? " checked" : ""}>${n}</label>`).join("")}</div></div>
@@ -3744,6 +3895,7 @@ const ACT = {
   piaSinIA: () => seguirSinIA(),
   piaReiniciar() { if (S.pia && S.pia.videoUrl) URL.revokeObjectURL(S.pia.videoUrl); S.pia = null; pintarPia(); },
   piaCamara: () => abrirCamara(),
+  piaGrabar: () => grabarPantalla(),
   async piaVideo() {
     const st = piaState(); if (!st.ficha || st.haciendoVideo) return;
     if (st.videoUrl) URL.revokeObjectURL(st.videoUrl);
@@ -3890,6 +4042,48 @@ const ACT = {
       S.draft.enlaceToken = ""; guardarAhora(); toast("Enlace quitado");
     });
   },
+  agregarServicio() { S.svDraft = [...(S.svDraft || servicios()), { n: "", v: 0 }]; pintarServicios(); },
+  quitarServicio(el) { S.svDraft = (S.svDraft || servicios()).filter((_, i) => i !== Number(el.dataset.i)); pintarServicios(); },
+  serviciosDeTarifas() { const t = tarifas(); S.svDraft = [...Object.values(t.tipos), ...Object.values(t.modulos)].map((x) => ({ n: x.n, v: x.v })); pintarServicios(); toast("Revise y toque Guardar lista"); },
+  guardarServicios() {
+    const items = (S.svDraft || servicios()).map((x) => ({ n: String(x.n || "").trim().slice(0, 80), v: Number(x.v) || 0 })).filter((x) => x.n);
+    S.F.setDoc(refDoc("config", "servicios"), { items }).catch(dbError);
+    S.servicios = items; S.svDraft = null; pintarServicios(); toast("Lista de precios guardada");
+  },
+  agregarAInversion() {
+    const x = servicios()[Number(($("#svSel") || {}).value)]; if (!x || !S.draft) return;
+    S.draft.inversion = [String(S.draft.inversion || "").trim(), `${x.n} | ${fmtCOP(Number(x.v) || 0)}`].filter(Boolean).join("\n");
+    guardarAhora(); S.quiet = false; renderOficina(); S.quiet = true; toast(`Agregado: ${x.n}`);
+  },
+  propuestaPlantilla(el) {
+    const ref = refNuevo("propuestas"), data = propuestaDePlantilla(el.dataset.k, "");
+    S.draft = data; S.draftId = ref.id;
+    S.F.setDoc(ref, data).catch(dbError);
+    go("propuesta", ref.id); toast("Propuesta creada desde la plantilla. Escoja el cliente y ajuste lo necesario.");
+  },
+  agregarRev() {
+    const nombre = (($("#rv_nom") || {}).value || "").trim(), telefono = (($("#rv_tel") || {}).value || "").trim();
+    if (!nombre) { toast("Escriba el nombre del revendedor."); return; }
+    const c = revCfg(); let cod = codigoRev(nombre), k = 2; while (c.items.some((x) => x.codigo === cod)) cod = codigoRev(nombre).slice(0, 14) + k++;
+    c.items = [...c.items, { nombre, telefono, codigo: cod }];
+    c.comision = Number(String(($("#rv_com") || {}).value || c.comision).replace(",", ".")) || 0; c.publicar = !!($("#rv_pub") || {}).checked;
+    guardarRevendedores(c).catch(dbError); S.revendedores = c; renderOficina(); toast("Revendedor agregado: " + nombre);
+  },
+  guardarRev() {
+    const c = revCfg(); c.comision = Math.min(50, Math.max(0, Number(String(($("#rv_com") || {}).value || "").replace(",", ".")) || 0)); c.publicar = !!($("#rv_pub") || {}).checked;
+    guardarRevendedores(c).then(() => cargarRevPublico()).catch(dbError); S.revendedores = c; renderOficina(); toast("Programa guardado");
+  },
+  quitarRev(el) { armar(el, "¿Seguro?", () => { const c = revCfg(); c.items = c.items.filter((_, i) => i !== Number(el.dataset.i)); guardarRevendedores(c).catch(dbError); S.revendedores = c; renderOficina(); }); },
+  copiarRev(el) {
+    const x = revCfg().items[Number(el.dataset.i)]; if (!x) return;
+    (navigator.clipboard ? navigator.clipboard.writeText(enlaceRev(x.codigo)) : Promise.reject()).then(() => toast("Enlace copiado")).catch(() => toast(enlaceRev(x.codigo)));
+  },
+  instagramProyecto() {
+    const d = S.proyDraft; if (!d) return;
+    if (!ASISTENTE_URL) { toast("Active el asistente con IA para usar esto (vea LEEME.md)."); return; }
+    const q = `Escríbame 3 publicaciones cortas de Instagram para mostrar este proyecto, con emojis moderados y hashtags de Neiva y el Huila. Proyecto: ${d.titulo}. ${d.sector || ""}. ${d.descripcion || ""} Funciones: ${lines(d.funciones).join(", ")}.`;
+    go("asistente"); setTimeout(() => preguntar(q), 80);
+  },
   async compartirAvance(el) {
     el.disabled = true;
     try {
@@ -3937,7 +4131,7 @@ const ACT = {
     const x = S.solicitudes.find((y) => y.id === el.dataset.id); if (!x) return;
     const notas = [`Solicitud de la página (${fmtFecha(new Date(x.creado || Date.now()).toISOString().slice(0, 10))}).`, x.tipo && "Necesita: " + x.tipo + ".", x.detalle, x.presupuesto && "Presupuesto: " + x.presupuesto + ".", x.cotizacion].filter(Boolean).join("\n");
     const ref = refNuevo("clientes");
-    S.F.setDoc(ref, { nombre: x.nombre || "", negocio: x.negocio || "", telefono: x.telefono || "", documento: "", correo: "", ciudad: "", direccion: "", notas, etapa: "Prospecto",
+    S.F.setDoc(ref, { referido: String(x.origen || "").startsWith("ref=") ? String(x.origen).slice(4) : "", nombre: x.nombre || "", negocio: x.negocio || "", telefono: x.telefono || "", documento: "", correo: "", ciudad: "", direccion: "", notas, etapa: "Prospecto",
       seguimiento: hoyISO(), seguimientoNota: "Responder la solicitud de la página", creado: Date.now(), actualizado: Date.now() }).catch(dbError);
     S.F.updateDoc(S.F.doc(S.fdb, "solicitudes", x.id), { estado: "convertida", clienteId: ref.id }).catch(dbError);
     toast("Ahora es su cliente"); go("cliente", ref.id);
@@ -4008,6 +4202,12 @@ function onField(e) {
     return;
   }
   if (e.target.id === "secPagos") return;
+  if (e.target.dataset.sv !== undefined) {
+    if (!S.svDraft) S.svDraft = servicios().map((x) => Object.assign({}, x));
+    const it = S.svDraft[Number(e.target.dataset.sv)]; if (!it) return;
+    if (e.target.dataset.c === "v") { it.v = numero(e.target.value); if (e.type === "change") e.target.value = it.v ? fmtCOP(it.v) : ""; } else it.n = e.target.value;
+    return;
+  }
   if (e.target.dataset.av !== undefined && e.type === "change" && S.draft) {
     if (!avanceDe(S.draft)) S.draft.avance = avanceBase(S.draft);
     const av = S.draft.avance;
@@ -4439,7 +4639,7 @@ const SOL_PRESUPUESTO = ["Todavía no sé", "Menos de $ 1.000.000", "$ 1.000.000
     const data = {
       nombre: v("#solNombre").slice(0, 80), telefono: tel.slice(0, 20), negocio: v("#solNegocio").slice(0, 80), sector: v("#solSector").slice(0, 60),
       tipo: (form.querySelector('[name="solTipo"]:checked') || {}).value || "", detalle: v("#solDetalle").slice(0, 1500), presupuesto: v("#solPresupuesto"),
-      cotizacion: cotResumen.slice(0, 600), origen: sectorParam ? "sector=" + String(sectorParam).slice(0, 30) : "pagina", estado: "nueva", creado: Date.now(),
+      cotizacion: cotResumen.slice(0, 600), origen: refActual() ? "ref=" + refActual() : sectorParam ? "sector=" + String(sectorParam).slice(0, 30) : "pagina", estado: "nueva", creado: Date.now(),
     };
     const btn = $("#solEnviar"); btn.disabled = true; btn.textContent = "Enviando…";
     let guardada = false;
@@ -4472,7 +4672,7 @@ $("#casosLista") && $("#casosLista").addEventListener("input", (e) => { if (e.ta
 
 /* ================= Arranque ================= */
 if (location.hash.startsWith("#/") || ls.get("sesion")) cargarFirebase();
-if (configurado) { cargarPortafolio(); cargarPagosPublicos(); cargarTestimonios(); }
+if (configurado) { cargarPortafolio(); cargarPagosPublicos(); cargarTestimonios(); cargarRevPublico(); }
 route();
 </script>
 </body>

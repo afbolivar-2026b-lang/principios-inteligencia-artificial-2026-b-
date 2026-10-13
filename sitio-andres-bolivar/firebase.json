@@ -17,7 +17,8 @@
       "LEEME.md",
       "**/.*",
       "storage.rules",
-      "1000-FUNCIONES.md"
+      "1000-FUNCIONES.md",
+      "PENDIENTES.md"
     ]
   },
   "storage": {
