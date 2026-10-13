@@ -4953,7 +4953,7 @@ function diagnosticoLocal(r) {
   if (r.personas !== "Solo yo") funciones.push("Un usuario para cada empleado, y usted ve todo desde el celular");
   return { resumen: `${r.negocio || "Su negocio"} lleva las cuentas ${String(r.comoLleva || "a mano").toLowerCase()}. Con un sistema sencillo puede saber, desde el celular, lo que vende, lo que le deben y lo que tiene, sin cuadrar a mano.`,
     problemas: problemas.length ? problemas.slice(0, 4) : ["Hoy la información del negocio está repartida y toma tiempo encontrarla."], funciones: funciones.slice(0, 6), tipo, mods,
-    primerPaso: GUIA[hits.length ? 1 : 0][2] + " " + GUIA[hits.length ? 1 : 0][1], proyectoParecido: "" };
+    primerPaso: GUIA[hits.length ? 1 : 0][1] + " " + GUIA[hits.length ? 1 : 0][2], proyectoParecido: "" };
 }
 function proyectoParecidoLocal(r, titulo) {
   const cards = [...document.querySelectorAll("#casosLista .case")];
