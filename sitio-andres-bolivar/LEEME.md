@@ -91,6 +91,13 @@ const ASISTENTE_URL = "https://asistente-xxxxx-uc.a.run.app";
 
 Vuelva a publicar la página (`firebase deploy --only hosting`) y el chat queda activo.
 
+**Diagnóstico gratis con IA para sus visitantes (opcional).** La misma publicación crea una segunda función, `diagnostico`. Copie su dirección (algo como `https://diagnostico-xxxxx-uc.a.run.app`) en `DIAGNOSTICO_URL` de `index.html`. Como cualquiera puede usarla, tiene dos límites que puede cambiar al publicar:
+
+- `DIAGNOSTICOS_POR_PERSONA`: diagnósticos por día desde una misma conexión. Si lo deja vacío, son 5.
+- `DIAGNOSTICOS_DIA`: diagnósticos por día en total. Si lo deja vacío, son 100.
+
+Mientras `DIAGNOSTICO_URL` esté vacía, el diagnóstico de la página funciona igual, con reglas sencillas y sin IA.
+
 ## 5. Videos en la página (opcional)
 
 Los videos de presentación pesan mucho para la base de datos, por eso se guardan en **Firebase Storage**.
@@ -154,3 +161,24 @@ Sin Storage, el video se puede crear y **descargar** igual, para mandarlo por Wh
 - **Grabar pantalla**: en **Publicar con IA**, **Grabar pantalla** graba su sistema funcionando, en computador con Chrome o Edge. La grabación queda en los archivos del proyecto (la página saca 3 fotos de ella) y la puede descargar. En celular este botón no aparece, porque los celulares no permiten grabar la pantalla desde una página.
 - **Más ayudas de la IA** (cuando active el asistente): informe del mes, práctica de ventas con un cliente difícil y textos de Instagram, desde las sugerencias del chat o con el botón **Texto para Instagram con IA** en cada proyecto.
 - **Lo que falta**: está guardado, en orden, en `PENDIENTES.md`.
+- **Diagnóstico gratis** (página pública): el visitante responde 6 preguntas, y la pregunta del problema la puede **dictar con la voz**. Recibe:
+  - lo que hoy le cuesta y lo que le conviene;
+  - un rango de precio con sus tarifas;
+  - qué hacer esta semana;
+  - el proyecto suyo que más se parece a su caso.
+
+  Lo puede descargar en PDF o tocar **Quiero esto**, que le llena el formulario de cotización.
+- **Dictar una propuesta** (Propuestas): hable o escriba lo que conversó con el cliente. Con la IA activada sale la propuesta completa: alcance, etapas, cliente y precio con sus tarifas. Sin IA, sale un borrador con sus notas.
+- **Foto del cuaderno a tabla** (Asistente, con IA): la IA lee la letra y arma una tabla. La puede descargar para Excel o **Crear estos clientes** si trae nombres.
+- **Aviso de datos personales** (Publicar con IA): si la IA ve teléfonos, nombres o cédulas en los pantallazos, le avisa antes de publicar.
+- **Tablero** (Panel): gráfica de lo aprobado y lo cobrado en los últimos 6 meses, embudo de clientes, lo que viene (por cobrar, propuestas sin respuesta, soporte posible) y sus mejores clientes.
+- **Cotización rápida** (Asistente): con el precio de la calculadora, escriba para quién es y descárguela en PDF de una página, o mándela por WhatsApp. Es válida por 15 días.
+
+## 7. App para Android (APK)
+
+La página también es una app para Android. Cada vez que se cambia algo de la página en GitHub, un proceso automático (`.github/workflows/apk.yml`) arma la app de nuevo y la deja en `descargas/andres-bolivar.apk`. Cuando publique la página, aparecen solos los botones **Descargar la app para Android**, en la portada y en Contacto. En **Mis datos → App para su celular** están los pasos para instalarla.
+
+- **Cómo se instala:** descargue la APK en el celular, ábrala y, si Android lo pide, permita *instalar apps de esta fuente*. Queda el ícono negro con la B.
+- **Firebase:** la app trae adentro la página tal como está en GitHub. Después de pegar su `firebaseConfig`, la próxima APK que se arme ya entra a Mi oficina. En Firebase, *Authentication → Dominios autorizados* debe incluir `localhost`, que viene por defecto.
+- **Al actualizar:** esta APK de prueba se firma con una llave nueva en cada armado. Por eso, para instalar una versión nueva quizá tenga que desinstalar la anterior antes. Para publicarla en Play Store hace falta una llave propia; es la función 726 de la lista.
+- **iPhone:** no usa APK. En Safari toque *Compartir → Agregar a pantalla de inicio*.

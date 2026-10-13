@@ -12,7 +12,7 @@ Ideas para su página pública y para **Mi oficina**. Todas encajan con lo que y
 
 Las marcadas con ⭐ son las que yo haría primero.
 
-> Las funciones que ya están hechas y no salen en ninguna lista: rediseño editorial, Panel, Proyectos y portafolio publicable, Asistente (calculadora de precios, recomendaciones y chat), Publicar con IA (ficha, precio y portada), Tomar foto, Video de presentación y el Centro de funciones (Panel → Centro de funciones), donde ve las 1000 con su estado.
+> Las funciones que ya están hechas y no salen en ninguna lista: rediseño editorial, Panel, Proyectos y portafolio publicable, Asistente (calculadora de precios, recomendaciones y chat), Publicar con IA (ficha, precio y portada), Tomar foto, Video de presentación el Centro de funciones (Panel → Centro de funciones), donde ve las 1000 con su estado, el tablero de 6 meses en el Panel, la cotización rápida en PDF y la **app para Android (APK)** que se descarga desde la página.
 
 ---
 
@@ -243,8 +243,8 @@ Las marcadas con ⭐ son las que yo haría primero.
 # Parte 2 · Funciones 201 a 400
 
 ## K. IA que le ayuda a vender (201–225)
-201. ⭐🟣 Analista con IA: el cliente cuenta su problema por audio y la IA arma la lista de funciones
-202. ⭐🟣 Notas de voz a propuesta
+201. ✅ Analista con IA: el cliente cuenta su problema por audio y la IA arma la lista de funciones *(Etapa 5)*
+202. ✅ Notas de voz a propuesta *(Etapa 5)*
 203. 🟣 Leer una conversación de WhatsApp pegada y detectar qué quiere y cuánto puede pagar
 204. 🟣 Sugerir qué venderle de más a cada cliente
 205. 🟣 Tres versiones de la propuesta: económica, normal y completa
@@ -265,7 +265,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 220. 🟣 Guion de la llamada de venta
 221. 🟣 Qué sector del Huila atacar este mes
 222. 🟣 Leer el Excel o el cuaderno fotografiado y mostrar qué se puede automatizar
-223. ⭐🟣 Foto del cuaderno a datos: leer la letra y convertirla en tabla
+223. ✅ Foto del cuaderno a datos: leer la letra y convertirla en tabla *(Etapa 5)*
 224. 🟣 Manual de usuario del sistema entregado
 225. 🟣 Preguntas frecuentes del sistema de cada cliente
 
@@ -402,7 +402,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 345. 🟢 Certificado de entrega del código y las cuentas
 
 ## R. Página pública: experiencia del visitante (346–360)
-346. ⭐🟣 Asistente virtual que pregunta el negocio y muestra el proyecto más parecido
+346. ✅ Asistente virtual que pregunta el negocio y muestra el proyecto más parecido *(Etapa 5)*
 347. 🔵 Filtro de casos por sector
 348. 🔵 Página propia para cada caso con más fotos y video
 349. 🔵 Contador de visitas por proyecto
@@ -431,7 +431,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 370. 🔵 Proyección de ingresos a 6 meses
 371. 🔵 Meta de ingresos recurrentes
 372. 🔵 Ganancia por tipo de proyecto
-373. 🔵 Ranking de mejores clientes
+373. ✅ Ranking de mejores clientes *(Etapa 5)*
 374. 🔵 Análisis de por qué pierde propuestas
 375. 🟠 Negocios de Neiva sin página web, desde Google Maps
 376. 🔵 Ruta de visitas en el mapa
@@ -516,7 +516,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 443. 🟢 Agendar llamada en horarios fijos
 444. 🔵 Agenda real con sus horarios libres
 445. 🔵 Lista de espera con el puesto en la fila
-446. ⭐🟣 Diagnóstico gratis con IA: 5 preguntas y un informe en PDF
+446. ✅ Diagnóstico gratis con IA: 5 preguntas y un informe en PDF *(Etapa 5)*
 447. 🟣 El visitante sube foto de su cuaderno y ve cómo se vería en un sistema
 448. 🟢 Cupón visible solo para quien llega desde un QR impreso
 449. 🔵 Código de referido personal para cada cliente
@@ -867,7 +867,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 762. 🟢 Portada cuadrada y vertical además de horizontal
 763. 🟢 Colores de la portada tomados del logo del cliente
 764. 🟣 La IA escoge el mejor pantallazo para la portada
-765. ⭐🟣 Aviso de datos sensibles en los pantallazos (nombres, teléfonos)
+765. ✅ Aviso de datos sensibles en los pantallazos (nombres, teléfonos) *(Etapa 5)*
 766. 🟢 Difuminar datos sensibles
 767. 🟢 Recortar pantallazos dentro de la página
 768. 🟢 Ordenar las fotos arrastrando
@@ -1040,7 +1040,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 
 ## AU. Panel y estadísticas (921–940)
 921. 🔵 Rango de fechas: mes, trimestre, año
-922. 🔵 Gráfica del embudo de ventas
+922. ✅ Gráfica del embudo de ventas *(Etapa 5)*
 923. 🔵 Conversión por fuente
 924. 🔵 Tiempo promedio de cierre
 925. 🔵 Valor promedio por proyecto

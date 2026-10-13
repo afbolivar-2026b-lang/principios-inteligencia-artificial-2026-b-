@@ -1,21 +1,15 @@
 # Lo que falta: plan de las próximas etapas
 
-Hechas: **95 de 1000**. Faltan **905**. La lista completa, con el estado de cada una, está en `1000-FUNCIONES.md` y en **Mi oficina → Panel → Centro de funciones**.
+Hechas: **103 de 1000**. Faltan **897**. La lista completa, con el estado de cada una, está en `1000-FUNCIONES.md` y en **Mi oficina → Panel → Centro de funciones**.
 
 Aquí quedan guardadas en el orden en que las voy a hacer.
 
-## Etapa 5: las ⭐ que faltan
+## Etapa 6: las ⭐ que faltan
 
 | N.º | Función | Qué necesita |
 |---|---|---|
-| 201 | Analista con IA: el cliente cuenta su problema por audio y la IA arma la lista de funciones | con IA |
-| 202 | Notas de voz a propuesta | con IA |
-| 223 | Foto del cuaderno a datos: leer la letra y convertirla en tabla | con IA |
 | 261 | Restaurantes: pedidos, mesas y domicilios | con Firebase |
-| 346 | Asistente virtual que pregunta el negocio y muestra el proyecto más parecido | con IA |
 | 399 | Panel maestro de todos los sistemas de sus clientes | con Firebase |
-| 446 | Diagnóstico gratis con IA: 5 preguntas y un informe en PDF | con IA |
-| 765 | Aviso de datos sensibles en los pantallazos (nombres, teléfonos) | con IA |
 | 951 | App Check de Firebase contra uso abusivo | con Firebase |
 
 ## Etapas 6 a 13: solo la página (no necesitan nada de usted)
@@ -59,7 +53,7 @@ Son 254 funciones. Van primero porque se pueden usar apenas se publican.
 
 ## Etapas 14 a 29: con Firebase
 
-Son 496 funciones. Las hago y las pruebo aquí; para usarlas con sus clientes, conecte Firebase (pasos 1 y 2 del `LEEME.md`).
+Son 494 funciones. Las hago y las pruebo aquí; para usarlas con sus clientes, conecte Firebase (pasos 1 y 2 del `LEEME.md`).
 
 - **Página pública: conseguir clientes**: 8
 - **Confianza y contenido**: 5
@@ -108,7 +102,7 @@ Son 496 funciones. Las hago y las pruebo aquí; para usarlas con sus clientes, c
 
 ## Etapas 30 a 34: con IA
 
-Son 118 funciones. Necesitan el asistente activo (paso 4 del `LEEME.md`: plan Blaze y clave de Anthropic).
+Son 112 funciones. Necesitan el asistente activo (paso 4 del `LEEME.md`: plan Blaze y clave de Anthropic).
 
 ## Cuando tenga las cuentas: servicios externos
 

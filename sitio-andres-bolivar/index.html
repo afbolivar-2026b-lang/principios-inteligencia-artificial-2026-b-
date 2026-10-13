@@ -644,6 +644,45 @@
   .app-pasos { margin: 14px 0 10px; padding-left: 20px; color: var(--muted); }
   .app-pasos li { margin-bottom: 4px; }
 
+  /* Diagnóstico, dictado, cuaderno y tablero */
+  #sitio .diag { max-width: 900px; margin: 0 auto; padding: clamp(24px, 4vw, 44px); background: rgba(251, 248, 243, .7); }
+  #sitio .diag > * { position: relative; }
+  .diag-voz { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+  .diag-voz textarea { width: 100%; }
+  .diag-voz .btn.grabando, .btn.grabando { background: #9E3B32 !important; color: #FFF !important; border-color: #9E3B32 !important; }
+  @media (max-width: 520px) { .diag-voz { grid-template-columns: minmax(0, 1fr); } }
+  #sitio .diag-resumen { font-family: var(--serif); font-size: clamp(1.15rem, 2.4vw, 1.45rem); line-height: 1.4; color: var(--negro); margin: 0 0 20px; }
+  #sitio .diag-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-bottom: 18px; }
+  #sitio .diag-cols h3 { font-size: 1.15rem; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+  #sitio .diag-cols ul { margin: 0; padding-left: 18px; color: var(--gris); }
+  #sitio .diag-cols li { margin-bottom: 6px; }
+  @media (max-width: 700px) { #sitio .diag-cols { grid-template-columns: minmax(0, 1fr); } }
+  #sitio .diag-precio { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; border: 1px solid var(--negro); margin-bottom: 16px; }
+  #sitio .diag-precio > div { padding: 16px 18px; }
+  #sitio .diag-precio > div + div { border-left: 1px solid var(--linea); }
+  #sitio .diag-precio .kick { margin-bottom: 4px; }
+  #sitio .diag-precio b { font-family: var(--serif); font-weight: 500; font-size: 1.25rem; }
+  @media (max-width: 600px) { #sitio .diag-precio { grid-template-columns: minmax(0, 1fr); } #sitio .diag-precio > div + div { border-left: 0; border-top: 1px solid var(--linea); } }
+  #sitio .diag-paso { color: var(--gris); margin: 0 0 14px; }
+  #sitio .diag-paso b { color: var(--negro); font-weight: 500; }
+  #sitio .diag-paso a { color: var(--negro); }
+  #sitio .case.resaltado { box-shadow: 0 0 0 3px var(--negro); transition: box-shadow .3s; }
+  .dictar { margin-bottom: 16px; }
+  .dictar .kick, .plantillas .kick { margin-bottom: 4px; }
+  .dictar textarea { width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--field); border: 1px solid var(--line-strong); border-radius: 6px; padding: 10px 12px; }
+  .tabla-scroll { overflow-x: auto; max-width: 100%; }
+  .deshab { opacity: .5; pointer-events: none; }
+  .aviso-fuerte { border-left-color: var(--danger) !important; }
+  .aviso-fuerte ul { margin: 6px 0 0; padding-left: 18px; }
+  .tablero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; margin-bottom: 22px; }
+  @media (max-width: 820px) { .tablero { grid-template-columns: minmax(0, 1fr); } }
+  .tb-graf { width: 100%; height: auto; display: block; }
+  .tb-ley { display: flex; gap: 16px; font-size: .8rem; color: var(--muted); margin-bottom: 6px; }
+  .tb-ley i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+  .tb-h { font-family: var(--font); font-size: .74rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  .tb-dato { display: flex; justify-content: space-between; gap: 10px; margin: 0; padding: 6px 0; border-top: 1px solid var(--line); font-size: .92rem; }
+  .tb-dato b { font-weight: 600; white-space: nowrap; }
+
   /* Botones flotantes */
   .flotantes { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40; display: grid; justify-items: end; gap: 10px; }
   body.en-oficina .flotantes, body.en-login .flotantes { display: none; }
@@ -1053,7 +1092,7 @@
   <div class="menu-movil" id="menuMovil" hidden>
     <a href="#servicios">Servicios</a><a href="#cotizar">¿Cuánto cuesta?</a><a href="#casos">Casos</a><a href="#metodo">Método</a>
     <a href="#demo">Vea su app</a><a href="#soporte">Soporte</a>
-    <a href="#herramientas">Herramientas gratis</a><a href="#guia">Guía gratis</a><a href="#preguntas">Preguntas</a><a href="#solicitud">Cotice su proyecto</a><a href="#contacto">Contacto</a><a class="js-entrar" href="#/ingresar">Ingresar</a>
+    <a href="#diagnostico">Diagnóstico gratis</a><a href="#herramientas">Herramientas gratis</a><a href="#guia">Guía gratis</a><a href="#preguntas">Preguntas</a><a href="#solicitud">Cotice su proyecto</a><a href="#contacto">Contacto</a><a class="js-entrar" href="#/ingresar">Ingresar</a>
   </div>
 
   <main id="inicio">
@@ -1256,6 +1295,34 @@
           <ol class="test-preg" id="testPreg"></ol>
           <div class="test-res" id="testRes" hidden aria-live="polite"></div>
         </div>
+      </div>
+    </section>
+
+    <section id="diagnostico">
+      <div class="wrap">
+        <div class="head-c">
+          <span class="kick reveal">Diagnóstico gratis</span>
+          <h2 class="reveal">¿Qué necesita su negocio?</h2>
+          <p class="section-lead reveal" style="--d:.1s">Responda 6 preguntas, escribiendo o hablando, y reciba un informe con lo que le conviene, cuánto cuesta y qué hacer esta semana.</p>
+        </div>
+        <form class="diag marco reveal" id="diagForm" novalidate>
+          <div class="diag-campos">
+            <div class="grid2">
+              <label class="field"><span>1. ¿Cómo se llama su negocio?</span><input id="dgNegocio" maxlength="80" placeholder="Ej.: Tienda Doña Rosa"></label>
+              <label class="field"><span>2. ¿Qué tipo de negocio es?</span><select id="dgSector"></select></label>
+            </div>
+            <fieldset class="sol-tipo"><legend>3. ¿Cómo lleva hoy las cuentas?</legend><div class="opciones chicas" id="dgComo"></div></fieldset>
+            <label class="field"><span>4. ¿Qué le quita más tiempo o plata?</span>
+              <span class="diag-voz"><textarea id="dgProblema" rows="3" maxlength="1500" placeholder="Ej.: no sé cuánto me deben, se me acaban productos sin darme cuenta, pierdo tiempo cuadrando la caja…"></textarea><button type="button" class="btn btn-sm" id="dgHablar" hidden>🎙 Hablar</button></span></label>
+            <div class="grid2">
+              <label class="field"><span>5. ¿Cuántas personas trabajan?</span><select id="dgPersonas"><option>Solo yo</option><option>2 a 5</option><option>6 a 15</option><option>Más de 15</option></select></label>
+              <label class="field"><span>6. Presupuesto aproximado</span><select id="dgPresupuesto"></select></label>
+            </div>
+            <p class="sol-error" id="dgError" role="alert" hidden></p>
+            <button class="btn btn-dark" type="submit" id="dgEnviar" style="width:100%">Hacer mi diagnóstico gratis</button>
+          </div>
+          <div class="diag-res" id="dgRes" hidden aria-live="polite"></div>
+        </form>
       </div>
     </section>
 
@@ -1597,6 +1664,11 @@ const HORARIO = { dias: [1, 2, 3, 4, 5, 6], desde: 8, hasta: 18, texto: "Lunes a
    recomendaciones funcionan igual; solo el chat queda apagado. */
 const ASISTENTE_URL = "";
 
+/* 3b. Diagnóstico gratis con IA para visitantes (opcional). Pegue la dirección de la función
+   "diagnostico" después de publicarla. Mientras esté vacía, el diagnóstico funciona igual
+   con reglas sencillas, sin IA. */
+const DIAGNOSTICO_URL = "";
+
 /* 4. Planes de soporte que salen en la página (valor por mes, de referencia).
    Cámbielos a sus precios y a lo que de verdad ofrece. */
 const PLANES_SOPORTE = [
@@ -1691,7 +1763,7 @@ const S = {
   area: "sitio", fbPromise: null, fbError: null, authReady: false,
   A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
   clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false }, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
-  solicitudes: [], enlaces: [], etapaFiltro: "", testimonios: null, servicios: null, revendedores: null, grabacion: null,
+  solicitudes: [], enlaces: [], etapaFiltro: "", testimonios: null, servicios: null, revendedores: null, grabacion: null, cuaderno: null, hayApk: false, instalable: false,
   app: null, appPromise: null, proyDraft: null, proyDraftId: null, chat: [], pensando: false, calc: null,
   view: { name: "panel", id: null }, quiet: false, q: "",
   draft: null, draftId: null,
@@ -2173,6 +2245,7 @@ function vPanel() {
       ${stat("Por cobrar", fmtCOP(porCobrar), deudores ? deudores + (deudores === 1 ? " proyecto con saldo" : " proyectos con saldo") : "Todo al día", "peso")}
       ${stat("Cobrado este mes", fmtCOP(cobradoMes), pctImpuestos() ? `Aparte ${fmtCOP(paraImpuestos(cobradoMes))} para impuestos` : "Abonos registrados", "peso")}
     </div>
+    ${vTablero()}
     <div class="panel2">
       <div>
         <h2 class="o-h2">Clientes recientes</h2>
@@ -2334,6 +2407,10 @@ function vPropuestas() {
   return `
     <div class="o-head"><div><h1 class="o-h1">Propuestas</h1><p class="sub">${arr.length ? "Toque una para editarla o descargarla" : "Aquí quedan todas sus propuestas"}</p></div>
       <button class="btn btn-primary" data-act="nuevaPropuesta">Nueva propuesta</button></div>
+    <div class="o-card dictar"><span class="kick">Dictar una propuesta</span>
+      <p class="sub" style="margin:0 0 10px">Cuente lo que habló con el cliente${ASISTENTE_URL ? " y la IA arma la propuesta completa, con alcance, etapas y precio" : ". Con la IA activada, la arma completa; sin ella, crea el borrador con estas notas"}.</p>
+      <div class="diag-voz"><textarea id="dictadoTxt" rows="3" placeholder="Ej.: Don Luis tiene un parqueadero en el centro, quiere cobrar por tiempo, mensualidades para motos y que la secretaria vea los turnos…"></textarea><button type="button" class="btn btn-sm" id="dictadoMic" hidden>🎙 Hablar</button></div>
+      <div class="actions" style="margin-top:10px"><button class="btn btn-sm btn-primary" data-act="dictarPropuesta">${ASISTENTE_URL ? "Crear propuesta con IA" : "Crear borrador con estas notas"}</button></div></div>
     <div class="o-card plantillas"><span class="kick">Empezar desde una plantilla</span><p class="sub" style="margin:0 0 10px">Trae el alcance, las etapas y el precio con sus tarifas. Solo ajuste lo de su cliente.</p>
       <div class="chips">${Object.entries(PLANTILLAS).map(([k, x]) => `<button type="button" data-act="propuestaPlantilla" data-k="${k}">${esc(x.n)}</button>`).join("")}</div></div>
     ${arr.length ? listaPropuestas(arr, true)
@@ -2621,6 +2698,94 @@ function bloqueMetodos() {
 const archivoSeguro = (t) => t.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) + ".pdf";
 function siguienteCobro() {
   return S.propuestas.reduce((m, p) => Math.max(m, ...(Array.isArray(p.cobros) ? p.cobros.map((x) => Number(x.num) || 0) : [0])), 0) + 1;
+}
+
+/* ================= IA en Mi oficina: dictado, cuaderno, tablero y cotización rápida ================= */
+async function pedirIA(cuerpo) {
+  const token = await S.user.getIdToken();
+  const r = await fetch(ASISTENTE_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(Object.assign({ contexto: contextoIA() }, cuerpo)) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || "No se pudo conectar con el asistente.");
+  return j;
+}
+function propuestaDesdeIA(x) {
+  const t = tarifas(), tipo = t.tipos[x.tipo] ? x.tipo : "sistema", mods = (x.mods || []).filter((m) => t.modulos[m]);
+  const r = calcular({ tipo, complejidad: COMPLEJIDAD[x.complejidad] ? x.complejidad : "normal", urgente: false, mods });
+  const n = String(x.clienteNombre || "").toLowerCase(), cli = n ? S.clientes.find((c) => [c.nombre, c.negocio].some((v) => v && (String(v).toLowerCase().includes(n) || n.includes(String(v).toLowerCase())))) : null;
+  return Object.assign(propuestaBase(cli ? cli.id : ""), {
+    titulo: x.titulo || "", subtitulo: x.subtitulo || "", nombreProducto: x.nombreProducto || "", resumen: x.resumen || "", objetivoGeneral: x.objetivoGeneral || "",
+    objetivos: (x.objetivos || []).join("\n"), modulos: (x.modulos || []).map((m) => [m.nombre, ...(m.funciones || []).map((f) => "- " + f)].join("\n")).join("\n"),
+    etapas: (x.etapas || []).map((e, i) => `${e.etapa} | ${e.entregable} | ${i ? "Pendiente" : "Siguiente"}`).join("\n"),
+    inversion: r.lineas.map((l) => `${l[0]} | ${fmtCOP(l[1])}`).join("\n"), tiempoEntrega: r.sem + (r.sem === 1 ? " semana" : " semanas"),
+    costosNota: `Soporte mensual opcional: ${fmtCOP(r.soporte)}. Valores de referencia, sujetos a cambios de cada plataforma.`,
+  });
+}
+function vCuaderno() {
+  const st = S.cuaderno || {};
+  return `<h2 class="o-h2" style="margin-top:0">Foto del cuaderno a tabla</h2>
+    <p class="sub" style="margin:0 0 12px">Tómele foto a una hoja del cuaderno (fiados, ventas, clientes) y la IA la pasa a una tabla que puede descargar en Excel.</p>
+    ${ASISTENTE_URL ? "" : `<p class="aviso">Necesita el asistente con IA activado (vea LEEME.md).</p>`}
+    <div class="actions"><label class="btn btn-sm${ASISTENTE_URL ? "" : " deshab"}" style="cursor:pointer">Tomar o subir foto<input type="file" id="cuadernoFile" accept="image/*" capture="environment" hidden${ASISTENTE_URL ? "" : " disabled"}></label></div>
+    ${st.cargando ? `<p class="sub" style="margin-top:10px">Leyendo la letra…</p>` : ""}${st.error ? `<p class="msg err" style="max-width:none">${esc(st.error)}</p>` : ""}
+    ${st.tabla ? `<h3 style="margin:14px 0 6px;font-family:var(--serif);font-weight:500">${esc(st.tabla.titulo)}</h3><div class="tabla-scroll"><table class="tabla"><thead><tr>${st.tabla.columnas.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${st.tabla.filas.map((f) => `<tr>${st.tabla.columnas.map((_, i) => `<td>${esc(f[i] || "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      ${st.tabla.notas ? `<p class="note-ui">${esc(st.tabla.notas)}</p>` : ""}
+      <div class="actions" style="margin-top:10px"><button class="btn btn-sm btn-primary" data-act="cuadernoCSV">Descargar para Excel</button>${colCuaderno(st.tabla, /nombre|cliente/i) >= 0 ? `<button class="btn btn-sm" data-act="cuadernoClientes">Crear estos clientes</button>` : ""}</div>` : ""}`;
+}
+const colCuaderno = (t, re) => t.columnas.findIndex((c) => re.test(c));
+function pintarCuaderno() { const b = $("#cuadernoBox"); if (b) b.innerHTML = vCuaderno(); }
+async function leerCuaderno(file) {
+  S.cuaderno = { cargando: true }; pintarCuaderno();
+  try {
+    const r = await reducirImagen(file, 2000);
+    const j = await pedirIA({ modo: "cuaderno", archivos: [{ nombre: file.name || "cuaderno.jpg", tipo: "imagen", media_type: "image/jpeg", data: r.url.split(",")[1] }] });
+    if (!j.tabla) throw new Error("No se pudo leer la foto.");
+    S.cuaderno = { tabla: j.tabla };
+  } catch (e) { S.cuaderno = { error: e.message }; }
+  pintarCuaderno();
+}
+
+/* Tablero: los últimos 6 meses */
+function mesesAtras(n) { const out = [], d = new Date(); for (let i = n - 1; i >= 0; i--) { const x = new Date(d.getFullYear(), d.getMonth() - i, 1); out.push(x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0")); } return out; }
+const NOMBRE_MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+function vTablero() {
+  const P = S.propuestas, meses = mesesAtras(6);
+  const aprobPorMes = meses.map((m) => P.filter((p) => p.estado === "Aprobada" && String(p.firma && p.firma.fecha ? new Date(p.firma.fecha).toISOString() : p.fecha || "").startsWith(m)).reduce((a, p) => a + totalInversion(p), 0));
+  const cobPorMes = meses.map((m) => P.reduce((a, p) => a + pagosDe(p).filter((x) => String(x.fecha || "").startsWith(m)).reduce((s, x) => s + (Number(x.valor) || 0), 0), 0));
+  const max = Math.max(1, ...aprobPorMes, ...cobPorMes), W = 560, H = 190, bw = 26;
+  const barras = meses.map((m, i) => {
+    const x = 30 + i * ((W - 40) / 6), ha = Math.round((aprobPorMes[i] / max) * (H - 40)), hc = Math.round((cobPorMes[i] / max) * (H - 40));
+    return `<g><rect x="${x}" y="${H - 22 - ha}" width="${bw}" height="${ha}" fill="var(--ink)"><title>Aprobado ${fmtCOP(aprobPorMes[i])}</title></rect><rect x="${x + bw + 4}" y="${H - 22 - hc}" width="${bw}" height="${hc}" fill="var(--ok)"><title>Cobrado ${fmtCOP(cobPorMes[i])}</title></rect><text x="${x + bw + 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--muted)">${NOMBRE_MES[Number(m.slice(5)) - 1]}</text></g>`;
+  }).join("");
+  const etapas = ETAPAS_CLIENTE.map((e) => [e, S.clientes.filter((c) => etapaDe(c) === e).length]), maxE = Math.max(1, ...etapas.map((x) => x[1]));
+  const top = S.clientes.map((c) => [c, P.filter((p) => p.clienteId === c.id && p.estado === "Aprobada").reduce((a, p) => a + totalInversion(p), 0)]).filter((x) => x[1]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const soporte = P.filter((p) => p.estado === "Aprobada").length * Math.max(80000, r10((2500000 * tarifas().soporte) / 100));
+  const porCobrar = P.filter((p) => p.estado === "Aprobada").reduce((a, p) => a + saldoDe(p), 0), enviadas = P.filter((p) => p.estado === "Enviada").reduce((a, p) => a + totalInversion(p), 0);
+  return `<h2 class="o-h2">Tablero de los últimos 6 meses</h2>
+    <div class="tablero">
+      <div class="o-card"><div class="tb-ley"><span><i style="background:var(--ink)"></i>Aprobado</span><span><i style="background:var(--ok)"></i>Cobrado</span></div>
+        <svg viewBox="0 0 ${W} ${H}" class="tb-graf" role="img" aria-label="Aprobado y cobrado por mes">${barras}</svg>
+        <p class="sub" style="margin:4px 0 0">Total 6 meses: aprobado ${esc(fmtCOP(aprobPorMes.reduce((a, b) => a + b, 0)))} · cobrado ${esc(fmtCOP(cobPorMes.reduce((a, b) => a + b, 0)))}</p></div>
+      <div class="o-card"><h3 class="tb-h">Embudo de clientes</h3>${etapas.map(([e, n]) => `<div class="barra"><span>${esc(e)}</span><i><em style="width:${Math.round((n / maxE) * 100)}%"></em></i><span class="r">${n}</span></div>`).join("")}
+        <h3 class="tb-h" style="margin-top:16px">Lo que viene</h3>
+        <p class="tb-dato"><span>Por cobrar</span><b class="peso">${esc(fmtCOP(porCobrar))}</b></p>
+        <p class="tb-dato"><span>Propuestas enviadas sin respuesta</span><b class="peso">${esc(fmtCOP(enviadas))}</b></p>
+        <p class="tb-dato"><span>Si todos toman soporte (aprox./mes)</span><b class="peso">${esc(fmtCOP(soporte))}</b></p>
+        ${top.length ? `<h3 class="tb-h" style="margin-top:16px">Mejores clientes</h3>${top.map(([c, v], i) => `<p class="tb-dato"><span>${ROMANOS[i]}. ${esc(nombreCliente(c))}</span><b class="peso">${esc(fmtCOP(v))}</b></p>`).join("")}` : ""}</div>
+    </div>`;
+}
+
+/* Cotización rápida: una página con el precio de la calculadora */
+function htmlCotizacion(r, c, para) {
+  const pf = perfil(), t = tarifas(), vence = sumarDias(hoyISO(), 15), total = r.rec;
+  return `<div class="doc" style="--c:#1F5C45;--a:#F2C94C;--t0:${mix("#1F5C45", 0.05)};--t1:${mix("#1F5C45", 0.12)};--t2:${mix("#1F5C45", 0.28)};padding:10px 4px">
+    <div class="brand"><span class="logo"><i></i></span>${esc(pf.negocio || pf.nombre)}</div>
+    <h2 style="margin:30px 0 4px">Cotización</h2><p>${esc(t.tipos[c.tipo].n)}</p>
+    <div class="meta" style="margin:16px 0 20px"><div><span>Para</span><b>${esc(para || "—")}</b></div><div><span>Fecha</span><b>${esc(fmtFecha(hoyISO()))}</b></div><div><span>Válida hasta</span><b>${esc(fmtFecha(vence))}</b></div></div>
+    <table><thead><tr><th>Concepto</th><th class="r">Valor</th></tr></thead><tbody>${r.lineas.map((l) => `<tr><td>${esc(l[0])}</td><td class="r">${esc(fmtCOP(l[1]))}</td></tr>`).join("")}<tr class="total"><td>Total</td><td class="r">${esc(fmtCOP(total))}</td></tr></tbody></table>
+    <p style="margin-top:14px"><b>Tiempo de entrega:</b> ${r.sem} ${r.sem === 1 ? "semana" : "semanas"} · <b>Forma de pago:</b> 50 % al aprobar y 50 % al entregar.</p>
+    <p><b>Soporte mensual opcional:</b> ${esc(fmtCOP(r.soporte))}. Incluye 30 días de garantía después de la entrega.</p>
+    ${bloqueMetodos()}
+    <div class="firma"><b>${esc(pf.nombre)}</b><span>${esc(pf.cargo)}</span><span>${esc(pf.ciudad)}</span>${pf.whatsapp ? `<span>WhatsApp ${esc(pf.whatsapp)}</span>` : ""}</div></div>`;
 }
 
 /* ================= Lista de precios propia ================= */
@@ -3084,6 +3249,8 @@ function vCalcRes() {
     <div class="datos"><div><span class="k">Entrega</span><b>${r.sem} ${r.sem === 1 ? "semana" : "semanas"}</b></div><div><span class="k">Soporte mensual</span><b>${fmtCOP(r.soporte)}</b></div></div>
     <table class="desg">${r.lineas.map((l) => `<tr><td>${esc(l[0])}</td><td class="r">${fmtCOP(l[1])}</td></tr>`).join("")}</table>
     <div class="actions" style="justify-content:center"><button class="btn btn-primary" data-act="calcPropuesta">Crear propuesta con este precio</button></div>
+    <label class="field" style="margin:12px 0 8px"><span>Cotización rápida para</span><input id="cotPara" maxlength="80" placeholder="Nombre del cliente o del negocio" value="${esc((S.calc && S.calc.para) || "")}"></label>
+    <div class="actions" style="justify-content:center"><button class="btn btn-sm" data-act="cotRapidaPDF">Cotización rápida en PDF</button><button class="btn btn-sm" data-act="cotRapidaWa">Enviarla por WhatsApp</button></div>
     <p class="note-ui">Es una estimación con sus tarifas. Usted decide el precio final.</p>
   </div>`;
 }
@@ -3228,6 +3395,7 @@ function vAsistente() {
       <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:16px;min-width:0">
         <div class="o-card"><h2 class="o-h2">Recomendaciones para hoy</h2>${vRecos()}</div>
         <div class="o-card" id="chatBox">${vChat()}</div>
+        <div class="o-card" id="cuadernoBox">${vCuaderno()}</div>
       </div>
     </div>`;
 }
@@ -3575,8 +3743,10 @@ function vPiaArchivos() {
 }
 function vPiaFicha() {
   const st = piaState(), f = st.ficha;
+  const sensibles = Array.isArray(f.datosSensibles) ? f.datosSensibles.filter(Boolean) : [];
   const campo = (k, label, ph = "") => `<label class="field"><span>${label}</span><input data-pf="${k}" type="text" value="${esc(f[k])}" placeholder="${esc(ph)}"></label>`;
   return `
+    ${sensibles.length ? `<div class="aviso aviso-fuerte" role="alert"><b>Cuidado: la IA vio datos personales en los pantallazos.</b> Antes de publicar, tape o cambie esto:<ul>${sensibles.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     <div class="pia-grid">
       <div style="display:grid;gap:16px">
         <div class="o-card"><h2 class="o-h2" style="margin-top:0">Portada</h2>
@@ -3762,6 +3932,7 @@ function renderOficina() {
     if (b.dataset.tab === TAB_DE[v.name]) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
   });
   if (v.name === "vista") ajustarVista();
+  if (v.name === "propuestas") dictado($("#dictadoMic"), $("#dictadoTxt"));
 }
 function alCambiarDatos() {
   if (S.loaded.c && S.loaded.p) setSync("Guardado en la nube");
@@ -4058,6 +4229,52 @@ const ACT = {
       S.draft.enlaceToken = ""; guardarAhora(); toast("Enlace quitado");
     });
   },
+  async dictarPropuesta(el) {
+    const notas = (($("#dictadoTxt") || {}).value || "").trim();
+    if (notas.length < 15) { toast("Cuente un poco más del proyecto."); return; }
+    let data;
+    if (ASISTENTE_URL) {
+      el.disabled = true; el.textContent = "La IA está armando la propuesta…";
+      try { const j = await pedirIA({ modo: "propuesta", notas }); data = propuestaDesdeIA(j.propuesta); }
+      catch (e) { toast(e.message); el.disabled = false; el.textContent = "Crear propuesta con IA"; return; }
+    } else {
+      const k = Object.keys(PLANTILLAS).find((x) => new RegExp(PLANTILLAS[x].n.split(" ").pop().slice(0, 5), "i").test(notas));
+      data = Object.assign(k ? propuestaDePlantilla(k, "") : propuestaBase(""), { resumen: notas });
+    }
+    const ref = refNuevo("propuestas"); S.draft = data; S.draftId = ref.id;
+    S.F.setDoc(ref, data).catch(dbError); go("propuesta", ref.id);
+    toast(ASISTENTE_URL ? "Propuesta lista. Revísela antes de enviarla." : "Borrador creado con sus notas.");
+  },
+  cuadernoCSV() {
+    const t = S.cuaderno && S.cuaderno.tabla; if (!t) return;
+    const c = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = "\ufeff" + [t.columnas, ...t.filas].map((f) => t.columnas.map((_, i) => c(f[i])).join(";")).join("\r\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = archivoSeguro(t.titulo || "cuaderno").replace(/\.pdf$/, ".csv"); a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  },
+  cuadernoClientes() {
+    const t = S.cuaderno && S.cuaderno.tabla; if (!t) return;
+    const iN = colCuaderno(t, /nombre|cliente/i), iT = colCuaderno(t, /tel|cel|whats/i), iV = colCuaderno(t, /valor|debe|saldo|total/i), iC = colCuaderno(t, /concepto|detalle|producto/i);
+    let n = 0;
+    t.filas.forEach((f) => {
+      const nombre = String(f[iN] || "").trim(); if (!nombre) return;
+      const ya = S.clientes.find((c) => (c.nombre || "").toLowerCase() === nombre.toLowerCase()); if (ya) return;
+      S.F.setDoc(refNuevo("clientes"), { nombre, negocio: "", telefono: iT >= 0 ? String(f[iT] || "") : "", documento: "", correo: "", ciudad: "", direccion: "", etapa: "",
+        notas: ["Pasado desde la foto del cuaderno.", iC >= 0 && f[iC] ? "Concepto: " + f[iC] : "", iV >= 0 && f[iV] ? "Valor: " + f[iV] : ""].filter(Boolean).join("\n"), creado: Date.now(), actualizado: Date.now() }).catch(dbError);
+      n++;
+    });
+    toast(n ? `${n} ${n === 1 ? "cliente creado" : "clientes creados"}` : "Esos clientes ya estaban.");
+  },
+  cotRapidaPDF() {
+    const c = calcState(), r = calcular(c), para = (($("#cotPara") || {}).value || "").trim(); c.para = para;
+    pdfDesdeHTML(htmlCotizacion(r, c, para), archivoSeguro("Cotizacion " + (para || tarifas().tipos[c.tipo].n)));
+  },
+  cotRapidaWa() {
+    const c = calcState(), r = calcular(c), t = tarifas(), para = (($("#cotPara") || {}).value || "").trim(); c.para = para;
+    const txt = `Hola${para ? " " + para.split(" ")[0] : ""}, le comparto la cotización:\n\n*${t.tipos[c.tipo].n}*\n${r.lineas.map((l) => `• ${l[0]}: ${fmtCOP(l[1])}`).join("\n")}\n\n*Total: ${fmtCOP(r.rec)}*\nEntrega: ${r.sem} ${r.sem === 1 ? "semana" : "semanas"}. Forma de pago: 50 % al aprobar y 50 % al entregar.\nSoporte mensual opcional: ${fmtCOP(r.soporte)}.\n\nVálida por 15 días. ¿Le parece si empezamos?`;
+    const cli = para ? S.clientes.find((x) => [x.nombre, x.negocio].some((v) => v && v.toLowerCase() === para.toLowerCase())) : null;
+    window.open(((cli && waLink(cli.telefono)) || "https://wa.me/") + "?text=" + encodeURIComponent(txt), "_blank", "noopener");
+  },
   agregarServicio() { S.svDraft = [...(S.svDraft || servicios()), { n: "", v: 0 }]; pintarServicios(); },
   quitarServicio(el) { S.svDraft = (S.svDraft || servicios()).filter((_, i) => i !== Number(el.dataset.i)); pintarServicios(); },
   serviciosDeTarifas() { const t = tarifas(); S.svDraft = [...Object.values(t.tipos), ...Object.values(t.modulos)].map((x) => ({ n: x.n, v: x.v })); pintarServicios(); toast("Revise y toque Guardar lista"); },
@@ -4219,6 +4436,9 @@ function onField(e) {
     return;
   }
   if (e.target.id === "secPagos") return;
+  if (e.target.id === "cuadernoFile" && e.type === "change" && e.target.files[0]) { leerCuaderno(e.target.files[0]); e.target.value = ""; return; }
+  if (e.target.id === "cotPara") { calcState().para = e.target.value; return; }
+  if (e.target.id === "dictadoTxt") return;
   if (e.target.dataset.sv !== undefined) {
     if (!S.svDraft) S.svDraft = servicios().map((x) => Object.assign({}, x));
     const it = S.svDraft[Number(e.target.dataset.sv)]; if (!it) return;
@@ -4689,6 +4909,124 @@ const SOL_PRESUPUESTO = ["Todavía no sé", "Menos de $ 1.000.000", "$ 1.000.000
       ? `<span class="kick">Solicitud recibida</span><b>¡Gracias, ${nombre}!</b><p>Ya me llegó su solicitud. Le escribo al ${esc(data.telefono)} por WhatsApp en horario de atención (${esc(HORARIO.texto)}).</p><a class="btn" target="_blank" rel="noopener" href="${esc(waUrl(msg))}">Si quiere, escríbame ya por WhatsApp</a>`
       : `<span class="kick">Último paso</span><b>${nombre}, envíemela por WhatsApp</b><p>Toque el botón y se abre WhatsApp con su solicitud ya escrita. Solo tiene que darle enviar.</p><a class="btn btn-dark" target="_blank" rel="noopener" href="${esc(waUrl(msg))}">Enviar por WhatsApp</a>`;
     ok.scrollIntoView({ block: "center" });
+  });
+})();
+
+/* Dictado por voz (Chrome y Android): escribe en el campo lo que la persona dice */
+const Reconocer = window.SpeechRecognition || window.webkitSpeechRecognition;
+function dictado(boton, campo) {
+  if (!Reconocer || !boton || !campo) return;
+  boton.hidden = false;
+  let rec = null;
+  boton.addEventListener("click", () => {
+    if (rec) { rec.stop(); return; }
+    rec = new Reconocer(); rec.lang = "es-CO"; rec.continuous = true; rec.interimResults = false;
+    const antes = boton.textContent; boton.textContent = "⏹ Detener"; boton.classList.add("grabando");
+    rec.onresult = (e) => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) campo.value = (campo.value.trim() + " " + e.results[i][0].transcript.trim()).trim(); campo.dispatchEvent(new Event("input", { bubbles: true })); };
+    rec.onerror = (e) => { if (e.error === "not-allowed") toast("Permita el micrófono para dictar."); };
+    rec.onend = () => { rec = null; boton.textContent = antes; boton.classList.remove("grabando"); };
+    try { rec.start(); } catch (e) { rec = null; boton.textContent = antes; }
+  });
+}
+
+/* Diagnóstico gratis: con IA si DIAGNOSTICO_URL está puesta; si no, con reglas sencillas */
+const DG_COMO = ["En cuaderno", "En Excel", "Con un programa", "De memoria"];
+const DG_PALABRAS = [
+  [/fiad|deb|cobr|cartera|cr[eé]dito/i, "fiados", "No sabe con exactitud cuánto le deben ni desde cuándo.", "Fiados y cartera: cada cliente con lo que debe y recordatorio de cobro por WhatsApp"],
+  [/inventar|product|acab|agot|mercanc|bodega|stock/i, "inventario", "Los productos se acaban sin aviso o no sabe cuánto tiene.", "Inventario con alerta de productos por acabarse"],
+  [/vent|caja|cuadr|plata|efectivo/i, "ventas", "Cuadrar la caja toma tiempo y a veces no cuadra.", "Ventas y caja del día que se cuadran solas"],
+  [/turno|hora|guard|n[oó]mina|pago a (los )?trabaj/i, "turnos", "Calcular turnos y horas extra a mano genera errores.", "Turnos y horas extra calculados automáticamente"],
+  [/factur|iva|dian|impuest/i, "facturacion", "Facturar y calcular el IVA le quita tiempo.", "Facturación con IVA"],
+  [/whats|cat[aá]log|pedido|domicil|redes|instagram/i, "catalogoWa", "Los clientes preguntan precios y productos uno por uno por WhatsApp.", "Catálogo para compartir por WhatsApp"],
+  [/report|gan|cu[aá]nto (vendo|gano)|mes/i, "reportes", "No tiene claro cuánto gana cada mes.", "Reportes del mes en PDF y Excel"],
+  [/se[nñ]al|internet|finca|campo/i, "offline", "Donde trabaja no siempre hay buena señal.", "Funciona sin internet y sincroniza después"],
+];
+function diagnosticoLocal(r) {
+  const txt = [r.problema, r.comoLleva].join(" "), k = SECTOR_OPC.find((x) => x[1] === r.sector), pl = PLANTILLAS[k ? k[0] : ""] || null;
+  const hits = DG_PALABRAS.filter((x) => x[0].test(txt));
+  const mods = [...new Set([...(pl ? pl.mods : []), ...hits.map((x) => x[1]), ...(r.personas !== "Solo yo" ? ["roles"] : []), ...(/cuaderno|memoria/i.test(r.comoLleva) ? ["migracion"] : [])])].filter((m) => TARIFAS_BASE.modulos[m]).slice(0, 6);
+  const quierePagina = /p[aá]gina|google|clientes nuevos|que me encuentren/i.test(txt);
+  const tipo = quierePagina && !hits.length ? "catalogo" : pl ? pl.tipo : "sistema";
+  const problemas = hits.map((x) => x[2]).slice(0, 4);
+  if (/cuaderno|memoria/i.test(r.comoLleva)) problemas.unshift("Todo depende del cuaderno o de su memoria: si se pierde o usted falta, nadie sabe cómo va el negocio.");
+  const funciones = (hits.length ? hits.map((x) => x[3]) : mods.map((m) => TARIFAS_BASE.modulos[m].n)).slice(0, 6);
+  if (r.personas !== "Solo yo") funciones.push("Un usuario para cada empleado, y usted ve todo desde el celular");
+  return { resumen: `${r.negocio || "Su negocio"} lleva las cuentas ${String(r.comoLleva || "a mano").toLowerCase()}. Con un sistema sencillo puede saber, desde el celular, lo que vende, lo que le deben y lo que tiene, sin cuadrar a mano.`,
+    problemas: problemas.length ? problemas.slice(0, 4) : ["Hoy la información del negocio está repartida y toma tiempo encontrarla."], funciones: funciones.slice(0, 6), tipo, mods,
+    primerPaso: GUIA[hits.length ? 1 : 0][2] + " " + GUIA[hits.length ? 1 : 0][1], proyectoParecido: "" };
+}
+function proyectoParecidoLocal(r, titulo) {
+  const cards = [...document.querySelectorAll("#casosLista .case")];
+  const porTitulo = titulo && cards.find((c) => (c.querySelector("h3") || {}).textContent === titulo);
+  if (porTitulo) return porTitulo;
+  const palabra = String(r.sector || "").toLowerCase().replace(/^empresa de /, "").slice(0, 6);
+  return palabra ? cards.find((c) => ((c.querySelector(".for") || {}).textContent || "").toLowerCase().includes(palabra)) : null;
+}
+(function diagnosticoGratis() {
+  const form = $("#diagForm"); if (!form) return;
+  $("#dgSector").innerHTML = SECTOR_OPC.map(([k, n]) => `<option${k === sectorParam ? " selected" : ""}>${esc(n)}</option>`).join("");
+  $("#dgComo").innerHTML = DG_COMO.map((t, i) => `<label><input type="radio" name="dgComo" value="${esc(t)}"${i === 0 ? " checked" : ""}>${esc(t)}</label>`).join("");
+  $("#dgPresupuesto").innerHTML = SOL_PRESUPUESTO.map((t) => `<option>${esc(t)}</option>`).join("");
+  dictado($("#dgHablar"), $("#dgProblema"));
+  let ultimo = null;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const r = { negocio: $("#dgNegocio").value.trim(), sector: $("#dgSector").value, comoLleva: (form.querySelector('[name="dgComo"]:checked') || {}).value || "", problema: $("#dgProblema").value.trim(), personas: $("#dgPersonas").value, presupuesto: $("#dgPresupuesto").value };
+    const err = $("#dgError");
+    if (r.problema.length < 10) { err.hidden = false; err.textContent = "Cuénteme en una o dos frases qué le quita tiempo o plata."; $("#dgProblema").focus(); return; }
+    err.hidden = true;
+    const b = $("#dgEnviar"); b.disabled = true; b.textContent = "Analizando su negocio…";
+    let d = null, conIA = false;
+    if (DIAGNOSTICO_URL) {
+      try { const res = await fetch(DIAGNOSTICO_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(r) }); const j = await res.json().catch(() => ({})); if (res.ok && j.diagnostico) { d = j.diagnostico; conIA = true; } else if (res.status === 429) toast(j.error); }
+      catch (er) { console.warn("Diagnóstico:", er); }
+    }
+    if (!d) {
+      d = diagnosticoLocal(r);
+      const base = TARIFAS_BASE.tipos[d.tipo].v + d.mods.reduce((a, m) => a + TARIFAS_BASE.modulos[m].v, 0);
+      d.precioMinimo = r50(base * 0.85); d.precioMaximo = r50(base * 1.25);
+    }
+    b.disabled = false; b.textContent = "Hacer mi diagnóstico gratis";
+    const par = proyectoParecidoLocal(r, d.proyectoParecido);
+    ultimo = { r, d, par: par ? (par.querySelector("h3") || {}).textContent : "" };
+    const plan = (TARIFAS_BASE.tipos[d.tipo] || TARIFAS_BASE.tipos.sistema).n;
+    const res = $("#dgRes"); res.hidden = false; $(".diag-campos").hidden = true;
+    res.innerHTML = `<span class="kick">Diagnóstico de ${esc(r.negocio || "su negocio")}${conIA ? " · hecho con IA" : ""}</span>
+      <p class="diag-resumen">${esc(d.resumen)}</p>
+      <div class="diag-cols"><div><h3>Lo que hoy le cuesta</h3><ul>${d.problemas.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>
+        <div><h3>Lo que le recomiendo</h3><ul>${d.funciones.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div></div>
+      <div class="diag-precio"><div><span class="kick">Lo que le conviene</span><b>${esc(plan)}</b></div><div><span class="kick">Rango de referencia</span><b>${esc(fmtCOP(d.precioMinimo))} a ${esc(fmtCOP(d.precioMaximo))}</b></div></div>
+      <p class="diag-paso"><b>Esta semana, aunque no me contrate:</b> ${esc(d.primerPaso)}</p>
+      ${ultimo.par ? `<p class="diag-paso">Mire un proyecto parecido que ya hice: <a href="#casos" id="dgVerCaso">${esc(ultimo.par)}</a></p>` : ""}
+      <div class="sol-botones"><button type="button" class="btn btn-dark" id="dgQuiero">Quiero esto: pedir cotización</button><button type="button" class="btn" id="dgPDF">Descargar el informe en PDF</button><button type="button" class="btn" id="dgOtra">Hacer otro diagnóstico</button></div>`;
+    res.scrollIntoView({ block: "start" });
+  });
+  form.addEventListener("click", (e) => {
+    if (!ultimo) return;
+    const { r, d, par } = ultimo, plan = (TARIFAS_BASE.tipos[d.tipo] || TARIFAS_BASE.tipos.sistema).n;
+    if (e.target.id === "dgOtra") { $("#dgRes").hidden = true; $(".diag-campos").hidden = false; return; }
+    if (e.target.id === "dgVerCaso") { e.preventDefault(); const c = proyectoParecidoLocal(r, par); if (c) { c.scrollIntoView({ block: "center" }); c.classList.add("resaltado"); setTimeout(() => c.classList.remove("resaltado"), 2500); } return; }
+    if (e.target.id === "dgQuiero") {
+      $("#solNegocio").value = r.negocio; const ss = [...$("#solSector").options].find((o) => o.value === r.sector); if (ss) $("#solSector").value = r.sector;
+      $("#solDetalle").value = `${r.problema}\n\nDiagnóstico: ${d.funciones.join("; ")}.`.slice(0, 1500);
+      const pp = [...$("#solPresupuesto").options].find((o) => o.value === r.presupuesto); if (pp) $("#solPresupuesto").value = r.presupuesto;
+      cotResumen = `Diagnóstico: ${plan} (${fmtCOP(d.precioMinimo)} a ${fmtCOP(d.precioMaximo)})`;
+      $("#solicitud").scrollIntoView({ block: "start" }); setTimeout(() => $("#solNombre").focus(), 400); return;
+    }
+    if (e.target.id === "dgPDF") {
+      const li = (a) => a.map((x) => `<li style="margin-bottom:5px">${esc(x)}</li>`).join("");
+      pdfDesdeHTML(`<div style="width:700px;font-family:Arial,Helvetica,sans-serif;color:#1A1816;background:#FFF;padding:8px 4px">
+        <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6B645A;margin:0 0 8px">Diagnóstico gratis · Andrés Bolívar</p>
+        <h1 style="font-family:Georgia,serif;font-weight:normal;font-size:30px;margin:0 0 6px">${esc(r.negocio || "Su negocio")}</h1>
+        <p style="font-size:13px;color:#5E5850;margin:0 0 18px">${esc(r.sector)} · ${esc(r.personas)} · cuentas ${esc(String(r.comoLleva).toLowerCase())}</p>
+        <p style="font-size:14px;line-height:1.55">${esc(d.resumen)}</p>
+        <div style="display:flex;gap:24px;margin:16px 0"><div style="flex:1"><h2 style="font-family:Georgia,serif;font-weight:normal;font-size:18px">Lo que hoy le cuesta</h2><ul style="font-size:13px;padding-left:18px">${li(d.problemas)}</ul></div>
+          <div style="flex:1"><h2 style="font-family:Georgia,serif;font-weight:normal;font-size:18px">Lo que le recomiendo</h2><ul style="font-size:13px;padding-left:18px">${li(d.funciones)}</ul></div></div>
+        <div style="border:1px solid #1A1816;padding:14px 16px;margin:10px 0;font-size:14px"><b>${esc(plan)}</b> · Rango de referencia: <b>${esc(fmtCOP(d.precioMinimo))} a ${esc(fmtCOP(d.precioMaximo))}</b><br><span style="font-size:12px;color:#5E5850">El precio exacto se da por escrito y sin costo.</span></div>
+        <p style="font-size:13px"><b>Esta semana:</b> ${esc(d.primerPaso)}</p>
+        <div style="border-top:1px solid #D6CEC0;margin-top:18px;padding-top:12px;font-size:13px">Andrés Bolívar · Páginas web y sistemas · Neiva, Huila · WhatsApp +${esc(WHATSAPP)}</div></div>`,
+        archivoSeguro("Diagnostico " + (r.negocio || "de su negocio")));
+    }
   });
 })();
 
