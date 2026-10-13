@@ -683,6 +683,17 @@
   .tb-dato { display: flex; justify-content: space-between; gap: 10px; margin: 0; padding: 6px 0; border-top: 1px solid var(--line); font-size: .92rem; }
   .tb-dato b { font-weight: 600; white-space: nowrap; }
 
+  /* Contrato */
+  .cuotas input { width: 100%; min-width: 0; font: inherit; font-size: 15px; color: var(--text); background: var(--field); border: 1px solid var(--line-strong); border-radius: 6px; padding: 7px 8px; }
+  .cuotas input.pct { width: 64px; text-align: right; }
+  .cuotas td { vertical-align: middle; }
+  .cuotas td:nth-child(1) { min-width: 140px; } .cuotas td:nth-child(2) { min-width: 170px; }
+  .doc.contrato h3 { font-size: 14px; margin: 14px 0 4px; }
+  .doc.contrato p { text-align: justify; }
+  .doc.contrato .two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .doc.contrato .two > div { background: none; border-radius: 0; padding: 12px 0 0; }
+  .pp-sub { font-size: 1.6rem; margin: 26px 0 10px; }
+
   /* Botones flotantes */
   .flotantes { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40; display: grid; justify-items: end; gap: 10px; }
   body.en-oficina .flotantes, body.en-login .flotantes { display: none; }
@@ -1763,7 +1774,7 @@ const S = {
   area: "sitio", fbPromise: null, fbError: null, authReady: false,
   A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
   clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false }, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
-  solicitudes: [], enlaces: [], etapaFiltro: "", testimonios: null, servicios: null, revendedores: null, grabacion: null, cuaderno: null, hayApk: false, instalable: false,
+  solicitudes: [], enlaces: [], etapaFiltro: "", testimonios: null, servicios: null, revendedores: null, grabacion: null, cuaderno: null, hayApk: false, instalable: false, contratoAbierto: false,
   app: null, appPromise: null, proyDraft: null, proyDraftId: null, chat: [], pensando: false, calc: null,
   view: { name: "panel", id: null }, quiet: false, q: "",
   draft: null, draftId: null,
@@ -2524,6 +2535,7 @@ function vPropuesta(id) {
     <div id="avanceCard">${vAvanceCard(d)}</div>
     ${vAgregarServicio()}
     ${vPagosPropuesta(d)}
+    ${vContrato(d)}
     ${secs}
     <div class="actions" style="margin-top:24px">
       ${d.estado === "Aprobada" ? `<button class="btn btn-primary" data-act="publicarDesdePropuesta" data-id="${S.draftId}">Publicar como proyecto</button><button class="btn" data-act="carnetPDF">Carnet de garantía</button>` : ""}
@@ -2698,6 +2710,119 @@ function bloqueMetodos() {
 const archivoSeguro = (t) => t.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) + ".pdf";
 function siguienteCobro() {
   return S.propuestas.reduce((m, p) => Math.max(m, ...(Array.isArray(p.cobros) ? p.cobros.map((x) => Number(x.num) || 0) : [0])), 0) + 1;
+}
+
+/* ================= Contrato y forma de cobro ================= */
+const PLANES_PAGO = {
+  "50-50": ["50 % y 50 %", [["Anticipo para empezar", 50, "Al firmar el contrato"], ["Saldo", 50, "Al entregar el proyecto"]]],
+  etapas: ["Por etapas", [["Anticipo para empezar", 40, "Al firmar el contrato"], ["Segundo pago", 30, "Al terminar la etapa de desarrollo"], ["Saldo", 30, "Al entregar el proyecto"]]],
+  cuotas3: ["3 cuotas mensuales", [["Primera cuota", 34, "Al firmar el contrato"], ["Segunda cuota", 33, "A los 30 días"], ["Tercera cuota", 33, "A los 60 días"]]],
+  contado: ["Un solo pago", [["Pago total", 100, "Al firmar el contrato"]]],
+};
+function contratoBase(d) {
+  const r = PLANES_PAGO["50-50"][1];
+  return { plan: "50-50", cuotas: r.map(([concepto, pct, cuando]) => ({ concepto, pct, cuando })), inicio: hoyISO(), mora: 5, hora: 60000, garantia: GARANTIA_DIAS, soporte: 0, ciudad: (d.ciudad || perfil().ciudad || "Neiva"), clausulasIA: null, explicacionIA: null, whatsappIA: "" };
+}
+const contratoDe = (d) => (d.contrato && Array.isArray(d.contrato.cuotas) ? d.contrato : null);
+function valoresCuotas(c, total) {
+  let resto = total;
+  return c.cuotas.map((q, i) => { const v = i === c.cuotas.length - 1 ? resto : Math.round((total * (Number(q.pct) || 0)) / 100 / 1000) * 1000; resto -= v; return Object.assign({}, q, { valor: Math.max(0, v) }); });
+}
+const sumaPct = (c) => c.cuotas.reduce((a, q) => a + (Number(q.pct) || 0), 0);
+/* Lo que se le explica al cliente, en palabras sencillas (sin IA) */
+function explicacionCobro(d, c, pf) {
+  const total = totalInversion(d), qs = valoresCuotas(c, total), m = c.metodos || [];
+  const out = [`El proyecto cuesta en total ${fmtCOP(total)}. No hay cobros escondidos: solo se paga lo que está en este contrato.`];
+  qs.forEach((q, i) => out.push(`${i === 0 ? "Primero" : i === qs.length - 1 ? "Al final" : "Después"}: ${q.concepto.toLowerCase()} de ${fmtCOP(q.valor)} (${q.pct} %), ${q.cuando.toLowerCase()}.`));
+  if (m.length) out.push(`Puede pagar por ${m.map((x) => x.n).join(", ")}. Mande el comprobante por WhatsApp y le confirmo el pago con un recibo.`);
+  out.push(`Si un pago se atrasa más de ${c.mora} días, el trabajo se pausa hasta ponerse al día. No se cobran intereses.`);
+  out.push(`Si quiere algo que no está en el alcance, se lo cotizo antes de hacerlo (${fmtCOP(Number(c.hora) || 0)} por hora). Nada se cobra sin que usted lo apruebe.`);
+  out.push(`Después de la entrega tiene ${c.garantia} días de garantía: si algo de lo entregado falla, se arregla sin costo.`);
+  out.push(Number(c.soporte) > 0 ? `El soporte mensual es opcional y cuesta ${fmtCOP(Number(c.soporte))} al mes. Lo puede tomar o dejar cuando quiera.` : "El soporte mensual es opcional y se acuerda aparte.");
+  out.push(`Cuando termine de pagar, las cuentas, los datos y el código quedan a nombre de ${d && c.cliente ? c.cliente : "su negocio"}.`);
+  return out;
+}
+const sinPunto = (x) => String(x || "").trim().replace(/[.;,:\s]+$/, "");
+const juntar = (arr) => arr.map(sinPunto).filter(Boolean).join("; ");
+function clausulasBase(d, c, pf, cli) {
+  const total = totalInversion(d), qs = valoresCuotas(c, total), nombreCli = cli ? nombreCliente(cli) : "EL CLIENTE";
+  const mods = rawLines(d.modulos).filter((l) => !/^[-•*]/.test(l)), ni = lines(d.noIncluye), et = cells(d.etapas, 3);
+  return [
+    ["Objeto", `${pf.nombre} (EL DESARROLLADOR) se compromete a desarrollar para ${nombreCli} (EL CLIENTE) el proyecto «${d.titulo || d.nombreProducto || "de software"}», según la propuesta${d.version ? " versión " + d.version : ""} que hace parte de este contrato.`],
+    ["Alcance", `Incluye: ${mods.length ? mods.map(sinPunto).join(", ") : "lo descrito en la propuesta"}.${ni.length ? " No incluye: " + juntar(ni) + "." : ""} Lo que no esté en la propuesta se trata como un cambio (cláusula 5).`],
+    ["Plazo y entregas", `El trabajo empieza el ${fmtFecha(c.inicio)}, una vez recibido el primer pago, y tiene un tiempo de entrega estimado de ${d.tiempoEntrega || "lo indicado en la propuesta"}.${et.length ? " Se entrega por etapas: " + et.map((e) => e[0]).filter(Boolean).join(", ") + "." : ""} Al terminar cada etapa EL CLIENTE la revisa y da su visto bueno o sus observaciones en un plazo de 5 días hábiles.`],
+    ["Valor y forma de pago", `El valor total es de ${fmtCOP(total)}, que se paga así: ${qs.map((q) => `${q.concepto} de ${fmtCOP(q.valor)} (${q.pct} %), ${q.cuando.toLowerCase()}`).join("; ")}.${(c.metodos || []).length ? " Medios de pago: " + c.metodos.map((x) => x.n + (x.d ? " (" + x.d + ")" : "")).join("; ") + "." : ""} Por cada pago EL DESARROLLADOR entrega un recibo.`],
+    ["Cambios y trabajos adicionales", `Los cambios o funciones nuevas que no estén en el alcance se cotizan por escrito antes de hacerlos, a ${fmtCOP(Number(c.hora) || 0)} por hora o con un valor cerrado. Solo se hacen si EL CLIENTE los aprueba.`],
+    ["Pagos atrasados", `Si un pago se atrasa más de ${c.mora} días calendario, EL DESARROLLADOR puede pausar el trabajo hasta que se ponga al día, y el plazo de entrega se corre esos mismos días. No se cobran intereses de mora.`],
+    ["Compromisos del desarrollador", (juntar(lines(d.respDev)) || "Hacer el trabajo según la propuesta") + "."],
+    ["Compromisos del cliente", (juntar(lines(d.respCliente)) || "Entregar la información a tiempo y hacer los pagos acordados") + "."],
+    ["Garantía", `Durante ${c.garantia} días después de la entrega, EL DESARROLLADOR corrige sin costo los errores en las funciones entregadas. La garantía no cubre funciones nuevas, cambios hechos por terceros ni fallas de internet, equipos o servicios externos.`],
+    ["Soporte mensual", Number(c.soporte) > 0 ? `Después de la garantía, EL CLIENTE puede tomar el soporte mensual por ${fmtCOP(Number(c.soporte))} al mes, que puede cancelar avisando con 15 días.` : "El soporte mensual después de la garantía es opcional y se acuerda por aparte."],
+    ["Propiedad", `Al completar el pago total, las cuentas, los datos y el código fuente del proyecto quedan a nombre de EL CLIENTE. EL DESARROLLADOR puede mostrar el proyecto en su portafolio sin datos privados de EL CLIENTE, salvo que EL CLIENTE diga lo contrario.`],
+    ["Datos personales y confidencialidad", "Las partes guardan reserva sobre la información del negocio a la que tengan acceso. Los datos personales se tratan según la Ley 1581 de 2012 y solo para cumplir este contrato."],
+    ["Terminación", "Cualquiera de las partes puede terminar el contrato avisando por escrito. En ese caso EL CLIENTE paga el trabajo hecho hasta ese día y EL DESARROLLADOR entrega lo avanzado; los pagos de más se devuelven."],
+    ["Acuerdo completo", `Este contrato y la propuesta son todo lo acordado. Cualquier cambio se hace por escrito, incluso por WhatsApp o correo. Se firma en ${c.ciudad}.`],
+  ];
+}
+function contratoHTML(d, ctx) {
+  const c = contratoDe(d); if (!c) return "";
+  const pf = ctx ? Object.assign({}, PERFIL_BASE, ctx.perfil || {}) : perfil(), cli = ctx ? ctx.cliente : clienteDe(d.clienteId);
+  const color = normHex(d.color, "#1F5C45"), a = normHex(d.acento, "#F2C94C");
+  const vars = `--c:${color};--a:${a};--t0:${mix(color, 0.05)};--t1:${mix(color, 0.12)};--t2:${mix(color, 0.28)};`;
+  const total = totalInversion(d), qs = valoresCuotas(c, total);
+  const cl = Array.isArray(c.clausulasIA) && c.clausulasIA.length ? c.clausulasIA.map((x) => [x.titulo, x.texto]) : clausulasBase(d, c, pf, cli);
+  const ex = Array.isArray(c.explicacionIA) && c.explicacionIA.length ? c.explicacionIA : explicacionCobro(d, Object.assign({}, c, { cliente: cli ? nombreCliente(cli) : "" }), pf);
+  const ap = d.firma && d.firma.nombre ? d.firma : null, fimg = ap ? imgSegura(ap.firma) : "";
+  return `<div class="doc contrato" style="${vars}padding:10px 4px">
+    <div class="brand"><span class="logo"><i></i></span>${esc(pf.negocio || pf.nombre)}</div>
+    <h2 style="margin:28px 0 4px">Contrato de desarrollo de software</h2><p>${esc(d.titulo || d.nombreProducto || "")}</p>
+    <div class="meta" style="margin:16px 0 18px"><div><span>Cliente</span><b>${esc(cli ? nombreCliente(cli) : "—")}</b>${cli && cli.documento ? `<span>${esc(cli.documento)}</span>` : ""}</div><div><span>Desarrollador</span><b>${esc(pf.nombre)}</b></div><div><span>Valor total</span><b>${esc(fmtCOP(total))}</b></div></div>
+    <div class="note avoid"><h3>Así se cobra, en palabras sencillas</h3><ul>${ex.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    <table class="avoid"><thead><tr><th>Pago</th><th>Cuándo</th><th class="r">%</th><th class="r">Valor</th></tr></thead><tbody>${qs.map((q) => `<tr><td>${esc(q.concepto)}</td><td>${esc(q.cuando)}</td><td class="r">${esc(String(q.pct))} %</td><td class="r">${esc(fmtCOP(q.valor))}</td></tr>`).join("")}<tr class="total"><td colspan="3">Total</td><td class="r">${esc(fmtCOP(total))}</td></tr></tbody></table>
+    ${cl.map(([t, x], i) => `<div class="avoid"><h3>${i + 1}. ${esc(t)}</h3><p>${esc(x)}</p></div>`).join("")}
+    <div class="two avoid" style="margin-top:36px"><div class="firma" style="margin-top:0"><b>${esc(pf.nombre)}</b><span>EL DESARROLLADOR</span><span>${esc(pf.ciudad)}</span></div>
+      <div class="firma" style="margin-top:0">${fimg ? `<img src="${esc(fimg)}" alt="Firma" style="height:60px;max-width:220px;object-fit:contain;display:block">` : `<div style="height:60px"></div>`}<b>${esc(ap ? ap.nombre : cli ? cli.nombre || nombreCliente(cli) : "EL CLIENTE")}</b><span>EL CLIENTE${ap && ap.documento ? " · " + esc(ap.documento) : cli && cli.documento ? " · " + esc(cli.documento) : ""}</span>${ap ? `<span>Firmó el ${esc(fmtFechaHora(ap.fecha))}</span>` : ""}</div></div>
+    <p class="small" style="margin-top:18px">Documento preparado con ayuda de una herramienta. Le recomendamos revisarlo con un abogado antes de firmar.</p>
+  </div>`;
+}
+function vContrato(d) {
+  const c = contratoDe(d), total = totalInversion(d);
+  if (!c) return `<details class="sec" id="secContrato"${S.contratoAbierto ? " open" : ""}><summary>Contrato y forma de cobro</summary><div class="in">
+    <p class="sub" style="margin:0 0 12px">Arme el contrato con los datos de esta propuesta: cómo y cuándo se cobra, cambios, garantía, soporte y de quién queda el código. Al cliente le llega explicado en palabras sencillas.</p>
+    <button class="btn btn-primary" data-act="crearContrato"${total ? "" : " disabled"}>Crear contrato</button>${total ? "" : `<p class="aviso" style="margin-top:10px">Primero escriba los valores en «Plan de trabajo e inversión».</p>`}</div></details>`;
+  const qs = valoresCuotas(c, total), suma = sumaPct(c);
+  const f = (k, label, tipo = "text", help = "") => `<label class="field"><span>${label}</span><input data-ct="${k}" type="${tipo}" value="${esc(k === "hora" || k === "soporte" ? (Number(c[k]) ? fmtCOP(Number(c[k])) : "") : c[k])}"${tipo === "text" && (k === "hora" || k === "soporte") ? ' inputmode="numeric"' : ""}>${help ? `<small>${help}</small>` : ""}</label>`;
+  return `<details class="sec" id="secContrato"${S.contratoAbierto ? " open" : ""}><summary>Contrato y forma de cobro${suma === 100 ? "" : " · revise los porcentajes"}</summary><div class="in">
+    <label class="field"><span>Cómo se cobra</span><select data-ct="plan">${Object.entries(PLANES_PAGO).map(([k, x]) => `<option value="${k}"${c.plan === k ? " selected" : ""}>${x[0]}</option>`).join("")}<option value="personal"${c.plan === "personal" ? " selected" : ""}>A mi manera</option></select></label>
+    <div class="tabla-scroll"><table class="tabla cuotas"><thead><tr><th>Pago</th><th>Cuándo</th><th class="r">%</th><th class="r">Valor</th><th></th></tr></thead><tbody>
+      ${qs.map((q, i) => `<tr><td><input data-cq="${i}" data-c="concepto" value="${esc(q.concepto)}" aria-label="Pago"></td><td><input data-cq="${i}" data-c="cuando" value="${esc(q.cuando)}" aria-label="Cuándo"></td><td class="r"><input data-cq="${i}" data-c="pct" inputmode="numeric" value="${esc(String(q.pct))}" aria-label="Porcentaje" class="pct"></td><td class="r">${esc(fmtCOP(q.valor))}</td><td>${qs.length > 1 ? `<button class="btn btn-sm" data-act="quitarCuota" data-i="${i}" aria-label="Quitar">×</button>` : ""}</td></tr>`).join("")}
+      <tr class="${suma === 100 ? "" : "mal"}"><td colspan="2"><b>Total</b> ${suma === 100 ? "" : `<span class="txt-danger">Los porcentajes suman ${suma} %, deben sumar 100 %</span>`}</td><td class="r"><b>${suma} %</b></td><td class="r"><b>${esc(fmtCOP(total))}</b></td><td></td></tr></tbody></table></div>
+    <button class="btn btn-sm" data-act="agregarCuota" style="margin:6px 0 14px">Agregar un pago</button>
+    <div class="grid2">${f("inicio", "Fecha de inicio", "date")}${f("ciudad", "Ciudad donde se firma")}</div>
+    <div class="grid2">${f("mora", "Días de espera antes de pausar por pago atrasado", "number")}${f("hora", "Valor de la hora para cambios", "text", "Para lo que no esté en el alcance")}</div>
+    <div class="grid2">${f("garantia", "Días de garantía", "number")}${f("soporte", "Soporte mensual (opcional)", "text", "Déjelo vacío si se acuerda aparte")}</div>
+    ${c.clausulasIA ? `<p class="note-ui" style="margin:0 0 10px">Texto mejorado con IA. Si cambia los datos de arriba, vuelva a tocar «Mejorar con IA» o «Usar el texto base».</p>` : ""}
+    <div class="actions">
+      <button class="btn btn-primary" data-act="verContrato">Ver el contrato</button>
+      <button class="btn" data-act="contratoPDF">Descargar contrato PDF</button>
+      <button class="btn" data-act="explicarWhatsApp">Explicarle el cobro por WhatsApp</button>
+      <button class="btn" data-act="contratoIA">${ASISTENTE_URL ? "Mejorar con IA" : "Mejorar con IA (actívela)"}</button>
+      ${c.clausulasIA ? `<button class="btn" data-act="contratoBaseTxt">Usar el texto base</button>` : ""}
+      <button class="btn btn-danger" data-act="quitarContrato">Quitar contrato</button>
+    </div>
+    <p class="note-ui">Cuando envíe la propuesta por enlace, el contrato va con ella y el cliente firma las dos. Es una base general: revísela con un abogado.</p>
+    <div id="contratoPrev"></div>
+  </div></details>`;
+}
+function guardarContrato(rehacer) {
+  const d = S.draft; if (!d || !d.contrato) return;
+  d.contrato.metodos = metodosActivos().map((m) => ({ n: m.n, d: m.url || m.d }));
+  programarGuardado();
+  if (rehacer) { S.quiet = false; renderOficina(); S.quiet = true; }
+}
+function textoCobroWhatsApp(d) {
+  const c = contratoDe(d), cli = clienteDe(d.clienteId), ex = Array.isArray(c.explicacionIA) && c.explicacionIA.length ? c.explicacionIA : explicacionCobro(d, Object.assign({}, c, { cliente: cli ? nombreCliente(cli) : "" }), perfil());
+  return c.whatsappIA || `Hola${cli && cli.nombre ? " " + cli.nombre.split(" ")[0] : ""}, le explico cómo funciona el pago de «${d.titulo || d.nombreProducto || "su proyecto"}»:\n\n${ex.map((x, i) => `${i + 1}. ${x}`).join("\n")}\n\nCualquier duda me escribe. ¡Gracias por la confianza!`;
 }
 
 /* ================= IA en Mi oficina: dictado, cuaderno, tablero y cotización rápida ================= */
@@ -2976,6 +3101,7 @@ async function publicarEnlace() {
   if (saveT || saving) await guardarAhora();
   const e = enlaceDe(id);
   if (e && e.aprobacion) return e.id;
+  if (d.contrato) d.contrato.metodos = metodosActivos().map((m) => ({ n: m.n, d: m.url || m.d }));
   const token = (e && e.id) || d.enlaceToken || nuevoToken(), pf = perfil(), cli = clienteDe(d.clienteId);
   const data = {
     uid: S.user.uid, propuestaId: id, datos: datosPublicos(d),
@@ -3016,7 +3142,7 @@ async function abrirEnlace(token) {
   if (!e.visto && !e.aprobacion && !ls.get("sesion")) S.F.updateDoc(S.F.doc(S.fdb, "enlaces", token), { visto: Date.now() }).catch(() => {});
   pintarEnlacePublico();
 }
-function ctxEnlace() { const e = S.pp.e; return { perfil: e.perfil || {}, cliente: e.cliente || null }; }
+function ctxEnlace() { const e = S.pp.e; return { perfil: e.perfil || {}, cliente: e.cliente || null, conContrato: !!contratoDe(e.datos || {}) }; }
 function pintarEnlacePublico() {
   const { e } = S.pp, ctx = ctxEnlace(), pf = Object.assign({}, PERFIL_BASE, ctx.perfil), ap = e.aprobacion;
   const datos = Object.assign({}, e.datos, ap ? { firma: ap } : {});
@@ -3024,7 +3150,7 @@ function pintarEnlacePublico() {
   document.title = titulo + " · " + pf.nombre;
   $("#ppMarca").textContent = pf.negocio || pf.nombre;
   const wa = waLink(pf.whatsapp) || "https://wa.me/" + WHATSAPP;
-  $("#ppAcciones").innerHTML = `<button class="btn btn-sm" type="button" id="ppPDF">Descargar PDF</button><a class="btn btn-sm" target="_blank" rel="noopener" href="${esc(wa)}?text=${encodeURIComponent(`Hola ${pf.nombre.split(" ")[0]}, tengo una pregunta sobre la propuesta «${titulo}».`)}">Tengo una pregunta</a>`;
+  $("#ppAcciones").innerHTML = `<button class="btn btn-sm" type="button" id="ppPDF">Descargar PDF</button>${contratoDe(e.datos) ? `<button class="btn btn-sm" type="button" id="ppContratoPDF">Contrato PDF</button>` : ""}<a class="btn btn-sm" target="_blank" rel="noopener" href="${esc(wa)}?text=${encodeURIComponent(`Hola ${pf.nombre.split(" ")[0]}, tengo una pregunta sobre la propuesta «${titulo}».`)}">Tengo una pregunta</a>`;
   const total = totalInversion(e.datos);
   $("#ppMain").innerHTML = `
     <div class="pp-head"><span class="kick">Propuesta${ctx.cliente ? " para " + esc(nombreCliente(ctx.cliente)) : ""}</span><h1 class="o-h1">${esc(titulo)}</h1>
@@ -3032,9 +3158,11 @@ function pintarEnlacePublico() {
       <a class="btn btn-primary pp-ir" href="#ppAprobar" data-ir="ppAprobar">${ap ? "Ver la aprobación" : "Ir a aprobar"}</a></div>
     ${vAvancePublico(e)}
     <div class="preview"><div class="page">${docHTML(datos, ctx)}</div></div>
+    ${contratoDe(e.datos) ? `<h2 class="o-h1 pp-sub">Contrato</h2><div class="preview pp-contrato"><div class="page">${contratoHTML(datos, ctx)}</div></div>` : ""}
     <section class="o-card pp-aprobar" id="ppAprobar">${ap ? vAprobada(ap, pf, titulo) : vFormFirma(ctx)}</section>
     <p class="pie">Propuesta enviada por ${esc(pf.nombre)} · ${esc(pf.ciudad)}</p>`;
   ajustarVista();
+  document.querySelectorAll("#pubprop .pp-contrato .page").forEach((pg) => { pg.style.zoom = Math.min(1, (pg.parentElement.clientWidth - 24) / 780); });
   if (!ap) prepararFirma();
   const bo = $("#ppOpinar");
   if (bo) bo.addEventListener("click", async () => {
@@ -3077,7 +3205,7 @@ function vFormFirma(ctx) {
     <div class="grid2"><label class="field"><span>Nombre completo</span><input id="ppNombre" maxlength="120" autocomplete="name" value="${esc(c.nombre || "")}"></label>
       <label class="field"><span>Cédula o NIT</span><input id="ppDoc" maxlength="40" value="${esc(c.documento || "")}"></label></div>
     <div class="field"><span>Firme con el dedo o el mouse</span><div class="firma-caja"><canvas id="ppFirma" aria-label="Espacio para firmar"></canvas><button type="button" class="btn btn-sm" id="ppBorrar">Borrar</button></div></div>
-    <label class="check" style="align-items:flex-start;font-weight:400"><input type="checkbox" id="ppAcepto"> <span>Leí la propuesta y acepto el alcance, el valor y la forma de pago.</span></label>
+    <label class="check" style="align-items:flex-start;font-weight:400"><input type="checkbox" id="ppAcepto"> <span>${ctx.conContrato ? "Leí la propuesta y el contrato, y acepto el alcance, el valor y la forma de pago." : "Leí la propuesta y acepto el alcance, el valor y la forma de pago."}</span></label>
     <p class="login-msg" id="ppError" role="alert" hidden></p>
     <button class="btn btn-primary" type="button" id="ppFirmar" style="width:100%">Aprobar y firmar</button>`;
 }
@@ -3112,6 +3240,7 @@ function prepararFirma() {
   });
 }
 $("#pubprop").addEventListener("click", (ev) => {
+  if (ev.target.closest("#ppContratoPDF") && S.pp) { const e = S.pp.e; pdfDesdeHTML(contratoHTML(Object.assign({}, e.datos, e.aprobacion ? { firma: e.aprobacion } : {}), ctxEnlace()), archivoSeguro("Contrato " + (e.datos.titulo || ""))); }
   if (ev.target.closest("#ppPDF") && S.pp) { const e = S.pp.e; descargarPDF(Object.assign({}, e.datos, e.aprobacion ? { firma: e.aprobacion } : {}), ctxEnlace()); }
   const ir = ev.target.closest("[data-ir]"); if (ir) { ev.preventDefault(); const t = document.getElementById(ir.dataset.ir); if (t) t.scrollIntoView({ block: "start" }); }
 });
@@ -4229,6 +4358,49 @@ const ACT = {
       S.draft.enlaceToken = ""; guardarAhora(); toast("Enlace quitado");
     });
   },
+  crearContrato() {
+    const d = S.draft; if (!d) return;
+    d.contrato = contratoBase(d); S.contratoAbierto = true;
+    const sop = String(d.costosNota || "").match(/Soporte mensual opcional:\s*\$\s*([\d.]+)/); if (sop) d.contrato.soporte = numero(sop[1]);
+    guardarContrato(true); toast("Contrato creado. Revise cómo se cobra.");
+  },
+  agregarCuota() { const c = S.draft.contrato; c.cuotas.push({ concepto: "Otro pago", pct: 0, cuando: "Fecha por acordar" }); c.plan = "personal"; guardarContrato(true); },
+  quitarCuota(el) { const c = S.draft.contrato; c.cuotas.splice(Number(el.dataset.i), 1); c.plan = "personal"; guardarContrato(true); },
+  quitarContrato(el) { armar(el, "¿Seguro?", () => { delete S.draft.contrato; S.contratoAbierto = false; programarGuardado(); S.quiet = false; renderOficina(); S.quiet = true; toast("Contrato quitado"); }); },
+  contratoBaseTxt() { const c = S.draft.contrato; c.clausulasIA = null; c.explicacionIA = null; c.whatsappIA = ""; guardarContrato(true); },
+  verContrato() {
+    const box = $("#contratoPrev"), d = S.draft; if (!box) return;
+    if (sumaPct(d.contrato) !== 100) { toast("Los porcentajes deben sumar 100 %."); return; }
+    guardarContrato(); box.innerHTML = `<div class="preview" style="margin-top:14px"><div class="page">${contratoHTML(d)}</div></div>`;
+    const page = box.querySelector(".page"); page.style.zoom = Math.min(1, (box.clientWidth - 24) / 780); box.scrollIntoView({ block: "start" });
+  },
+  contratoPDF() {
+    const d = S.draft; if (sumaPct(d.contrato) !== 100) { toast("Los porcentajes deben sumar 100 %."); return; }
+    guardarContrato(); pdfDesdeHTML(contratoHTML(d), archivoSeguro(`Contrato ${d.titulo || d.nombreProducto || ""} ${nombreCliente(clienteDe(d.clienteId))}`));
+  },
+  explicarWhatsApp() {
+    const d = S.draft; if (sumaPct(d.contrato) !== 100) { toast("Los porcentajes deben sumar 100 %."); return; }
+    guardarContrato(); const cli = clienteDe(d.clienteId);
+    window.open(((cli && waLink(cli.telefono)) || "https://wa.me/") + "?text=" + encodeURIComponent(textoCobroWhatsApp(d)), "_blank", "noopener");
+  },
+  async contratoIA(el) {
+    const d = S.draft, c = d.contrato;
+    if (!ASISTENTE_URL) { toast("Active el asistente con IA para mejorar el contrato (vea LEEME.md)."); return; }
+    if (sumaPct(c) !== 100) { toast("Los porcentajes deben sumar 100 %."); return; }
+    guardarContrato();
+    const cli = clienteDe(d.clienteId), pf = perfil(), total = totalInversion(d);
+    const base = { proyecto: d.titulo || d.nombreProducto, cliente: cli ? nombreCliente(cli) : "", documentoCliente: cli ? cli.documento || "" : "", desarrollador: pf.nombre, valorTotal: fmtCOP(total),
+      pagos: valoresCuotas(c, total).map((q) => ({ concepto: q.concepto, porcentaje: q.pct + " %", valor: fmtCOP(q.valor), cuando: q.cuando })), mediosDePago: (c.metodos || []).map((m) => m.n),
+      clausulas: clausulasBase(d, c, pf, cli).map(([titulo, texto]) => ({ titulo, texto })) };
+    el.disabled = true; el.textContent = "La IA está revisando el contrato…";
+    try {
+      const j = await pedirIA({ modo: "contrato", notas: JSON.stringify(base) });
+      const r = j.contrato || {};
+      if (!Array.isArray(r.clausulas) || !r.clausulas.length) throw new Error("La IA no devolvió el contrato.");
+      c.clausulasIA = r.clausulas.slice(0, 25); c.explicacionIA = (r.explicacion || []).slice(0, 15); c.whatsappIA = String(r.mensajeWhatsApp || "").slice(0, 3000);
+      guardarContrato(true); toast("Contrato mejorado con IA. Revíselo antes de enviarlo.");
+    } catch (e) { toast(e.message); if (el.isConnected) { el.disabled = false; el.textContent = "Mejorar con IA"; } }
+  },
   async dictarPropuesta(el) {
     const notas = (($("#dictadoTxt") || {}).value || "").trim();
     if (notas.length < 15) { toast("Cuente un poco más del proyecto."); return; }
@@ -4435,7 +4607,19 @@ function onField(e) {
     reducirImagen(e.target.files[0], 600).then((r) => { S.pagos = Object.assign({}, S.pagos || {}, { qrNuevo: r.url }); const im = $("#qrPagoPrev"); if (im) { im.src = r.url; im.hidden = false; } toast("QR listo. Toque Guardar formas de pago."); }).catch(() => toast("No se pudo leer la imagen."));
     return;
   }
-  if (e.target.id === "secPagos") return;
+  if (e.target.id === "secPagos" || e.target.id === "secContrato") return;
+  if ((e.target.dataset.ct !== undefined || e.target.dataset.cq !== undefined) && S.draft && S.draft.contrato) {
+    const c = S.draft.contrato, el = e.target;
+    if (el.dataset.ct === "plan") {
+      if (e.type !== "change") return;
+      c.plan = el.value; if (PLANES_PAGO[el.value]) c.cuotas = PLANES_PAGO[el.value][1].map(([concepto, pct, cuando]) => ({ concepto, pct, cuando }));
+      c.clausulasIA = null; c.explicacionIA = null; c.whatsappIA = ""; guardarContrato(true); return;
+    }
+    if (el.dataset.ct) { const k = el.dataset.ct; c[k] = k === "hora" || k === "soporte" ? numero(el.value) : k === "mora" || k === "garantia" ? Math.max(0, Number(el.value) || 0) : el.value; }
+    else { const q = c.cuotas[Number(el.dataset.cq)]; if (!q) return; q[el.dataset.c] = el.dataset.c === "pct" ? Math.max(0, Math.min(100, Number(String(el.value).replace(",", ".")) || 0)) : el.value; c.plan = "personal"; }
+    guardarContrato(e.type === "change" && (el.dataset.c === "pct" || el.dataset.ct === "hora" || el.dataset.ct === "soporte"));
+    return;
+  }
   if (e.target.id === "cuadernoFile" && e.type === "change" && e.target.files[0]) { leerCuaderno(e.target.files[0]); e.target.value = ""; return; }
   if (e.target.id === "cotPara") { calcState().para = e.target.value; return; }
   if (e.target.id === "dictadoTxt") return;
@@ -4496,7 +4680,7 @@ function onField(e) {
 }
 $("#o-app").addEventListener("input", onField);
 $("#o-app").addEventListener("change", onField);
-$("#o-app").addEventListener("toggle", (e) => { if (e.target.id === "secPagos") S.pagosAbierto = e.target.open; }, true);
+$("#o-app").addEventListener("toggle", (e) => { if (e.target.id === "secPagos") S.pagosAbierto = e.target.open; if (e.target.id === "secContrato") S.contratoAbierto = e.target.open; }, true);
 $("#o-app").addEventListener("keydown", (e) => { if (e.target.id === "pregunta" && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); preguntar(e.target.value); } });
 $("#btnDatos").addEventListener("click", () => go("datos"));
 ["dragover", "dragleave", "drop"].forEach((ev) => $("#o-app").addEventListener(ev, (e) => {

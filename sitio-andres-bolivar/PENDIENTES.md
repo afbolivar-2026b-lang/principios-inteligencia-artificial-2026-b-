@@ -1,6 +1,6 @@
 # Lo que falta: plan de las próximas etapas
 
-Hechas: **103 de 1000**. Faltan **897**. La lista completa, con el estado de cada una, está en `1000-FUNCIONES.md` y en **Mi oficina → Panel → Centro de funciones**.
+Hechas: **105 de 1000**. Faltan **895**. La lista completa, con el estado de cada una, está en `1000-FUNCIONES.md` y en **Mi oficina → Panel → Centro de funciones**.
 
 Aquí quedan guardadas en el orden en que las voy a hacer.
 

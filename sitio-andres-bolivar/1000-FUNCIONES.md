@@ -154,7 +154,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 123. 🔵 IVA automático
 124. 🔵 Logo del cliente en la portada
 125. 🔵 Cronograma visual (Gantt)
-126. 🔵 Contrato generado a partir de la propuesta
+126. ✅ Contrato generado a partir de la propuesta *(Etapa 6)*
 127. 🔵 Orden de servicio en PDF
 128. 🔵 Cuenta de cobro automática desde la propuesta
 129. 🔵 Enviar por correo desde la oficina
@@ -716,7 +716,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 625. 🔵 Paz y salvo al terminar
 626. 🔵 Autorización de tratamiento de datos
 627. 🟠 Firma electrónica con validez legal
-628. 🟢 Firma dibujada con el dedo en el celular
+628. ✅ Firma dibujada con el dedo en el celular *(Etapa 3)*
 629. 🔵 Carpeta de documentos por cliente
 630. 🔵 Plantillas de documentos editables
 631. 🟣 Revisión de riesgos del contrato con IA

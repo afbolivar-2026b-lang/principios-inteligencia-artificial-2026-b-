@@ -95,6 +95,17 @@ const TABLA = betaJSONSchemaOutputFormat({
   required: ["titulo", "columnas", "filas", "notas"],
   additionalProperties: false,
 });
+// Contrato revisado por la IA (los valores y las fechas no se cambian)
+const CONTRATO = betaJSONSchemaOutputFormat({
+  type: "object",
+  properties: {
+    clausulas: { type: "array", items: { type: "object", properties: { titulo: { type: "string" }, texto: { type: "string" } }, required: ["titulo", "texto"], additionalProperties: false }, description: "Las cláusulas del contrato, claras y completas" },
+    explicacion: { type: "array", items: { type: "string" }, description: "De 5 a 9 frases muy sencillas para el cliente: cuánto paga, cuándo, por dónde, qué pasa si se atrasa, cambios, garantía, soporte y de quién queda el código" },
+    mensajeWhatsApp: { type: "string", description: "Mensaje cálido y corto para WhatsApp que le explica al cliente cómo se cobra, con los valores exactos" },
+  },
+  required: ["clausulas", "explicacion", "mensajeWhatsApp"],
+  additionalProperties: false,
+});
 const MAX_ARCHIVOS = 6;
 const MAX_BASE64 = 6_000_000; // ~4,5 MB por archivo
 const MEDIOS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -182,6 +193,22 @@ export const asistente = onRequest(
         });
         if (r.stop_reason === "refusal" || !r.parsed_output) { res.status(422).json({ error: "La IA no pudo armar la propuesta con esas notas." }); return; }
         res.json({ propuesta: r.parsed_output });
+      } catch (error) { responderError(res, error); }
+      return;
+    }
+
+    // 2b2. Contrato: la IA lo redacta claro y le explica el cobro al cliente
+    if (modo === "contrato") {
+      let base; try { base = JSON.parse(String(notas || "")); } catch { res.status(400).json({ error: "Faltan los datos del contrato." }); return; }
+      try {
+        const r = await client.beta.messages.parse({
+          model: "claude-opus-5-5", max_tokens: 16000, output_config: { effort: "medium", format: CONTRATO },
+          betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
+          system: [{ type: "text", text: SISTEMA, cache_control: { type: "ephemeral" } }],
+          messages: [{ role: "user", content: "Revise este contrato de prestación de servicios de desarrollo de software entre un desarrollador independiente de Neiva (Colombia) y un negocio pequeño. Redáctelo claro, justo para las dos partes y fácil de entender, sin palabras legales innecesarias. Reglas: no cambie ningún valor, porcentaje, fecha, plazo ni medio de pago; no agregue multas, intereses ni cobros que no estén; mantenga todas las cláusulas (puede unir o aclarar). Además explíquele al cliente cómo se cobra todo, en frases muy sencillas, y escriba el mensaje de WhatsApp.\n\nDatos del contrato:\n" + JSON.stringify(base).slice(0, 20000) }],
+        });
+        if (r.stop_reason === "refusal" || !r.parsed_output) { res.status(422).json({ error: "La IA no pudo revisar el contrato." }); return; }
+        res.json({ contrato: r.parsed_output });
       } catch (error) { responderError(res, error); }
       return;
     }

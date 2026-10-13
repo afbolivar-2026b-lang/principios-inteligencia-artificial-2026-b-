@@ -174,6 +174,15 @@ Sin Storage, el video se puede crear y **descargar** igual, para mandarlo por Wh
 - **Tablero** (Panel): gráfica de lo aprobado y lo cobrado en los últimos 6 meses, embudo de clientes, lo que viene (por cobrar, propuestas sin respuesta, soporte posible) y sus mejores clientes.
 - **Cotización rápida** (Asistente): con el precio de la calculadora, escriba para quién es y descárguela en PDF de una página, o mándela por WhatsApp. Es válida por 15 días.
 
+- **Contrato y forma de cobro** (en cada propuesta): toque **Crear contrato**.
+  - Escoja cómo cobra: 50 % y 50 %, por etapas, 3 cuotas, un solo pago o a su manera. Ve cada pago con su valor exacto y cuándo se paga, y la página le avisa si los porcentajes no suman 100 %.
+  - Ponga la fecha de inicio, los días de espera antes de pausar por un pago atrasado, el valor de la hora para cambios, los días de garantía y el soporte mensual.
+  - El contrato se arma solo con la propuesta: partes, alcance, entregas, pagos, cambios, garantía, de quién queda el código, datos personales y terminación. Al principio lleva **«Así se cobra, en palabras sencillas»** para el cliente.
+  - **Explicarle el cobro por WhatsApp** manda esa explicación con los valores exactos.
+  - **Mejorar con IA** redacta el contrato más claro y escribe la explicación y el mensaje, sin cambiar valores, fechas ni medios de pago. Revíselo siempre antes de enviarlo.
+  - Si envía la propuesta por enlace, el contrato va con ella: el cliente lo lee, lo descarga y lo firma junto con la propuesta.
+  - Es una base general: revísela con un abogado.
+
 ## 7. App para Android (APK)
 
 La página también es una app para Android. Cada vez que se cambia algo de la página en GitHub, un proceso automático (`.github/workflows/apk.yml`) arma la app de nuevo y la deja en `descargas/andres-bolivar.apk`. Cuando publique la página, aparecen solos los botones **Descargar la app para Android**, en la portada y en Contacto. En **Mis datos → App para su celular** están los pasos para instalarla.
