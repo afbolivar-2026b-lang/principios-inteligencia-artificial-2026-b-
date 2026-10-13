@@ -1,0 +1,17 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Cambie este correo por el suyo (el mismo de firestore.rules)
+    function esDueno() {
+      return request.auth != null && request.auth.token.email == "PEGUE_SU_CORREO";
+    }
+    // Videos de presentación del portafolio: cualquiera los ve; solo usted los sube o borra
+    match /portafolio/{proyecto}/{archivo} {
+      allow read: if true;
+      allow create, update: if esDueno()
+        && request.resource.size < 40 * 1024 * 1024
+        && request.resource.contentType.matches("video/.*");
+      allow delete: if esDueno();
+    }
+  }
+}

@@ -75,11 +75,23 @@ const ASISTENTE_URL = "https://asistente-xxxxx-uc.a.run.app";
 
 Vuelva a publicar la página (`firebase deploy --only hosting`) y el chat queda activo.
 
-## 5. Cómo se usa
+## 5. Videos en la página (opcional)
+
+Los videos de presentación pesan mucho para la base de datos, por eso se guardan en **Firebase Storage**.
+
+1. En Firebase, abra **Storage** y toque **Comenzar** (necesita el plan Blaze, el mismo del asistente).
+2. Abra `storage.rules`, cambie `PEGUE_SU_CORREO` por su correo y publíquelas: `firebase deploy --only storage`.
+
+Sin Storage, el video se puede crear y **descargar** igual, para mandarlo por WhatsApp o subirlo a Instagram; solo no aparece en la página.
+
+## 6. Cómo se usa
 
 - **Proyectos → Publicar con IA**: suba hasta 6 archivos del proyecto (pantallazos, fotos, el PDF de la propuesta o el archivo de la página) y toque **Analizar con IA**. La IA escribe el nombre, para quién es, la descripción y las funciones, y sugiere el precio (mínimo, recomendado y máximo), el tiempo de entrega y el soporte mensual. La página arma una **portada** con su primer pantallazo dentro de un marco de computador o de celular. Revise, corrija lo que quiera y toque **Guardar proyecto**. El precio es privado: nunca se publica en la página.
   - Sin la IA activada, use **Seguir sin IA**: la portada se arma igual y el precio sale de su calculadora.
   - La IA no dibuja fotos nuevas: la portada siempre usa sus pantallazos reales. Si no sube ninguno, se arma una portada solo con texto.
+  - **Tomar foto** abre la cámara del celular o del computador; la foto entra directo a los archivos.
+  - Si sube un **video**, la página saca 3 fotos de él para que la IA lo entienda (la IA no ve videos).
+  - **Crear video** arma un video de unos 20 segundos: portada, sus pantallazos en marco de computador o celular, las funciones y un cierre con su WhatsApp. Las frases las escribe la IA. Se puede descargar y, con Storage activado, mostrar en la página.
 - **Proyectos → Nuevo proyecto**: suba la foto, el nombre, para quién es y las funciones. Marque **Publicado en mi página** y guarde. Aparece de primero en la sección *Casos*.
 - Desde una propuesta **Aprobada**, el botón **Publicar como proyecto** llena el formulario automáticamente.
 - **Asistente → ¿En cuánto lo vendo?**: escoja el tipo y las funciones; le da el precio mínimo, recomendado y máximo, el tiempo y el soporte mensual. **Crear propuesta con este precio** arma la propuesta lista para editar.

@@ -40,8 +40,9 @@ const FICHA = betaJSONSchemaOutputFormat({
     explicacionPrecio: { type: "string", description: "Por qué ese precio, en 2 o 3 frases" },
     frasePortada: { type: "string", description: "Frase corta de máximo 8 palabras para la imagen de portada" },
     mensajeWhatsApp: { type: "string", description: "Mensaje corto para ofrecer un proyecto parecido a otros negocios" },
+    escenas: { type: "array", items: { type: "string" }, description: "De 3 a 5 frases muy cortas (máximo 9 palabras) para el video de presentación, una por pantallazo, contando el antes y el después del negocio" },
   },
-  required: ["titulo", "sector", "descripcion", "funciones", "tipo", "modulos", "precioMinimo", "precioRecomendado", "precioMaximo", "soporteMensual", "semanas", "explicacionPrecio", "frasePortada", "mensajeWhatsApp"],
+  required: ["titulo", "sector", "descripcion", "funciones", "tipo", "modulos", "precioMinimo", "precioRecomendado", "precioMaximo", "soporteMensual", "semanas", "explicacionPrecio", "frasePortada", "mensajeWhatsApp", "escenas"],
   additionalProperties: false,
 });
 const MAX_ARCHIVOS = 6;
@@ -100,7 +101,7 @@ export const asistente = onRequest(
           ],
           messages: [{ role: "user", content: [
             ...bloques,
-            { type: "text", text: "Estos son los archivos de un proyecto que Andrés ya entregó. Prepare la ficha para publicarlo en su portafolio y sugiera cuánto cobrar por un proyecto así, usando sus tarifas como base." + (notas ? "\n\nNotas de Andrés: " + String(notas).slice(0, 3000) : "") },
+            { type: "text", text: "Estos son los archivos de un proyecto que Andrés ya entregó. Prepare la ficha para publicarlo en su portafolio, las frases del video de presentación, y sugiera cuánto cobrar por un proyecto así, usando sus tarifas como base. Algunas imágenes pueden ser fotos tomadas de un video del proyecto." + (notas ? "\n\nNotas de Andrés: " + String(notas).slice(0, 3000) : "") },
           ] }],
         });
         if (respuesta.stop_reason === "refusal" || !respuesta.parsed_output) {

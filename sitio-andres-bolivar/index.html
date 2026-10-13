@@ -480,6 +480,16 @@
   .puntos::after { content: "…"; animation: puntos 1.2s steps(3) infinite; display: inline-block; overflow: hidden; vertical-align: bottom; width: 1.2em; }
   @keyframes puntos { 0% { width: 0; } 100% { width: 1.2em; } }
 
+  /* Cámara y video */
+  .camara { position: fixed; inset: 0; z-index: 70; background: rgba(22, 20, 18, .88); display: grid; place-items: center; padding: 16px; }
+  .camara > div { width: 100%; max-width: 720px; background: var(--surface); padding: 14px; border-radius: 4px; }
+  .camara video { display: block; width: 100%; max-height: 70vh; background: #000; object-fit: contain; }
+  .camara .actions { justify-content: center; margin-top: 12px; }
+  .video-box canvas, .video-box video { display: block; width: 100%; height: auto; border: 1px solid var(--line-strong); background: #000; }
+  .barra-prog { height: 6px; background: var(--ink-soft); border-radius: 999px; overflow: hidden; margin: 10px 0 4px; }
+  .barra-prog i { display: block; height: 100%; width: 0; background: var(--ink); transition: width .2s linear; }
+  #sitio .case-video { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; margin: 0 0 22px; background: #000; border: 1px solid var(--linea); }
+
   .tabs {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface);
     border-top: 1px solid var(--line-strong); display: flex; justify-content: center; gap: 4px;
@@ -1038,9 +1048,10 @@ const urlSegura = (u) => (/^https?:\/\//i.test(String(u || "").trim()) ? String(
 const imgSegura = (u) => (/^data:image\/(jpeg|png|webp);base64,/i.test(String(u || "")) ? u : urlSegura(u));
 const ordenProy = (a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0) || (b.creado || 0) - (a.creado || 0);
 function tarjetaProyecto(y) {
-  const img = imgSegura(y.imagen), link = urlSegura(y.enlace), feats = lines(y.funciones);
+  const img = imgSegura(y.imagen), link = urlSegura(y.enlace), feats = lines(y.funciones), vid = urlSegura(y.video);
   return `<article class="case marco nuevo">
-    ${img ? `<img class="case-img" src="${esc(img)}" alt="${esc(y.titulo || "Proyecto")}" loading="lazy">` : ""}
+    ${vid ? `<video class="case-video" src="${esc(vid)}"${img ? ` poster="${esc(img)}"` : ""} controls playsinline preload="none" aria-label="Video de presentación de ${esc(y.titulo || "el proyecto")}"></video>`
+      : img ? `<img class="case-img" src="${esc(img)}" alt="${esc(y.titulo || "Proyecto")}" loading="lazy">` : ""}
     <p class="for">${esc(y.sector || "Proyecto")}</p><h3>${esc(y.titulo || "Proyecto")}</h3>
     ${has(y.descripcion) ? `<p class="desc">${esc(y.descripcion)}</p>` : ""}
     ${feats.length ? `<ul class="feat">${feats.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
@@ -1959,6 +1970,10 @@ async function agregarArchivos(files) {
       if (/^image\//.test(f.type)) {
         const r = await reducirImagen(f, 1600);
         st.archivos.push({ nombre: f.name, tipo: "imagen", media_type: "image/jpeg", data: r.url.split(",")[1], prev: r.url, w: r.w, h: r.h });
+      } else if (/^video\//.test(f.type)) {
+        const fotos = await fotosDeVideo(f, Math.min(3, 6 - st.archivos.length));
+        fotos.forEach((r, i) => st.archivos.push({ nombre: `${f.name} (foto ${i + 1})`, tipo: "imagen", media_type: "image/jpeg", data: r.url.split(",")[1], prev: r.url, w: r.w, h: r.h }));
+        if (fotos.length) toast(`Saqué ${fotos.length} fotos del video para la IA`);
       } else if (f.type === "application/pdf" || /\.pdf$/i.test(f.name)) {
         if (f.size > 4.5e6) { toast(`"${f.name}" pesa más de 4,5 MB.`); continue; }
         st.archivos.push({ nombre: f.name, tipo: "pdf", data: String(await leerComo(f, "url")).split(",")[1] });
@@ -1970,6 +1985,166 @@ async function agregarArchivos(files) {
   pintarPia();
 }
 const primeraFoto = () => piaState().archivos.find((a) => a.tipo === "imagen");
+const fotos = () => piaState().archivos.filter((a) => a.tipo === "imagen");
+
+/* La IA no ve videos: se toman fotos en varios momentos del video */
+function fotosDeVideo(file, n) {
+  return new Promise((res) => {
+    const url = URL.createObjectURL(file), v = document.createElement("video"), out = [];
+    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+    const fin = () => { URL.revokeObjectURL(url); res(out); };
+    v.onerror = () => { toast(`No se pudo abrir el video "${file.name}".`); fin(); };
+    v.onloadedmetadata = async () => {
+      const dur = isFinite(v.duration) && v.duration > 0 ? v.duration : 1;
+      for (let i = 0; i < n; i++) {
+        await new Promise((ok) => { v.onseeked = ok; v.currentTime = Math.min(dur - 0.05, dur * (i + 1) / (n + 1)); });
+        const k = Math.min(1, 1600 / Math.max(v.videoWidth, v.videoHeight)), w = Math.round(v.videoWidth * k), h = Math.round(v.videoHeight * k);
+        const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(v, 0, 0, w, h);
+        out.push({ url: cv.toDataURL("image/jpeg", 0.85), w, h });
+      }
+      fin();
+    };
+  });
+}
+
+/* Cámara: en el celular abre la cámara directo; en el computador muestra la imagen en vivo */
+let camStream = null;
+async function abrirCamara() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $("#piaCam").click(); return; }
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+  } catch (e) { $("#piaCam").click(); return; }
+  const m = document.createElement("div");
+  m.className = "camara"; m.id = "camara";
+  m.innerHTML = `<div role="dialog" aria-label="Tomar foto"><video id="camVideo" autoplay playsinline muted></video>
+    <div class="actions"><button type="button" class="btn btn-primary" id="camFoto">Tomar foto</button><button type="button" class="btn" id="camCerrar">Cerrar</button></div></div>`;
+  document.body.appendChild(m);
+  const v = $("#camVideo"); v.srcObject = camStream;
+  $("#camCerrar").onclick = cerrarCamara;
+  $("#camFoto").onclick = () => {
+    if (!v.videoWidth) return;
+    const k = Math.min(1, 1600 / Math.max(v.videoWidth, v.videoHeight)), w = Math.round(v.videoWidth * k), h = Math.round(v.videoHeight * k);
+    const cv = document.createElement("canvas"); cv.width = w; cv.height = h; cv.getContext("2d").drawImage(v, 0, 0, w, h);
+    const url = cv.toDataURL("image/jpeg", 0.88), st = piaState();
+    if (st.archivos.length >= 6) { toast("Máximo 6 archivos por proyecto."); return; }
+    st.archivos.push({ nombre: `Foto ${new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}.jpg`, tipo: "imagen", media_type: "image/jpeg", data: url.split(",")[1], prev: url, w, h });
+    toast("Foto agregada"); pintarPia();
+  };
+}
+function cerrarCamara() {
+  if (camStream) camStream.getTracks().forEach((t) => t.stop());
+  camStream = null; const m = $("#camara"); if (m) m.remove();
+}
+
+/* ================= Video de presentación ================= */
+function tipoVideo() {
+  // Primero MP4 con H.264 (el que mejor se ve en WhatsApp y iPhone); el MP4 genérico va al final porque en algunos navegadores sale con otro formato
+  const ops = ["video/mp4;codecs=avc1.42E01E", "video/mp4;codecs=avc1", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm", "video/mp4"];
+  return window.MediaRecorder ? ops.find((t) => MediaRecorder.isTypeSupported(t)) || "" : "";
+}
+const suave = (t) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
+function escenasVideo(f, imgs) {
+  const fr = (f.escenas && f.escenas.length ? f.escenas : [f.frasePortada, ...lines(String(f.descripcion || "").replace(/([.!?])\s+/g, "$1\n"))]).filter(Boolean);
+  const out = [{ tipo: "intro", d: 3.2 }];
+  imgs.slice(0, 4).forEach((im, i) => out.push({ tipo: "foto", im, texto: fr[i] || fr[fr.length - 1] || "", d: 3.8 }));
+  if ((f.funciones || []).length) out.push({ tipo: "funciones", d: 4.2 });
+  out.push({ tipo: "cierre", d: 3.4 });
+  return out;
+}
+function dibujarMarco(cx, im, tipo, x, y, w, h, zoom) {
+  cx.save();
+  cx.shadowColor = "rgba(40,30,15,.3)"; cx.shadowBlur = 40; cx.shadowOffsetY = 18;
+  const negro = "#1A1816", b = tipo === "celular" ? 14 : 12, r = tipo === "celular" ? 40 : 16;
+  cx.fillStyle = negro; redondo(cx, x, y, w, h, r); cx.fill(); cx.shadowColor = "transparent";
+  cx.save(); redondo(cx, x + b, y + b, w - 2 * b, h - 2 * b, tipo === "celular" ? 30 : 4); cx.clip();
+  cx.fillStyle = "#fff"; cx.fillRect(x + b, y + b, w - 2 * b, h - 2 * b);
+  const zw = (w - 2 * b) * zoom, zh = (h - 2 * b) * zoom;
+  pintarCubriendo(cx, im, x + b - (zw - (w - 2 * b)) / 2, y + b - (zh - (h - 2 * b)) / 2, zw, zh);
+  cx.restore();
+  if (tipo === "celular") { cx.fillStyle = negro; redondo(cx, x + w / 2 - 44, y + 22, 88, 20, 10); cx.fill(); }
+  else { cx.fillStyle = "#2E2B27"; cx.beginPath(); cx.moveTo(x - 44, y + h + 2); cx.lineTo(x + w + 44, y + h + 2); cx.lineTo(x + w + 14, y + h + 28); cx.lineTo(x - 14, y + h + 28); cx.closePath(); cx.fill(); }
+  cx.restore();
+}
+function cuadroVideo(cx, W, H, f, esc, t, pf) {
+  const negro = "#1A1816", crema = "#F4EFE7", serif = '"Bodoni Moda", Didot, Georgia, serif', sans = '"Jost", "Futura", "Segoe UI", sans-serif';
+  const entra = suave(t / 0.7), sale = 1 - suave((t - (esc.d - 0.5)) / 0.5), a = Math.min(entra, sale);
+  const sp = (px) => { if (cx.letterSpacing !== undefined) cx.letterSpacing = px; };
+  cx.fillStyle = esc.tipo === "cierre" ? negro : crema; cx.fillRect(0, 0, W, H);
+  if (esc.tipo !== "cierre") { cx.strokeStyle = "#D6CEC0"; cx.lineWidth = 1; cx.strokeRect(24, 24, W - 48, H - 48); }
+  cx.globalAlpha = a;
+  if (esc.tipo === "intro") {
+    cx.textAlign = "center"; cx.fillStyle = negro; cx.font = `500 68px ${serif}`;
+    const ls = envolver(cx, f.titulo || "Proyecto", W - 260).slice(0, 3);
+    // Altura del bloque: etiqueta + título + línea + frase, centrado en la pantalla
+    const alto = 44 + ls.length * 74 + (f.frasePortada ? 70 : 20), arriba = (H - alto) / 2 + (1 - entra) * 24;
+    cx.fillStyle = "#6B645A"; cx.font = `500 20px ${sans}`; sp("6px");
+    cx.fillText(String(f.sector || "Proyecto").toUpperCase(), W / 2, arriba + 20); sp("0px");
+    cx.fillStyle = negro; cx.font = `500 68px ${serif}`;
+    let y = arriba + 44 + 60;
+    for (const l of ls) { cx.fillText(l, W / 2, y); y += 74; }
+    cx.fillRect(W / 2 - 50 * entra, y - 30, 100 * entra, 3);
+    if (f.frasePortada) { cx.fillStyle = "#5E5850"; cx.font = `400 26px ${sans}`; cx.fillText(f.frasePortada, W / 2, y + 28); }
+    cx.textAlign = "left";
+  } else if (esc.tipo === "foto") {
+    const tipo = esc.im.height > esc.im.width * 1.1 ? "celular" : "computador", zoom = 1 + 0.06 * (t / esc.d);
+    if (tipo === "celular") dibujarMarco(cx, esc.im, tipo, W - 380 + (1 - entra) * 60, 60, 300, 600, zoom);
+    else dibujarMarco(cx, esc.im, tipo, 520 + (1 - entra) * 60, 140, 680, 420, zoom);
+    cx.fillStyle = "#6B645A"; cx.font = `500 18px ${sans}`; sp("5px"); cx.fillText(String(f.sector || "").toUpperCase(), 80, 250); sp("0px");
+    cx.fillStyle = negro; cx.font = `500 46px ${serif}`;
+    let y = 320; for (const l of envolver(cx, esc.texto, tipo === "celular" ? 640 : 400).slice(0, 4)) { cx.fillText(l, 80, y + (1 - entra) * 16); y += 56; }
+    cx.fillRect(80, y + 6, 70, 3);
+  } else if (esc.tipo === "funciones") {
+    cx.fillStyle = "#6B645A"; cx.font = `500 18px ${sans}`; sp("5px"); cx.fillText("LO QUE INCLUYE", 120, 170); sp("0px");
+    cx.fillStyle = negro; cx.fillRect(120, 192, W - 240, 1.5);
+    (f.funciones || []).slice(0, 6).forEach((fn, i) => {
+      const ai = suave((t - 0.3 - i * 0.35) / 0.5); if (ai <= 0) return;
+      cx.globalAlpha = a * ai; cx.fillStyle = "#8A8377"; cx.font = `500 28px ${serif}`;
+      cx.fillText(["I", "II", "III", "IV", "V", "VI"][i], 120, 262 + i * 72);
+      cx.fillStyle = negro; cx.font = `500 36px ${serif}`; cx.fillText(fn, 200 + (1 - ai) * 24, 262 + i * 72);
+    });
+  } else {
+    cx.textAlign = "center"; cx.fillStyle = "#A79F92"; cx.font = `500 18px ${sans}`; sp("6px"); cx.fillText("CONTACTO", W / 2, H / 2 - 110); sp("0px");
+    cx.fillStyle = crema; cx.font = `500 56px ${serif}`; cx.fillText("¿Quiere algo así", W / 2, H / 2 - 30); cx.fillText("para su negocio?", W / 2, H / 2 + 36);
+    cx.fillStyle = "#CFC8BB"; cx.font = `400 26px ${sans}`;
+    cx.fillText([pf.nombre, pf.whatsapp ? "WhatsApp " + pf.whatsapp : ""].filter(Boolean).join(" · "), W / 2, H / 2 + 110);
+    cx.font = `500 22px ${serif}`; sp("5px"); cx.fillText("ANDRÉS BOLÍVAR", W / 2, H - 70); sp("0px"); cx.textAlign = "left";
+  }
+  cx.globalAlpha = 1;
+}
+async function crearVideo(alAvanzar) {
+  const st = piaState(), f = st.ficha, mime = tipoVideo();
+  if (!mime) throw new Error("Este navegador no puede crear videos. Pruebe con Chrome.");
+  try { await Promise.all([document.fonts.load('500 60px "Bodoni Moda"'), document.fonts.load('500 24px "Jost"')]); } catch (e) {}
+  const imgs = (await Promise.all(fotos().map((a) => cargarImg(a.prev).catch(() => null)))).filter(Boolean);
+  const esc = escenasVideo(f, imgs), total = esc.reduce((s, e) => s + e.d, 0), pf = perfil();
+  const cv = $("#videoLienzo"), W = 1280, H = 720; cv.width = W; cv.height = H;
+  const cx = cv.getContext("2d"), stream = cv.captureStream(30), rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3_000_000 }), trozos = [];
+  rec.ondataavailable = (e) => { if (e.data.size) trozos.push(e.data); };
+  const listo = new Promise((res) => (rec.onstop = res));
+  rec.start(500);
+  const t0 = performance.now();
+  await new Promise((fin) => {
+    const paso = () => {
+      const t = (performance.now() - t0) / 1000;
+      if (t >= total) { fin(); return; }
+      let acc = 0, i = 0; while (i < esc.length - 1 && t >= acc + esc[i].d) { acc += esc[i].d; i++; }
+      cuadroVideo(cx, W, H, f, esc[i], t - acc, pf);
+      alAvanzar && alAvanzar(t / total);
+      requestAnimationFrame(paso);
+    };
+    paso();
+  });
+  rec.stop(); await listo; stream.getTracks().forEach((tr) => tr.stop());
+  return new Blob(trozos, { type: mime.split(";")[0] });
+}
+async function subirVideo(blob, proyectoId) {
+  const sm = await import(FB_URL + "firebase-storage.js");
+  const ext = blob.type.includes("mp4") ? "mp4" : "webm";
+  const ref = sm.ref(sm.getStorage(S.app), `portafolio/${proyectoId}/presentacion.${ext}`);
+  await sm.uploadBytes(ref, blob, { contentType: blob.type });
+  return sm.getDownloadURL(ref);
+}
 
 /* Portada: el pantallazo dentro de un marco de computador o celular, con el estilo de la página */
 function cargarImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
@@ -2081,9 +2256,13 @@ function vPiaArchivos() {
     <label class="drop" id="piaDrop">
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <b>Suba los archivos del proyecto</b>
-      <small>Pantallazos o fotos (el primero se usa para la portada), el PDF de la propuesta o el archivo de la página. Máximo 6.</small>
-      <input type="file" id="piaFiles" multiple accept="image/*,.pdf,.html,.htm,.txt,.md,.csv,.json" hidden>
+      <small>Pantallazos, fotos o videos (la primera foto se usa para la portada), el PDF de la propuesta o el archivo de la página. Máximo 6.</small>
+      <input type="file" id="piaFiles" multiple accept="image/*,video/*,.pdf,.html,.htm,.txt,.md,.csv,.json" hidden>
     </label>
+    <div class="actions" style="margin-top:10px;justify-content:center">
+      <button type="button" class="btn btn-sm" data-act="piaCamara"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h3l1.5-2.5h7L17 8h3v11H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="1.6"/></svg>Tomar foto</button>
+      <input type="file" id="piaCam" accept="image/*" capture="environment" hidden>
+    </div>
     ${st.archivos.length ? `<ul class="archivos">${st.archivos.map((a, i) => `<li>${a.tipo === "imagen" ? `<img src="${a.prev}" alt="">` : `<span class="doc-ic">${a.tipo === "pdf" ? "PDF" : "TXT"}</span>`}<span>${esc(a.nombre)}</span><button type="button" data-act="piaQuitar" data-i="${i}" aria-label="Quitar ${esc(a.nombre)}">×</button></li>`).join("")}</ul>` : ""}
     <label class="field" style="margin-top:16px"><span>Cuéntele algo a la IA (opcional)</span><textarea id="piaNotas" rows="3" placeholder="Ej.: lo hice para la panadería de doña Rosa en Neiva; tiene pedidos por WhatsApp y catálogo con fotos.">${esc(st.notas)}</textarea></label>
     <div class="field"><span>Marco de la portada</span><div class="estilos">${[["auto", "Automático"], ["computador", "Computador"], ["celular", "Celular"]].map(([k, n]) => `<label><input type="radio" name="piaEstilo" value="${k}"${st.estilo === k ? " checked" : ""}>${n}</label>`).join("")}</div></div>
@@ -2121,6 +2300,14 @@ function vPiaFicha() {
           ${has(f.explicacionPrecio) ? `<p>${esc(f.explicacionPrecio)}</p>` : ""}
           <p class="note-ui" style="text-align:center">El precio es privado: no se publica en su página.</p>
           <div class="actions" style="justify-content:center"><button class="btn btn-sm" data-act="piaPropuesta">Crear propuesta con este precio</button></div>
+        </div>
+        <div class="o-card video-box"><h2 class="o-h2" style="margin-top:0">Video de presentación</h2>
+          ${st.videoUrl ? `<video src="${st.videoUrl}" poster="${st.portada}" controls playsinline></video>
+            <div class="actions" style="margin-top:12px"><a class="btn btn-sm" href="${st.videoUrl}" download="video-${esc((f.titulo || "proyecto").toLowerCase().replace(/[^a-z0-9áéíóúñ]+/gi, "-"))}.${st.videoBlob && st.videoBlob.type.includes("mp4") ? "mp4" : "webm"}">Descargar video</a><button class="btn btn-sm" data-act="piaVideo">Crear otra vez</button></div>
+            <label class="check" style="margin-top:12px"><input type="checkbox" id="piaPublicarVideo" checked> Mostrar el video en mi página</label>`
+          : st.haciendoVideo ? `<canvas id="videoLienzo"></canvas><div class="barra-prog"><i id="videoProg"></i></div><p class="sub puntos">Creando el video</p>`
+          : `<p class="sub" style="margin:0 0 12px">Un video de unos 20 segundos con sus fotos, las funciones y su WhatsApp al final. Sirve para su página, WhatsApp e Instagram.</p>
+            <canvas id="videoLienzo" hidden></canvas><button class="btn btn-primary btn-sm" data-act="piaVideo"${fotos().length ? "" : " disabled"}>Crear video</button>${fotos().length ? "" : `<small class="sub" style="display:block;margin-top:8px">Necesita al menos una foto o pantallazo.</small>`}`}
         </div>
         ${has(f.mensajeWhatsApp) ? `<div class="o-card"><h2 class="o-h2" style="margin-top:0">Mensaje para ofrecerlo</h2><p style="white-space:pre-wrap;margin:0 0 12px">${esc(f.mensajeWhatsApp)}</p><button class="btn btn-sm" data-act="piaCopiar">Copiar mensaje</button></div>` : ""}
         <div class="o-card">
@@ -2188,6 +2375,7 @@ function mostrar(area) {
   }
 }
 function route() {
+  cerrarCamara();
   const r = parseHash();
   if (r.area === "sitio") { mostrar("sitio"); return; }
   if (!S.fbPromise) cargarFirebase();
@@ -2363,7 +2551,19 @@ const ACT = {
   piaQuitar(el) { piaState().archivos.splice(Number(el.dataset.i), 1); pintarPia(); },
   piaAnalizar: () => analizarConIA(),
   piaSinIA: () => seguirSinIA(),
-  piaReiniciar() { S.pia = null; pintarPia(); },
+  piaReiniciar() { if (S.pia && S.pia.videoUrl) URL.revokeObjectURL(S.pia.videoUrl); S.pia = null; pintarPia(); },
+  piaCamara: () => abrirCamara(),
+  async piaVideo() {
+    const st = piaState(); if (!st.ficha || st.haciendoVideo) return;
+    if (st.videoUrl) URL.revokeObjectURL(st.videoUrl);
+    st.videoUrl = ""; st.videoBlob = null; st.haciendoVideo = true; pintarPia();
+    try {
+      st.videoBlob = await crearVideo((p) => { const b = $("#videoProg"); if (b) b.style.width = Math.round(p * 100) + "%"; });
+      st.videoUrl = URL.createObjectURL(st.videoBlob);
+      toast("Video listo");
+    } catch (e) { toast(e.message || "No se pudo crear el video."); }
+    st.haciendoVideo = false; pintarPia();
+  },
   piaCopiar() {
     const t = piaState().ficha?.mensajeWhatsApp || "";
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Mensaje copiado")).catch(() => toast("No se pudo copiar. Selecciónelo y cópielo a mano."));
@@ -2391,7 +2591,17 @@ const ACT = {
       titulo: f.titulo, sector: f.sector || "", descripcion: f.descripcion || "", funciones: (f.funciones || []).join("\n"),
       enlace: f.enlace || "", imagen: st.portada || "", publicado: publicar, uid: S.user.uid, actualizado: Date.now(),
     });
-    S.F.setDoc(ref, data).then(() => cargarPortafolio()).catch(dbError);
+    const conVideo = st.videoBlob && ($("#piaPublicarVideo") || {}).checked;
+    const video = conVideo ? st.videoBlob : null;
+    S.F.setDoc(ref, data).then(async () => {
+      if (video) {
+        toast("Subiendo el video…");
+        try { await S.F.updateDoc(ref, { video: await subirVideo(video, ref.id), actualizado: Date.now() }); toast("Video publicado"); }
+        catch (e) { console.error(e); toast("El proyecto quedó guardado, pero el video no se pudo subir. Revise Firebase Storage."); }
+      }
+      cargarPortafolio();
+    }).catch(dbError);
+    if (st.videoUrl) setTimeout(() => URL.revokeObjectURL(st.videoUrl), 60000);
     S.pia = null;
     toast(publicar ? "¡Publicado en su página!" : "Proyecto guardado (oculto)");
     go("proyectos");
@@ -2428,7 +2638,7 @@ function onField(e) {
   }
   if (S.view.name === "publicar-ia") {
     const st = piaState();
-    if (e.target.id === "piaFiles" && e.type === "change") { agregarArchivos([...e.target.files]); return; }
+    if ((e.target.id === "piaFiles" || e.target.id === "piaCam") && e.type === "change") { agregarArchivos([...e.target.files]); e.target.value = ""; return; }
     if (e.target.id === "piaNotas") { st.notas = e.target.value; return; }
     if (e.target.name === "piaEstilo" && e.type === "change") { st.estilo = e.target.value; if (st.ficha) rehacerPortada(); return; }
     const pf = e.target.closest("[data-pf]");

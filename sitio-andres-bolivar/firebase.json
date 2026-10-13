@@ -1,5 +1,25 @@
 {
-  "firestore": { "rules": "firestore.rules" },
-  "functions": [{ "source": "functions", "runtime": "nodejs22" }],
-  "hosting": { "public": ".", "ignore": ["firebase.json", "firestore.rules", "functions/**", "LEEME.md", "**/.*"] }
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "runtime": "nodejs22"
+    }
+  ],
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "firestore.rules",
+      "functions/**",
+      "LEEME.md",
+      "**/.*",
+      "storage.rules"
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
 }
