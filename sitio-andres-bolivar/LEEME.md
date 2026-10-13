@@ -31,6 +31,7 @@ Con estas reglas:
 - Sus clientes, propuestas y precios solo los ve usted.
 - Los proyectos marcados como **Publicado** los ve cualquier persona en su página.
 - Solo su correo puede crear, editar o borrar proyectos.
+- Los **nombres** de sus formas de pago (Nequi, Transferencia…) se guardan en `sitio/pagos` para mostrarlos en la página. Los números de cuenta, llaves y enlaces de pago siguen siendo privados.
 
 Recomendado: en **Authentication → Configuración → Acciones del usuario**, desactive la creación de cuentas nuevas, para que nadie más pueda registrarse.
 
@@ -103,3 +104,11 @@ Sin Storage, el video se puede crear y **descargar** igual, para mandarlo por Wh
 - Desde una propuesta **Aprobada**, el botón **Publicar como proyecto** llena el formulario automáticamente.
 - **Asistente → ¿En cuánto lo vendo?**: escoja el tipo y las funciones; le da el precio mínimo, recomendado y máximo, el tiempo y el soporte mensual. **Crear propuesta con este precio** arma la propuesta lista para editar.
 - **Ajustar mis precios**: cambie las tarifas base a las suyas. Los valores de fábrica son solo un punto de partida.
+- **Mis datos → Formas de pago**: escriba su Nequi, Daviplata, llave Bre-B, cuenta de banco y, si los tiene, sus enlaces de pago de Wompi, Bold, Mercado Pago o PayPal.me (los crea en la cuenta de cada servicio). Puede subir la imagen de su QR de pago. Deje vacío lo que no use. Si marca **Mostrar en mi página**, la sección *Contacto* dice qué formas de pago recibe, solo los nombres.
+- **Propuesta → Pagos y cobros**: registre cada abono con su valor, fecha y cómo pagó. La página calcula lo pagado y el saldo. Desde ahí:
+  - **Cobrar por WhatsApp** arma el mensaje con el saldo y sus formas de pago;
+  - **Cuenta de cobro PDF** descarga una cuenta de cobro numerada, con su QR;
+  - en cada abono, **Recibo** descarga el recibo en PDF y **Confirmar** arma el mensaje de "recibí su pago".
+- **Panel**: muestra **Por cobrar** (la suma de los saldos de las propuestas aprobadas) y **Cobrado este mes**. Las recomendaciones le avisan a quién cobrarle primero.
+- **Panel → Centro de funciones**: aquí están las 1000 funciones con su estado: *Funcionando*, *Próximamente* (solo página o con Firebase), *Necesita la IA* o *Necesita cuenta externa*, que dice qué cuenta hace falta. Puede buscar, filtrar, marcar con ★ las que quiere primero y **Copiar mis favoritas** para pedírmelas.
+- **Los pagos no se cobran solos.** La página no recibe la plata ni guarda tarjetas: el cliente paga por su Nequi, su banco o el enlace de Wompi/Bold/Mercado Pago, y usted registra el abono. Cobrar con tarjeta dentro de la página o facturar electrónicamente ante la DIAN necesita un contrato con esa empresa (funciones 🟠 de la lista).

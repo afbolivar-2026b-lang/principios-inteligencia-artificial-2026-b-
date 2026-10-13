@@ -11,6 +11,12 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
+    // Datos públicos del sitio (por ejemplo, qué formas de pago recibe): todos leen, solo usted escribe
+    match /sitio/{doc} {
+      allow read: if true;
+      allow write: if esDueno() && request.resource.data.uid == request.auth.uid;
+    }
+
     // Portafolio: cualquiera ve lo publicado; solo usted crea, edita o borra
     match /portafolio/{id} {
       allow read: if resource.data.publicado == true || (esDueno() && resource.data.uid == request.auth.uid);

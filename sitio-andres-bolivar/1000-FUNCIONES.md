@@ -12,7 +12,7 @@ Ideas para su página pública y para **Mi oficina**. Todas encajan con lo que y
 
 Las marcadas con ⭐ son las que yo haría primero.
 
-> Las funciones que ya están hechas y no salen en ninguna lista: rediseño editorial, Panel, Proyectos y portafolio publicable, Asistente (calculadora de precios, recomendaciones y chat), Publicar con IA (ficha, precio y portada), Tomar foto y Video de presentación.
+> Las funciones que ya están hechas y no salen en ninguna lista: rediseño editorial, Panel, Proyectos y portafolio publicable, Asistente (calculadora de precios, recomendaciones y chat), Publicar con IA (ficha, precio y portada), Tomar foto, Video de presentación y el Centro de funciones (Panel → Centro de funciones), donde ve las 1000 con su estado.
 
 ---
 
@@ -166,16 +166,16 @@ Las marcadas con ⭐ son las que yo haría primero.
 135. 🔵 Vista previa en celular antes de enviar
 
 ## G. Cobros y finanzas (136–155)
-136. ⭐🔵 Registro de pagos por proyecto (anticipo, saldo)
-137. ⭐🔵 Saldo pendiente de cada cliente
-138. 🔵 Cuentas de cobro numeradas
-139. 🔵 Recibos de pago en PDF
-140. 🟠 Enlace de pago con Wompi, Bold o Mercado Pago
-141. 🟢 Pago por Nequi o Daviplata con QR
-142. 🔵 Recordatorio de cobro por WhatsApp
+136. ✅ Registro de pagos por proyecto (anticipo, saldo) *(Etapa 2)*
+137. ✅ Saldo pendiente de cada cliente *(Etapa 2)*
+138. ✅ Cuentas de cobro numeradas *(Etapa 2)*
+139. ✅ Recibos de pago en PDF *(Etapa 2)*
+140. ✅ Enlace de pago con Wompi, Bold o Mercado Pago *(Etapa 2)*
+141. ✅ Pago por Nequi o Daviplata con QR *(Etapa 2)*
+142. ✅ Recordatorio de cobro por WhatsApp *(Etapa 2)*
 143. 🔵 Mensualidades de soporte con fecha de corte
 144. 🔵 Alerta de mensualidades vencidas
-145. 🔵 Ingresos del mes en el panel
+145. ✅ Ingresos del mes en el panel *(Etapa 2)*
 146. 🔵 Gráfica de ingresos de 12 meses
 147. 🔵 Meta mensual con barra de avance
 148. 🔵 Registro de gastos (dominios, hosting, Google Play)
@@ -745,7 +745,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 652. 🔵 Informe anual para el contador
 653. 🔵 Ingresos por sector
 654. 🔵 Metas de ahorro personales
-655. 🔵 Abonos parciales con saldo automático
+655. ✅ Abonos parciales con saldo automático *(Etapa 2)*
 656. 🔵 Intereses por mora (opcional)
 657. 🔵 Impacto de los descuentos que da
 658. 🔵 Comparación mes contra mes
@@ -964,7 +964,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 851. 🟠 Aviso por WhatsApp cuando entra una cotización
 852. 🔵 Mensajes para enviar después
 853. 🔵 Recordatorio de cita un día antes
-854. 🔵 Confirmación de pago por WhatsApp
+854. ✅ Confirmación de pago por WhatsApp *(Etapa 2)*
 855. 🔵 Seguimiento después de cada reunión
 856. 🟢 QR de WhatsApp en la propuesta PDF
 857. 🔵 Grupo de WhatsApp por proyecto

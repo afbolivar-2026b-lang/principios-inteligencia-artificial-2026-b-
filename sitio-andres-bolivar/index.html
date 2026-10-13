@@ -498,6 +498,12 @@
   #sync { display: block; font-size: .78rem; color: var(--muted); line-height: 1.3; margin-top: 4px; }
   .o-top-actions { display: flex; gap: 8px; align-items: center; }
   .o-top-actions .btn-sm { min-height: 38px; padding: 0 12px; font-size: .68rem; }
+  @media (max-width: 560px) {
+    .o-top .o-wrap { flex-wrap: wrap; gap: 6px 10px; min-height: 0; }
+    .o-brand { flex: 1 1 100%; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    #sync { margin-top: 0; text-align: right; }
+    .o-top-actions { flex: 1 1 100%; justify-content: space-between; gap: 6px; }
+  }
   #o-app { padding-top: 22px; }
   .o-h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(1.6rem, 5vw, 2.2rem); line-height: 1.12; letter-spacing: .02em; margin: 0; }
   .o-h2 { font-family: var(--font); font-size: .82rem; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; margin: 30px 0 12px; }
@@ -559,6 +565,7 @@
   .tabla td b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.02rem; }
   .tabla td small { color: var(--muted); font-size: .82rem; }
   .tabla .r { text-align: right; white-space: nowrap; }
+  @media (max-width: 360px) { .tabla th { letter-spacing: .08em; padding: 8px 3px; } .tabla td { padding: 10px 3px; } .tabla td b { font-size: .95rem; overflow-wrap: anywhere; } }
   .tabla tr[data-act] { cursor: pointer; }
   .tabla tr[data-act]:hover td { background: var(--hover); }
   .mas { display: inline-block; margin-top: 12px; font-size: .86rem; background: none; border: 0; padding: 0; color: var(--text); font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
@@ -665,6 +672,58 @@
   .barra-prog { height: 6px; background: var(--ink-soft); border-radius: 999px; overflow: hidden; margin: 10px 0 4px; }
   .barra-prog i { display: block; height: 100%; width: 0; background: var(--ink); transition: width .2s linear; }
   #sitio .case-video { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; margin: 0 0 22px; background: #000; border: 1px solid var(--linea); }
+
+  /* Pagos */
+  .pagos-res { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 4px 0 14px; text-align: center; }
+  .pagos-res div { border: 1px solid var(--line); padding: 12px 8px; }
+  .pagos-res span { display: block; font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+  .pagos-res b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.3rem; font-optical-sizing: none; font-variation-settings: "opsz" 18; margin-top: 4px; }
+  .pagos-res .saldo b { color: var(--danger); } .pagos-res .saldo.cero b { color: var(--ok); }
+  @media (max-width: 560px) { .pagos-res { grid-template-columns: 1fr; gap: 6px; } .pagos-res div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 12px; } .pagos-res b { margin-top: 0; white-space: nowrap; } }
+  .abonos { list-style: none; margin: 0 0 14px; padding: 0; }
+  .abonos li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .abonos li b { display: block; }
+  .abonos li small { display: block; color: var(--muted); }
+  @media (max-width: 560px) { .abonos li { grid-template-columns: 1fr; } }
+  .abonos .actions { gap: 6px; }
+  .barra-cobro { height: 8px; border-radius: 999px; background: var(--ink-soft); overflow: hidden; margin: 0 0 14px; }
+  .barra-cobro i { display: block; height: 100%; background: var(--ok); }
+  .metodos-cfg { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  @media (max-width: 540px) { .metodos-cfg { grid-template-columns: 1fr; } }
+  .qr-pago { display: block; width: 160px; height: 160px; object-fit: contain; border: 1px solid var(--line); background: #FFF; margin-bottom: 10px; }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important; }
+  @media (max-width: 820px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+  .stat b.peso { white-space: nowrap; overflow-wrap: normal; }
+  @media (max-width: 380px) { .stat b.peso { font-size: 1.2rem; } }
+  #sitio .pagos-pub { margin: 26px auto 0; max-width: 640px; }
+  #sitio .pagos-pub .kick { color: #A79F92; margin-bottom: 10px; }
+  #sitio .pagos-pub ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  #sitio .pagos-pub li { border: 1px solid rgba(244, 239, 230, .35); color: var(--crema); padding: 6px 12px; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; }
+
+  /* Centro de funciones */
+  .fx-prog { height: 10px; border-radius: 999px; background: var(--ink-soft); overflow: hidden; margin: 6px 0 18px; }
+  .fx-prog i { display: block; height: 100%; background: var(--ink); }
+  .fx-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .fx-resumen button { font: inherit; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--text); padding: 12px 14px; cursor: pointer; border-radius: 4px; }
+  .fx-resumen button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .fx-resumen b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.6rem; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  .fx-resumen span { font-size: .78rem; color: var(--muted); }
+  .fx-filtros { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 600px) { .fx-filtros { grid-template-columns: 1fr; } }
+  .fx-filtros select, .fx-filtros input { width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--field); border: 1px solid var(--line-strong); border-radius: 6px; padding: 11px 12px; }
+  .fx-lista { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; }
+  .fx-cat { padding: 14px 16px 6px; font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); background: var(--paper); border-top: 1px solid var(--line); }
+  .fx-cat:first-child { border-top: 0; }
+  .fx-item { display: grid; grid-template-columns: 52px 1fr auto 40px; gap: 4px 12px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--line); }
+  @media (max-width: 600px) { .fx-item { grid-template-columns: 44px 1fr 36px; } .fx-item .chip { grid-column: 2; justify-self: start; } }
+  .fx-item .num { font-family: var(--serif); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .fx-item small { display: block; color: var(--muted); font-size: .8rem; margin-top: 2px; }
+  .fx-item .chip.hecha { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
+  .fx-item .chip.externo { border-color: #B07A2A; color: #8A5A12; }
+  .fx-item .chip.ia { border-color: #6A4FA0; color: #5A3E8E; }
+  .fx-estrella { width: 36px; height: 36px; border: 0; background: none; cursor: pointer; font-size: 1.2rem; color: var(--line-strong); }
+  .fx-estrella[aria-pressed="true"] { color: #C08A1E; }
+  .fx-mas { display: block; margin: 14px auto 0; }
 
   .tabs {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface);
@@ -1094,6 +1153,7 @@
             <button type="button" class="btn btn-line-claro" id="btnQR">Código QR</button>
             <button type="button" class="btn btn-line-claro" id="btnCompartir">Compartir esta página</button>
           </div>
+          <div class="pagos-pub" id="pagosPub" hidden><span class="kick">Formas de pago</span><ul id="pagosPubLista"></ul></div>
           <div class="qr-box" id="qrBox" hidden><div id="qrImg"></div><p>Escanéelo con la cámara para escribirme por WhatsApp.</p><a class="btn btn-line-claro btn-sm" id="qrBajar" download="whatsapp-andres-bolivar.png" href="#">Descargar para imprimir</a></div>
         </div>
       </div>
@@ -1285,7 +1345,7 @@ function actualizarEntrar() {
 const S = {
   area: "sitio", fbPromise: null, fbError: null, authReady: false,
   A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
-  clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false },
+  clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false }, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
   app: null, appPromise: null, proyDraft: null, proyDraftId: null, chat: [], pensando: false, calc: null,
   view: { name: "panel", id: null }, quiet: false, q: "",
   draft: null, draftId: null,
@@ -1343,6 +1403,16 @@ function tarjetaProyecto(y) {
     ${link ? `<a class="case-link" href="${esc(link)}" target="_blank" rel="noopener">Ver proyecto →</a>` : ""}
   </article>`;
 }
+async function cargarPagosPublicos() {
+  const box = $("#pagosPub"); if (!box) return;
+  try {
+    await cargarApp();
+    const d = await S.F.getDoc(S.F.doc(S.fdb, "sitio", "pagos"));
+    const m = d.exists() && Array.isArray(d.data().metodos) ? d.data().metodos.filter((x) => typeof x === "string").slice(0, 12) : [];
+    $("#pagosPubLista").innerHTML = m.map((x) => `<li>${esc(x)}</li>`).join("");
+    box.hidden = !m.length;
+  } catch (e) { if (e && e.code !== "sin-config") console.warn("Pagos:", e); }
+}
 async function cargarPortafolio() {
   const lista = $("#casosLista");
   if (!lista) return;
@@ -1385,6 +1455,14 @@ function suscribir() {
     S.proyectos = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
     S.loaded.y = true; alCambiarDatos();
   }, errDatos));
+  S.unsubs.push(F.onSnapshot(refDoc("config", "pagos"), (d) => {
+    S.pagos = d.exists() ? d.data() : null;
+    S.loaded.g = true; alCambiarDatos();
+  }, errDatos));
+  S.unsubs.push(F.onSnapshot(refDoc("config", "funciones"), (d) => {
+    S.fxCfg = d.exists() ? d.data() : null;
+    S.loaded.x = true;
+  }, errDatos));
   S.unsubs.push(F.onSnapshot(refDoc("config", "tarifas"), (d) => {
     S.tarifas = d.exists() ? d.data() : null;
     S.loaded.t = true; alCambiarDatos();
@@ -1398,7 +1476,8 @@ function desuscribir() {
   S.unsubs.forEach((u) => { try { u(); } catch (e) {} });
   S.unsubs = []; S.clientes = []; S.propuestas = []; S.perfil = null;
   S.proyectos = []; S.tarifas = null; S.proyDraft = null; S.proyDraftId = null; S.chat = [];
-  S.loaded = { c: false, p: false, f: false, y: false, t: false }; S.draft = null; S.draftId = null;
+  S.pagos = null; S.fxCfg = null;
+  S.loaded = { c: false, p: false, f: false, y: false, t: false, g: false, x: false }; S.draft = null; S.draftId = null;
 }
 
 /* ================= Ingreso ================= */
@@ -1700,6 +1779,8 @@ function vPanel() {
   const nuevos = C.filter((c) => c.creado && Date.now() - c.creado < MES).length;
   const enviadas = cuenta("Enviada"), borr = cuenta("Borrador"), noap = cuenta("No aprobada");
   const decididas = aprob.length + noap;
+  const porCobrar = aprob.reduce((a, p) => a + saldoDe(p), 0), cobradoMes = P.reduce((a, p) => a + pagosDe(p).filter((x) => String(x.fecha || "").startsWith(mesActual())).reduce((s, x) => s + (Number(x.valor) || 0), 0), 0);
+  const deudores = aprob.filter((p) => saldoDe(p) > 0).length;
   const pf = perfil();
   const stat = (t, v, sub, cls = "") => `<div class="stat marco"><span>${t}</span><b class="${cls}">${v}</b><small>${sub}</small></div>`;
   const recientes = [...C].sort((a, b) => (b.actualizado || b.creado || 0) - (a.actualizado || a.creado || 0)).slice(0, 5);
@@ -1714,12 +1795,14 @@ function vPanel() {
     `<li><b>${esc(p.titulo || p.nombreProducto || "Propuesta sin título")}</b><small>${esc(nombreCliente(clienteDe(p.clienteId)))} · ${esc(hace(p.actualizado))} · ${esc(p.estado || "Borrador")}</small></li>`).join("");
   return `
     <div class="o-head"><div><h1 class="o-h1">Panel</h1><p class="sub">${esc(pf.nombre)} · ${esc(pf.cargo)}${pf.negocio ? " · " + esc(pf.negocio) : ""}</p></div>
-      <div class="actions"><button class="btn" data-act="nuevoCliente">Nuevo cliente</button><button class="btn btn-primary" data-act="nuevaPropuesta">Nueva propuesta</button></div></div>
+      <div class="actions"><button class="btn" data-act="ir" data-to="funciones">Centro de funciones</button><button class="btn" data-act="nuevoCliente">Nuevo cliente</button><button class="btn btn-primary" data-act="nuevaPropuesta">Nueva propuesta</button></div></div>
     <div class="stats">
       ${stat("Valor aprobado", fmtCOP(valor), aprob.length + (aprob.length === 1 ? " propuesta aprobada" : " propuestas aprobadas"), "peso")}
       ${stat("Clientes", C.length, nuevos + (nuevos === 1 ? " nuevo" : " nuevos") + " este mes")}
       ${stat("Propuestas", P.length, borr + " en borrador · " + enviadas + (enviadas === 1 ? " enviada" : " enviadas"))}
       ${stat("Aprobación", decididas ? Math.round((aprob.length / decididas) * 100) + "%" : "—", decididas ? aprob.length + " de " + decididas + " decididas" : "Aún sin respuestas")}
+      ${stat("Por cobrar", fmtCOP(porCobrar), deudores ? deudores + (deudores === 1 ? " proyecto con saldo" : " proyectos con saldo") : "Todo al día", "peso")}
+      ${stat("Cobrado este mes", fmtCOP(cobradoMes), "Abonos registrados", "peso")}
     </div>
     <div class="panel2">
       <div>
@@ -1924,6 +2007,7 @@ function vPropuesta(id) {
       <button class="btn btn-primary" data-act="descargar">Descargar PDF</button>
       <button class="btn" data-act="vista">Vista previa</button>
     </div>
+    ${vPagosPropuesta(d)}
     ${secs}
     <div class="actions" style="margin-top:24px">
       ${d.estado === "Aprobada" ? `<button class="btn btn-primary" data-act="publicarDesdePropuesta" data-id="${S.draftId}">Publicar como proyecto</button>` : ""}
@@ -1943,7 +2027,7 @@ function vVista(id) {
     <div class="preview"><div class="page">${docHTML(S.draft)}</div></div>`;
 }
 function vDatos() {
-  if (!S.loaded.f) return cargando();
+  if (!S.loaded.f || !S.loaded.g) return cargando();
   const p = perfil();
   const f = (k, label, type = "text", help = "") => `<label class="field"><span>${label}</span><input id="p_${k}" type="${type}" value="${esc(p[k])}">${help ? `<small>${help}</small>` : ""}</label>`;
   return `
@@ -1954,7 +2038,139 @@ function vDatos() {
       <div class="grid2">${f("whatsapp", "WhatsApp", "tel")}${f("correo", "Correo", "email")}</div>
       <div class="actions"><button class="btn btn-primary" data-act="guardarPerfil">Guardar mis datos</button></div>
     </div>
+    ${vPagosCfg()}
     <p class="note-ui">Sesión iniciada como ${esc(S.user ? S.user.email : "")}.</p>`;
+}
+
+/* ================= Pagos ================= */
+const METODOS = [
+  ["nequi", "Nequi", "Número de Nequi", "310 000 0000"],
+  ["daviplata", "Daviplata", "Número de Daviplata", "310 000 0000"],
+  ["breb", "Bre-B", "Su llave Bre-B (celular, correo o documento)", "3100000000"],
+  ["banco", "Transferencia", "Banco", "Bancolombia"],
+  ["wompi", "Wompi", "Enlace de pago de Wompi", "https://checkout.wompi.co/l/…"],
+  ["bold", "Bold", "Enlace de pago de Bold", "https://checkout.bold.co/…"],
+  ["mercadopago", "Mercado Pago", "Enlace de Mercado Pago", "https://mpago.la/…"],
+  ["paypal", "PayPal", "Enlace de PayPal.me", "https://paypal.me/…"],
+];
+const pagosCfg = () => Object.assign({ efectivo: true, tipoCuenta: "Ahorros", publicar: true }, S.pagos || {});
+function metodosActivos(c) {
+  c = c || pagosCfg();
+  const out = [];
+  if (has(c.nequi)) out.push({ n: "Nequi", d: c.nequi });
+  if (has(c.daviplata)) out.push({ n: "Daviplata", d: c.daviplata });
+  if (has(c.breb)) out.push({ n: "Bre-B", d: "Llave " + c.breb });
+  if (has(c.banco) && has(c.cuenta)) out.push({ n: "Transferencia " + c.banco, d: `${c.tipoCuenta || "Ahorros"} ${c.cuenta}${c.titular ? " · " + c.titular : ""}${c.documento ? " · " + c.documento : ""}` });
+  [["wompi", "Wompi"], ["bold", "Bold"], ["mercadopago", "Mercado Pago"], ["paypal", "PayPal"]].forEach(([k, n]) => { if (urlSegura(c[k])) out.push({ n, d: "Pago con tarjeta o PSE", url: urlSegura(c[k]) }); });
+  if (c.efectivo) out.push({ n: "Efectivo", d: "En persona" });
+  return out;
+}
+function textoMetodos() {
+  const m = metodosActivos();
+  return m.length ? m.map((x) => `• ${x.n}: ${x.url || x.d}`).join("\n") : "";
+}
+function vPagosCfg() {
+  if (!S.loaded.g) return "";
+  const c = pagosCfg();
+  const f = (k, label, ph = "", help = "") => `<label class="field"><span>${label}</span><input data-pg="${k}" type="text" value="${esc(c[k])}" placeholder="${esc(ph)}">${help ? `<small>${help}</small>` : ""}</label>`;
+  const qr = imgSegura(c.qr);
+  return `
+    <h2 class="o-h2">Formas de pago</h2>
+    <div class="o-card">
+      <p class="sub" style="margin:0 0 14px">Salen en los cobros por WhatsApp, en las cuentas de cobro y, si quiere, en su página. Deje vacío lo que no use.</p>
+      <div class="metodos-cfg">
+        ${f("nequi", "Nequi", "310 000 0000")}${f("daviplata", "Daviplata", "310 000 0000")}
+        ${f("breb", "Llave Bre-B", "Celular, correo o documento", "Pagos inmediatos entre bancos.")}
+        ${f("banco", "Banco para transferencias", "Bancolombia")}
+        <label class="field"><span>Tipo de cuenta</span><select data-pg="tipoCuenta">${["Ahorros", "Corriente"].map((t) => `<option${c.tipoCuenta === t ? " selected" : ""}>${t}</option>`).join("")}</select></label>
+        ${f("cuenta", "Número de cuenta", "000-000000-00")}
+        ${f("titular", "Titular", "Andrés Felipe Bolívar Arias")}${f("documento", "Cédula o NIT", "C.C. 1.000.000.000")}
+        ${f("wompi", "Enlace de pago Wompi", "https://checkout.wompi.co/l/…", "Lo crea en su cuenta de Wompi.")}
+        ${f("bold", "Enlace de pago Bold", "https://checkout.bold.co/…")}
+        ${f("mercadopago", "Enlace de Mercado Pago", "https://mpago.la/…")}
+        ${f("paypal", "Enlace de PayPal.me", "https://paypal.me/…", "Para clientes de otros países.")}
+      </div>
+      <label class="check"><input type="checkbox" data-pg="efectivo"${c.efectivo ? " checked" : ""}> Recibo efectivo</label>
+      <div class="field"><span>Imagen de su QR de pago (Nequi o banco)</span>
+        ${qr ? `<img class="qr-pago" id="qrPagoPrev" src="${esc(qr)}" alt="QR de pago">` : `<img class="qr-pago" id="qrPagoPrev" alt="" hidden>`}
+        <div class="actions"><label class="btn btn-sm" style="cursor:pointer">Subir QR<input type="file" id="qrPagoFile" accept="image/*" hidden></label>${qr ? `<button class="btn btn-sm" data-act="quitarQrPago">Quitar</button>` : ""}</div>
+        <small>Descárguelo desde la app de Nequi o de su banco. Sale en la cuenta de cobro en PDF.</small></div>
+      ${f("nota", "Nota para el cliente (opcional)", "Envíe el comprobante por WhatsApp, por favor.")}
+      <label class="check"><input type="checkbox" data-pg="publicar"${c.publicar ? " checked" : ""}> Mostrar en mi página qué formas de pago recibo (solo los nombres, no los números)</label>
+      <div class="actions"><button class="btn btn-primary" data-act="guardarPagos">Guardar formas de pago</button></div>
+    </div>`;
+}
+
+/* Pagos de cada propuesta */
+const pagosDe = (p) => (Array.isArray(p.pagos) ? p.pagos : []);
+const pagadoDe = (p) => pagosDe(p).reduce((a, x) => a + (Number(x.valor) || 0), 0);
+const saldoDe = (p) => Math.max(0, totalInversion(p) - pagadoDe(p));
+const mesActual = () => hoyISO().slice(0, 7);
+function vPagosPropuesta(d) {
+  const total = totalInversion(d), pagado = pagadoDe(d), saldo = Math.max(0, total - pagado);
+  const pct = total ? Math.min(100, Math.round((pagado / total) * 100)) : 0;
+  const metodos = metodosActivos();
+  return `
+    <details class="sec" id="secPagos"${S.pagosAbierto ? " open" : ""}><summary>Pagos y cobros${total ? ` · ${pct}% pagado` : ""}</summary><div class="in">
+      ${total ? `
+      <div class="pagos-res"><div><span>Total</span><b>${fmtCOP(total)}</b></div><div><span>Pagado</span><b>${fmtCOP(pagado)}</b></div><div class="saldo${saldo ? "" : " cero"}"><span>Saldo</span><b>${fmtCOP(saldo)}</b></div></div>
+      <div class="barra-cobro" aria-hidden="true"><i style="width:${pct}%"></i></div>`
+      : `<p class="aviso">Escriba los valores en "Plan de trabajo e inversión" para calcular el total y el saldo.</p>`}
+      ${pagosDe(d).length ? `<ul class="abonos">${pagosDe(d).map((x) => `<li><div><b>${fmtCOP(Number(x.valor) || 0)}</b><small>${esc(fmtFecha(x.fecha))} · ${esc(x.metodo || "")}${x.nota ? " · " + esc(x.nota) : ""}</small></div>
+        <div class="actions"><button class="btn btn-sm" data-act="reciboPDF" data-id="${x.id}">Recibo</button><button class="btn btn-sm" data-act="confirmarPago" data-id="${x.id}">Confirmar</button><button class="btn btn-sm btn-danger" data-act="quitarAbono" data-id="${x.id}">Quitar</button></div></li>`).join("")}</ul>` : ""}
+      <div class="grid2">
+        <label class="field"><span>Valor del abono</span><input id="ab_valor" inputmode="numeric" placeholder="${saldo ? esc(String(saldo)) : "500000"}"></label>
+        <label class="field"><span>Fecha</span><input id="ab_fecha" type="date" value="${hoyISO()}"></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>Cómo pagó</span><select id="ab_metodo">${[...metodos.map((m) => m.n), "Otro"].map((m) => `<option>${esc(m)}</option>`).join("")}</select></label>
+        <label class="field"><span>Nota</span><input id="ab_nota" placeholder="Ej.: anticipo del 50 %"></label>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" data-act="registrarAbono">Registrar abono</button>
+        ${saldo ? `<button class="btn" data-act="cobrarWhatsApp">Cobrar por WhatsApp</button><button class="btn" data-act="cuentaCobroPDF">Cuenta de cobro PDF</button>` : ""}
+      </div>
+      ${metodos.length ? "" : `<p class="note-ui">Configure sus formas de pago en <button class="mas" data-act="ir" data-to="datos" style="margin:0">Mis datos</button> para que salgan en los cobros.</p>`}
+    </div></details>`;
+}
+function pdfDesdeHTML(html, archivo) {
+  busy(true, "Generando PDF…");
+  return cargarPDF().then(async () => {
+    const holder = document.createElement("div"); holder.style.cssText = "position:fixed;left:-10000px;top:0;"; holder.innerHTML = html; document.body.appendChild(holder);
+    try {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      await window.html2pdf().set({ margin: [0.6, 0.6, 0.6, 0.6], filename: archivo, image: { type: "jpeg", quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" }, jsPDF: { unit: "in", format: "letter", orientation: "portrait" } }).from(holder.firstElementChild).save();
+      toast("PDF descargado");
+    } finally { holder.remove(); busy(false); }
+  }).catch((e) => { busy(false); console.error(e); toast("No se pudo generar el PDF. Revise su conexión."); });
+}
+function docPago(p, titulo, filas, extra) {
+  const c = normHex(p.color, "#1F5C45"), a = normHex(p.acento, "#F2C94C"), pf = perfil(), cli = clienteDe(p.clienteId);
+  const vars = `--c:${c};--a:${a};--t0:${mix(c, 0.05)};--t1:${mix(c, 0.12)};--t2:${mix(c, 0.28)};`;
+  return `<div class="doc" style="${vars}padding:10px 4px">
+    <div class="brand"><span class="logo"><i></i></span>${esc(pf.negocio || pf.nombre)}</div>
+    <h2 style="margin:34px 0 4px">${esc(titulo)}</h2>
+    <div class="meta" style="margin:18px 0 22px">
+      <div><span>Para</span><b>${esc(nombreCliente(cli))}</b></div>
+      <div><span>De</span><b>${esc(pf.nombre)}</b></div>
+      <div><span>Fecha</span><b>${esc(fmtFecha(hoyISO()))}</b></div>
+    </div>
+    <table><tbody>${filas.map(([k, v, tot]) => `<tr${tot ? ' class="total"' : ""}><td>${esc(k)}</td><td class="r">${esc(v)}</td></tr>`).join("")}</tbody></table>
+    ${extra || ""}
+    <div class="firma"><b>${esc(pf.nombre)}</b><span>${esc(pf.cargo)}${pf.negocio ? ", " + esc(pf.negocio) : ""}</span><span>${esc(pf.ciudad)}</span>${pf.whatsapp ? `<span>WhatsApp ${esc(pf.whatsapp)}</span>` : ""}</div>
+  </div>`;
+}
+function bloqueMetodos() {
+  const m = metodosActivos(), c = pagosCfg(), qr = imgSegura(c.qr);
+  if (!m.length && !qr) return "";
+  return `<div class="note avoid" style="margin-top:18px"><h3>Formas de pago</h3>
+    <div style="display:flex;gap:18px;align-items:flex-start">${qr ? `<img src="${esc(qr)}" alt="" style="width:120px;height:120px;object-fit:contain;background:#fff">` : ""}
+    <ul style="margin:0">${m.map((x) => `<li><b>${esc(x.n)}:</b> ${esc(x.url || x.d)}</li>`).join("")}</ul></div>
+    ${has(c.nota) ? `<p class="small" style="margin-top:8px">${esc(c.nota)}</p>` : ""}</div>`;
+}
+const archivoSeguro = (t) => t.replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) + ".pdf";
+function siguienteCobro() {
+  return S.propuestas.reduce((m, p) => Math.max(m, ...(Array.isArray(p.cobros) ? p.cobros.map((x) => Number(x.num) || 0) : [0])), 0) + 1;
 }
 
 /* ================= Proyectos (portafolio) ================= */
@@ -2120,6 +2336,9 @@ function recomendaciones() {
     add(1, `Haga seguimiento a ${nombreCliente(c)}`, `La propuesta "${p.titulo || "sin título"}" se envió hace ${n} días y no tiene respuesta.`,
       (wa ? `<a class="btn btn-sm btn-primary" href="${wa}?text=${txt}" target="_blank" rel="noopener">Escribir por WhatsApp</a>` : "") + `<button class="btn btn-sm" data-act="abrirPropuesta" data-id="${p.id}">Ver propuesta</button>`);
   });
+  P.filter((p) => p.estado === "Aprobada" && saldoDe(p) > 0).sort((a, b) => saldoDe(b) - saldoDe(a)).forEach((p) =>
+    add(1, `Cobre el saldo de ${nombreCliente(clienteDe(p.clienteId))}: ${fmtCOP(saldoDe(p))}`, `"${p.titulo || p.nombreProducto || "Proyecto"}" está aprobado y le falta por pagar.`,
+      `<button class="btn btn-sm btn-primary" data-act="abrirPropuesta" data-id="${p.id}">Ver pagos</button>`));
   P.filter((p) => p.estado === "Aprobada" && !Y.some((y) => y.propuestaId === p.id)).forEach((p) =>
     add(2, `Publique "${p.titulo || p.nombreProducto || "el proyecto"}" en su página`, `Ya está aprobado. Mostrarlo en Casos le ayuda a conseguir más clientes.`,
       `<button class="btn btn-sm btn-primary" data-act="publicarDesdePropuesta" data-id="${p.id}">Crear proyecto</button>`));
@@ -2622,17 +2841,69 @@ function pintarPia() {
   box.innerHTML = piaCuerpo();
 }
 
+/* ================= Centro de funciones ================= */
+const FX_TIPOS = { hecha: ["Funcionando", "hecha"], pagina: ["Próximamente · solo página", ""], firebase: ["Próximamente · Firebase", ""], ia: ["Necesita la IA", "ia"], externo: ["Necesita cuenta externa", "externo"] };
+let fxCargando = null;
+function cargarFunciones() {
+  if (window.FUNCIONES) return Promise.resolve();
+  if (!fxCargando) fxCargando = new Promise((ok, mal) => { const sc = document.createElement("script"); sc.src = "funciones.js"; sc.onload = ok; sc.onerror = () => { fxCargando = null; mal(); }; document.head.appendChild(sc); });
+  return fxCargando;
+}
+function fxState() { if (!S.fx) S.fx = { q: "", tipo: "todas", cat: "", limite: 150 }; return S.fx; }
+const fxFavs = () => new Set((S.fxCfg && S.fxCfg.fav) || []);
+function fxFiltradas() {
+  const st = fxState(), q = st.q.trim().toLowerCase(), favs = fxFavs();
+  return (window.FUNCIONES || []).filter((f) =>
+    (st.tipo === "todas" || (st.tipo === "favoritas" ? favs.has(f.n) : f.r === st.tipo)) &&
+    (!st.cat || f.c === st.cat) &&
+    (!q || String(f.n) === q || f.t.toLowerCase().includes(q) || f.c.toLowerCase().includes(q)));
+}
+function vFxLista() {
+  const st = fxState(), arr = fxFiltradas(), favs = fxFavs();
+  if (!arr.length) return `<p class="o-empty">Ninguna función coincide con la búsqueda.</p>`;
+  let html = "", cat = "";
+  arr.slice(0, st.limite).forEach((f) => {
+    if (f.c !== cat) { cat = f.c; html += `<li class="fx-cat">${esc(cat)}</li>`; }
+    const [et, cl] = FX_TIPOS[f.r];
+    html += `<li class="fx-item"><span class="num">${f.n}</span><span>${f.s ? "⭐ " : ""}${esc(f.t)}${f.x ? `<small>Necesita: ${esc(f.x)}</small>` : f.r === "ia" ? `<small>Se construye cuando active el asistente con IA.</small>` : f.e ? `<small>Hecha en la etapa ${f.e}</small>` : ""}</span><span class="chip ${cl}">${et}</span><button class="fx-estrella" data-act="fxFav" data-n="${f.n}" aria-pressed="${favs.has(f.n)}" aria-label="${favs.has(f.n) ? "Quitar de" : "Agregar a"} mis favoritas">★</button></li>`;
+  });
+  return `<ul class="fx-lista">${html}</ul>${arr.length > st.limite ? `<button class="btn fx-mas" data-act="fxMas">Ver ${Math.min(150, arr.length - st.limite)} más (quedan ${arr.length - st.limite})</button>` : ""}`;
+}
+function vFunciones() {
+  if (!window.FUNCIONES) { cargarFunciones().then(() => { if (S.view.name === "funciones") { S.quiet = false; renderOficina(); } }).catch(() => toast("No se pudo cargar la lista de funciones.")); return cargando(); }
+  const F = window.FUNCIONES, st = fxState(), favs = fxFavs();
+  const cuenta = (r) => F.filter((f) => f.r === r).length, hechas = cuenta("hecha");
+  const cats = [...new Set(F.map((f) => f.c))];
+  const caja = (k, n, l) => `<button type="button" data-act="fxTipo" data-k="${k}" aria-pressed="${st.tipo === k}"><b>${n}</b><span>${l}</span></button>`;
+  return `
+    <button class="back" data-act="ir" data-to="panel">${chevron}Panel</button>
+    <div class="o-head"><div><h1 class="o-h1">Centro de funciones</h1><p class="sub">${hechas} de ${F.length} funcionando. Marque con ★ las que quiere primero.</p></div>
+      <div class="actions"><button class="btn" data-act="fxCopiar"${favs.size ? "" : " disabled"}>Copiar mis favoritas (${favs.size})</button></div></div>
+    <div class="fx-prog" role="progressbar" aria-valuenow="${hechas}" aria-valuemin="0" aria-valuemax="${F.length}" aria-label="Funciones terminadas"><i style="width:${(hechas / F.length) * 100}%"></i></div>
+    <div class="fx-resumen">
+      ${caja("todas", F.length, "Todas")}${caja("hecha", hechas, "Funcionando")}${caja("pagina", cuenta("pagina"), "Próximamente, solo página")}
+      ${caja("firebase", cuenta("firebase"), "Próximamente, con Firebase")}${caja("ia", cuenta("ia"), "Necesitan la IA")}${caja("externo", cuenta("externo"), "Necesitan cuenta externa")}${caja("favoritas", favs.size, "Mis favoritas")}
+    </div>
+    <div class="fx-filtros">
+      <input type="search" id="fxQ" placeholder="Buscar por número o palabra (ej.: pago, WhatsApp, 446)" value="${esc(st.q)}" aria-label="Buscar funciones">
+      <select id="fxCat" aria-label="Categoría"><option value="">Todas las categorías</option>${cats.map((c) => `<option${c === st.cat ? " selected" : ""}>${esc(c)}</option>`).join("")}</select>
+    </div>
+    <div id="fxLista">${vFxLista()}</div>`;
+}
+function pintarFx() { const l = $("#fxLista"); if (l) l.innerHTML = vFxLista(); }
+
 /* ================= Navegación ================= */
-const TAB_DE = { panel: "panel", proyectos: "proyectos", proyecto: "proyectos", "publicar-ia": "proyectos", asistente: "asistente", clientes: "clientes", cliente: "clientes", "nuevo-cliente": "clientes", "editar-cliente": "clientes", propuestas: "propuestas", propuesta: "propuestas", vista: "propuestas", datos: "datos" };
-const QUIETAS = ["nuevo-cliente", "editar-cliente", "propuesta", "datos", "proyecto", "asistente", "publicar-ia"];
+const TAB_DE = { panel: "panel", funciones: "panel", proyectos: "proyectos", proyecto: "proyectos", "publicar-ia": "proyectos", asistente: "asistente", clientes: "clientes", cliente: "clientes", "nuevo-cliente": "clientes", "editar-cliente": "clientes", propuestas: "propuestas", propuesta: "propuestas", vista: "propuestas", datos: "datos" };
+const QUIETAS = ["nuevo-cliente", "editar-cliente", "propuesta", "datos", "proyecto", "asistente", "publicar-ia", "funciones"];
 function listoParaQuieta(name) {
   if (name === "nuevo-cliente") return true;
   if (name === "editar-cliente") return S.loaded.c;
   if (name === "propuesta") return !!S.draft && S.draftId === S.view.id;
-  if (name === "datos") return S.loaded.f;
+  if (name === "datos") return S.loaded.f && S.loaded.g;
   if (name === "proyecto") return !!S.proyDraft && S.proyDraftId === S.view.id;
   if (name === "asistente") return S.loaded.c && S.loaded.p && S.loaded.y;
   if (name === "publicar-ia") return true;
+  if (name === "funciones") return !!window.FUNCIONES;
   return false;
 }
 function parseHash() {
@@ -2683,7 +2954,7 @@ function renderOficina() {
   const vistas = {
     panel: vPanel, clientes: vClientes, cliente: () => vCliente(v.id), "nuevo-cliente": () => vClienteForm(null), "editar-cliente": () => vClienteForm(v.id),
     propuestas: vPropuestas, propuesta: () => vPropuesta(v.id), vista: () => vVista(v.id), datos: vDatos,
-    proyectos: vProyectos, proyecto: () => vProyecto(v.id), asistente: vAsistente, "publicar-ia": vPublicarIA,
+    proyectos: vProyectos, proyecto: () => vProyecto(v.id), asistente: vAsistente, "publicar-ia": vPublicarIA, funciones: vFunciones,
   };
   $("#o-app").innerHTML = (vistas[v.name] || vPanel)();
   S.quiet = QUIETAS.includes(v.name) && listoParaQuieta(v.name);
@@ -2895,6 +3166,73 @@ const ACT = {
   sugerencia: (el) => preguntar(SUGERENCIAS[Number(el.dataset.i)]),
   preguntar: () => preguntar(($("#pregunta") || {}).value),
   limpiarChat: () => { S.chat = []; pintarChat(true); },
+  guardarPagos() {
+    const c = Object.assign({}, pagosCfg());
+    document.querySelectorAll("[data-pg]").forEach((i) => { c[i.dataset.pg] = i.type === "checkbox" ? i.checked : i.value.trim(); });
+    for (const k of ["wompi", "bold", "mercadopago", "paypal"]) if (has(c[k]) && !urlSegura(c[k])) { toast("Los enlaces de pago deben empezar por https://"); return; }
+    c.qr = S.pagos && S.pagos.qrNuevo !== undefined ? S.pagos.qrNuevo : c.qr || "";
+    delete c.qrNuevo;
+    S.F.setDoc(refDoc("config", "pagos"), c).catch(dbError);
+    const publico = { metodos: c.publicar ? metodosActivos(c).map((m) => m.n.replace(/^Transferencia .*/, "Transferencia")) : [], actualizado: Date.now(), uid: S.user.uid };
+    S.F.setDoc(S.F.doc(S.fdb, "sitio", "pagos"), publico).then(() => cargarPagosPublicos()).catch(dbError);
+    S.pagos = c; toast("Formas de pago guardadas");
+  },
+  quitarQrPago() { S.pagos = Object.assign({}, S.pagos || {}, { qrNuevo: "" }); const im = $("#qrPagoPrev"); if (im) { im.hidden = true; im.removeAttribute("src"); } },
+  registrarAbono() {
+    const d = S.draft; if (!d) return;
+    const valor = numero(($("#ab_valor") || {}).value);
+    if (!valor) { toast("Escriba el valor del abono."); return; }
+    const ab = { id: Math.random().toString(36).slice(2, 9), valor, fecha: ($("#ab_fecha") || {}).value || hoyISO(), metodo: ($("#ab_metodo") || {}).value || "", nota: (($("#ab_nota") || {}).value || "").trim(), creado: Date.now() };
+    d.pagos = [...pagosDe(d), ab].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)));
+    S.pagosAbierto = true; guardarAhora(); renderOficina();
+    toast(saldoDe(d) ? `Abono registrado. Saldo: ${fmtCOP(saldoDe(d))}` : "¡Pagado completo!");
+  },
+  quitarAbono(el) {
+    armar(el, "¿Seguro?", () => { S.draft.pagos = pagosDe(S.draft).filter((x) => x.id !== el.dataset.id); S.pagosAbierto = true; guardarAhora(); renderOficina(); toast("Abono quitado"); });
+  },
+  cobrarWhatsApp() {
+    const d = S.draft, c = clienteDe(d.clienteId), saldo = saldoDe(d), m = textoMetodos(), cfg = pagosCfg();
+    const nombre = c && c.nombre ? " " + c.nombre.split(" ")[0] : "";
+    const txt = `Hola${nombre}, ¿cómo va? Le comparto el saldo pendiente de "${d.titulo || d.nombreProducto || "su proyecto"}": ${fmtCOP(saldo)}.${m ? "\n\nPuede pagar por:\n" + m : ""}${has(cfg.nota) ? "\n\n" + cfg.nota : ""}\n\nMuchas gracias.`;
+    const wa = c && waLink(c.telefono);
+    window.open((wa || "https://wa.me/") + "?text=" + encodeURIComponent(txt), "_blank", "noopener");
+  },
+  confirmarPago(el) {
+    const d = S.draft, x = pagosDe(d).find((y) => y.id === el.dataset.id), c = clienteDe(d.clienteId); if (!x) return;
+    const nombre = c && c.nombre ? " " + c.nombre.split(" ")[0] : "", saldo = saldoDe(d);
+    const txt = `Hola${nombre}, le confirmo que recibí su pago de ${fmtCOP(Number(x.valor) || 0)} el ${fmtFecha(x.fecha)} por ${x.metodo || "su medio de pago"}. ${saldo ? `Queda un saldo de ${fmtCOP(saldo)}.` : "Con esto el proyecto queda pagado por completo."} ¡Gracias!`;
+    window.open(((c && waLink(c.telefono)) || "https://wa.me/") + "?text=" + encodeURIComponent(txt), "_blank", "noopener");
+  },
+  reciboPDF(el) {
+    const d = S.draft, x = pagosDe(d).find((y) => y.id === el.dataset.id); if (!x) return;
+    const pagadoHasta = pagosDe(d).filter((y) => String(y.fecha) <= String(x.fecha)).reduce((a, y) => a + (Number(y.valor) || 0), 0);
+    const filas = [["Concepto", d.titulo || d.nombreProducto || "Proyecto"], ["Fecha del pago", fmtFecha(x.fecha)], ["Medio de pago", x.metodo || "—"], ...(x.nota ? [["Nota", x.nota]] : []), ["Valor recibido", fmtCOP(Number(x.valor) || 0), true], ["Total del proyecto", fmtCOP(totalInversion(d))], ["Saldo después de este pago", fmtCOP(Math.max(0, totalInversion(d) - pagadoHasta))]];
+    pdfDesdeHTML(docPago(d, "Recibo de pago", filas), archivoSeguro(`Recibo ${nombreCliente(clienteDe(d.clienteId))} ${x.fecha}`));
+  },
+  cuentaCobroPDF() {
+    const d = S.draft, saldo = saldoDe(d), num = siguienteCobro(), pf = perfil();
+    d.cobros = [...(Array.isArray(d.cobros) ? d.cobros : []), { num, fecha: hoyISO(), valor: saldo }];
+    guardarAhora();
+    const cli = clienteDe(d.clienteId);
+    const extra = `<p style="margin-top:16px">${esc(nombreCliente(cli))}${cli && cli.documento ? `, identificado con ${esc(cli.documento)},` : ""} debe a ${esc(pf.nombre)} la suma de <b>${esc(fmtCOP(saldo))}</b> por concepto de: ${esc(d.titulo || d.nombreProducto || "desarrollo de software")}.</p>${bloqueMetodos()}`;
+    const filas = [["Total del proyecto", fmtCOP(totalInversion(d))], ["Pagado", fmtCOP(pagadoDe(d))], ["Valor a pagar", fmtCOP(saldo), true]];
+    pdfDesdeHTML(docPago(d, `Cuenta de cobro N.º ${String(num).padStart(4, "0")}`, filas, extra), archivoSeguro(`Cuenta de cobro ${String(num).padStart(4, "0")} ${nombreCliente(cli)}`));
+  },
+  fxTipo(el) { const st = fxState(); st.tipo = el.dataset.k; st.limite = 150; S.quiet = false; renderOficina(); },
+  fxMas() { fxState().limite += 150; pintarFx(); },
+  fxFav(el) {
+    const n = Number(el.dataset.n), favs = fxFavs();
+    favs.has(n) ? favs.delete(n) : favs.add(n);
+    S.fxCfg = Object.assign({}, S.fxCfg || {}, { fav: [...favs].sort((a, b) => a - b) });
+    S.F.setDoc(refDoc("config", "funciones"), S.fxCfg).catch(dbError);
+    el.setAttribute("aria-pressed", String(favs.has(n)));
+    const b = document.querySelector('[data-act="fxCopiar"]'); if (b) { b.textContent = `Copiar mis favoritas (${favs.size})`; b.disabled = !favs.size; }
+  },
+  fxCopiar() {
+    const F = window.FUNCIONES || [], favs = fxFavs();
+    const t = "Quiero estas funciones para mi página:\n" + F.filter((f) => favs.has(f.n)).map((f) => `${f.n}. ${f.t}`).join("\n");
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Lista copiada. Péguela en el chat para que la construyamos.")).catch(() => toast("No se pudo copiar."));
+  },
   guardarPerfil() {
     const val = (k) => ($("#p_" + k)?.value || "").trim();
     const data = { nombre: val("nombre"), cargo: val("cargo"), negocio: val("negocio"), ciudad: val("ciudad"), whatsapp: val("whatsapp"), correo: val("correo") };
@@ -2922,6 +3260,15 @@ function onField(e) {
     const r = $("#calcRes"); if (r) r.innerHTML = vCalcRes();
     return;
   }
+  if (S.view.name === "funciones") {
+    if (e.target.id === "fxQ") { fxState().q = e.target.value; fxState().limite = 150; pintarFx(); return; }
+    if (e.target.id === "fxCat" && e.type === "change") { fxState().cat = e.target.value; fxState().limite = 150; pintarFx(); return; }
+  }
+  if (e.target.id === "qrPagoFile" && e.type === "change" && e.target.files[0]) {
+    reducirImagen(e.target.files[0], 600).then((r) => { S.pagos = Object.assign({}, S.pagos || {}, { qrNuevo: r.url }); const im = $("#qrPagoPrev"); if (im) { im.src = r.url; im.hidden = false; } toast("QR listo. Toque Guardar formas de pago."); }).catch(() => toast("No se pudo leer la imagen."));
+    return;
+  }
+  if (e.target.id === "secPagos") return;
   if (S.view.name === "publicar-ia") {
     const st = piaState();
     if ((e.target.id === "piaFiles" || e.target.id === "piaCam") && e.type === "change") { agregarArchivos([...e.target.files]); e.target.value = ""; return; }
@@ -2952,6 +3299,7 @@ function onField(e) {
 }
 $("#o-app").addEventListener("input", onField);
 $("#o-app").addEventListener("change", onField);
+$("#o-app").addEventListener("toggle", (e) => { if (e.target.id === "secPagos") S.pagosAbierto = e.target.open; }, true);
 $("#o-app").addEventListener("keydown", (e) => { if (e.target.id === "pregunta" && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); preguntar(e.target.value); } });
 $("#btnDatos").addEventListener("click", () => go("datos"));
 ["dragover", "dragleave", "drop"].forEach((ev) => $("#o-app").addEventListener(ev, (e) => {
@@ -3223,7 +3571,7 @@ if ("serviceWorker" in navigator && location.protocol === "https:") navigator.se
 
 /* ================= Arranque ================= */
 if (location.hash.startsWith("#/") || ls.get("sesion")) cargarFirebase();
-if (configurado) cargarPortafolio();
+if (configurado) { cargarPortafolio(); cargarPagosPublicos(); }
 route();
 </script>
 </body>
