@@ -587,6 +587,40 @@
   .enlace-card p { margin: 0 0 12px; }
   .enlace-card.ok { border-color: var(--ok); }
 
+  /* Etapa 4: avance, portal y testimonios */
+  .av-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .av-top b { font-family: var(--serif); font-weight: 500; font-size: 1.8rem; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  .av-barra { height: 8px; border-radius: 99px; background: var(--ink-soft); overflow: hidden; margin: 6px 0 12px; }
+  .av-barra i { display: block; height: 100%; background: var(--ok); }
+  .av-lista { list-style: none; margin: 0 0 12px; padding: 0; counter-reset: av; }
+  .av-lista li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); counter-increment: av; }
+  .av-lista li > span::before { content: counter(av) ". "; color: var(--muted); }
+  .av-lista select { font: inherit; font-size: .9rem; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--field); color: var(--text); }
+  .av-lista.pub em { font-style: normal; font-size: .78rem; border: 1px solid var(--line-strong); border-radius: 99px; padding: 2px 10px; color: var(--muted); white-space: nowrap; }
+  .av-lista.pub li.lista em { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
+  .av-lista.pub li.curso em { border-color: var(--ink); color: var(--ink); }
+  .pp-avance { margin-bottom: 18px; }
+  .opinion { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .opinion p { margin: 4px 0; }
+  .estrellas { color: #C9A227; letter-spacing: 2px; font-size: 1.1rem; margin: 0; }
+  .opinion-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .estrellas-sel { display: flex; gap: 4px; }
+  .estrellas-sel label { cursor: pointer; font-size: 2rem; line-height: 1; color: #C9A227; position: relative; }
+  .estrellas-sel input { position: absolute; opacity: 0; }
+  .estrellas-sel label:has(input:checked) ~ label { color: var(--line-strong); }
+  .estrellas-sel input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .en-curso { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .en-curso .item .main { flex: 1; min-width: 0; }
+  .en-curso .av-barra { margin: 6px 0 0; height: 6px; }
+  #sitio .testis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 22px; }
+  #sitio .testi { margin: 0; padding: 30px 28px; background: rgba(251, 248, 243, .7); }
+  #sitio .testi > * { position: relative; }
+  #sitio .testi blockquote { margin: 10px 0 18px; font-family: var(--serif); font-size: 1.3rem; line-height: 1.35; color: var(--negro); }
+  #sitio .testi figcaption b { display: block; font-weight: 500; }
+  #sitio .testi figcaption span { display: block; color: var(--gris); font-size: .92rem; }
+  #sitio .testi .verif { margin-top: 8px; font-size: .68rem !important; letter-spacing: .18em; text-transform: uppercase; color: #3F6B4E !important; }
+
   /* Botones flotantes */
   .flotantes { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40; display: grid; justify-items: end; gap: 10px; }
   body.en-oficina .flotantes, body.en-login .flotantes { display: none; }
@@ -1238,6 +1272,13 @@
       </div>
     </section>
 
+    <section id="testimonios" hidden>
+      <div class="wrap">
+        <div class="head-c"><span class="kick">Testimonios</span><h2>Lo que dicen mis clientes</h2><p class="section-lead">Opiniones de clientes reales: solo pueden dejarlas quienes recibieron su proyecto.</p></div>
+        <div class="testis" id="testimoniosLista"></div>
+      </div>
+    </section>
+
     <section id="metodo">
       <div class="wrap">
         <div class="head-c">
@@ -1617,7 +1658,7 @@ const S = {
   area: "sitio", fbPromise: null, fbError: null, authReady: false,
   A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
   clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false }, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
-  solicitudes: [], enlaces: [], etapaFiltro: "",
+  solicitudes: [], enlaces: [], etapaFiltro: "", testimonios: null,
   app: null, appPromise: null, proyDraft: null, proyDraftId: null, chat: [], pensando: false, calc: null,
   view: { name: "panel", id: null }, quiet: false, q: "",
   draft: null, draftId: null,
@@ -1740,8 +1781,12 @@ function suscribir() {
   }, errDatos));
   S.unsubs.push(F.onSnapshot(F.query(F.collection(S.fdb, "enlaces"), F.where("uid", "==", S.user.uid)), (snap) => {
     S.enlaces = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
-    S.loaded.e = true; sincronizarAprobaciones(); if (S.view.name === "propuesta") pintarEnlaceCard();
+    S.loaded.e = true; sincronizarAprobaciones(); if (S.view.name === "propuesta") { pintarEnlaceCard(); pintarAvance(); }
   }, (e) => { console.warn("Enlaces:", e && e.code); S.loaded.e = true; }));
+  S.unsubs.push(F.onSnapshot(F.doc(S.fdb, "sitio", "testimonios"), (d) => {
+    S.testimonios = d.exists() && Array.isArray(d.data().items) ? d.data().items : [];
+    if (S.view.name === "propuesta") pintarAvance();
+  }, () => {}));
   /* Solicitudes del formulario de la página. Si las reglas aún no las permiten, la oficina sigue igual. */
   S.unsubs.push(F.onSnapshot(F.collection(S.fdb, "solicitudes"), (snap) => {
     S.solicitudes = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
@@ -2103,12 +2148,20 @@ function vPanel() {
       <div>
         <h2 class="o-h2">Propuestas por estado</h2>
         <div class="barras">${barra("Borrador", borr)}${barra("Enviada", enviadas)}${barra("Aprobada", aprob.length)}${barra("No aprobada", noap)}</div>
+        ${vEnCurso()}
         <h2 class="o-h2" style="margin-top:24px">El asistente recomienda</h2>${vRecos(3)}
         <button class="mas" data-act="ir" data-to="asistente">Abrir el asistente →</button>
         ${act ? `<h2 class="o-h2" style="margin-top:24px">Actividad reciente</h2><ul class="act" style="margin-top:0;border-top:0;padding-top:0">${act}</ul>` : ""}
       </div>
     </div>
     <p class="pie">Editorial · Minimal · Hecho con cuidado</p>`;
+}
+
+function vEnCurso() {
+  const arr = S.propuestas.filter((p) => p.estado === "Aprobada" && avanceDe(p) && pctAvance(p.avance) < 100).sort((a, b) => pctAvance(b.avance) - pctAvance(a.avance));
+  if (!arr.length) return "";
+  return `<h2 class="o-h2" style="margin-top:24px">Proyectos en curso</h2><ul class="en-curso">${arr.map((p) => { const n = pctAvance(p.avance), sig = p.avance.find((x) => x.estado !== "Lista");
+    return `<li><button class="item" data-act="abrirPropuesta" data-id="${p.id}"><span class="main"><b>${esc(p.titulo || p.nombreProducto || "Proyecto")}</b><small>${esc(nombreCliente(clienteDe(p.clienteId)))}${sig ? " · Sigue: " + esc(sig.t) : ""}</small>${barraAvance(n)}</span><span class="count">${n}%</span></button></li>`; }).join("")}</ul>`;
 }
 
 /* ================= Vistas de la oficina ================= */
@@ -2354,6 +2407,7 @@ function vPropuesta(id) {
       <button class="btn" data-act="vista">Vista previa</button>
     </div>
     <div id="enlaceCard">${vEnlaceCard(d)}</div>
+    <div id="avanceCard">${vAvanceCard(d)}</div>
     ${vPagosPropuesta(d)}
     ${secs}
     <div class="actions" style="margin-top:24px">
@@ -2523,6 +2577,44 @@ function siguienteCobro() {
   return S.propuestas.reduce((m, p) => Math.max(m, ...(Array.isArray(p.cobros) ? p.cobros.map((x) => Number(x.num) || 0) : [0])), 0) + 1;
 }
 
+/* ================= Avance del proyecto, portal del cliente y testimonios ================= */
+const ESTADOS_AVANCE = ["Pendiente", "En curso", "Lista"];
+function avanceBase(p) {
+  const et = cells(p.etapas, 3).map((r) => r[0]).filter(Boolean);
+  return (et.length ? et : ["Diseño", "Desarrollo", "Pruebas", "Entrega y capacitación"]).slice(0, 12).map((t) => ({ t, estado: "Pendiente" }));
+}
+const avanceDe = (p) => (Array.isArray(p.avance) && p.avance.length ? p.avance : null);
+const pctAvance = (av) => (av && av.length ? Math.round((av.reduce((a, x) => a + (x.estado === "Lista" ? 1 : x.estado === "En curso" ? 0.5 : 0), 0) / av.length) * 100) : 0);
+const barraAvance = (pct) => `<div class="av-barra" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>`;
+function vAvanceCard(d) {
+  if (d.estado !== "Aprobada") return "";
+  const av = avanceDe(d) || avanceBase(d), pct = pctAvance(av), e = enlaceDe(S.draftId), op = e && e.testimonio;
+  const pub = (S.testimonios || []).some((x) => e && x.id === e.id);
+  return `<div class="o-card avance-card"><div class="av-top"><span class="kick">Avance del proyecto</span><b>${pct}%</b></div>${barraAvance(pct)}
+    <ol class="av-lista">${av.map((x, i) => `<li><span>${esc(x.t)}</span><select data-av="${i}" aria-label="Estado de ${esc(x.t)}">${ESTADOS_AVANCE.map((s) => `<option${s === x.estado ? " selected" : ""}>${s}</option>`).join("")}</select></li>`).join("")}</ol>
+    <div class="actions"><button class="btn btn-sm btn-primary" data-act="compartirAvance">${e ? "Actualizar y avisar al cliente" : "Crear portal del cliente"}</button>${e ? `<a class="btn btn-sm" href="#/p/${esc(e.id)}" target="_blank" rel="noopener">Ver el portal</a>` : ""}</div>
+    <p class="note-ui" style="margin:10px 0 0">El cliente ve este avance en su enlace. Cuando todo esté «Lista», le aparece para dejar su opinión.</p>
+    ${op ? `<div class="opinion"><span class="kick">Opinión del cliente</span><p class="estrellas" aria-label="${op.estrellas} de 5">${"★".repeat(op.estrellas)}${"☆".repeat(5 - op.estrellas)}</p><p>«${esc(op.texto)}»</p><small>${esc(op.nombre)}${op.negocio ? ", " + esc(op.negocio) : ""} · ${op.autoriza ? "Autorizó publicarla" : "No autorizó publicarla"}</small>
+      <div class="actions" style="margin-top:10px">${op.autoriza ? (pub ? `<button class="btn btn-sm" data-act="quitarTestimonio">Quitar de mi página</button>` : `<button class="btn btn-sm btn-primary" data-act="publicarTestimonio">Publicar en mi página</button>`) : ""}</div></div>` : ""}
+  </div>`;
+}
+function pintarAvance() { const c = $("#avanceCard"); if (c && S.draft) c.innerHTML = vAvanceCard(S.draft); }
+async function guardarTestimonios(items) {
+  await S.F.setDoc(S.F.doc(S.fdb, "sitio", "testimonios"), { uid: S.user.uid, items, actualizado: Date.now() });
+  S.testimonios = items; pintarAvance(); cargarTestimonios();
+}
+async function cargarTestimonios() {
+  const box = $("#testimonios"); if (!box) return;
+  try {
+    await cargarApp();
+    const d = await S.F.getDoc(S.F.doc(S.fdb, "sitio", "testimonios"));
+    const items = d.exists() && Array.isArray(d.data().items) ? d.data().items.slice(0, 12) : [];
+    if (S.user) S.testimonios = items;
+    $("#testimoniosLista").innerHTML = items.map((x) => `<figure class="testi marco"><p class="estrellas" aria-label="${Number(x.estrellas) || 5} de 5">${"★".repeat(Math.min(5, Math.max(1, Number(x.estrellas) || 5)))}</p><blockquote>«${esc(x.texto)}»</blockquote><figcaption><b>${esc(x.nombre)}</b>${x.negocio ? `<span>${esc(x.negocio)}</span>` : ""}<span class="verif">Cliente verificado</span></figcaption></figure>`).join("");
+    box.hidden = !items.length;
+  } catch (e) { if (e && e.code !== "sin-config") console.warn("Testimonios:", e); }
+}
+
 /* ================= Propuesta por enlace con firma ================= */
 const enlaceDe = (pid) => S.enlaces.find((e) => e.propuestaId === pid);
 const urlEnlace = (t) => location.href.split("#")[0].split("?")[0] + "#/p/" + t;
@@ -2549,7 +2641,7 @@ function vEnlaceCard(d) {
 }
 function pintarEnlaceCard() { const c = $("#enlaceCard"); if (c && S.draft) c.innerHTML = vEnlaceCard(S.draft); }
 function datosPublicos(d) {
-  const { pagos, cobros, garantia, enlaceToken, firma, ...resto } = d;
+  const { pagos, cobros, garantia, enlaceToken, firma, avance, ...resto } = d;
   return JSON.parse(JSON.stringify(resto));
 }
 async function publicarEnlace() {
@@ -2563,8 +2655,13 @@ async function publicarEnlace() {
     perfil: { nombre: pf.nombre, cargo: pf.cargo, negocio: pf.negocio, ciudad: pf.ciudad, whatsapp: pf.whatsapp, correo: pf.correo },
     cliente: cli ? { nombre: cli.nombre || "", negocio: cli.negocio || "", documento: cli.documento || "" } : null,
     aprobacion: null, visto: (e && e.visto) || 0, creado: (e && e.creado) || Date.now(), actualizado: Date.now(),
+    avance: avanceDe(d) || null,
   };
-  await S.F.setDoc(S.F.doc(S.fdb, "enlaces", token), data);
+  if (e) {
+    /* Si ya existe, solo se actualiza el contenido: nunca se tocan la firma, la opinión ni "visto". */
+    const { aprobacion, visto, creado, ...contenido } = data;
+    await S.F.updateDoc(S.F.doc(S.fdb, "enlaces", token), contenido);
+  } else await S.F.setDoc(S.F.doc(S.fdb, "enlaces", token), data);
   if (d.enlaceToken !== token) { d.enlaceToken = token; await guardarAhora(); }
   return token;
 }
@@ -2573,6 +2670,7 @@ function sincronizarAprobaciones() {
     const p = S.propuestas.find((x) => x.id === e.propuestaId);
     if (!p || (p.firma && p.firma.fecha === e.aprobacion.fecha)) return;
     const cambio = { estado: "Aprobada", firma: e.aprobacion, actualizado: Date.now() };
+    if (!avanceDe(p)) cambio.avance = avanceBase(p);
     if (S.draftId === p.id && S.draft) Object.assign(S.draft, cambio);
     S.F.updateDoc(refDoc("propuestas", p.id), cambio).catch(dbError);
     toast(`¡${e.aprobacion.nombre} aprobó y firmó «${p.titulo || p.nombreProducto || "la propuesta"}»!`);
@@ -2605,11 +2703,37 @@ function pintarEnlacePublico() {
     <div class="pp-head"><span class="kick">Propuesta${ctx.cliente ? " para " + esc(nombreCliente(ctx.cliente)) : ""}</span><h1 class="o-h1">${esc(titulo)}</h1>
       <p class="sub">De ${esc(pf.nombre)}${total ? " · Inversión: " + esc(fmtCOP(total)) : ""}${has(e.datos.tiempoEntrega) ? " · Entrega: " + esc(e.datos.tiempoEntrega) : ""}</p>
       <a class="btn btn-primary pp-ir" href="#ppAprobar" data-ir="ppAprobar">${ap ? "Ver la aprobación" : "Ir a aprobar"}</a></div>
+    ${vAvancePublico(e)}
     <div class="preview"><div class="page">${docHTML(datos, ctx)}</div></div>
     <section class="o-card pp-aprobar" id="ppAprobar">${ap ? vAprobada(ap, pf, titulo) : vFormFirma(ctx)}</section>
     <p class="pie">Propuesta enviada por ${esc(pf.nombre)} · ${esc(pf.ciudad)}</p>`;
   ajustarVista();
   if (!ap) prepararFirma();
+  const bo = $("#ppOpinar");
+  if (bo) bo.addEventListener("click", async () => {
+    const texto = $("#ppOpinion").value.trim(), err = $("#ppOpError");
+    if (texto.length < 5) { err.hidden = false; err.textContent = "Escriba su opinión en una frase."; return; }
+    const testimonio = { texto: texto.slice(0, 500), estrellas: Number((document.querySelector('[name="ppEstrellas"]:checked') || {}).value) || 5, nombre: e.aprobacion.nombre,
+      negocio: (e.cliente && e.cliente.negocio) || "", autoriza: $("#ppAutoriza").checked, fecha: Date.now() };
+    bo.disabled = true; bo.textContent = "Enviando…";
+    try { await S.F.updateDoc(S.F.doc(S.fdb, "enlaces", S.pp.token), { testimonio }); S.pp.e.testimonio = testimonio; pintarEnlacePublico(); }
+    catch (er) { console.warn(er); bo.disabled = false; bo.textContent = "Enviar mi opinión"; err.hidden = false; err.textContent = "No se pudo enviar. Intente de nuevo."; }
+  });
+}
+function vAvancePublico(e) {
+  const av = Array.isArray(e.avance) && e.avance.length ? e.avance : null; if (!av) return "";
+  const pct = pctAvance(av), op = e.testimonio;
+  return `<section class="o-card pp-avance"><div class="av-top"><span class="kick">Avance de su proyecto</span><b>${pct}%</b></div>${barraAvance(pct)}
+    <ol class="av-lista pub">${av.map((x) => `<li class="${x.estado === "Lista" ? "lista" : x.estado === "En curso" ? "curso" : ""}"><span>${esc(x.t)}</span><em>${esc(x.estado)}</em></li>`).join("")}</ol>
+    ${pct === 100 && e.aprobacion ? (op ? `<p class="sub" style="margin-top:12px">Gracias por su opinión, ${esc(String(op.nombre).split(" ")[0])}.</p>` : vFormOpinion()) : ""}</section>`;
+}
+function vFormOpinion() {
+  return `<div class="opinion-form"><span class="kick">¡Su proyecto está listo!</span><h2 class="o-h1" style="font-size:1.5rem">¿Cómo le fue?</h2>
+    <div class="field"><span>Calificación</span><div class="estrellas-sel" role="radiogroup" aria-label="Calificación">${[1, 2, 3, 4, 5].map((n) => `<label><input type="radio" name="ppEstrellas" value="${n}"${n === 5 ? " checked" : ""}><span aria-hidden="true">★</span><b class="vh">${n} de 5</b></label>`).join("")}</div></div>
+    <label class="field"><span>Su opinión</span><textarea id="ppOpinion" rows="3" maxlength="500" placeholder="Ej.: Ahora sé cuánto me deben sin buscar en el cuaderno."></textarea></label>
+    <label class="check" style="align-items:flex-start;font-weight:400"><input type="checkbox" id="ppAutoriza" checked> <span>Autorizo que publique mi opinión en su página con mi nombre y el de mi negocio.</span></label>
+    <p class="login-msg" id="ppOpError" role="alert" hidden></p>
+    <button class="btn btn-primary" type="button" id="ppOpinar">Enviar mi opinión</button></div>`;
 }
 function vAprobada(ap, pf, titulo) {
   const f = imgSegura(ap.firma), wa = waLink(pf.whatsapp) || "https://wa.me/" + WHATSAPP;
@@ -3766,6 +3890,33 @@ const ACT = {
       S.draft.enlaceToken = ""; guardarAhora(); toast("Enlace quitado");
     });
   },
+  async compartirAvance(el) {
+    el.disabled = true;
+    try {
+      const d = S.draft; if (!avanceDe(d)) d.avance = avanceBase(d);
+      await guardarAhora();
+      const token = await publicarEnlace(); if (!token) return;
+      await S.F.updateDoc(S.F.doc(S.fdb, "enlaces", token), { avance: d.avance, actualizado: Date.now() });
+      const c = clienteDe(d.clienteId), nombre = c && c.nombre ? " " + c.nombre.split(" ")[0] : "", pct = pctAvance(d.avance);
+      const txt = `Hola${nombre}, le cuento cómo va "${d.titulo || d.nombreProducto || "su proyecto"}": ${pct}% listo. Aquí puede ver el avance cuando quiera:\n${urlEnlace(token)}`;
+      window.open(((c && waLink(c.telefono)) || "https://wa.me/") + "?text=" + encodeURIComponent(txt), "_blank", "noopener");
+      toast("Avance actualizado"); pintarEnlaceCard(); pintarAvance();
+    } catch (e) { dbError(e); } finally { if (el.isConnected) el.disabled = false; }
+  },
+  async publicarTestimonio() {
+    const e = enlaceDe(S.draftId), op = e && e.testimonio; if (!op || !op.autoriza) return;
+    const actual = (await S.F.getDoc(S.F.doc(S.fdb, "sitio", "testimonios"))).data();
+    const items = ((actual && actual.items) || []).filter((x) => x.id !== e.id);
+    items.unshift({ id: e.id, texto: op.texto, estrellas: op.estrellas, nombre: op.nombre, negocio: op.negocio || "", fecha: op.fecha });
+    await guardarTestimonios(items.slice(0, 12)).catch(dbError);
+    toast("Opinión publicada en su página");
+  },
+  async quitarTestimonio() {
+    const e = enlaceDe(S.draftId); if (!e) return;
+    const actual = (await S.F.getDoc(S.F.doc(S.fdb, "sitio", "testimonios"))).data();
+    await guardarTestimonios(((actual && actual.items) || []).filter((x) => x.id !== e.id)).catch(dbError);
+    toast("Opinión quitada de su página");
+  },
   filtroEtapa(el) { S.etapaFiltro = el.dataset.k || ""; renderOficina(); },
   guardarSeguimiento(el) {
     const fecha = ($("#ce_seg") || {}).value || "", nota = (($("#ce_segNota") || {}).value || "").trim();
@@ -3857,6 +4008,12 @@ function onField(e) {
     return;
   }
   if (e.target.id === "secPagos") return;
+  if (e.target.dataset.av !== undefined && e.type === "change" && S.draft) {
+    if (!avanceDe(S.draft)) S.draft.avance = avanceBase(S.draft);
+    const av = S.draft.avance;
+    av[Number(e.target.dataset.av)].estado = e.target.value;
+    guardarAhora(); pintarAvance(); return;
+  }
   if (S.view.name === "publicar-ia") {
     const st = piaState();
     if ((e.target.id === "piaFiles" || e.target.id === "piaCam") && e.type === "change") { agregarArchivos([...e.target.files]); e.target.value = ""; return; }
@@ -3894,6 +4051,10 @@ function onField(e) {
   if (!f || S.view.name !== "propuesta" || !S.draft) return;
   if (S.draft[f.dataset.k] === f.value) return;
   S.draft[f.dataset.k] = f.value;
+  if (f.dataset.k === "estado") {
+    if (f.value === "Aprobada" && !avanceDe(S.draft)) { S.draft.avance = avanceBase(S.draft); toast("Proyecto creado con sus etapas"); }
+    pintarAvance();
+  }
   programarGuardado();
 }
 $("#o-app").addEventListener("input", onField);
@@ -4311,7 +4472,7 @@ $("#casosLista") && $("#casosLista").addEventListener("input", (e) => { if (e.ta
 
 /* ================= Arranque ================= */
 if (location.hash.startsWith("#/") || ls.get("sesion")) cargarFirebase();
-if (configurado) { cargarPortafolio(); cargarPagosPublicos(); }
+if (configurado) { cargarPortafolio(); cargarPagosPublicos(); cargarTestimonios(); }
 route();
 </script>
 </body>

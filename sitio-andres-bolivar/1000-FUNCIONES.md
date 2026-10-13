@@ -51,7 +51,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 30. 🟢 Página de gracias después de cotizar, con próximos pasos
 
 ## B. Confianza y contenido (31–50)
-31. ⭐🔵 Testimonios de clientes con foto y nombre del negocio
+31. ✅ Testimonios de clientes con foto y nombre del negocio *(Etapa 4)*
 32. 🔵 Reseñas con estrellas
 33. 🟢 Logos de los negocios que confían en usted
 34. 🔵 Casos de éxito con cifras ("ahorró 10 horas al mes")
@@ -188,7 +188,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 155. 🟠 Facturación electrónica DIAN (proveedor autorizado)
 
 ## H. Proyectos y soporte (156–175)
-156. ⭐🔵 Portal del cliente para ver el avance de su proyecto
+156. ✅ Portal del cliente para ver el avance de su proyecto *(Etapa 4)*
 157. 🔵 Etapas con porcentaje de avance
 158. 🔵 Lista de tareas por proyecto
 159. 🔵 Fechas de entrega con alertas
@@ -336,7 +336,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 285. 🔵 Emprendedoras de catálogo: pedidos, abonos y entregas
 
 ## O. Automatizaciones (286–305)
-286. ⭐🔵 Al aprobar la propuesta se crea el proyecto con sus etapas
+286. ✅ Al aprobar la propuesta se crea el proyecto con sus etapas *(Etapa 4)*
 287. 🔵 Al terminar una etapa se avisa al cliente y se genera el cobro
 288. 🔵 Bienvenida automática al cliente nuevo
 289. 🔵 Mensaje al mes de la entrega para ofrecer soporte
@@ -358,7 +358,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 305. 🟠 Resumen diario por WhatsApp a las 7 a. m.
 
 ## P. Organización de su trabajo (306–325)
-306. ⭐🔵 Tablero de proyectos en curso con porcentaje
+306. ✅ Tablero de proyectos en curso con porcentaje *(Etapa 4)*
 307. 🔵 Tareas por día con prioridades
 308. 🔵 Cronómetro "estoy trabajando en…"
 309. 🔵 Bitácora diaria por proyecto
@@ -533,7 +533,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 460. 🔵 Formulario para negocios con varias sedes
 
 ## X. Más confianza (461–480)
-461. ⭐🔵 Reseñas verificadas con enlace único solo para clientes reales
+461. ✅ Reseñas verificadas con enlace único solo para clientes reales *(Etapa 4)*
 462. 🔵 Sus respuestas públicas a las reseñas
 463. 🟢 Videos testimonio cortos
 464. 🟢 Fotos suyas instalando el sistema en los locales

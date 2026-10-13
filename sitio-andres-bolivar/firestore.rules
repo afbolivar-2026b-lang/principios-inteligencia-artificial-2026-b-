@@ -44,7 +44,8 @@ service cloud.firestore {
     }
 
     // Propuestas enviadas por enlace. El enlace es largo y secreto: quien lo tiene puede abrir
-    // ESA propuesta (no listar las demás), marcarla como vista una vez y aprobarla con su firma una vez.
+    // ESA propuesta (no listar las demás), marcarla como vista una vez, aprobarla con su firma una vez
+    // y, después de aprobar, dejar su opinión una vez.
     match /enlaces/{token} {
       allow get: if true;
       allow list: if esDueno() && resource.data.uid == request.auth.uid;
@@ -52,7 +53,10 @@ service cloud.firestore {
       allow delete: if esDueno() && resource.data.uid == request.auth.uid;
       allow update: if (esDueno() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid)
         || (soloCambia(['visto']) && resource.data.get('visto', 0) == 0 && cercaDeAhora(request.resource.data.visto))
-        || (soloCambia(['aprobacion']) && resource.data.get('aprobacion', null) == null && aprobacionValida(request.resource.data.aprobacion));
+        || (soloCambia(['aprobacion']) && resource.data.get('aprobacion', null) == null && aprobacionValida(request.resource.data.aprobacion))
+        // La opinión (testimonio) solo la deja quien ya aprobó, una sola vez y con su mismo nombre
+        || (soloCambia(['testimonio']) && resource.data.get('testimonio', null) == null && resource.data.get('aprobacion', null) != null
+            && testimonioValido(request.resource.data.testimonio, resource.data.aprobacion.nombre));
     }
 
     function texto(v, min, max) {
@@ -64,6 +68,16 @@ service cloud.firestore {
     }
     function soloCambia(campos) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
+    }
+    function testimonioValido(t, nombre) {
+      return t is map
+        && t.keys().hasOnly(['texto', 'estrellas', 'nombre', 'negocio', 'autoriza', 'fecha'])
+        && texto(t.texto, 5, 500)
+        && t.estrellas is int && t.estrellas >= 1 && t.estrellas <= 5
+        && t.nombre == nombre
+        && texto(t.get('negocio', ''), 0, 80)
+        && t.autoriza is bool
+        && cercaDeAhora(t.fecha);
     }
     function aprobacionValida(a) {
       return a is map

@@ -142,3 +142,5 @@ Sin Storage, el video se puede crear y **descargar** igual, para mandarlo por Wh
   - los **planes de soporte**;
   - la **guía gratis** en 5 pasos, que se descarga en PDF o se comparte por WhatsApp;
   - la **meta** de 100 negocios.
+- **Avance del proyecto y portal del cliente**: cuando una propuesta queda **Aprobada**, se crea sola con sus etapas (las de "Plan de trabajo" o, si no hay, Diseño, Desarrollo, Pruebas y Entrega). Marque cada etapa como *Pendiente*, *En curso* o *Lista* y toque **Actualizar y avisar al cliente**: le llega el enlace por WhatsApp y ve el porcentaje y las etapas. El Panel muestra los **proyectos en curso** con su avance.
+- **Testimonios verificados**: cuando todas las etapas están *Lista*, el cliente puede dejar su opinión y sus estrellas en el mismo enlace. Solo quien firmó la propuesta puede opinar, y solo una vez. Usted la ve en la propuesta y, si el cliente lo autorizó, toca **Publicar en mi página**. Sale en la sección *Testimonios* como «Cliente verificado».
