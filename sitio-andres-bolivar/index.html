@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Andrés Bolívar | Páginas web y aplicaciones en Neiva</title>
+<meta name="description" content="Páginas web y aplicaciones a la medida para negocios de Neiva y el Huila: ventas, inventario, fiados, turnos y reportes.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📒</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Instrument+Sans:wght@400;500;600;700&family=Kalam:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#070B1C">
+<script>if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("anim");</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  :root {
+    --bg: #F3F5EF; --surface: #FFFFFF; --paper: #FCFDF9; --field: #FFFFFF; --hover: #F7F8F4;
+    --text: #16213A; --muted: #4F5B74; --line: #D8DDE5; --line-strong: #C5CCD6;
+    --ink: #1E3FA8; --ink-soft: #E3EAFB; --btn-text: #FFFFFF;
+    --rule: #C8D7EE; --margin: #D23B4B;
+    --ok: #1C7454; --ok-soft: #DDF1E8; --danger: #C2334A; --danger-soft: #FBE3E7;
+    --cta-bg: #1E3FA8; --cta-text: #FFFFFF; --shadow: rgba(22, 33, 58, .45);
+    --font: "Instrument Sans", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    --hand: "Kalam", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1728; --surface: #172238; --paper: #1A2641; --field: #111B2E; --hover: #1C2944;
+      --text: #E7EBF4; --muted: #A5B0C7; --line: #27334F; --line-strong: #34436A;
+      --ink: #9CB6FF; --ink-soft: #22325A; --btn-text: #0F1728;
+      --rule: #2B3C60; --margin: #FF7182;
+      --ok: #5FCFA0; --ok-soft: #173A30; --danger: #FF8193; --danger-soft: #3D1D27;
+      --cta-bg: #223C86; --cta-text: #FFFFFF; --shadow: rgba(0, 0, 0, .6);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1728; --surface: #172238; --paper: #1A2641; --field: #111B2E; --hover: #1C2944;
+    --text: #E7EBF4; --muted: #A5B0C7; --line: #27334F; --line-strong: #34436A;
+    --ink: #9CB6FF; --ink-soft: #22325A; --btn-text: #0F1728;
+    --rule: #2B3C60; --margin: #FF7182;
+    --ok: #5FCFA0; --ok-soft: #173A30; --danger: #FF8193; --danger-soft: #3D1D27;
+    --cta-bg: #223C86; --cta-text: #FFFFFF; --shadow: rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+
+  html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 80px); scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font); font-size: 1.0625rem; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  body.en-oficina { font-size: 16px; line-height: 1.5; padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 40px); }
+  .o-wrap { max-width: 860px; margin: 0 auto; padding: 0 18px; }
+  .sub { color: var(--muted); margin: 4px 0 0; }
+
+  /* ---------- Botones y campos (compartidos) ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 0 22px; border-radius: 999px; border: 2px solid var(--ink);
+    background: transparent; color: var(--ink);
+    font: inherit; font-weight: 700; font-size: 1rem; line-height: 1.2; text-decoration: none; cursor: pointer;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--ink); color: var(--btn-text); }
+  .btn-light { background: #FFFFFF; color: #1E3FA8; border-color: #FFFFFF; }
+  .btn-danger { border-color: var(--danger); color: var(--danger); }
+  .btn-danger[data-armed] { background: var(--danger); color: #FFFFFF; }
+  .btn-sm { min-height: 40px; padding: 0 15px; font-size: .9rem; }
+  .btn[disabled] { opacity: .55; cursor: default; }
+  .field { display: block; margin-bottom: 14px; }
+  .field > span { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+  .field input, .field textarea, .field select, .o-search {
+    width: 100%; font: inherit; font-size: 16px; color: var(--text); background: var(--field);
+    border: 1px solid var(--line-strong); border-radius: 12px; padding: 11px 12px;
+  }
+  .field textarea { resize: vertical; line-height: 1.45; }
+  .field input[type="color"] { height: 46px; padding: 4px; }
+  .field small { display: block; color: var(--muted); font-size: .82rem; margin-top: 5px; }
+  .back {
+    display: inline-flex; align-items: center; gap: 2px; border: 0; background: none; color: var(--ink);
+    font: inherit; font-weight: 600; font-size: 1rem; padding: 6px 0; margin-bottom: 4px; cursor: pointer; text-decoration: none;
+  }
+
+  /* ================= Página pública: noche de la Tatacoa ================= */
+  #sitio {
+    --n0: #070B1C; --n1: #0A0F24; --n2: #0E1430;
+    --crema: #F4EFE6; --suave: #C9CEE0; --tenue: #9EA6C4;
+    --oro: #E3A868; --oro-2: #F2CD98; --linea: rgba(244, 239, 230, .12);
+    --serif: "Cormorant Garamond", "Cormorant", Georgia, "Times New Roman", serif;
+    background: var(--n1); color: var(--suave); overflow-x: clip;
+  }
+  #sitio h1, #sitio h2, #sitio h3 { color: var(--crema); }
+  #sitio ::selection { background: rgba(227, 168, 104, .35); color: var(--crema); }
+  #sitio :focus-visible { outline-color: var(--oro); }
+
+  /* Encabezado */
+  #sitio .site-top {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: transparent; border-bottom: 1px solid transparent;
+    transition: background-color .4s ease, border-color .4s ease;
+  }
+  #sitio .site-top.solid {
+    background: rgba(7, 11, 28, .84); border-bottom-color: var(--linea);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  #sitio .site-top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; height: 72px; }
+  #sitio .brand { display: flex; align-items: center; gap: 10px; color: var(--crema); text-decoration: none; white-space: nowrap; }
+  #sitio .brand > svg { flex: none; color: var(--oro); }
+  #sitio .brand > span { display: block; font-family: var(--serif); font-weight: 600; font-size: 1.5rem; line-height: 1; }
+  #sitio .brand small { display: block; font-family: var(--font); font-size: .74rem; font-weight: 500; color: var(--tenue); letter-spacing: .02em; margin-top: 4px; }
+  #sitio .nav { display: flex; align-items: center; gap: 26px; }
+  #sitio .nav .lnk { position: relative; color: var(--suave); text-decoration: none; font-size: .95rem; font-weight: 500; }
+  #sitio .nav .lnk::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 1px; background: var(--oro); transform: scaleX(0); transform-origin: left; transition: transform .35s ease; }
+  #sitio .nav .lnk:hover { color: var(--crema); }
+  #sitio .nav .lnk:hover::after { transform: scaleX(1); }
+  #sitio .nav .js-entrar { color: var(--oro-2); font-weight: 600; font-size: .95rem; text-decoration: none; white-space: nowrap; }
+  @media (max-width: 880px) { #sitio .nav .lnk { display: none; } #sitio .nav { gap: 14px; } }
+  @media (max-width: 440px) { #sitio .brand small { display: none; } #sitio .brand > span { font-size: 1.35rem; } }
+  @media (max-width: 400px) {
+    #sitio .site-top .wrap { gap: 10px; } #sitio .nav { gap: 10px; } #sitio .brand > svg { display: none; }
+    #sitio .nav .js-entrar { font-size: .9rem; } #sitio .nav .btn-sm { padding: 0 12px; font-size: .85rem; }
+  }
+  @media (max-width: 340px) { #sitio .site-top .js-entrar { display: none; } }
+
+  /* Botones de la página */
+  #sitio .btn-gold {
+    position: relative; overflow: hidden; border: 0;
+    background: linear-gradient(135deg, var(--oro-2), var(--oro) 55%, #C98A4E);
+    color: #1B1206; box-shadow: 0 12px 32px -14px rgba(227, 168, 104, .8);
+  }
+  #sitio .btn-gold::after {
+    content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
+    transform: skewX(-20deg); transition: left .8s ease;
+  }
+  #sitio .btn-gold:hover::after { left: 130%; }
+  #sitio .btn-line { border: 1px solid rgba(244, 239, 230, .35); color: var(--crema); transition: border-color .3s, color .3s; }
+  #sitio .btn-line:hover { border-color: var(--oro); color: var(--oro-2); }
+
+  /* Portada con cielo estrellado */
+  #sitio .hero {
+    position: relative; isolation: isolate; overflow: hidden;
+    margin-top: -72px; padding: calc(72px + clamp(36px, 8vw, 96px)) 0 clamp(150px, 20vw, 240px);
+    min-height: min(100svh, 940px);
+    background:
+      radial-gradient(90% 70% at 78% 6%, rgba(60, 76, 170, .45) 0%, rgba(60, 76, 170, 0) 60%),
+      radial-gradient(70% 42% at 50% 100%, rgba(227, 168, 104, .3) 0%, rgba(227, 168, 104, 0) 70%),
+      linear-gradient(180deg, var(--n0) 0%, #0B1130 55%, #1A1838 100%);
+  }
+  #sitio .sky { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+  #sitio .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(28px, 6vw, 80px); align-items: center; }
+  @media (max-width: 900px) { #sitio .hero-grid { grid-template-columns: minmax(0, 1fr); } }
+  #sitio h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(3rem, 7.6vw, 5.7rem); line-height: .98; letter-spacing: -0.01em; margin: 0 0 24px; max-width: 12ch; text-wrap: balance; }
+  #sitio .lead { font-size: clamp(1.06rem, 1.6vw, 1.2rem); color: var(--suave); max-width: 46ch; margin: 0 0 32px; }
+  #sitio .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  #sitio .where { margin: 24px 0 0; color: var(--tenue); font-size: .95rem; }
+
+  #sitio .constel { margin: 0; justify-self: center; width: 100%; max-width: 470px; }
+  #sitio .constel svg { display: block; width: 100%; height: auto; overflow: visible; }
+  #sitio .constel .ln { fill: none; stroke: var(--oro); stroke-opacity: .55; stroke-width: 1.1; stroke-dasharray: 1; stroke-dashoffset: 1; animation: trazo 1.3s cubic-bezier(.4, 0, .2, 1) forwards; animation-delay: calc(.9s + var(--i) * .22s); }
+  #sitio .constel .halo { opacity: 0; animation: aparece 1.4s ease forwards; animation-delay: calc(.5s + var(--i) * .15s); }
+  #sitio .constel .st { fill: #FFF3DF; opacity: 0; animation: aparece .7s ease forwards, titila 4.5s ease-in-out infinite; animation-delay: calc(.5s + var(--i) * .15s), calc(3.2s + var(--i) * .6s); }
+  #sitio .constel .st.core { fill: var(--oro-2); }
+  #sitio .constel text { font-family: var(--font); font-size: 13px; font-weight: 500; fill: var(--suave); opacity: 0; animation: aparece .9s ease forwards; animation-delay: calc(1.7s + var(--i) * .18s); }
+  #sitio .constel text.core { font-family: var(--serif); font-size: 18px; font-weight: 600; font-style: italic; fill: var(--oro-2); }
+  @keyframes trazo { to { stroke-dashoffset: 0; } }
+  @keyframes aparece { to { opacity: 1; } }
+  @keyframes titila { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+  #sitio .badlands { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: clamp(90px, 14vw, 200px); z-index: 0; }
+
+  /* Secciones */
+  #sitio section { padding: clamp(64px, 9vw, 120px) 0; }
+  #sitio h2 { font-family: var(--serif); font-weight: 600; font-size: clamp(2.3rem, 4.8vw, 3.5rem); line-height: 1.03; margin: 0 0 16px; max-width: 18ch; text-wrap: balance; }
+  #sitio .section-lead { color: var(--tenue); max-width: 54ch; margin: 0 0 44px; font-size: 1.05rem; }
+  #sitio h3 { margin: 0; font-family: var(--serif); font-weight: 600; font-size: 1.7rem; line-height: 1.12; }
+
+  /* La diferencia: cuaderno contra sistema */
+  #sitio .diff-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 6vw, 80px); align-items: center; }
+  @media (max-width: 900px) { #sitio .diff-grid { grid-template-columns: minmax(0, 1fr); } }
+  #sitio .diff .section-lead { margin-bottom: 0; }
+  #sitio .switch { display: inline-flex; padding: 4px; margin-bottom: 22px; background: rgba(255, 255, 255, .04); border: 1px solid var(--linea); border-radius: 999px; }
+  #sitio .switch button { font: inherit; font-weight: 600; font-size: .95rem; min-height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; color: var(--tenue); cursor: pointer; transition: background-color .3s, color .3s; }
+  #sitio .switch button[aria-pressed="true"] { background: linear-gradient(135deg, var(--oro-2), var(--oro)); color: #1B1206; }
+  #sitio .frame { display: grid; grid-template-columns: minmax(0, 1fr); }
+  #sitio .frame > * { grid-area: 1 / 1; transition: opacity .45s ease, transform .65s cubic-bezier(.2, .8, .2, 1), visibility 0s; }
+  #sitio .frame[data-view="cuaderno"] .app, #sitio .frame[data-view="sistema"] .notebook {
+    opacity: 0; visibility: hidden;
+    transition: opacity .45s ease, transform .65s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .45s;
+  }
+  #sitio .notebook {
+    --m: 52px; align-self: start; overflow: hidden; background-color: #F6F1E6;
+    background-image:
+      linear-gradient(90deg, transparent var(--m), #D0464F var(--m), #D0464F calc(var(--m) + 2px), transparent calc(var(--m) + 2px)),
+      repeating-linear-gradient(180deg, transparent 0 35px, #C6D3EA 35px 36px);
+    border-radius: 6px; box-shadow: 0 34px 70px -30px rgba(0, 0, 0, .85);
+    padding: 36px 22px 36px calc(var(--m) + 16px); transform: rotate(-1.6deg);
+    font-family: var(--hand); color: #22409E; font-size: clamp(.8rem, 3.9vw, 1.3rem); line-height: 36px;
+  }
+  #sitio .frame[data-view="sistema"] .notebook { transform: rotate(0deg) scale(.97); }
+  @media (max-width: 420px) { #sitio .notebook { --m: 34px; padding-right: 14px; } }
+  #sitio .hand { list-style: none; margin: 0; padding: 0; }
+  #sitio .hand li { display: flex; justify-content: space-between; gap: 12px; white-space: nowrap; }
+  .anim #sitio .demo.in .hand li { clip-path: inset(0 100% 0 0); animation: write .6s ease-out forwards; animation-delay: calc(var(--i) * .38s + .35s); }
+  #sitio .hand .date { color: #6B7390; }
+  #sitio .hand .doubt { color: #D0464F; font-weight: 700; }
+  @keyframes write { to { clip-path: inset(0 0 0 0); } }
+  #sitio .app {
+    align-self: start; color: var(--suave); border: 1px solid var(--linea); border-radius: 20px; padding: clamp(16px, 3vw, 22px);
+    background: linear-gradient(180deg, rgba(26, 34, 76, .95), rgba(14, 20, 48, .95));
+    box-shadow: 0 34px 70px -30px rgba(0, 0, 0, .85), 0 0 0 1px rgba(227, 168, 104, .06);
+  }
+  #sitio .frame[data-view="cuaderno"] .app { transform: rotate(-1.6deg) translateY(10px); }
+  #sitio .app-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  #sitio .app-head strong { font-size: 1.08rem; color: var(--crema); }
+  #sitio .app-head span { color: var(--tenue); font-size: .9rem; }
+  #sitio .sums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 12px; }
+  #sitio .sums div { background: rgba(255, 255, 255, .04); border: 1px solid rgba(244, 239, 230, .06); border-radius: 12px; padding: 10px 12px; }
+  #sitio .sums dt { font-size: .8rem; color: var(--tenue); }
+  #sitio .sums dd { margin: 0; font-weight: 700; color: var(--crema); font-size: clamp(.92rem, 2.6vw, 1.08rem); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #sitio .sums .caja dd { color: #86D9B4; }
+  #sitio .rows { list-style: none; margin: 0; padding: 0; }
+  #sitio .rows li { display: grid; grid-template-columns: 58px 1fr auto; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--linea); font-size: .95rem; }
+  #sitio .frame[data-view="sistema"] .rows li { animation: rowin .4s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i) * .07s + .12s); }
+  @keyframes rowin { from { opacity: 0; transform: translateX(-10px); } }
+  #sitio .tag { font-size: .75rem; font-weight: 700; padding: 3px 0; border-radius: 6px; text-align: center; }
+  #sitio .tag.venta { background: rgba(227, 168, 104, .16); color: var(--oro-2); }
+  #sitio .tag.fiado { background: rgba(255, 120, 140, .14); color: #FF9DAE; }
+  #sitio .tag.gasto { background: rgba(255, 255, 255, .06); color: var(--tenue); }
+  #sitio .amt { color: var(--crema); font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  #sitio .alert { margin: 12px 0 0; padding: 12px 14px; border-radius: 12px; font-size: .92rem; line-height: 1.45; background: rgba(255, 120, 140, .1); color: #F4D5DB; }
+  #sitio .ready { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: .9rem; font-weight: 600; color: #86D9B4; }
+
+  /* Servicios */
+  #sitio .ruled { list-style: none; margin: 0; padding: 0; border-top: 1px solid rgba(227, 168, 104, .45); }
+  #sitio .ruled li { display: grid; grid-template-columns: 26px minmax(200px, 1fr) 2fr; gap: 8px 28px; align-items: baseline; padding: 30px 0; border-bottom: 1px solid var(--linea); }
+  #sitio .ruled .mark { color: var(--oro); align-self: center; }
+  #sitio .ruled p { margin: 0; color: var(--tenue); max-width: 60ch; }
+  @media (max-width: 700px) { #sitio .ruled li { grid-template-columns: 22px minmax(0, 1fr); } #sitio .ruled p { grid-column: 2; } }
+
+  /* Proyectos */
+  #sitio #proyectos { background: linear-gradient(180deg, var(--n1), var(--n2) 18%, var(--n2) 82%, var(--n1)); }
+  #sitio .project { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 12px 56px; padding: 36px 0; border-top: 1px solid var(--linea); }
+  #sitio .project:last-child { border-bottom: 1px solid var(--linea); }
+  #sitio .for { font-family: var(--serif); font-style: italic; font-size: 1.25rem; color: var(--oro); margin: 0 0 6px; }
+  #sitio .project p.desc { margin: 0 0 14px; max-width: 62ch; color: var(--suave); }
+  #sitio .feat { list-style: none; margin: 0; padding: 0; color: var(--tenue); columns: 2; column-gap: 32px; }
+  #sitio .feat li { position: relative; break-inside: avoid; margin-bottom: 6px; padding-left: 16px; }
+  #sitio .feat li::before { content: ""; position: absolute; left: 0; top: .66em; width: 5px; height: 5px; border-radius: 50%; background: var(--oro); box-shadow: 0 0 8px rgba(227, 168, 104, .9); }
+  @media (max-width: 760px) { #sitio .project { grid-template-columns: minmax(0, 1fr); } #sitio .feat { columns: 1; } }
+
+  /* Proceso: los pasos unidos como una constelación */
+  #sitio .steps { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px; }
+  #sitio .steps::before {
+    content: ""; position: absolute; left: 28px; right: 28px; top: 28px; height: 1px;
+    background: linear-gradient(90deg, rgba(227, 168, 104, .15), rgba(227, 168, 104, .75), rgba(227, 168, 104, .15));
+    transform-origin: left;
+  }
+  .anim #sitio .steps::before { transform: scaleX(0); transition: transform 1.8s cubic-bezier(.4, 0, .2, 1) .2s; }
+  .anim #sitio .steps.in::before { transform: scaleX(1); }
+  #sitio .steps li { position: relative; }
+  #sitio .num {
+    position: relative; width: 56px; height: 56px; margin-bottom: 18px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--n1); border: 1px solid rgba(227, 168, 104, .65); box-shadow: 0 0 26px -6px rgba(227, 168, 104, .55);
+    color: var(--oro-2); font-family: var(--serif); font-size: 1.7rem; font-weight: 600;
+  }
+  #sitio .steps h3 { font-size: 1.45rem; }
+  #sitio .steps p { margin: 8px 0 0; color: var(--tenue); font-size: .98rem; }
+  @media (max-width: 1000px) {
+    #sitio .steps { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    #sitio .steps::before { left: 28px; right: auto; top: 28px; bottom: 28px; width: 1px; height: auto; background: linear-gradient(180deg, rgba(227, 168, 104, .15), rgba(227, 168, 104, .75), rgba(227, 168, 104, .15)); transform-origin: top; }
+    .anim #sitio .steps::before { transform: scaleY(0); }
+    .anim #sitio .steps.in::before { transform: scaleY(1); }
+    #sitio .steps li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 0 18px; }
+    #sitio .steps .num { margin: 0; grid-row: span 2; }
+    #sitio .steps h3, #sitio .steps p { grid-column: 2; }
+    #sitio .steps h3 { align-self: end; }
+  }
+
+  /* Sobre mí */
+  #sitio .about { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px 64px; align-items: end; }
+  #sitio .about p { margin: 0 0 14px; max-width: 58ch; color: var(--suave); }
+  #sitio .sign { font-family: var(--serif); font-style: italic; font-weight: 500; font-size: clamp(3.2rem, 7vw, 4.8rem); color: var(--oro); line-height: 1; margin: 0; transform: rotate(-4deg); text-shadow: 0 0 34px rgba(227, 168, 104, .35); }
+  @media (max-width: 760px) { #sitio .about { grid-template-columns: minmax(0, 1fr); } }
+
+  /* Preguntas */
+  #sitio .faq { max-width: 800px; border-top: 1px solid rgba(227, 168, 104, .45); }
+  #sitio .faq details { border-bottom: 1px solid var(--linea); }
+  #sitio .faq summary { list-style: none; cursor: pointer; position: relative; padding: 22px 48px 22px 0; font-weight: 600; font-size: 1.12rem; color: var(--crema); }
+  #sitio .faq summary::-webkit-details-marker { display: none; }
+  #sitio .faq summary::after { content: "+"; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 1.8rem; font-weight: 300; line-height: 1; color: var(--oro); transition: transform .3s ease; }
+  #sitio .faq details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+  #sitio .faq details p { margin: 0 0 22px; color: var(--tenue); max-width: 62ch; }
+
+  /* Contacto */
+  #sitio .cta-box {
+    position: relative; overflow: hidden; isolation: isolate; border-radius: 28px; border: 1px solid rgba(227, 168, 104, .3);
+    padding: clamp(36px, 6vw, 72px); display: grid; grid-template-columns: minmax(0, 1.5fr) auto; gap: 24px 40px; align-items: center;
+    background:
+      radial-gradient(80% 120% at 100% 0%, rgba(60, 76, 170, .5), rgba(60, 76, 170, 0) 60%),
+      radial-gradient(60% 90% at 0% 100%, rgba(227, 168, 104, .22), rgba(227, 168, 104, 0) 70%),
+      var(--n2);
+  }
+  #sitio .cta-box h2 { margin-bottom: 12px; }
+  #sitio .cta-box p { margin: 0; color: var(--suave); max-width: 48ch; }
+  @media (max-width: 760px) { #sitio .cta-box { grid-template-columns: minmax(0, 1fr); } }
+  .mini-sky { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .mini-sky i { position: absolute; border-radius: 50%; background: #FFF3DF; box-shadow: 0 0 6px rgba(255, 243, 223, .8); animation: titila 3.8s ease-in-out infinite; }
+
+  #sitio footer { padding: 26px 0 48px; color: var(--tenue); font-size: .92rem; border-top: 1px solid var(--linea); }
+  #sitio footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+  #sitio footer p { margin: 0; }
+  #sitio footer a { color: var(--oro-2); }
+
+  /* Aparición suave al bajar */
+  .anim #sitio .reveal { opacity: 0; transform: translateY(22px); transition: opacity 1s ease, transform 1s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0s); }
+  .anim #sitio .reveal.in { opacity: 1; transform: none; }
+
+  /* ================= Ingreso ================= */
+  #login {
+    position: relative; isolation: isolate; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 24px 18px;
+    background:
+      radial-gradient(90% 60% at 80% 0%, rgba(60, 76, 170, .45), rgba(60, 76, 170, 0) 60%),
+      radial-gradient(70% 45% at 50% 100%, rgba(227, 168, 104, .22), rgba(227, 168, 104, 0) 70%),
+      linear-gradient(180deg, #070B1C, #0B1130 60%, #1A1838);
+    color: #C9CEE0;
+  }
+  .login-card {
+    width: 100%; max-width: 410px; border-radius: 22px; padding: 28px 24px;
+    background: rgba(14, 20, 48, .78); border: 1px solid rgba(244, 239, 230, .14);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .85);
+  }
+  #login .o-h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; font-size: 2.4rem; color: #F4EFE6; margin-top: 6px; }
+  #login .sub { color: #9EA6C4; margin-bottom: 22px; }
+  #login .back { color: #F2CD98; }
+  #login .field > span { color: #C9CEE0; }
+  #login .field input { background: rgba(255, 255, 255, .05); border-color: rgba(244, 239, 230, .22); color: #F4EFE6; }
+  #login .field input:focus { border-color: #E3A868; outline: none; box-shadow: 0 0 0 3px rgba(227, 168, 104, .25); }
+  #login .btn-primary { background: linear-gradient(135deg, #F2CD98, #E3A868 55%, #C98A4E); color: #1B1206; border: 0; }
+  #login :focus-visible { outline-color: #E3A868; }
+  .login-msg { font-size: .92rem; margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; }
+  .login-msg.err { background: rgba(255, 113, 130, .12); color: #FFA3B1; }
+  .login-msg.ok { background: rgba(95, 207, 160, .12); color: #8FE0BC; }
+  .linkbtn { background: none; border: 0; padding: 12px 0 0; color: #F2CD98; font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer; text-decoration: underline; }
+  #cargando { min-height: 60vh; display: grid; place-items: center; color: var(--muted); }
+
+  /* ================= Mi oficina ================= */
+  .o-top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .o-top .o-wrap { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 60px; }
+  .o-brand strong { display: block; font-weight: 800; font-size: 1.08rem; line-height: 1.2; letter-spacing: -0.01em; }
+  #sync { display: block; font-size: .8rem; color: var(--muted); line-height: 1.2; }
+  .o-top-actions { display: flex; gap: 8px; }
+  #o-app { padding-top: 18px; }
+  .o-h1 { font-size: clamp(1.5rem, 5vw, 1.9rem); line-height: 1.15; letter-spacing: -0.02em; margin: 0; font-weight: 800; }
+  .o-h2 { font-size: 1.1rem; font-weight: 700; margin: 26px 0 10px; }
+  .o-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 4px 0 16px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .o-search { margin-bottom: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  @media (max-width: 540px) { .grid2 { grid-template-columns: 1fr; } }
+  .o-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .o-list > li + li { border-top: 1px solid var(--line); }
+  .item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 16px; background: none; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+  .item:hover { background: var(--hover); }
+  .item .main { flex: 1; min-width: 0; }
+  .item b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item small { display: block; color: var(--muted); font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .avatar { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--ink-soft); color: var(--ink); font-weight: 800; }
+  .count { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+  .chip { font-size: .75rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+  .chip.borrador { background: var(--line); color: var(--muted); }
+  .chip.enviada { background: var(--ink-soft); color: var(--ink); }
+  .chip.aprobada { background: var(--ok-soft); color: var(--ok); }
+  .chip.noaprobada { background: var(--danger-soft); color: var(--danger); }
+  .o-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+  .info { margin: 0; }
+  .info > div { display: grid; grid-template-columns: 120px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+  .info > div:first-child { border-top: 0; padding-top: 0; }
+  .info dt { color: var(--muted); font-size: .9rem; }
+  .info dd { margin: 0; overflow-wrap: anywhere; }
+  .info a { color: var(--ink); }
+  .o-empty { text-align: center; padding: 34px 18px; color: var(--muted); }
+  .o-empty p { max-width: 36ch; margin: 0 auto 16px; }
+  details.sec { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; margin-bottom: 10px; }
+  details.sec > summary { list-style: none; cursor: pointer; padding: 16px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  details.sec > summary::-webkit-details-marker { display: none; }
+  details.sec > summary::after { content: "+"; color: var(--ink); font-size: 1.4rem; line-height: 1; font-weight: 500; }
+  details.sec[open] > summary::after { content: "\2212"; }
+  details.sec .in { padding: 2px 16px 4px; }
+  #saveState { font-size: .85rem; color: var(--muted); margin: 4px 0 0; }
+  .note-ui { font-size: .88rem; color: var(--muted); margin: 10px 0 14px; }
+  .preview { background: var(--line); border-radius: 16px; padding: 12px; overflow: hidden; }
+  .page { width: 780px; background: #FFFFFF; padding: 40px; margin: 0 auto; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
+  .tabs {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface);
+    border-top: 1px solid var(--line); display: flex; justify-content: center; gap: 4px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .tabs button {
+    flex: 1; max-width: 180px; min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    border: 0; background: none; font: inherit; font-size: .78rem; font-weight: 600; color: var(--muted); border-radius: 12px; cursor: pointer;
+  }
+  .tabs button[aria-current="page"] { color: var(--ink); background: var(--ink-soft); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 50;
+    transform: translate(-50%, 16px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+    background: var(--text); color: var(--bg); padding: 11px 16px; border-radius: 12px; font-size: .92rem; font-weight: 600;
+    max-width: calc(100vw - 36px); text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .busy { position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 40, .55); display: none; place-items: center; }
+  .busy.show { display: grid; }
+  .busy div { background: var(--surface); color: var(--text); padding: 20px 24px; border-radius: 16px; font-weight: 700; }
+
+  /* ================= Documento de la propuesta (vista previa y PDF) ================= */
+  .doc { width: 700px; background: #FFFFFF; color: #1F2A27; font-family: "Source Sans 3", Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.55; }
+  .doc * { box-sizing: border-box; }
+  .doc p { margin: 0 0 8px; }
+  .doc ul, .doc ol { margin: 0 0 10px; padding-left: 18px; }
+  .doc li { margin-bottom: 3px; }
+  .doc h2 { font-family: "Archivo Narrow", "Arial Narrow", Arial, sans-serif; font-size: 25px; line-height: 1.15; font-weight: 700; color: var(--c); margin: 0 0 10px; }
+  .doc h2 .n { color: #1F2A27; margin-right: 8px; }
+  .doc h3 { font-family: "Archivo Narrow", "Arial Narrow", Arial, sans-serif; font-size: 16px; font-weight: 700; color: #1F2A27; margin: 12px 0 5px; }
+  .doc section { padding: 0 0 20px; }
+  .doc .avoid, .doc .step, .doc .tcard, .doc .mod, .doc tr { break-inside: avoid; page-break-inside: avoid; }
+  .doc .cover { min-height: 900px; display: flex; flex-direction: column; }
+  .doc .brand { display: flex; align-items: center; gap: 9px; font-family: "Archivo Narrow", Arial, sans-serif; font-size: 18px; font-weight: 700; color: var(--c); }
+  .doc .logo { width: 20px; height: 25px; border-radius: 5px; background: var(--a); position: relative; overflow: hidden; }
+  .doc .logo i { position: absolute; left: 0; top: 0; bottom: 0; width: 7px; background: var(--c); }
+  .doc .kicker { margin: 120px 0 10px; font-weight: 700; color: var(--c); font-size: 14px; }
+  .doc .cover h1 { font-family: "Archivo Narrow", "Arial Narrow", Arial, sans-serif; font-size: 46px; line-height: 1.03; letter-spacing: -0.01em; font-weight: 700; color: #1F2A27; margin: 0 0 16px; max-width: 540px; }
+  .doc .cover .lead { font-size: 17px; line-height: 1.45; color: #4A5752; max-width: 500px; margin: 0; }
+  .doc .accent-bar { width: 70px; height: 7px; border-radius: 4px; background: var(--a); margin: 26px 0 30px; }
+  .doc .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 20px; border-top: 2px solid var(--c); padding-top: 14px; }
+  .doc .meta span { display: block; font-size: 11px; color: #6A7671; }
+  .doc .meta b { font-size: 13.5px; }
+  .doc .toc { margin-top: auto; background: var(--t0); border-radius: 12px; padding: 16px 20px; }
+  .doc .toc h3 { margin: 0 0 8px; color: var(--c); }
+  .doc .toc ol { columns: 2; column-gap: 28px; margin: 0; }
+  .doc table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 12.5px; }
+  .doc th { background: var(--t1); text-align: left; padding: 7px 9px; font-weight: 700; border-bottom: 2px solid var(--c); }
+  .doc td { padding: 7px 9px; border-bottom: 1px solid #E2E7E4; vertical-align: top; }
+  .doc td.c, .doc th.c { text-align: center; }
+  .doc td.r, .doc th.r { text-align: right; white-space: nowrap; }
+  .doc .yes { color: var(--c); font-weight: 700; }
+  .doc .no { color: #8A948F; }
+  .doc tr.total td { font-weight: 700; border-top: 2px solid var(--c); border-bottom: 0; background: var(--t0); }
+  .doc .steps { display: grid; gap: 10px; margin: 8px 0 12px; }
+  .doc .step { border: 1px solid var(--t2); background: var(--t0); border-radius: 10px; padding: 12px; }
+  .doc .step .num { width: 26px; height: 26px; border-radius: 50%; background: var(--c); color: #FFFFFF; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .doc .step b { display: block; margin-bottom: 3px; }
+  .doc .note { background: var(--t0); border-left: 4px solid var(--a); border-radius: 6px; padding: 10px 14px; margin: 10px 0; }
+  .doc .note h3 { margin-top: 2px; }
+  .doc .small { font-size: 11.5px; color: #6A7671; }
+  .doc .mods { columns: 2; column-gap: 24px; }
+  .doc .mod h3 { margin-top: 6px; }
+  .doc .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 10px; }
+  .doc .tcard { border: 1px solid var(--t2); border-radius: 10px; padding: 12px; }
+  .doc .tcard h3 { margin: 0 0 4px; color: var(--c); }
+  .doc .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .doc .two > div { background: var(--t0); border-radius: 10px; padding: 12px 14px; }
+  .doc .two h3 { margin-top: 0; color: var(--c); }
+  .doc .st { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #EDF0EE; color: #4A5752; }
+  .doc .st.hecho { background: var(--c); color: #FFFFFF; }
+  .doc .st.sig { background: var(--a); color: #1F2A27; }
+  .doc .firma { margin-top: 40px; padding-top: 12px; border-top: 2px solid var(--c); max-width: 320px; }
+  .doc .firma b { display: block; font-size: 15px; }
+  .doc .firma span { display: block; color: #4A5752; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    #sitio .frame > *, #sitio .frame[data-view] .app, #sitio .frame[data-view] .notebook { transition: none; }
+    #sitio .frame[data-view="sistema"] .rows li { animation: none; }
+    #sitio .constel .ln { animation: none; stroke-dashoffset: 0; }
+    #sitio .constel .st, #sitio .constel .halo, #sitio .constel text { animation: none; opacity: 1; }
+    .mini-sky i { animation: none; }
+    #sitio .btn-gold::after { display: none; }
+    .toast { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================= PÁGINA PÚBLICA ======================= -->
+<div id="sitio">
+  <header class="site-top">
+    <div class="wrap">
+      <a class="brand" href="#inicio">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5c.6 5 4.5 9 10.5 10.5-6 1.5-9.9 5.5-10.5 10.5C11.4 17.5 7.5 13.5 1.5 12 7.5 10.5 11.4 6.5 12 1.5Z" fill="currentColor"/></svg>
+        <span>Andrés Bolívar<small>Páginas web y aplicaciones</small></span>
+      </a>
+      <nav class="nav" aria-label="Principal">
+        <a class="lnk" href="#servicios">Servicios</a>
+        <a class="lnk" href="#proyectos">Proyectos</a>
+        <a class="lnk" href="#proceso">Cómo trabajo</a>
+        <a class="lnk" href="#preguntas">Preguntas</a>
+        <a class="js-entrar" href="#/ingresar">Ingresar</a>
+        <a class="btn btn-gold btn-sm" data-wa href="#contacto">WhatsApp</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="hero">
+      <canvas class="sky" aria-hidden="true"></canvas>
+      <div class="wrap hero-grid">
+        <div>
+          <h1 class="reveal">Su negocio, del cuaderno al celular.</h1>
+          <p class="lead reveal" style="--d:.15s">Hago páginas web y aplicaciones a la medida para negocios de Neiva y el Huila. Ventas, inventario, fiados, turnos y reportes, conectados en un solo lugar.</p>
+          <div class="cta-row reveal" style="--d:.3s">
+            <a class="btn btn-gold" data-wa href="#contacto">Escribirme por WhatsApp</a>
+            <a class="btn btn-line" href="#proyectos">Ver proyectos</a>
+          </div>
+          <p class="where reveal" style="--d:.45s">Neiva, Huila. Atiendo por WhatsApp o voy hasta su negocio.</p>
+        </div>
+
+        <figure class="constel">
+          <svg viewBox="0 0 420 360" role="img" aria-label="Ventas, inventario, clientes, fiados, reportes y turnos, conectados en su negocio">
+            <defs>
+              <radialGradient id="halo">
+                <stop offset="0" stop-color="#F2CD98" stop-opacity=".55"/>
+                <stop offset="1" stop-color="#F2CD98" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <path class="ln" pathLength="1" style="--i:0" d="M70 96 L182 44"/>
+            <path class="ln" pathLength="1" style="--i:1" d="M182 44 L318 92"/>
+            <path class="ln" pathLength="1" style="--i:2" d="M318 92 L372 222"/>
+            <path class="ln" pathLength="1" style="--i:3" d="M372 222 L250 312"/>
+            <path class="ln" pathLength="1" style="--i:4" d="M250 312 L86 262"/>
+            <path class="ln" pathLength="1" style="--i:5" d="M86 262 L70 96"/>
+            <path class="ln" pathLength="1" style="--i:6" d="M206 176 L182 44"/>
+            <path class="ln" pathLength="1" style="--i:7" d="M206 176 L372 222"/>
+            <path class="ln" pathLength="1" style="--i:8" d="M206 176 L86 262"/>
+
+            <circle class="halo" style="--i:0" cx="70" cy="96" r="16" fill="url(#halo)"/>
+            <circle class="halo" style="--i:1" cx="182" cy="44" r="16" fill="url(#halo)"/>
+            <circle class="halo" style="--i:2" cx="318" cy="92" r="16" fill="url(#halo)"/>
+            <circle class="halo" style="--i:3" cx="372" cy="222" r="16" fill="url(#halo)"/>
+            <circle class="halo" style="--i:4" cx="250" cy="312" r="16" fill="url(#halo)"/>
+            <circle class="halo" style="--i:5" cx="86" cy="262" r="16" fill="url(#halo)"/>
+            <circle class="halo" style="--i:6" cx="206" cy="176" r="34" fill="url(#halo)"/>
+
+            <circle class="st" style="--i:0" cx="70" cy="96" r="3.2"/>
+            <circle class="st" style="--i:1" cx="182" cy="44" r="3.2"/>
+            <circle class="st" style="--i:2" cx="318" cy="92" r="3.2"/>
+            <circle class="st" style="--i:3" cx="372" cy="222" r="3.2"/>
+            <circle class="st" style="--i:4" cx="250" cy="312" r="3.2"/>
+            <circle class="st" style="--i:5" cx="86" cy="262" r="3.2"/>
+            <circle class="st core" style="--i:6" cx="206" cy="176" r="5.6"/>
+
+            <text style="--i:0" x="70" y="76" text-anchor="middle">Ventas</text>
+            <text style="--i:1" x="182" y="24" text-anchor="middle">Inventario</text>
+            <text style="--i:2" x="318" y="72" text-anchor="middle">Clientes</text>
+            <text style="--i:3" x="372" y="252" text-anchor="middle">Fiados</text>
+            <text style="--i:4" x="250" y="342" text-anchor="middle">Reportes</text>
+            <text style="--i:5" x="86" y="292" text-anchor="middle">Turnos</text>
+            <text class="core" style="--i:6" x="206" y="212" text-anchor="middle">Su negocio</text>
+          </svg>
+        </figure>
+      </div>
+
+      <svg class="badlands" viewBox="0 0 1440 200" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 200 L0 120 L60 112 L90 96 L130 98 L150 80 L210 82 L240 104 L300 100 L330 78 L360 74 L380 90 L440 92 L470 70 L520 66 L540 84 L600 88 L640 60 L700 58 L720 76 L780 80 L820 64 L870 62 L900 86 L960 90 L990 72 L1040 70 L1070 92 L1130 94 L1160 76 L1210 74 L1240 96 L1300 98 L1330 82 L1380 80 L1440 96 L1440 200 Z" fill="#17152F"/>
+        <path d="M0 120 L60 112 L90 96 L130 98 L150 80 L210 82 L240 104 L300 100 L330 78 L360 74 L380 90 L440 92 L470 70 L520 66 L540 84 L600 88 L640 60 L700 58 L720 76 L780 80 L820 64 L870 62 L900 86 L960 90 L990 72 L1040 70 L1070 92 L1130 94 L1160 76 L1210 74 L1240 96 L1300 98 L1330 82 L1380 80 L1440 96" fill="none" stroke="#E3A868" stroke-opacity=".35" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+        <path d="M0 200 L0 150 L40 146 L70 128 L120 126 L140 140 L200 142 L230 120 L280 118 L300 134 L360 138 L390 116 L450 112 L480 132 L540 136 L570 150 L630 148 L660 124 L720 120 L750 140 L810 144 L840 126 L900 122 L930 146 L990 150 L1020 132 L1080 128 L1110 146 L1170 148 L1200 122 L1260 118 L1290 138 L1350 142 L1380 130 L1440 134 L1440 200 Z" fill="#0A0F24"/>
+      </svg>
+    </section>
+
+    <section id="diferencia" class="diff">
+      <div class="wrap diff-grid">
+        <div>
+          <h2 class="reveal">La misma información, por fin en orden.</h2>
+          <p class="section-lead reveal" style="--d:.12s">Toque «Con su sistema» y vea cómo cambia el día de un negocio cuando las cuentas dejan de estar en papel.</p>
+        </div>
+        <div class="demo reveal" style="--d:.2s">
+          <div class="switch" role="group" aria-label="Comparar cómo se lleva la información">
+            <button type="button" data-view="cuaderno" aria-pressed="true">Con cuaderno</button>
+            <button type="button" data-view="sistema" aria-pressed="false">Con su sistema</button>
+          </div>
+          <div class="frame" data-view="cuaderno">
+            <div class="notebook">
+              <ol class="hand">
+                <li class="date" style="--i:0"><span>Martes</span></li>
+                <li style="--i:1"><span>Venta 2 perfumes</span><span>180.000</span></li>
+                <li style="--i:2"><span>Fiado doña Marta</span><span>35.000</span></li>
+                <li style="--i:3"><span>Pago proveedor</span><span>120.000</span></li>
+                <li style="--i:4"><span>Venta forro cel.</span><span>25.000</span></li>
+                <li style="--i:5"><span>¿Cuánto debe don Luis?</span></li>
+                <li class="doubt" style="--i:6"><span>Total en caja</span><span>¿?</span></li>
+              </ol>
+            </div>
+            <div class="app">
+              <div class="app-head"><strong>Caja de hoy</strong><span>Tienda</span></div>
+              <dl class="sums">
+                <div><dt>Ventas</dt><dd>$&nbsp;205.000</dd></div>
+                <div><dt>Gastos</dt><dd>$&nbsp;120.000</dd></div>
+                <div class="caja"><dt>En caja</dt><dd>$&nbsp;85.000</dd></div>
+              </dl>
+              <ul class="rows">
+                <li style="--i:0"><span class="tag venta">Venta</span><span>2 perfumes</span><span class="amt">$&nbsp;180.000</span></li>
+                <li style="--i:1"><span class="tag fiado">Fiado</span><span>Doña Marta</span><span class="amt">$&nbsp;35.000</span></li>
+                <li style="--i:2"><span class="tag gasto">Gasto</span><span>Pago proveedor</span><span class="amt">$&nbsp;120.000</span></li>
+                <li style="--i:3"><span class="tag venta">Venta</span><span>Forro de celular</span><span class="amt">$&nbsp;25.000</span></li>
+              </ul>
+              <p class="alert">Le deben $&nbsp;83.000: doña Marta $&nbsp;35.000 y don Luis $&nbsp;48.000, este último desde el 15 de septiembre.</p>
+              <p class="ready"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Reporte del mes listo en PDF y Excel</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="servicios">
+      <div class="wrap">
+        <h2 class="reveal">Lo que puedo hacer por su negocio</h2>
+        <p class="section-lead reveal" style="--d:.1s">Cada sistema se hace a la medida de cómo trabaja usted, no al revés.</p>
+        <ul class="ruled">
+          <li class="reveal"><svg class="mark" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5c.6 5 4.5 9 10.5 10.5-6 1.5-9.9 5.5-10.5 10.5C11.4 17.5 7.5 13.5 1.5 12 7.5 10.5 11.4 6.5 12 1.5Z" fill="currentColor"/></svg><h3>Página web para su negocio</h3><p>Para que lo encuentren en Google y le escriban directo al WhatsApp. Muestre sus productos, precios, horarios y ubicación.</p></li>
+          <li class="reveal" style="--d:.08s"><svg class="mark" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5c.6 5 4.5 9 10.5 10.5-6 1.5-9.9 5.5-10.5 10.5C11.4 17.5 7.5 13.5 1.5 12 7.5 10.5 11.4 6.5 12 1.5Z" fill="currentColor"/></svg><h3>Sistema a la medida</h3><p>Ventas, inventario, fiados, clientes, proveedores y turnos del personal. Cada persona entra con su usuario y usted ve todo desde el celular.</p></li>
+          <li class="reveal" style="--d:.16s"><svg class="mark" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5c.6 5 4.5 9 10.5 10.5-6 1.5-9.9 5.5-10.5 10.5C11.4 17.5 7.5 13.5 1.5 12 7.5 10.5 11.4 6.5 12 1.5Z" fill="currentColor"/></svg><h3>App para celular y computador</h3><p>Publicada en Play Store o Microsoft Store, con sus datos guardados de forma segura en la nube.</p></li>
+          <li class="reveal" style="--d:.24s"><svg class="mark" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5c.6 5 4.5 9 10.5 10.5-6 1.5-9.9 5.5-10.5 10.5C11.4 17.5 7.5 13.5 1.5 12 7.5 10.5 11.4 6.5 12 1.5Z" fill="currentColor"/></svg><h3>Soporte mensual</h3><p>Copias de seguridad, arreglos y ajustes para que su sistema siga funcionando mientras usted atiende su negocio.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="proyectos">
+      <div class="wrap">
+        <h2 class="reveal">Algunos proyectos</h2>
+        <p class="section-lead reveal" style="--d:.1s">Sistemas reales, hechos para las necesidades de negocios y trabajadores de la región.</p>
+
+        <article class="project reveal">
+          <div><p class="for">para parqueaderos</p><h3>Control de parqueadero</h3></div>
+          <div>
+            <p class="desc">Se anota la placa al entrar y el sistema cobra solo según el tiempo que estuvo el vehículo. Maneja mensualidades para carro, moto, bus, chiva y tractomula.</p>
+            <ul class="feat"><li>Facturación e IVA</li><li>Recaudo por semana, quincena y mes</li><li>Perfiles de administrador, secretaria y trabajadores</li><li>Turnos del personal</li><li>Exportar a Excel y PDF</li></ul>
+          </div>
+        </article>
+        <article class="project reveal">
+          <div><p class="for">para tiendas</p><h3>Sistema de ventas para perfumería</h3></div>
+          <div>
+            <p class="desc">Punto de venta con inventario completo: cada producto con foto, marca, volumen y precio. Incluye un catálogo virtual para compartir con los clientes por WhatsApp.</p>
+            <ul class="feat"><li>Ventas y deudas de clientes</li><li>Proveedores y finanzas</li><li>Usuarios para cada empleado</li><li>Datos en la nube</li></ul>
+          </div>
+        </article>
+        <article class="project reveal">
+          <div><p class="for">para proveedores</p><h3>App contable entre proveedor y cliente</h3></div>
+          <div>
+            <p class="desc">Cuando el proveedor registra una venta, al cliente le aparece automáticamente como compra. Se instala desde Play Store y Microsoft Store.</p>
+            <ul class="feat"><li>Ventas y facturas</li><li>Inventario</li><li>Créditos por cobrar</li><li>Gastos y compras</li></ul>
+          </div>
+        </article>
+        <article class="project reveal">
+          <div><p class="for">para empresas de vigilancia</p><h3>Turnos y horas extra</h3></div>
+          <div>
+            <p class="desc">Cada guarda registra sus turnos de 12 horas y el sistema suma las horas extra y el valor a pagar. El administrador ve a todo el equipo.</p>
+            <ul class="feat"><li>Días adicionales y descansos</li><li>Valores configurables</li><li>Descargas en PDF y Excel</li><li>Un usuario por persona</li></ul>
+          </div>
+        </article>
+        <article class="project reveal">
+          <div><p class="for">para fincas</p><h3>Gastos de cultivo de café</h3></div>
+          <div>
+            <p class="desc">Registro de todo lo que cuesta sacar adelante un cultivo, para saber cuánto se invirtió de verdad.</p>
+            <ul class="feat"><li>Insumos</li><li>Pago a trabajadores</li><li>Transporte</li></ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="proceso">
+      <div class="wrap">
+        <h2 class="reveal">Cómo trabajamos</h2>
+        <p class="section-lead reveal" style="--d:.1s">Sin sorpresas: usted sabe qué recibe, cuánto cuesta y cuándo se entrega.</p>
+        <ol class="steps">
+          <li class="reveal"><span class="num">1</span><h3>Hablamos</h3><p>Me cuenta cómo funciona su negocio hoy y qué le quita tiempo. Por WhatsApp o en su local.</p></li>
+          <li class="reveal" style="--d:.12s"><span class="num">2</span><h3>Cotización por escrito</h3><p>Le envío qué incluye, cuánto cuesta y en cuánto tiempo se entrega.</p></li>
+          <li class="reveal" style="--d:.24s"><span class="num">3</span><h3>Desarrollo con avances</h3><p>Con el 50 % de anticipo empiezo y le voy mostrando avances para que opine.</p></li>
+          <li class="reveal" style="--d:.36s"><span class="num">4</span><h3>Entrega y capacitación</h3><p>Le enseño a usar el sistema a usted y a su equipo. Tiene 30 días de garantía.</p></li>
+          <li class="reveal" style="--d:.48s"><span class="num">5</span><h3>Soporte si lo necesita</h3><p>Mensualidad opcional para copias de seguridad, arreglos y ajustes.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="sobre-mi">
+      <div class="wrap about">
+        <div>
+          <h2 class="reveal">Quién está detrás</h2>
+          <p class="reveal" style="--d:.1s">Soy Andrés Felipe Bolívar, de Neiva. Estudio Ingeniería en Inteligencia Artificial en CORHUILA y desarrollo sistemas para negocios que quieren dejar el papel sin complicarse.</p>
+          <p class="reveal" style="--d:.2s">Me gusta entender primero cómo trabaja cada negocio, para que el sistema se adapte a usted y no le toque aprender algo complicado.</p>
+        </div>
+        <p class="sign reveal" style="--d:.3s" aria-hidden="true">Andrés</p>
+      </div>
+    </section>
+
+    <section id="preguntas">
+      <div class="wrap">
+        <h2 class="reveal">Preguntas frecuentes</h2>
+        <div class="faq reveal" style="--d:.1s">
+          <details><summary>¿Cuánto cuesta?</summary><p>Depende de lo que necesite su negocio. La cotización no tiene costo y se la envío por escrito, con el precio y el tiempo de entrega claros.</p></details>
+          <details><summary>¿Funciona en el celular?</summary><p>Sí. Todo lo que hago funciona en celular, tablet y computador.</p></details>
+          <details><summary>Tengo todo en cuadernos o en Excel. ¿Toca empezar de cero?</summary><p>No. Pasamos su información al sistema para que siga desde donde va.</p></details>
+          <details><summary>¿Mis datos quedan seguros?</summary><p>Quedan guardados en la nube de Google, con usuario y contraseña para cada persona. Las cuentas quedan a nombre suyo.</p></details>
+          <details><summary>¿Y si algo falla después de la entrega?</summary><p>Tiene 30 días de garantía para corregir errores sin costo. Después puede tomar el soporte mensual.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto">
+      <div class="wrap">
+        <div class="cta-box reveal">
+          <div class="mini-sky" aria-hidden="true"></div>
+          <div>
+            <h2>Cuénteme qué necesita su negocio</h2>
+            <p>Escríbame por WhatsApp y le respondo con una propuesta. La cotización no tiene costo.</p>
+          </div>
+          <a class="btn btn-gold" data-wa href="#contacto">Escribirme por WhatsApp</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Andrés Felipe Bolívar Arias. Páginas web y aplicaciones en Neiva, Huila.</p>
+      <p>© 2026. <a class="js-entrar" href="#/ingresar">Ingresar</a></p>
+    </div>
+  </footer>
+</div>
+
+<!-- ======================= INGRESO ======================= -->
+<div id="login" hidden>
+  <div class="mini-sky" aria-hidden="true"></div>
+  <div class="login-card">
+    <a class="back" href="#inicio"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Volver a la página</a>
+    <h1 class="o-h1">Ingresar</h1>
+    <p class="sub">Acceso a Mi oficina: clientes y propuestas.</p>
+    <p id="loginMsg" class="login-msg" role="alert" hidden></p>
+    <form id="loginForm" novalidate>
+      <label class="field"><span>Correo</span><input id="lg_email" type="email" autocomplete="username" inputmode="email"></label>
+      <label class="field"><span>Contraseña</span><input id="lg_pass" type="password" autocomplete="current-password"></label>
+      <button class="btn btn-primary" type="submit" id="lg_btn" style="width:100%">Ingresar</button>
+    </form>
+    <button type="button" class="linkbtn" id="lg_reset">Olvidé mi contraseña</button>
+  </div>
+</div>
+
+<div id="cargando" hidden><p>Cargando…</p></div>
+
+<!-- ======================= MI OFICINA ======================= -->
+<div id="oficina" hidden>
+  <header class="o-top">
+    <div class="o-wrap">
+      <div class="o-brand"><strong>Mi oficina</strong><span id="sync">Conectando…</span></div>
+      <div class="o-top-actions">
+        <a class="btn btn-sm" href="#inicio">Mi página</a>
+        <button class="btn btn-sm" type="button" id="btnSalir">Salir</button>
+      </div>
+    </div>
+  </header>
+  <main id="o-app" class="o-wrap"></main>
+  <nav class="tabs" aria-label="Secciones">
+    <button type="button" data-tab="clientes">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M2.5 20c.6-3.4 3.3-5.5 6.5-5.5s5.9 2.1 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.7.8 2.8 2.6 3 5.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Clientes
+    </button>
+    <button type="button" data-tab="propuestas">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3V20a1.2 1.2 0 0 1-1.2 1.2H6A1.2 1.2 0 0 1 4.8 20V4A1.2 1.2 0 0 1 6 2.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 3v4.8h4.8M8.5 12.5h7M8.5 16.5h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Propuestas
+    </button>
+    <button type="button" data-tab="datos">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21c.8-4 4-6.5 8-6.5s7.2 2.5 8 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Mis datos
+    </button>
+  </nav>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="busy" id="busy" aria-live="assertive"><div id="busyMsg">Trabajando…</div></div>
+
+<script type="module">
+/* =====================================================================
+   1. CONFIGURACIÓN DE FIREBASE
+   Pegue aquí los datos de su proyecto:
+   Firebase > Configuración del proyecto > Tus apps > App web > firebaseConfig
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "PEGUE_AQUI",
+  authDomain: "PEGUE_AQUI",
+  projectId: "PEGUE_AQUI",
+  storageBucket: "PEGUE_AQUI",
+  messagingSenderId: "PEGUE_AQUI",
+  appId: "PEGUE_AQUI",
+};
+
+/* 2. WhatsApp de los botones de la página */
+const WHATSAPP = "573128288339";
+const MENSAJE = "Hola Andrés, vi su página y me gustaría una cotización para mi negocio.";
+
+const FB_URL = "https://www.gstatic.com/firebasejs/10.12.2/";
+const PDF_URL = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+
+/* ================= Utilidades ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const lines = (t) => String(t || "").split("\n").map((l) => l.trim().replace(/^[-•*]\s*/, "")).filter(Boolean);
+const rawLines = (t) => String(t || "").split("\n").map((l) => l.trim()).filter(Boolean);
+const cells = (t, n) => lines(t).map((l) => { const c = l.split("|").map((x) => x.trim()); while (c.length < n) c.push(""); return c; });
+const paras = (t) => String(t || "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+const has = (t) => String(t || "").trim().length > 0;
+const hoyISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const fmtFecha = (iso) => { if (!iso) return ""; const [y, m, d] = String(iso).split("-").map(Number); if (!y) return iso; return new Date(y, m - 1, d).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" }); };
+const toNum = (v) => { if (/usd|us\$/i.test(v)) return null; const d = String(v).replace(/[^\d]/g, ""); return d ? Number(d) : null; };
+const fmtCOP = (n) => "$ " + n.toLocaleString("es-CO");
+const hexRgb = (h) => { const n = parseInt(h.replace("#", ""), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+const mix = (h, t) => "#" + hexRgb(h).map((x) => Math.round(x * t + 255 * (1 - t)).toString(16).padStart(2, "0")).join("");
+const normHex = (h, d) => (/^#[0-9a-f]{6}$/i.test(h || "") ? h : d);
+const iniciales = (s) => String(s || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+const waLink = (tel) => { let d = String(tel || "").replace(/\D/g, ""); if (d.length === 10) d = "57" + d; return d ? "https://wa.me/" + d : ""; };
+const chevron = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ls = {
+  get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
+  del: (k) => { try { localStorage.removeItem(k); } catch (e) {} },
+};
+
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 3200); }
+function busy(on, msg) { $("#busyMsg").textContent = msg || "Trabajando…"; $("#busy").classList.toggle("show", on); }
+function setSync(msg) { $("#sync").textContent = msg; }
+
+/* ================= Página pública ================= */
+let recrearCielo = () => {};
+const menosMovimiento = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+document.querySelectorAll("[data-wa]").forEach((a) => {
+  a.href = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(MENSAJE);
+  a.target = "_blank"; a.rel = "noopener";
+});
+
+(function demoCuaderno() {
+  const frame = $("#sitio .frame");
+  if (!frame) return;
+  const notebook = frame.querySelector(".notebook"), app = frame.querySelector(".app");
+  const buttons = document.querySelectorAll("#sitio .switch button");
+  const setView = (view) => {
+    frame.dataset.view = view;
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+    notebook.inert = view !== "cuaderno"; app.inert = view !== "sistema";
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+  setView("cuaderno");
+})();
+
+/* Encabezado: se vuelve sólido al bajar */
+(function cabecera() {
+  const h = $("#sitio .site-top");
+  const f = () => h.classList.toggle("solid", window.scrollY > 24);
+  window.addEventListener("scroll", f, { passive: true });
+  f();
+})();
+
+/* Aparición suave de cada bloque al llegar a él */
+(function revelar() {
+  const els = document.querySelectorAll("#sitio .reveal, #sitio .steps");
+  if (!document.documentElement.classList.contains("anim") || !("IntersectionObserver" in window)) {
+    els.forEach((e) => e.classList.add("in"));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+  els.forEach((e) => io.observe(e));
+})();
+
+/* Estrellas pequeñas en la caja de contacto y en el ingreso */
+function sembrarEstrellas(box, n) {
+  if (!box) return;
+  let html = "";
+  for (let i = 0; i < n; i++) {
+    const s = (Math.random() * 1.6 + 1).toFixed(1);
+    html += `<i style="left:${(Math.random() * 100).toFixed(2)}%;top:${(Math.random() * 100).toFixed(2)}%;width:${s}px;height:${s}px;opacity:${(Math.random() * 0.6 + 0.3).toFixed(2)};animation-delay:${(Math.random() * 4).toFixed(2)}s"></i>`;
+  }
+  box.innerHTML = html;
+}
+sembrarEstrellas($("#sitio .cta-box .mini-sky"), 28);
+sembrarEstrellas($("#login .mini-sky"), 70);
+
+/* Cielo de la portada: estrellas que titilan y, de vez en cuando, una estrella fugaz */
+(function cielo() {
+  const cv = $("#sitio .sky");
+  if (!cv || !cv.getContext) return;
+  const ctx = cv.getContext("2d");
+  let W = 0, H = 0, stars = [], raf = null, visible = true, fugaz = null, proxima = 2600;
+
+  function crear() {
+    const r = cv.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const nuevoW = Math.round(r.width);
+    H = Math.round(r.height);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (nuevoW !== W || !stars.length) {
+      W = nuevoW;
+      const n = Math.min(260, Math.round((W * H) / 4800));
+      stars = Array.from({ length: n }, () => ({
+        x: Math.random() * W, y: Math.random() * H * 0.82,
+        r: Math.random() * 1.15 + 0.25, a: Math.random() * 0.6 + 0.3,
+        s: Math.random() * 1.4 + 0.4, p: Math.random() * Math.PI * 2, calida: Math.random() < 0.2,
+      }));
+    }
+    dibujar(0);
+  }
+
+  function dibujar(t) {
+    ctx.clearRect(0, 0, W, H);
+    for (const st of stars) {
+      const tw = menosMovimiento ? 1 : 0.62 + 0.38 * Math.sin((t / 1000) * st.s + st.p);
+      ctx.globalAlpha = st.a * tw;
+      ctx.fillStyle = st.calida ? "#F6D7A8" : "#FFFFFF";
+      ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill();
+    }
+    if (!menosMovimiento) {
+      if (!fugaz && t > proxima) {
+        fugaz = { x: W * (0.35 + Math.random() * 0.6), y: H * (0.05 + Math.random() * 0.3), vx: -(5 + Math.random() * 3), vy: 1.8 + Math.random() * 1.2, vida: 0 };
+        proxima = t + 7000 + Math.random() * 9000;
+      }
+      if (fugaz) {
+        fugaz.vida++; fugaz.x += fugaz.vx; fugaz.y += fugaz.vy;
+        const cola = 16, x2 = fugaz.x - fugaz.vx * cola, y2 = fugaz.y - fugaz.vy * cola;
+        const g = ctx.createLinearGradient(fugaz.x, fugaz.y, x2, y2);
+        g.addColorStop(0, "rgba(255, 244, 225, .95)"); g.addColorStop(1, "rgba(255, 244, 225, 0)");
+        ctx.globalAlpha = Math.max(0, 1 - fugaz.vida / 55);
+        ctx.strokeStyle = g; ctx.lineWidth = 1.5; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(fugaz.x, fugaz.y); ctx.lineTo(x2, y2); ctx.stroke();
+        if (fugaz.vida > 55) fugaz = null;
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function ciclo(t) { dibujar(t); raf = visible ? requestAnimationFrame(ciclo) : null; }
+
+  recrearCielo = crear;
+  crear();
+  let rt;
+  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(crear, 150); });
+  if (!menosMovimiento) {
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(([e]) => {
+        visible = e.isIntersecting;
+        if (visible && !raf) raf = requestAnimationFrame(ciclo);
+      }).observe(cv);
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) { visible = false; } else if (!raf) { visible = true; raf = requestAnimationFrame(ciclo); }
+    });
+    raf = requestAnimationFrame(ciclo);
+  }
+})();
+
+function actualizarEntrar() {
+  document.querySelectorAll(".js-entrar").forEach((a) => {
+    a.textContent = S.user ? "Mi oficina" : "Ingresar";
+    a.href = S.user ? "#/oficina/clientes" : "#/ingresar";
+  });
+}
+
+/* ================= Estado ================= */
+const S = {
+  area: "sitio", fbPromise: null, fbError: null, authReady: false,
+  A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
+  clientes: [], propuestas: [], perfil: null, loaded: { c: false, p: false, f: false },
+  view: { name: "clientes", id: null }, quiet: false, q: "",
+  draft: null, draftId: null,
+};
+const PERFIL_BASE = { nombre: "Andrés Felipe Bolívar Arias", cargo: "Desarrollador", negocio: "", ciudad: "Neiva, Huila", whatsapp: "312 828 8339", correo: "" };
+const perfil = () => Object.assign({}, PERFIL_BASE, S.perfil || {});
+const ESTADOS = ["Borrador", "Enviada", "Aprobada", "No aprobada"];
+const chipClass = (e) => (e || "Borrador").toLowerCase().replace(/\s/g, "");
+const clienteDe = (id) => S.clientes.find((c) => c.id === id);
+const nombreCliente = (c) => (c ? c.negocio || c.nombre || "Cliente" : "Sin cliente");
+
+/* ================= Firebase ================= */
+const configurado = !Object.values(firebaseConfig).some((v) => String(v).includes("PEGUE"));
+function cargarFirebase() {
+  if (S.fbPromise) return S.fbPromise;
+  S.fbPromise = (async () => {
+    if (!configurado) { const e = new Error("sin-config"); e.code = "sin-config"; throw e; }
+    const [appM, authM, fsM] = await Promise.all([
+      import(FB_URL + "firebase-app.js"), import(FB_URL + "firebase-auth.js"), import(FB_URL + "firebase-firestore.js"),
+    ]);
+    const app = appM.initializeApp(firebaseConfig);
+    S.A = authM; S.F = fsM; S.auth = authM.getAuth(app); S.fdb = fsM.getFirestore(app);
+    authM.onAuthStateChanged(S.auth, (u) => {
+      S.user = u || null; S.authReady = true;
+      if (u) { ls.set("sesion", "1"); suscribir(); } else { ls.del("sesion"); desuscribir(); }
+      actualizarEntrar();
+      route();
+    });
+  })();
+  S.fbPromise.catch((e) => { S.fbError = e; S.authReady = true; route(); });
+  return S.fbPromise;
+}
+const ruta = (...segs) => ["usuarios", S.user.uid, ...segs];
+const refDoc = (col, id) => S.F.doc(S.fdb, ...ruta(col, id));
+const refNuevo = (col) => S.F.doc(S.F.collection(S.fdb, ...ruta(col)));
+
+function errDatos(e) {
+  console.error(e);
+  if (e && e.code === "permission-denied") { setSync("Sin permiso"); toast("Sin permiso para los datos. Revise las reglas de Firestore."); }
+  else { setSync("Sin conexión"); }
+}
+function dbError(e) {
+  console.error(e);
+  if (e && e.code === "permission-denied") toast("Sin permiso para guardar. Revise las reglas de Firestore.");
+  else toast("No se pudo guardar. Revise su conexión.");
+}
+function suscribir() {
+  desuscribir();
+  const F = S.F;
+  S.unsubs.push(F.onSnapshot(F.collection(S.fdb, ...ruta("clientes")), (snap) => {
+    S.clientes = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+    S.loaded.c = true; alCambiarDatos();
+  }, errDatos));
+  S.unsubs.push(F.onSnapshot(F.collection(S.fdb, ...ruta("propuestas")), (snap) => {
+    S.propuestas = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+    S.loaded.p = true; alCambiarDatos();
+  }, errDatos));
+  S.unsubs.push(F.onSnapshot(refDoc("config", "perfil"), (d) => {
+    S.perfil = d.exists() ? d.data() : null;
+    S.loaded.f = true; alCambiarDatos();
+  }, errDatos));
+}
+function desuscribir() {
+  S.unsubs.forEach((u) => { try { u(); } catch (e) {} });
+  S.unsubs = []; S.clientes = []; S.propuestas = []; S.perfil = null;
+  S.loaded = { c: false, p: false, f: false }; S.draft = null; S.draftId = null;
+}
+
+/* ================= Ingreso ================= */
+function loginMsg(texto, tipo) {
+  const m = $("#loginMsg");
+  m.hidden = !texto; m.textContent = texto || ""; m.className = "login-msg " + (tipo || "");
+}
+function msgAuth(code) {
+  return ({
+    "auth/invalid-credential": "Correo o contraseña incorrectos.",
+    "auth/invalid-login-credentials": "Correo o contraseña incorrectos.",
+    "auth/wrong-password": "Correo o contraseña incorrectos.",
+    "auth/user-not-found": "Correo o contraseña incorrectos.",
+    "auth/missing-password": "Escriba su contraseña.",
+    "auth/invalid-email": "El correo no es válido.",
+    "auth/missing-email": "Escriba su correo.",
+    "auth/too-many-requests": "Demasiados intentos. Espere unos minutos e intente de nuevo.",
+    "auth/network-request-failed": "No hay conexión a internet.",
+    "auth/user-disabled": "Este usuario está desactivado.",
+    "auth/operation-not-allowed": "Active el ingreso con correo y contraseña en Firebase (Authentication).",
+    "auth/unauthorized-domain": "Agregue esta dirección en Firebase: Authentication, Configuración, Dominios autorizados.",
+  })[code] || "No se pudo ingresar. Intente de nuevo.";
+}
+function prepararLogin() {
+  if (S.fbError) {
+    loginMsg(S.fbError.code === "sin-config"
+      ? "Falta pegar la configuración de Firebase en el archivo."
+      : "No se pudo conectar con Firebase. Revise su internet y recargue la página.", "err");
+  }
+}
+$("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = $("#lg_email").value.trim(), pass = $("#lg_pass").value;
+  if (!email || !pass) { loginMsg("Escriba su correo y su contraseña.", "err"); return; }
+  const btn = $("#lg_btn"); btn.disabled = true; loginMsg("", "");
+  try {
+    await cargarFirebase();
+    await S.A.signInWithEmailAndPassword(S.auth, email, pass);
+    $("#lg_pass").value = "";
+  } catch (err) {
+    loginMsg(err && err.code === "sin-config" ? "Falta pegar la configuración de Firebase en el archivo." : msgAuth(err && err.code), "err");
+  } finally { btn.disabled = false; }
+});
+$("#lg_reset").addEventListener("click", async () => {
+  const email = $("#lg_email").value.trim();
+  if (!email) { loginMsg("Escriba su correo arriba y vuelva a tocar aquí.", "err"); return; }
+  try {
+    await cargarFirebase();
+    await S.A.sendPasswordResetEmail(S.auth, email);
+    loginMsg("Le enviamos un correo para cambiar la contraseña.", "ok");
+  } catch (err) { loginMsg(msgAuth(err && err.code), "err"); }
+});
+$("#btnSalir").addEventListener("click", async () => {
+  if (saveT) await guardarAhora();
+  try { await S.A.signOut(S.auth); } catch (e) {}
+  location.hash = "inicio";
+});
+
+/* ================= Plantilla base de propuesta ================= */
+function propuestaBase(clienteId) {
+  const pf = perfil();
+  return {
+    clienteId: clienteId || "", estado: "Borrador", fecha: hoyISO(), version: "1.0", ciudad: pf.ciudad,
+    color: "#1F5C45", acento: "#F2C94C",
+    nombreProducto: "", titulo: "", subtitulo: "",
+    resumen: "", objetivoGeneral: "", objetivos: "",
+    funcionaIntro: "", pasos: "", ejemplo: "",
+    modulosIntro: "Estas son las funciones que incluye la app.", modulos: "",
+    permisosIntro: "Quien registra el negocio queda como administrador y puede invitar a su equipo por correo electrónico.",
+    roles: "Administrador, Vendedor", permisos: "", permisosNota: "",
+    tecnologia: [
+      "Dónde se guardan los datos | La información se guarda en Firebase, la plataforma en la nube de Google, en un proyecto creado con la cuenta de su negocio. Usted es el dueño de los datos.",
+      "Quién puede ver qué | Reglas de seguridad en el servidor protegen la información, y lo que puede hacer cada persona depende de su rol.",
+      "Sin internet | La app guarda una copia en el dispositivo y sincroniza los cambios cuando vuelve la conexión.",
+      "Acceso | Cada persona entra con su correo y su contraseña, y puede recuperar la contraseña desde la app.",
+    ].join("\n"),
+    dispositivos: [
+      "Celular o tableta Android | Desde Google Play, como cualquier app.",
+      "Computador con Windows | Desde Microsoft Store.",
+      "iPhone o iPad | Desde el navegador Safari, con la opción «Agregar a pantalla de inicio».",
+      "Cualquier otro equipo | Desde el navegador, con la dirección web de la app.",
+    ].join("\n"),
+    dispositivosNota: "", extraTitulo: "", extraTexto: "",
+    etapasIntro: "El desarrollo se entrega por etapas. Al terminar cada una, usted la prueba y da su visto bueno antes de continuar.",
+    etapas: "", inversion: "", formaPago: "50 % de anticipo al aprobar la propuesta y 50 % al entregar.", tiempoEntrega: "",
+    costos: [
+      "Cuenta de Google Play | USD 25 | Pago único para publicar en la tienda de Android.",
+      "Cuenta de Microsoft Store | Gratis | Sin costo de registro.",
+      "Firebase, plan gratuito | Gratis | Suficiente para la operación inicial.",
+      "Dominio web propio | Opcional | Renovación anual según el proveedor.",
+    ].join("\n"),
+    costosNota: "Valores de referencia, sujetos a cambios de cada plataforma.",
+    respDev: ["Construir y probar cada etapa según este alcance.", "Configurar Firebase, las reglas de seguridad y la publicación.", "Capacitar a los administradores y usuarios.", "Entregar las instrucciones de uso y el código de la app."].join("\n"),
+    respCliente: ["Crear o prestar la cuenta de Google del negocio.", "Entregar razón social, NIT, datos de contacto, nombre y logo.", "Revisar cada etapa y dar su visto bueno a tiempo.", "Pagar directamente los costos de funcionamiento."].join("\n"),
+    noIncluye: ["Contabilidad formal ni declaraciones de impuestos.", "Equipos, impresoras o conexión a internet.", "Digitación de información anterior a la puesta en marcha.", "Funciones nuevas que no estén descritas en esta propuesta."].join("\n"),
+    proximos: ["Revisar esta propuesta y resolver dudas.", "Aprobar el alcance y definir el nombre de la app.", "Crear las cuentas necesarias a nombre del negocio.", "Entregar la información para iniciar la primera etapa."].join("\n"),
+    creado: Date.now(), actualizado: Date.now(),
+  };
+}
+
+/* ================= Documento de la propuesta ================= */
+function docHTML(p) {
+  const c = normHex(p.color, "#1F5C45"), a = normHex(p.acento, "#F2C94C");
+  const vars = `--c:${c};--a:${a};--t0:${mix(c, 0.05)};--t1:${mix(c, 0.12)};--t2:${mix(c, 0.28)};`;
+  const pf = perfil(), cli = clienteDe(p.clienteId);
+  const secs = [];
+  const add = (t, lead, body) => secs.push({ t, lead: lead || "", body: body || "" });
+
+  if (has(p.resumen)) add("Resumen", paras(p.resumen));
+
+  const obj = lines(p.objetivos);
+  if (has(p.objetivoGeneral) || obj.length) {
+    add("Objetivos",
+      has(p.objetivoGeneral) ? `<h3>Objetivo general</h3>${paras(p.objetivoGeneral)}` : "",
+      obj.length ? `<h3>Objetivos específicos</h3><ul>${obj.map((o) => `<li>${esc(o)}</li>`).join("")}</ul>` : "");
+  }
+
+  const pasos = cells(p.pasos, 2);
+  if (has(p.funcionaIntro) || pasos.length || has(p.ejemplo)) {
+    const cols = Math.min(Math.max(pasos.length, 1), 3);
+    const steps = pasos.length ? `<div class="steps" style="grid-template-columns:repeat(${cols},1fr)">${pasos.map((s, i) => `<div class="step"><div class="num">${i + 1}</div><b>${esc(s[0])}</b>${esc(s[1])}</div>`).join("")}</div>` : "";
+    const ej = has(p.ejemplo) ? `<div class="note avoid"><h3>Ejemplo</h3>${paras(p.ejemplo)}</div>` : "";
+    add("Cómo funciona", has(p.funcionaIntro) ? paras(p.funcionaIntro) : steps, (has(p.funcionaIntro) ? steps : "") + ej);
+  }
+
+  const mods = [];
+  rawLines(p.modulos).forEach((l) => {
+    if (/^[-•*]/.test(l)) { if (!mods.length) mods.push({ n: "", f: [] }); mods[mods.length - 1].f.push(l.replace(/^[-•*]\s*/, "")); }
+    else mods.push({ n: l, f: [] });
+  });
+  if (mods.length) {
+    add("Alcance por módulo", has(p.modulosIntro) ? paras(p.modulosIntro) : "",
+      `<div class="mods">${mods.map((m) => `<div class="mod">${m.n ? `<h3>${esc(m.n)}</h3>` : ""}<ul>${m.f.map((f) => `<li>${esc(f)}</li>`).join("")}</ul></div>`).join("")}</div>`);
+  }
+
+  const roles = String(p.roles || "").split(",").map((r) => r.trim()).filter(Boolean);
+  const perms = cells(p.permisos, roles.length + 1);
+  if (perms.length && roles.length) {
+    const yn = (v) => (/^s[ií]/i.test(v) ? `<span class="yes">Sí</span>` : /^no/i.test(v) ? `<span class="no">No</span>` : esc(v));
+    const table = `<table><thead><tr><th>Acción</th>${roles.map((r) => `<th class="c">${esc(r)}</th>`).join("")}</tr></thead><tbody>${perms.map((r) => `<tr><td>${esc(r[0])}</td>${roles.map((_, i) => `<td class="c">${yn(r[i + 1])}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    add("Usuarios y permisos", has(p.permisosIntro) ? paras(p.permisosIntro) : "", table + (has(p.permisosNota) ? paras(p.permisosNota) : ""));
+  }
+
+  const tec = cells(p.tecnologia, 2);
+  if (tec.length) add("Tecnología y seguridad", "", `<div class="cards">${tec.map((t) => `<div class="tcard"><h3>${esc(t[0])}</h3>${esc(t[1])}</div>`).join("")}</div>`);
+
+  const disp = cells(p.dispositivos, 2);
+  if (disp.length) {
+    add("Dispositivos y publicación", "",
+      `<table><thead><tr><th>Dispositivo</th><th>Cómo se instala</th></tr></thead><tbody>${disp.map((d) => `<tr><td><b>${esc(d[0])}</b></td><td>${esc(d[1])}</td></tr>`).join("")}</tbody></table>` +
+      (has(p.dispositivosNota) ? `<div class="note avoid">${paras(p.dispositivosNota)}</div>` : ""));
+  }
+
+  if (has(p.extraTitulo) && has(p.extraTexto)) add(p.extraTitulo.trim(), paras(p.extraTexto));
+
+  const etapas = cells(p.etapas, 3);
+  if (etapas.length) {
+    const st = (s) => { if (!s) return ""; const k = /constru|termin|hech|list|entreg/i.test(s) ? "hecho" : /siguien|curso|proces/i.test(s) ? "sig" : ""; return `<span class="st ${k}">${esc(s)}</span>`; };
+    add("Plan de trabajo y entregables", has(p.etapasIntro) ? paras(p.etapasIntro) : "",
+      `<table><thead><tr><th>Etapa</th><th>Entregable</th><th>Estado</th></tr></thead><tbody>${etapas.map((e, i) => `<tr><td><b>${i + 1}. ${esc(e[0])}</b></td><td>${esc(e[1])}</td><td>${st(e[2])}</td></tr>`).join("")}</tbody></table>`);
+  }
+
+  const inv = cells(p.inversion, 2);
+  if (inv.length) {
+    const nums = inv.map((r) => toNum(r[1]));
+    const total = nums.every((n) => n !== null) ? nums.reduce((x, y) => x + y, 0) : null;
+    const table = `<table><thead><tr><th>Concepto</th><th class="r">Valor</th></tr></thead><tbody>${inv.map((r) => `<tr><td>${esc(r[0])}</td><td class="r">${esc(r[1])}</td></tr>`).join("")}${total !== null && inv.length > 1 ? `<tr class="total"><td>Total</td><td class="r">${fmtCOP(total)}</td></tr>` : ""}</tbody></table>`;
+    const extra = (has(p.formaPago) ? `<p><b>Forma de pago:</b> ${esc(p.formaPago)}</p>` : "") + (has(p.tiempoEntrega) ? `<p><b>Tiempo de entrega:</b> ${esc(p.tiempoEntrega)}</p>` : "");
+    add("Inversión", table, extra);
+  }
+
+  const costos = cells(p.costos, 3);
+  if (costos.length) {
+    add("Costos de funcionamiento",
+      `<p>Además del desarrollo, mantener la app en línea tiene estos costos, que se pagan directamente a cada plataforma desde la cuenta de su negocio.</p>`,
+      `<table><thead><tr><th>Concepto</th><th>Valor</th><th>Detalle</th></tr></thead><tbody>${costos.map((r) => `<tr><td><b>${esc(r[0])}</b></td><td style="white-space:nowrap">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table>` +
+      (has(p.costosNota) ? `<p class="small">${esc(p.costosNota)}</p>` : ""));
+  }
+
+  const rd = lines(p.respDev), rc = lines(p.respCliente);
+  if (rd.length || rc.length) {
+    add("Responsabilidades", `<div class="two avoid"><div><h3>Del desarrollador</h3><ul>${rd.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div><div><h3>Del cliente</h3><ul>${rc.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div></div>`);
+  }
+
+  const ni = lines(p.noIncluye);
+  if (ni.length) add("Lo que no incluye", `<p>Para evitar malentendidos, esta propuesta no incluye:</p><ul>${ni.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`);
+
+  const px = lines(p.proximos);
+  if (px.length) add("Próximos pasos", `<ol>${px.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>`);
+
+  const nombre = p.nombreProducto || "Propuesta";
+  const cover = `
+    <div class="cover">
+      <div class="brand"><span class="logo"><i></i></span>${esc(nombre)}</div>
+      <p class="kicker">Propuesta de desarrollo de software</p>
+      <h1>${esc(p.titulo || "Título del proyecto")}</h1>
+      ${has(p.subtitulo) ? `<p class="lead">${esc(p.subtitulo)}</p>` : ""}
+      <div class="accent-bar"></div>
+      <div class="meta">
+        ${cli ? `<div><span>Para</span><b>${esc(nombreCliente(cli))}</b></div>` : ""}
+        <div><span>Presentada por</span><b>${esc(pf.nombre)}</b></div>
+        <div><span>Fecha</span><b>${esc(fmtFecha(p.fecha))}</b></div>
+        <div><span>Ciudad</span><b>${esc(p.ciudad || pf.ciudad)}</b></div>
+        <div><span>Versión</span><b>${esc(p.version || "1.0")}</b></div>
+      </div>
+      ${secs.length ? `<div class="toc"><h3>Contenido</h3><ol>${secs.map((s) => `<li>${esc(s.t)}</li>`).join("")}</ol></div>` : ""}
+    </div>`;
+  const body = secs.map((s, i) => `<section><div class="avoid"><h2><span class="n">${i + 1}</span>${esc(s.t)}</h2>${s.lead}</div>${s.body}</section>`).join("");
+  const contacto = [pf.whatsapp && "WhatsApp " + pf.whatsapp, pf.correo].filter(Boolean).map((x) => `<span>${esc(x)}</span>`).join("");
+  const firma = `<div class="firma avoid"><b>${esc(pf.nombre)}</b><span>${esc(pf.cargo)}${pf.negocio ? ", " + esc(pf.negocio) : ""}</span><span>${esc(pf.ciudad)}</span>${contacto}</div>`;
+  return `<div class="doc" style="${vars}">${cover}<div class="html2pdf__page-break"></div>${body}${firma}</div>`;
+}
+
+/* ================= PDF ================= */
+let pdfLib = null;
+function cargarPDF() {
+  if (window.html2pdf) return Promise.resolve();
+  if (!pdfLib) {
+    pdfLib = new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = PDF_URL; s.onload = res; s.onerror = () => { pdfLib = null; rej(new Error("pdf")); };
+      document.head.appendChild(s);
+    });
+  }
+  return pdfLib;
+}
+async function descargarPDF(p) {
+  busy(true, "Generando PDF…");
+  try { await cargarPDF(); }
+  catch (e) { busy(false); toast("No se pudo cargar el generador de PDF. Revise su conexión."); return; }
+  const holder = document.createElement("div");
+  holder.style.cssText = "position:fixed;left:-10000px;top:0;";
+  holder.innerHTML = docHTML(p);
+  document.body.appendChild(holder);
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const nombre = p.nombreProducto || p.titulo || "Propuesta";
+    const cli = clienteDe(p.clienteId);
+    const file = ("Propuesta " + nombre + (cli ? " - " + nombreCliente(cli) : "")).replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) + ".pdf";
+    const opt = {
+      margin: [0.6, 0.6, 0.75, 0.6], filename: file,
+      image: { type: "jpeg", quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+      pagebreak: { mode: ["css", "legacy"], avoid: [".avoid", ".step", ".tcard", ".mod", "tr"] },
+    };
+    await window.html2pdf().set(opt).from(holder.firstElementChild).toPdf().get("pdf").then((pdf) => {
+      const n = pdf.internal.getNumberOfPages();
+      const W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
+      pdf.setFont("helvetica", "normal"); pdf.setFontSize(8.5); pdf.setTextColor(106, 118, 113);
+      for (let i = 2; i <= n; i++) {
+        pdf.setPage(i);
+        pdf.text("Propuesta " + nombre, 0.6, H - 0.4);
+        pdf.text("Página " + i + " de " + n, W - 0.6, H - 0.4, { align: "right" });
+      }
+    }).save();
+    toast("PDF descargado");
+  } catch (e) {
+    console.error(e); toast("No se pudo generar el PDF. Intente de nuevo.");
+  } finally {
+    holder.remove(); busy(false);
+  }
+}
+
+/* ================= Guardado automático de la propuesta ================= */
+let saveT = null, saving = false, again = false;
+function setSave(m) { const el = $("#saveState"); if (el) el.textContent = m; }
+function programarGuardado() { setSave("Guardando…"); clearTimeout(saveT); saveT = setTimeout(guardarAhora, 900); }
+async function guardarAhora() {
+  clearTimeout(saveT); saveT = null;
+  if (!S.user || !S.draft || !S.draftId) return;
+  if (saving) { again = true; return; }
+  saving = true;
+  const id = S.draftId, data = Object.assign({}, S.draft, { actualizado: Date.now() });
+  try { await S.F.setDoc(refDoc("propuestas", id), data); setSave("Guardado"); }
+  catch (e) { setSave("No se pudo guardar"); dbError(e); }
+  finally { saving = false; if (again) { again = false; guardarAhora(); } }
+}
+
+/* ================= Vistas de la oficina ================= */
+const cargando = () => `<div class="o-empty"><p>Cargando…</p></div>`;
+
+function vClientes() {
+  if (!S.loaded.c) return cargando();
+  const n = S.clientes.length;
+  return `
+    <div class="o-head"><div><h1 class="o-h1">Clientes</h1><p class="sub">${n ? n + (n === 1 ? " cliente" : " clientes") : "Aquí va su lista de clientes"}</p></div>
+      <button class="btn btn-primary" data-act="nuevoCliente">Nuevo cliente</button></div>
+    ${n ? `<input type="search" class="o-search" id="q" placeholder="Buscar por nombre, negocio o teléfono" value="${esc(S.q)}" aria-label="Buscar clientes"><div id="clist">${listaClientes()}</div>`
+        : `<div class="o-card o-empty"><p>Todavía no tiene clientes. Agregue el primero para empezar a hacerle propuestas.</p><button class="btn btn-primary" data-act="nuevoCliente">Agregar cliente</button></div>`}`;
+}
+function listaClientes() {
+  const q = S.q.trim().toLowerCase();
+  const arr = S.clientes.filter((c) => !q || [c.nombre, c.negocio, c.telefono, c.documento].join(" ").toLowerCase().includes(q))
+    .sort((a, b) => nombreCliente(a).localeCompare(nombreCliente(b), "es"));
+  if (!arr.length) return `<p class="o-empty">Ningún cliente coincide con la búsqueda.</p>`;
+  return `<ul class="o-list">${arr.map((c) => {
+    const np = S.propuestas.filter((p) => p.clienteId === c.id).length;
+    return `<li><button class="item" data-act="verCliente" data-id="${c.id}"><span class="avatar">${esc(iniciales(nombreCliente(c)))}</span><span class="main"><b>${esc(nombreCliente(c))}</b><small>${esc(c.negocio ? c.nombre : c.telefono || c.ciudad || "")}</small></span>${np ? `<span class="count">${np} ${np === 1 ? "propuesta" : "propuestas"}</span>` : ""}</button></li>`;
+  }).join("")}</ul>`;
+}
+
+function vCliente(id) {
+  if (!S.loaded.c) return cargando();
+  const c = clienteDe(id);
+  if (!c) return `<button class="back" data-act="ir" data-to="clientes">${chevron}Clientes</button><p class="o-empty">Este cliente ya no existe.</p>`;
+  const props = S.propuestas.filter((p) => p.clienteId === id).sort((a, b) => (b.actualizado || 0) - (a.actualizado || 0));
+  const row = (k, v) => (has(v) ? `<div><dt>${k}</dt><dd>${v}</dd></div>` : "");
+  const wa = waLink(c.telefono);
+  const sinDatos = !has(c.documento) && !has(c.telefono) && !has(c.correo) && !has(c.ciudad) && !has(c.direccion) && !has(c.notas);
+  return `
+    <button class="back" data-act="ir" data-to="clientes">${chevron}Clientes</button>
+    <div class="o-head"><div><h1 class="o-h1">${esc(nombreCliente(c))}</h1>${c.negocio && c.nombre ? `<p class="sub">${esc(c.nombre)}</p>` : ""}</div></div>
+    <div class="actions" style="margin-bottom:16px">
+      <button class="btn btn-primary" data-act="nuevaPropuesta" data-id="${c.id}">Nueva propuesta</button>
+      ${wa ? `<a class="btn" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>` : ""}
+      <button class="btn" data-act="editarCliente" data-id="${c.id}">Editar</button>
+    </div>
+    <div class="o-card"><dl class="info">
+      ${row("NIT o cédula", esc(c.documento))}
+      ${row("Teléfono", c.telefono ? `<a href="tel:${esc(String(c.telefono).replace(/\s/g, ""))}">${esc(c.telefono)}</a>` : "")}
+      ${row("Correo", c.correo ? `<a href="mailto:${esc(c.correo)}">${esc(c.correo)}</a>` : "")}
+      ${row("Ciudad", esc(c.ciudad))}
+      ${row("Dirección", esc(c.direccion))}
+      ${row("Notas", esc(c.notas).replace(/\n/g, "<br>"))}
+      ${sinDatos ? `<div><dt>Datos</dt><dd>Sin datos de contacto. Toque Editar para agregarlos.</dd></div>` : ""}
+    </dl></div>
+    <h2 class="o-h2">Propuestas</h2>
+    ${props.length ? listaPropuestas(props, false) : `<p class="sub">Todavía no tiene propuestas para este cliente.</p>`}
+    <div class="actions" style="margin-top:28px"><button class="btn btn-danger" data-act="eliminarCliente" data-id="${c.id}">Eliminar cliente</button></div>
+    ${props.length ? `<p class="note-ui">Si elimina el cliente, sus propuestas se conservan.</p>` : ""}`;
+}
+
+function vClienteForm(id) {
+  if (id && !S.loaded.c) return cargando();
+  const c = id ? clienteDe(id) : {};
+  if (id && !c) return `<button class="back" data-act="ir" data-to="clientes">${chevron}Clientes</button><p class="o-empty">Este cliente ya no existe.</p>`;
+  const f = (k, label, type = "text", ph = "") => `<label class="field"><span>${label}</span><input id="f_${k}" type="${type}" value="${esc(c[k])}" placeholder="${esc(ph)}"${type === "tel" ? ' inputmode="tel"' : ""}></label>`;
+  return `
+    <button class="back" data-act="ir" data-to="${id ? "cliente" : "clientes"}" data-id="${id || ""}">${chevron}${id ? "Volver" : "Clientes"}</button>
+    <h1 class="o-h1" style="margin-bottom:16px">${id ? "Editar cliente" : "Nuevo cliente"}</h1>
+    <div class="o-card">
+      <div class="grid2">${f("nombre", "Nombre de contacto", "text", "Ej.: Laura Gómez")}${f("negocio", "Nombre del negocio", "text", "Ej.: Veterinaria Patitas")}</div>
+      <div class="grid2">${f("documento", "NIT o cédula")}${f("telefono", "Teléfono o WhatsApp", "tel", "Ej.: 310 000 0000")}</div>
+      <div class="grid2">${f("correo", "Correo", "email")}${f("ciudad", "Ciudad", "text", "Ej.: Neiva")}</div>
+      ${f("direccion", "Dirección")}
+      <label class="field"><span>Notas</span><textarea id="f_notas" rows="3" placeholder="Qué necesita, cómo lo conoció, acuerdos…">${esc(c.notas)}</textarea></label>
+      <div class="actions"><button class="btn btn-primary" data-act="guardarCliente" data-id="${id || ""}">Guardar cliente</button></div>
+    </div>`;
+}
+
+function vPropuestas() {
+  if (!S.loaded.p) return cargando();
+  const arr = [...S.propuestas].sort((a, b) => (b.actualizado || 0) - (a.actualizado || 0));
+  return `
+    <div class="o-head"><div><h1 class="o-h1">Propuestas</h1><p class="sub">${arr.length ? "Toque una para editarla o descargarla" : "Aquí quedan todas sus propuestas"}</p></div>
+      <button class="btn btn-primary" data-act="nuevaPropuesta">Nueva propuesta</button></div>
+    ${arr.length ? listaPropuestas(arr, true)
+      : `<div class="o-card o-empty"><p>Cree su primera propuesta. Después puede duplicarla para otros clientes y solo cambiar lo necesario.</p><button class="btn btn-primary" data-act="nuevaPropuesta">Crear propuesta</button></div>`}`;
+}
+function listaPropuestas(arr, conCliente) {
+  return `<ul class="o-list">${arr.map((p) => {
+    const sub = [conCliente ? nombreCliente(clienteDe(p.clienteId)) : "", fmtFecha(p.fecha)].filter(Boolean).join(", ");
+    return `<li><button class="item" data-act="abrirPropuesta" data-id="${p.id}"><span class="main"><b>${esc(p.titulo || p.nombreProducto || "Propuesta sin título")}</b><small>${esc(sub)}</small></span><span class="chip ${chipClass(p.estado)}">${esc(p.estado || "Borrador")}</span></button></li>`;
+  }).join("")}</ul>`;
+}
+
+const SECCIONES = [
+  { t: "Datos generales", open: true, f: [
+    ["clienteId", "Cliente", "cliente"],
+    ["nombreProducto", "Nombre corto de la app o proyecto", "input", "Ej.: VetConta"],
+    ["titulo", "Título de la portada", "textarea", "Ej.: Aplicación contable para el proveedor y la veterinaria", 2],
+    ["subtitulo", "Frase de la portada", "textarea", "Ej.: Ventas, inventario y cartera en una sola app.", 2],
+    ["grid", [["fecha", "Fecha", "date"], ["version", "Versión", "input", "1.0"]]],
+    ["grid", [["ciudad", "Ciudad", "input", ""], ["estado", "Estado", "estado"]]],
+    ["grid", [["color", "Color principal", "color"], ["acento", "Color de acento", "color"]]],
+  ] },
+  { t: "Resumen y objetivos", f: [
+    ["resumen", "Resumen", "textarea", "Qué es y para qué sirve. Deje una línea en blanco entre párrafos.", 6],
+    ["objetivoGeneral", "Objetivo general", "textarea", "", 3],
+    ["objetivos", "Objetivos específicos", "textarea", "Uno por línea", 5],
+  ] },
+  { t: "Cómo funciona", f: [
+    ["funcionaIntro", "Introducción", "textarea", "", 3],
+    ["pasos", "Pasos", "textarea", "El proveedor vende | Registra la venta con productos y precios\nLe llega a la veterinaria | Aparece como compra por confirmar", 4, "Uno por línea: Título | Explicación."],
+    ["ejemplo", "Ejemplo", "textarea", "Un caso concreto con valores de ejemplo", 4],
+  ] },
+  { t: "Alcance por módulo", f: [
+    ["modulosIntro", "Introducción", "textarea", "", 2],
+    ["modulos", "Módulos y funciones", "textarea", "Inventario\n- Registro de productos\n- Alertas de productos agotándose\nVentas\n- Ventas de contado o a crédito", 10, "Escriba el nombre del módulo en una línea y sus funciones debajo, cada una empezando con guion (-)."],
+  ] },
+  { t: "Usuarios y permisos", f: [
+    ["permisosIntro", "Introducción", "textarea", "", 3],
+    ["roles", "Tipos de usuario", "input", "Administrador, Vendedor", 0, "Sepárelos con comas."],
+    ["permisos", "Permisos", "textarea", "Registrar ventas | Sí | Sí\nVer reportes | Sí | No", 7, "Uno por línea: Acción | Sí o No por cada tipo de usuario, en el mismo orden."],
+    ["permisosNota", "Nota", "textarea", "", 2],
+  ] },
+  { t: "Tecnología y dispositivos", f: [
+    ["tecnologia", "Tecnología y seguridad", "textarea", "", 6, "Uno por línea: Título | Explicación. Borre lo que no aplique."],
+    ["dispositivos", "Dispositivos", "textarea", "", 5, "Uno por línea: Dispositivo | Cómo se instala. Déjelo vacío si es solo una página web."],
+    ["dispositivosNota", "Nota sobre la publicación", "textarea", "Ej.: requisitos de Google Play", 3],
+  ] },
+  { t: "Sección adicional (opcional)", f: [
+    ["extraTitulo", "Título", "input", "Ej.: Facturación electrónica DIAN"],
+    ["extraTexto", "Texto", "textarea", "Deje una línea en blanco entre párrafos", 5],
+  ] },
+  { t: "Plan de trabajo e inversión", f: [
+    ["etapasIntro", "Introducción", "textarea", "", 2],
+    ["etapas", "Etapas", "textarea", "Base | Cuentas de usuario y roles | Construida\nInventario | Productos y lotes | Siguiente", 6, "Una por línea: Etapa | Entregable | Estado."],
+    ["inversion", "Inversión", "textarea", "Desarrollo de la app | $ 3.500.000\nPublicación en tiendas | $ 300.000", 4, "Uno por línea: Concepto | Valor. El total se calcula solo. Déjelo vacío si el precio va en otra cotización."],
+    ["formaPago", "Forma de pago", "textarea", "", 2],
+    ["tiempoEntrega", "Tiempo de entrega", "input", "Ej.: 8 semanas"],
+  ] },
+  { t: "Costos de funcionamiento", f: [
+    ["costos", "Costos", "textarea", "", 5, "Uno por línea: Concepto | Valor | Detalle. Verifique los precios vigentes."],
+    ["costosNota", "Nota", "input", ""],
+  ] },
+  { t: "Responsabilidades y exclusiones", f: [
+    ["respDev", "Del desarrollador", "textarea", "Una por línea", 5],
+    ["respCliente", "Del cliente", "textarea", "Una por línea", 5],
+    ["noIncluye", "Lo que no incluye", "textarea", "Uno por línea", 5],
+  ] },
+  { t: "Próximos pasos", f: [["proximos", "Próximos pasos", "textarea", "Uno por línea", 4]] },
+];
+function campo(def, d) {
+  const [k, label, type, ph = "", rows = 3, help = ""] = def;
+  const v = d[k] ?? "";
+  const small = help ? `<small>${esc(help)}</small>` : "";
+  if (type === "cliente") {
+    const opts = [...S.clientes].sort((a, b) => nombreCliente(a).localeCompare(nombreCliente(b), "es"));
+    return `<label class="field"><span>${label}</span><select data-k="${k}"><option value="">Sin cliente</option>${opts.map((c) => `<option value="${c.id}"${c.id === v ? " selected" : ""}>${esc(nombreCliente(c))}</option>`).join("")}</select></label>`;
+  }
+  if (type === "estado") return `<label class="field"><span>${label}</span><select data-k="${k}">${ESTADOS.map((e) => `<option${e === v ? " selected" : ""}>${e}</option>`).join("")}</select></label>`;
+  if (type === "textarea") return `<label class="field"><span>${label}</span><textarea data-k="${k}" rows="${rows}" placeholder="${esc(ph)}">${esc(v)}</textarea>${small}</label>`;
+  const t = type === "date" ? "date" : type === "color" ? "color" : "text";
+  return `<label class="field"><span>${label}</span><input data-k="${k}" type="${t}" value="${esc(v)}" placeholder="${esc(ph)}">${small}</label>`;
+}
+
+function cargarBorrador(id) {
+  if (S.draftId === id && S.draft) return true;
+  const p = S.propuestas.find((x) => x.id === id);
+  if (!p) return false;
+  const { id: _omit, ...data } = p;
+  S.draft = Object.assign(propuestaBase(p.clienteId), data);
+  S.draftId = id;
+  return true;
+}
+function vPropuesta(id) {
+  if (!cargarBorrador(id)) {
+    if (!S.loaded.p) return cargando();
+    return `<button class="back" data-act="ir" data-to="propuestas">${chevron}Propuestas</button><p class="o-empty">Esta propuesta ya no existe.</p>`;
+  }
+  const d = S.draft;
+  const secs = SECCIONES.map((s) => `
+    <details class="sec"${s.open ? " open" : ""}><summary>${esc(s.t)}</summary><div class="in">
+      ${s.f.map((f) => (f[0] === "grid" ? `<div class="grid2">${f[1].map((g) => campo(g, d)).join("")}</div>` : campo(f, d))).join("")}
+    </div></details>`).join("");
+  return `
+    <button class="back" data-act="ir" data-to="propuestas">${chevron}Propuestas</button>
+    <div class="o-head"><div><h1 class="o-h1">${esc(d.titulo || d.nombreProducto || "Nueva propuesta")}</h1><p id="saveState" aria-live="polite">Los cambios se guardan solos</p></div></div>
+    <div class="actions" style="margin-bottom:16px">
+      <button class="btn btn-primary" data-act="descargar">Descargar PDF</button>
+      <button class="btn" data-act="vista">Vista previa</button>
+    </div>
+    ${secs}
+    <div class="actions" style="margin-top:24px">
+      <button class="btn" data-act="duplicar">Duplicar propuesta</button>
+      <button class="btn btn-danger" data-act="eliminarPropuesta">Eliminar</button>
+    </div>`;
+}
+function vVista(id) {
+  if (!cargarBorrador(id)) {
+    if (!S.loaded.p) return cargando();
+    return `<button class="back" data-act="ir" data-to="propuestas">${chevron}Propuestas</button><p class="o-empty">Esta propuesta ya no existe.</p>`;
+  }
+  return `
+    <button class="back" data-act="ir" data-to="propuesta" data-id="${id}">${chevron}Editar</button>
+    <div class="o-head"><div><h1 class="o-h1">Vista previa</h1></div><button class="btn btn-primary" data-act="descargar">Descargar PDF</button></div>
+    <p class="note-ui">Aquí se ve continua; en el PDF queda dividida en páginas tamaño carta, con la portada aparte.</p>
+    <div class="preview"><div class="page">${docHTML(S.draft)}</div></div>`;
+}
+function vDatos() {
+  if (!S.loaded.f) return cargando();
+  const p = perfil();
+  const f = (k, label, type = "text", help = "") => `<label class="field"><span>${label}</span><input id="p_${k}" type="${type}" value="${esc(p[k])}">${help ? `<small>${help}</small>` : ""}</label>`;
+  return `
+    <div class="o-head"><div><h1 class="o-h1">Mis datos</h1><p class="sub">Aparecen en la portada y en la firma de cada propuesta.</p></div></div>
+    <div class="o-card">
+      <div class="grid2">${f("nombre", "Nombre completo")}${f("cargo", "Cargo")}</div>
+      <div class="grid2">${f("negocio", "Nombre de su negocio", "text", "Opcional")}${f("ciudad", "Ciudad")}</div>
+      <div class="grid2">${f("whatsapp", "WhatsApp", "tel")}${f("correo", "Correo", "email")}</div>
+      <div class="actions"><button class="btn btn-primary" data-act="guardarPerfil">Guardar mis datos</button></div>
+    </div>
+    <p class="note-ui">Sesión iniciada como ${esc(S.user ? S.user.email : "")}.</p>`;
+}
+
+/* ================= Navegación ================= */
+const TAB_DE = { clientes: "clientes", cliente: "clientes", "nuevo-cliente": "clientes", "editar-cliente": "clientes", propuestas: "propuestas", propuesta: "propuestas", vista: "propuestas", datos: "datos" };
+const QUIETAS = ["nuevo-cliente", "editar-cliente", "propuesta", "datos"];
+function listoParaQuieta(name) {
+  if (name === "nuevo-cliente") return true;
+  if (name === "editar-cliente") return S.loaded.c;
+  if (name === "propuesta") return !!S.draft && S.draftId === S.view.id;
+  if (name === "datos") return S.loaded.f;
+  return false;
+}
+function parseHash() {
+  const h = location.hash;
+  if (!h.startsWith("#/")) return { area: "sitio" };
+  const parts = h.slice(2).split("/").filter(Boolean);
+  if (parts[0] === "ingresar") return { area: "login" };
+  if (parts[0] === "oficina") {
+    const name = TAB_DE[parts[1]] ? parts[1] : "clientes";
+    return { area: "oficina", view: { name, id: parts[2] ? decodeURIComponent(parts[2]) : null } };
+  }
+  return { area: "sitio" };
+}
+function mostrar(area) {
+  const antes = S.area;
+  S.area = area;
+  $("#sitio").hidden = area !== "sitio";
+  $("#login").hidden = area !== "login";
+  $("#cargando").hidden = area !== "cargando";
+  $("#oficina").hidden = area !== "oficina";
+  document.body.classList.toggle("en-oficina", area === "oficina");
+  if (area === "sitio" && antes !== "sitio") {
+    requestAnimationFrame(() => recrearCielo());
+    const el = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
+    if (el) el.scrollIntoView(); else window.scrollTo(0, 0);
+  }
+}
+function route() {
+  const r = parseHash();
+  if (r.area === "sitio") { mostrar("sitio"); return; }
+  if (!S.fbPromise) cargarFirebase();
+  if (S.fbError || (S.authReady && !S.user)) { mostrar("login"); prepararLogin(); return; }
+  if (!S.authReady) { mostrar("cargando"); return; }
+  if (r.area === "login") { location.replace("#/oficina/clientes"); return; }
+  if (saveT) guardarAhora();
+  S.view = r.view;
+  mostrar("oficina");
+  renderOficina();
+  window.scrollTo(0, 0);
+}
+function go(name, id) {
+  const h = "#/oficina/" + name + (id ? "/" + encodeURIComponent(id) : "");
+  if (location.hash === h) route(); else location.hash = h;
+}
+function renderOficina() {
+  const v = S.view;
+  const vistas = {
+    clientes: vClientes, cliente: () => vCliente(v.id), "nuevo-cliente": () => vClienteForm(null), "editar-cliente": () => vClienteForm(v.id),
+    propuestas: vPropuestas, propuesta: () => vPropuesta(v.id), vista: () => vVista(v.id), datos: vDatos,
+  };
+  $("#o-app").innerHTML = (vistas[v.name] || vClientes)();
+  S.quiet = QUIETAS.includes(v.name) && listoParaQuieta(v.name);
+  document.querySelectorAll(".tabs button").forEach((b) => {
+    if (b.dataset.tab === TAB_DE[v.name]) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+  if (v.name === "vista") ajustarVista();
+}
+function alCambiarDatos() {
+  if (S.loaded.c && S.loaded.p) setSync("Guardado en la nube");
+  if (S.area !== "oficina" || S.quiet) return;
+  renderOficina();
+}
+function ajustarVista() {
+  const wrap = $(".preview"), page = $(".preview .page");
+  if (!wrap || !page) return;
+  page.style.zoom = Math.min(1, (wrap.clientWidth - 24) / 780);
+}
+window.addEventListener("resize", () => { if (S.area === "oficina" && S.view.name === "vista") ajustarVista(); });
+window.addEventListener("hashchange", route);
+
+/* ================= Acciones ================= */
+function armar(el, texto, fn) {
+  if (el.hasAttribute("data-armed")) { fn(); return; }
+  const orig = el.textContent;
+  el.setAttribute("data-armed", ""); el.textContent = texto;
+  setTimeout(() => { if (el.isConnected) { el.removeAttribute("data-armed"); el.textContent = orig; } }, 4000);
+}
+const ACT = {
+  ir: (el) => go(el.dataset.to, el.dataset.id || null),
+  nuevoCliente: () => go("nuevo-cliente"),
+  verCliente: (el) => go("cliente", el.dataset.id),
+  editarCliente: (el) => go("editar-cliente", el.dataset.id),
+  guardarCliente(el) {
+    const val = (k) => ($("#f_" + k)?.value || "").trim();
+    const data = { nombre: val("nombre"), negocio: val("negocio"), documento: val("documento"), telefono: val("telefono"), correo: val("correo"), ciudad: val("ciudad"), direccion: val("direccion"), notas: ($("#f_notas")?.value || "").trim(), actualizado: Date.now() };
+    if (!data.nombre && !data.negocio) { toast("Escriba al menos el nombre o el negocio."); return; }
+    const id = el.dataset.id;
+    if (id) {
+      S.F.updateDoc(refDoc("clientes", id), data).catch(dbError);
+      go("cliente", id);
+    } else {
+      const ref = refNuevo("clientes");
+      S.F.setDoc(ref, Object.assign(data, { creado: Date.now() })).catch(dbError);
+      go("cliente", ref.id);
+    }
+    toast("Cliente guardado");
+  },
+  eliminarCliente(el) {
+    armar(el, "Toque otra vez para eliminar", () => {
+      S.F.deleteDoc(refDoc("clientes", el.dataset.id)).catch(dbError);
+      toast("Cliente eliminado"); go("clientes");
+    });
+  },
+  nuevaPropuesta(el) {
+    const ref = refNuevo("propuestas");
+    const data = propuestaBase(el.dataset.id || "");
+    S.draft = data; S.draftId = ref.id;
+    S.F.setDoc(ref, data).catch(dbError);
+    go("propuesta", ref.id);
+  },
+  abrirPropuesta: (el) => go("propuesta", el.dataset.id),
+  vista: () => { if (saveT) guardarAhora(); go("vista", S.draftId); },
+  descargar: () => { if (saveT) guardarAhora(); descargarPDF(S.draft); },
+  async duplicar() {
+    if (saveT) await guardarAhora();
+    const ref = refNuevo("propuestas");
+    const data = Object.assign({}, S.draft, { titulo: (S.draft.titulo || "Propuesta") + " (copia)", estado: "Borrador", creado: Date.now(), actualizado: Date.now() });
+    S.draft = data; S.draftId = ref.id;
+    S.F.setDoc(ref, data).catch(dbError);
+    go("propuesta", ref.id);
+    toast("Propuesta duplicada");
+  },
+  eliminarPropuesta(el) {
+    armar(el, "Toque otra vez para eliminar", () => {
+      clearTimeout(saveT); saveT = null;
+      S.F.deleteDoc(refDoc("propuestas", S.draftId)).catch(dbError);
+      S.draft = null; S.draftId = null;
+      toast("Propuesta eliminada"); go("propuestas");
+    });
+  },
+  guardarPerfil() {
+    const val = (k) => ($("#p_" + k)?.value || "").trim();
+    const data = { nombre: val("nombre"), cargo: val("cargo"), negocio: val("negocio"), ciudad: val("ciudad"), whatsapp: val("whatsapp"), correo: val("correo") };
+    S.F.setDoc(refDoc("config", "perfil"), data).catch(dbError);
+    toast("Datos guardados");
+  },
+};
+$("#o-app").addEventListener("click", (e) => {
+  const el = e.target.closest("[data-act]");
+  if (!el || !ACT[el.dataset.act] || !S.user) return;
+  ACT[el.dataset.act](el);
+});
+document.querySelector(".tabs").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-tab]");
+  if (b) go(b.dataset.tab);
+});
+function onField(e) {
+  if (e.target.id === "q") { S.q = e.target.value; const l = $("#clist"); if (l) l.innerHTML = listaClientes(); return; }
+  const f = e.target.closest("[data-k]");
+  if (!f || S.view.name !== "propuesta" || !S.draft) return;
+  if (S.draft[f.dataset.k] === f.value) return;
+  S.draft[f.dataset.k] = f.value;
+  programarGuardado();
+}
+$("#o-app").addEventListener("input", onField);
+$("#o-app").addEventListener("change", onField);
+window.addEventListener("pagehide", () => { if (saveT) guardarAhora(); });
+
+/* ================= Arranque ================= */
+if (location.hash.startsWith("#/") || ls.get("sesion")) cargarFirebase();
+route();
+</script>
+</body>
+</html>
