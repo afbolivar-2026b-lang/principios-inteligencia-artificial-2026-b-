@@ -19,7 +19,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 # Parte 1 · Funciones 1 a 200
 
 ## A. Página pública: conseguir clientes (1–30)
-1. ⭐🔵 Formulario "Cotice su proyecto": tipo de negocio, qué necesita y presupuesto
+1. ✅ Formulario "Cotice su proyecto": tipo de negocio, qué necesita y presupuesto *(Etapa 3)*
 2. ✅ Calculadora de precio aproximado para visitantes según las funciones que elijan *(Etapa 1)*
 3. ✅ Cuestionario "¿Qué sistema necesita su negocio?" con recomendación al final *(Etapa 1)*
 4. ✅ Botón flotante de WhatsApp siempre visible *(Etapa 1)*
@@ -73,7 +73,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 50. 🟢 Contador de años de experiencia y proyectos entregados
 
 ## C. Google y visibilidad (51–70)
-51. ⭐🟢 Ficha de Google Business conectada con la página
+51. ✅ Ficha de Google Business conectada con la página *(Etapa 3)*
 52. ✅ Datos estructurados (Schema) de negocio local *(Etapa 1)*
 53. ✅ Mapa del sitio (sitemap.xml) *(Etapa 1)*
 54. ✅ Archivo robots.txt *(Etapa 1)*
@@ -112,11 +112,11 @@ Las marcadas con ⭐ son las que yo haría primero.
 85. 🔵 Contacto de emergencia para clientes con soporte
 
 ## E. Mi oficina: clientes (86–110)
-86. ⭐🔵 Embudo: prospecto → cotizado → aprobado → en desarrollo → entregado
+86. ✅ Embudo: prospecto → cotizado → aprobado → en desarrollo → entregado *(Etapa 3)*
 87. 🔵 Tablero Kanban para arrastrar clientes entre etapas
 88. 🔵 Etiquetas (tienda, finca, urgente, referido)
 89. 🔵 Origen del cliente (Google, referido, Instagram)
-90. ⭐🔵 Recordatorios de seguimiento ("Llamar a don Luis el lunes")
+90. ✅ Recordatorios de seguimiento ("Llamar a don Luis el lunes") *(Etapa 3)*
 91. 🔵 Historial de conversaciones y notas con fecha
 92. 🔵 Botón de WhatsApp con plantillas de mensaje
 93. 🔵 Plantillas: saludo, seguimiento, cobro, entrega
@@ -139,8 +139,8 @@ Las marcadas con ⭐ son las que yo haría primero.
 110. 🔵 Buscador global en toda la oficina
 
 ## F. Propuestas y cotizaciones (111–135)
-111. ⭐🔵 Enviar la propuesta por enlace web, no solo en PDF
-112. ⭐🔵 Botón "Aprobar propuesta" con firma digital
+111. ✅ Enviar la propuesta por enlace web, no solo en PDF *(Etapa 3)*
+112. ✅ Botón "Aprobar propuesta" con firma digital *(Etapa 3)*
 113. 🔵 Aviso cuando el cliente abre la propuesta
 114. 🔵 Fecha de vencimiento de la propuesta
 115. 🔵 Plantillas de propuesta por sector
@@ -292,7 +292,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 245. 🟢 Mockups en tablet o televisor de la tienda
 
 ## M. Demos y prototipos (246–260)
-246. ⭐🟢 Demo instantánea con el nombre y colores del negocio
+246. ✅ Demo instantánea con el nombre y colores del negocio *(Etapa 3)*
 247. 🟢 Prototipo clicable de la app antes de programarla
 248. 🟢 Selector de colores y logo para que el cliente vea su sistema
 249. 🔵 Enlace de demo que caduca en 7 días
@@ -380,7 +380,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 325. 🔵 Ideas de mejoras para sus sistemas
 
 ## Q. Clientes después de la venta (326–345)
-326. ⭐🔵 Carnet digital de garantía
+326. ✅ Carnet digital de garantía *(Etapa 3)*
 327. 🔵 Centro de ayuda por cliente con videos
 328. 🔵 Botón "pedir un cambio" dentro del sistema del cliente
 329. 🔵 Votación de mejoras
@@ -489,7 +489,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 420. 🟢 Modo presentación: la página se recorre sola para mostrarla en ferias
 
 ## V. Secciones nuevas de la página (421–440)
-421. ⭐🟢 Deslizador "antes y después" sobre dos imágenes
+421. ✅ Deslizador "antes y después" sobre dos imágenes *(Etapa 3)*
 422. 🟢 Herramientas que usa (Firebase, Google) explicadas sencillo
 423. ✅ Sección honesta "Para quién no es este servicio" *(Etapa 1)*
 424. ✅ Sección de garantías con íconos *(Etapa 1)*
@@ -555,7 +555,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 480. 🔵 Certificado de cada sistema con código de verificación
 
 ## Y. Herramientas gratis para visitantes (481–500)
-481. ⭐🟢 Guía "Del cuaderno al celular en 5 pasos"
+481. ✅ Guía "Del cuaderno al celular en 5 pasos" *(Etapa 3)*
 482. 🟢 Plantilla de fiados en Excel
 483. ✅ Calculadora de punto de equilibrio *(Etapa 1)*
 484. ✅ Calculadora de margen de ganancia por producto *(Etapa 1)*
@@ -586,7 +586,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 507. 🟢 Enlaces internos entre casos y servicios
 508. ✅ Etiqueta canónica contra contenido duplicado *(Etapa 1)*
 509. 🟢 Precarga de la siguiente sección
-510. ⭐🟢 Optimización para que los asistentes de IA lo recomienden
+510. ✅ Optimización para que los asistentes de IA lo recomienden *(Etapa 3)*
 511. ✅ Archivo `llms.txt` para buscadores con IA *(Etapa 1)*
 512. 🟢 Perfiles en directorios colombianos de proveedores
 513. 🟢 Mapa del sitio de imágenes y videos
@@ -736,7 +736,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 643. 🔵 Foto de los recibos de gastos
 644. 🟣 La IA lee el recibo y llena el gasto
 645. 🔵 Flujo de caja semanal
-646. ⭐🔵 Separar un porcentaje de cada pago para impuestos
+646. ✅ Separar un porcentaje de cada pago para impuestos *(Etapa 3)*
 647. 🔵 Separar un porcentaje para ahorro y reinversión
 648. 🔵 Deudas por cobrar ordenadas por antigüedad
 649. 🔵 Calendario de pagos esperados
@@ -997,7 +997,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 ## AS. Soporte (881–900)
 881. 🔵 Casos de soporte resueltos con buscador
 882. 🔵 Tiempo de respuesta según el plan
-883. ⭐🔵 Planes de soporte básico, plus y premium
+883. ✅ Planes de soporte básico, plus y premium *(Etapa 3)*
 884. 🔵 Bolsa de horas prepagadas
 885. 🔵 Horas usadas por cliente
 886. 🔵 Formulario de soporte con pantallazo
@@ -1072,7 +1072,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 949. 🟢 Política de seguridad de contenido en la página
 950. 🟢 Protección contra páginas que la incrustan para engañar
 951. ⭐🔵 App Check de Firebase contra uso abusivo
-952. ⭐🔵 Límite diario de uso del asistente
+952. ✅ Límite diario de uso del asistente *(Etapa 3)*
 953. 🔵 Tope de gasto mensual en la IA
 954. 🔵 Alertas de presupuesto en Google Cloud
 955. 🔵 Borrado seguro de los datos de un cliente que lo pide
@@ -1115,7 +1115,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 988. 🟢 Alianza con CORHUILA para prácticas
 989. 🔵 Voluntariado: sistemas gratis para fundaciones
 990. 🔵 Informe de impacto: negocios digitalizados
-991. ⭐🔵 Meta pública "100 negocios digitalizados en el Huila"
+991. ✅ Meta pública "100 negocios digitalizados en el Huila" *(Etapa 3)*
 992. 🔵 Membresía mensual con beneficios para comerciantes
 993. 🟠 Tienda de plantillas digitales con pago
 994. 🔵 Embajadores universitarios

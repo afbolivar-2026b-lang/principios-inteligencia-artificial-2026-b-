@@ -24,5 +24,55 @@ service cloud.firestore {
       allow update: if esDueno() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid;
       allow delete: if esDueno() && resource.data.uid == request.auth.uid;
     }
+
+    // Formulario "Cotice su proyecto": cualquiera puede ENVIAR una solicitud (sin leer las demás);
+    // solo usted las ve, las pasa a clientes o las borra.
+    match /solicitudes/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['nombre', 'telefono', 'negocio', 'sector', 'tipo', 'detalle', 'presupuesto', 'cotizacion', 'origen', 'estado', 'creado'])
+        && texto(request.resource.data.nombre, 1, 80)
+        && texto(request.resource.data.telefono, 7, 20)
+        && texto(request.resource.data.get('negocio', ''), 0, 80)
+        && texto(request.resource.data.get('sector', ''), 0, 60)
+        && texto(request.resource.data.get('tipo', ''), 0, 60)
+        && texto(request.resource.data.get('detalle', ''), 0, 1500)
+        && texto(request.resource.data.get('presupuesto', ''), 0, 60)
+        && texto(request.resource.data.get('cotizacion', ''), 0, 600)
+        && texto(request.resource.data.get('origen', ''), 0, 60)
+        && request.resource.data.estado == 'nueva'
+        && cercaDeAhora(request.resource.data.creado);
+      allow read, update, delete: if esDueno();
+    }
+
+    // Propuestas enviadas por enlace. El enlace es largo y secreto: quien lo tiene puede abrir
+    // ESA propuesta (no listar las demás), marcarla como vista una vez y aprobarla con su firma una vez.
+    match /enlaces/{token} {
+      allow get: if true;
+      allow list: if esDueno() && resource.data.uid == request.auth.uid;
+      allow create: if esDueno() && request.resource.data.uid == request.auth.uid;
+      allow delete: if esDueno() && resource.data.uid == request.auth.uid;
+      allow update: if (esDueno() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid)
+        || (soloCambia(['visto']) && resource.data.get('visto', 0) == 0 && cercaDeAhora(request.resource.data.visto))
+        || (soloCambia(['aprobacion']) && resource.data.get('aprobacion', null) == null && aprobacionValida(request.resource.data.aprobacion));
+    }
+
+    function texto(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+    function cercaDeAhora(t) {
+      // Hasta un día de diferencia, por si el reloj del celular está corrido
+      return t is int && t > request.time.toMillis() - 86400000 && t < request.time.toMillis() + 86400000;
+    }
+    function soloCambia(campos) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
+    }
+    function aprobacionValida(a) {
+      return a is map
+        && a.keys().hasOnly(['nombre', 'documento', 'firma', 'fecha', 'acepto'])
+        && texto(a.nombre, 3, 120)
+        && texto(a.get('documento', ''), 0, 40)
+        && texto(a.firma, 30, 200000) && a.firma.matches('^data:image/png;base64,[A-Za-z0-9+/=]+$')
+        && cercaDeAhora(a.fecha)
+        && a.acepto == true;
+    }
   }
 }

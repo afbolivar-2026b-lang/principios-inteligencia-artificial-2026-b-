@@ -2,16 +2,32 @@
    La clave de Anthropic queda guardada como secreto de Firebase y nunca llega al navegador.
    Solo responde al dueño de la cuenta (CORREO_DUENO). */
 import { onRequest } from "firebase-functions/v2/https";
-import { defineSecret, defineString } from "firebase-functions/params";
+import { defineInt, defineSecret, defineString } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaJSONSchemaOutputFormat } from "@anthropic-ai/sdk/helpers/beta/json-schema";
 
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
 const CORREO_DUENO = defineString("CORREO_DUENO");
+// Usos del asistente por día (un análisis de proyecto cuenta como 3). Evita sorpresas en la cuenta de Anthropic.
+const LIMITE_DIARIO = defineInt("LIMITE_DIARIO", { default: 60 });
 
 initializeApp();
+
+// Suma el uso de hoy (hora de Colombia) y dice si todavía hay cupo
+async function usarCupo(uid, peso) {
+  const hoy = new Date(Date.now() - 5 * 3600 * 1000).toISOString().slice(0, 10);
+  const ref = getFirestore().doc(`usuarios/${uid}/config/uso`);
+  return getFirestore().runTransaction(async (t) => {
+    const d = (await t.get(ref)).data() || {};
+    const usados = d.dia === hoy ? Number(d.usados) || 0 : 0;
+    if (usados + peso > LIMITE_DIARIO.value()) return { ok: false, usados };
+    t.set(ref, { dia: hoy, usados: usados + peso, actualizado: Date.now() });
+    return { ok: true, usados: usados + peso };
+  });
+}
 
 const SISTEMA = `Usted es el asistente de negocio de Andrés Felipe Bolívar, desarrollador de Neiva (Huila, Colombia) que hace páginas web, sistemas a la medida y apps para negocios pequeños de la región: tiendas, parqueaderos, fincas, empresas de vigilancia, veterinarias.
 
@@ -81,8 +97,15 @@ export const asistente = onRequest(
       res.status(403).json({ error: "Esta cuenta no tiene permiso para usar el asistente." }); return;
     }
 
-    const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY.value() });
     const { modo, mensajes, contexto, archivos, notas } = req.body || {};
+
+    // 1b. Límite diario de uso
+    try {
+      const cupo = await usarCupo(usuario.uid, modo === "proyecto" ? 3 : 1);
+      if (!cupo.ok) { res.status(429).json({ error: `Llegó al límite de ${LIMITE_DIARIO.value()} usos del asistente por hoy. Mañana se renueva; si necesita más, cambie LIMITE_DIARIO (vea LEEME.md).` }); return; }
+    } catch (e) { console.error("Cupo:", e); res.status(500).json({ error: "No se pudo revisar el límite de uso. Intente de nuevo." }); return; }
+
+    const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY.value() });
 
     // 2a. Analizar los archivos de un proyecto y devolver la ficha para publicarlo
     if (modo === "proyecto") {

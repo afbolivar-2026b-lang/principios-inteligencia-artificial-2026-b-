@@ -425,6 +425,168 @@
   #sitio footer .link-a11y { font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
   #sitio footer .link-a11y:hover, #sitio footer .fin a:hover { text-decoration: underline; text-underline-offset: 4px; }
 
+  /* ===== Etapa 3: página pública ===== */
+  #sitio .field > span { color: var(--gris); }
+  #sitio .field input, #sitio .field select, #sitio .field textarea { color: var(--negro); background: #FFFDF9; border-color: var(--linea-2); }
+  #sitio .field input:focus, #sitio .field select:focus, #sitio .field textarea:focus { border-color: var(--negro); box-shadow: 0 0 0 3px rgba(26, 24, 22, .08); }
+  #sitio .check input { accent-color: var(--negro); }
+
+  /* Meta: negocios digitalizados */
+  #sitio .meta-huila { max-width: 760px; padding-bottom: 34px; text-align: center; }
+  #sitio .meta-huila p { margin: 0 0 12px; color: var(--gris); font-size: .98rem; }
+  #sitio .meta-huila .kick { display: inline; margin: 0 10px 0 0; }
+  #sitio .meta-huila b { font-family: var(--serif); font-weight: 500; font-size: 1.35rem; color: var(--negro); margin-right: 6px; font-variant-numeric: lining-nums; }
+  #sitio .meta-barra { height: 6px; background: var(--crema-2); border: 1px solid var(--linea); border-radius: 99px; overflow: hidden; }
+  #sitio .meta-barra i { display: block; height: 100%; width: 0; background: var(--negro); transition: width 1.4s cubic-bezier(.2, .8, .2, 1); }
+
+  /* Demo instantánea */
+  #sitio .demo-app { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); padding: clamp(26px, 4vw, 48px); align-items: center; background: rgba(251, 248, 243, .7); }
+  #sitio .demo-app > * { position: relative; }
+  #sitio .demo-form small { display: block; color: var(--tenue); font-size: .85rem; margin-top: 12px; }
+  #sitio .demo-form .btn { width: 100%; margin-top: 6px; }
+  #sitio .demo-colores { border: 0; padding: 0; margin: 0 0 16px; }
+  #sitio .demo-colores legend { font-weight: 500; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gris); margin-bottom: 8px; padding: 0; }
+  #sitio .demo-colores div { display: flex; flex-wrap: wrap; gap: 10px; }
+  #sitio .demo-colores label { position: relative; cursor: pointer; }
+  #sitio .demo-colores input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  #sitio .demo-colores span { display: block; width: 40px; height: 40px; border-radius: 50%; background: var(--c); border: 3px solid #FBF8F3; box-shadow: 0 0 0 1px var(--linea-2); }
+  #sitio .demo-colores input:checked + span { box-shadow: 0 0 0 2px var(--negro); }
+  #sitio .demo-colores input:focus-visible + span { outline: 2px solid var(--negro); outline-offset: 3px; }
+  #sitio .demo-cel-wrap { display: grid; place-items: center; }
+  #sitio .demo-cel { --dc: #1F5C45; width: min(100%, 300px); aspect-ratio: 9 / 18.5; background: #1A1816; border-radius: 38px; padding: 11px; box-shadow: 0 30px 60px -30px rgba(40, 30, 15, .55); }
+  #sitio .demo-pant { height: 100%; border-radius: 28px; overflow: hidden; background: #F6F5F2; display: flex; flex-direction: column; font-family: var(--font); color: #1F1F1F; }
+  #sitio .demo-top { background: var(--dc); color: #FFF; padding: 26px 16px 16px; }
+  #sitio .demo-top .fila { display: flex; align-items: center; gap: 10px; }
+  #sitio .demo-logo { width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, .2); display: grid; place-items: center; font-weight: 600; font-size: .85rem; flex: none; }
+  #sitio .demo-top b { display: block; font-size: 1rem; font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; }
+  #sitio .demo-top small { display: block; font-size: .7rem; opacity: .85; }
+  #sitio .demo-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  #sitio .demo-stats div { background: rgba(255, 255, 255, .14); border-radius: 10px; padding: 8px 10px; }
+  #sitio .demo-stats span { display: block; font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+  #sitio .demo-stats strong { font-size: .95rem; font-weight: 600; white-space: nowrap; }
+  #sitio .demo-cuerpo { flex: 1; padding: 12px 12px 0; overflow: hidden; }
+  #sitio .demo-aviso { font-size: .72rem; background: #FFF4D6; color: #6B5310; border-radius: 8px; padding: 7px 9px; margin-bottom: 10px; }
+  #sitio .demo-lista { list-style: none; margin: 0; padding: 0; }
+  #sitio .demo-lista li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; background: #FFF; border-radius: 10px; padding: 8px 10px; margin-bottom: 6px; font-size: .76rem; }
+  #sitio .demo-lista i { font-style: normal; font-size: .62rem; font-weight: 600; color: var(--dc); border: 1px solid currentColor; border-radius: 99px; padding: 1px 6px; }
+  #sitio .demo-lista em { font-style: normal; font-weight: 600; white-space: nowrap; }
+  #sitio .demo-nav { display: grid; grid-template-columns: repeat(4, 1fr); background: #FFF; border-top: 1px solid #E6E3DD; padding: 8px 4px 12px; }
+  #sitio .demo-nav span { text-align: center; font-size: .6rem; color: #77746E; }
+  #sitio .demo-nav span:first-child { color: var(--dc); font-weight: 600; }
+  #sitio .demo-nav span::before { content: ""; display: block; width: 18px; height: 18px; margin: 0 auto 3px; border-radius: 6px; background: currentColor; opacity: .25; }
+  #sitio .demo-nav span:first-child::before { opacity: 1; }
+  @media (max-width: 820px) { #sitio .demo-app { grid-template-columns: minmax(0, 1fr); } #sitio .demo-cel-wrap { order: -1; } #sitio .demo-cel { width: min(100%, 250px); } }
+
+  /* Planes de soporte */
+  #sitio .planes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: stretch; }
+  #sitio .plan { padding: 34px 28px 28px; display: flex; flex-direction: column; background: rgba(251, 248, 243, .7); }
+  #sitio .plan > * { position: relative; }
+  #sitio .plan.destacado { background: var(--negro); color: #E9E3D8; border-color: var(--negro); }
+  #sitio .plan.destacado::before { border-color: rgba(244, 239, 230, .25); }
+  #sitio .plan.destacado h3, #sitio .plan.destacado .precio { color: var(--crema); }
+  #sitio .plan .sello-plan { align-self: flex-start; font-size: .66rem; letter-spacing: .2em; text-transform: uppercase; border: 1px solid currentColor; padding: 3px 9px; margin-bottom: 14px; }
+  #sitio .plan h3 { font-size: 1.7rem; text-transform: uppercase; letter-spacing: .03em; }
+  #sitio .plan .para { margin: 4px 0 18px; color: var(--gris); font-size: .95rem; }
+  #sitio .plan.destacado .para, #sitio .plan.destacado li { color: #CFC8BB; }
+  #sitio .plan .precio { font-family: var(--serif); font-weight: 500; font-size: clamp(2rem, 3.4vw, 2.6rem); line-height: 1; font-optical-sizing: none; font-variation-settings: "opsz" 18; font-variant-numeric: lining-nums; white-space: nowrap; }
+  #sitio .plan .precio small { font-family: var(--font); font-size: .8rem; letter-spacing: .1em; color: var(--tenue); margin-left: 6px; }
+  #sitio .plan ul { list-style: none; margin: 22px 0 24px; padding: 16px 0 0; border-top: 1px solid var(--linea); flex: 1; }
+  #sitio .plan.destacado ul { border-top-color: rgba(244, 239, 230, .2); }
+  #sitio .plan li { position: relative; padding-left: 22px; margin-bottom: 8px; color: var(--gris); font-size: .96rem; }
+  #sitio .plan li::before { content: ""; position: absolute; left: 2px; top: .55em; width: 10px; height: 5px; border-left: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); }
+  #sitio .plan .btn { width: 100%; }
+  #sitio .plan.destacado .btn { background: var(--crema); color: var(--negro); border-color: var(--crema); }
+  #sitio .planes-nota { text-align: center; color: var(--tenue); font-size: .88rem; margin: 22px auto 0; max-width: 60ch; }
+  @media (max-width: 900px) { #sitio .planes { grid-template-columns: minmax(0, 1fr); max-width: 520px; margin: 0 auto; } }
+
+  /* Guía en 5 pasos */
+  #sitio .guia-pasos { list-style: none; margin: 0 auto; padding: 0; max-width: 900px; border-top: 1px solid var(--negro); }
+  #sitio .guia-pasos li { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 4px 22px; padding: 26px 0; border-bottom: 1px solid var(--linea); }
+  #sitio .guia-pasos .num { grid-row: span 3; margin: 0; }
+  #sitio .guia-pasos h3 { font-size: 1.35rem; text-transform: uppercase; letter-spacing: .03em; }
+  #sitio .guia-pasos p { margin: 6px 0 0; color: var(--gris); max-width: 64ch; }
+  #sitio .guia-pasos .hoy { margin-top: 10px; font-size: .92rem; color: var(--negro); }
+  #sitio .guia-pasos .hoy b { font-weight: 500; letter-spacing: .14em; text-transform: uppercase; font-size: .72rem; margin-right: 8px; }
+  #sitio .guia-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 30px; }
+  @media (max-width: 520px) { #sitio .guia-pasos li { grid-template-columns: 46px minmax(0, 1fr); gap: 4px 14px; } #sitio .guia-pasos .num { font-size: 2rem; } #sitio .guia-acciones .btn { width: 100%; } }
+
+  /* Formulario de solicitud */
+  #sitio #solicitud { padding-bottom: clamp(64px, 9vw, 110px); }
+  #sitio .sol { max-width: 820px; margin: 0 auto; padding: clamp(24px, 4vw, 44px); background: rgba(251, 248, 243, .7); }
+  #sitio .sol > * { position: relative; }
+  #sitio .sol-tipo { border: 0; padding: 0; margin: 0 0 14px; }
+  #sitio .sol-tipo legend { font-weight: 500; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gris); margin-bottom: 8px; padding: 0; }
+  #sitio .sol-tipo .opciones { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  #sitio .trampa { position: absolute !important; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+  #sitio .sol-acepto { font-weight: 400; font-size: .95rem; align-items: flex-start; }
+  #sitio .sol-acepto input { margin-top: 2px; flex: none; }
+  #sitio .sol-acepto a { color: var(--negro); }
+  #sitio .sol-error { margin: 0 0 14px; padding: 10px 12px; border-left: 2px solid #B04A44; background: var(--crema-2); color: #8A3530; font-size: .95rem; }
+  #sitio .sol-botones { display: flex; flex-wrap: wrap; gap: 12px; }
+  #sitio .sol-botones .btn { flex: 1 1 220px; }
+  #sitio .sol-ok { text-align: center; padding: 18px 0; }
+  #sitio .sol-ok b { display: block; font-family: var(--serif); font-weight: 500; font-size: clamp(1.8rem, 4vw, 2.4rem); line-height: 1.1; margin-bottom: 10px; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  #sitio .sol-ok p { color: var(--gris); max-width: 52ch; margin: 0 auto 18px; }
+
+  /* Antes y después en los casos */
+  #sitio .ad { position: relative; margin: 0 0 22px; aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid var(--linea); background: var(--crema-2); --p: 50%; }
+  #sitio .ad img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #sitio .ad .antes { clip-path: inset(0 calc(100% - var(--p)) 0 0); }
+  #sitio .ad::after { content: ""; position: absolute; top: 0; bottom: 0; left: var(--p); width: 2px; margin-left: -1px; background: #FFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .15); pointer-events: none; }
+  #sitio .ad .et { position: absolute; top: 10px; font-size: .64rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; background: rgba(26, 24, 22, .78); color: #FFF; padding: 3px 8px; pointer-events: none; }
+  #sitio .ad .et.a { left: 10px; } #sitio .ad .et.d { right: 10px; }
+  #sitio .ad input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+  #sitio .ad .tirador { position: absolute; top: 50%; left: var(--p); width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%; background: #FFF; box-shadow: 0 4px 14px rgba(0, 0, 0, .25); display: grid; place-items: center; pointer-events: none; font-size: .9rem; color: #1A1816; }
+  #sitio .ad:has(input:focus-visible) .tirador { outline: 2px solid #1A1816; outline-offset: 2px; }
+
+  /* ===== Etapa 3: Mi oficina ===== */
+  .tabs button { position: relative; }
+  .tabs button[data-aviso]::after { content: attr(data-aviso); position: absolute; top: 4px; left: calc(50% + 8px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--danger); color: #FFF; font-size: .62rem; font-weight: 600; letter-spacing: 0; line-height: 18px; text-align: center; }
+  .aviso-n { display: inline-block; min-width: 22px; padding: 0 7px; border-radius: 99px; background: var(--danger); color: #FFF; font-size: .7rem; letter-spacing: 0; text-align: center; vertical-align: 2px; margin-left: 6px; }
+  .solis { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 12px; }
+  .solis .o-card { margin: 0; }
+  .soli-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .soli-top b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.2rem; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  .soli-top small { color: var(--muted); }
+  .soli-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .soli-det { margin: 0 0 10px; }
+  .soli-tags .chip { white-space: normal; }
+  .embudo { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 0 0 14px; }
+  .embudo button { font: inherit; text-align: left; border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); padding: 10px 12px; border-radius: 6px; cursor: pointer; min-width: 0; }
+  .embudo button b { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.5rem; line-height: 1.1; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  .embudo button span { display: block; font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .embudo button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  @media (max-width: 720px) { .embudo { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .chip.seg-hoy { border-color: var(--ink); }
+  .chip.seg-atrasado { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
+  .txt-danger { color: var(--danger) !important; }
+
+  /* Propuesta por enlace */
+  body.en-prop .flotantes { display: none; }
+  .pp-top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line-strong); }
+  .pp-top .o-wrap { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; min-height: 64px; padding-top: 8px; padding-bottom: 8px; }
+  .pp-marca { font-family: var(--serif); font-weight: 500; font-size: 1.25rem; letter-spacing: .12em; text-transform: uppercase; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  #ppMain { padding-top: 24px; padding-bottom: 60px; }
+  .pp-head { margin-bottom: 18px; }
+  .pp-head .pp-ir { margin-top: 14px; }
+  @media (max-width: 600px) {
+    .pp-top { position: static; }
+    .pp-top .o-wrap { min-height: 0; padding-top: 12px; padding-bottom: 12px; }
+    .pp-marca { font-size: 1rem; letter-spacing: .08em; width: 100%; }
+    .pp-top .actions { width: 100%; flex-wrap: nowrap; gap: 8px; }
+    .pp-top .actions .btn { flex: 1; padding: 0 8px; font-size: .66rem; letter-spacing: .1em; }
+    .pp-head .pp-ir { width: 100%; }
+  }
+  .pp-msg { text-align: center; color: var(--muted); padding: 80px 0; }
+  .pp-aprobar { margin-top: 22px; }
+  .firma-caja { position: relative; border: 1px dashed var(--line-strong); border-radius: 6px; background: #FFFFFF; }
+  .firma-caja canvas { display: block; width: 100%; height: 180px; touch-action: none; cursor: crosshair; }
+  .firma-caja .btn { position: absolute; right: 8px; bottom: 8px; background: #FFF; color: #1A1816; border-color: #1A1816; }
+  .firma-img { display: block; max-width: 280px; height: 90px; object-fit: contain; background: #FFF; border: 1px solid var(--line); border-radius: 6px; margin: 6px 0 12px; }
+  .enlace-card .kick { margin-bottom: 6px; }
+  .enlace-card p { margin: 0 0 12px; }
+  .enlace-card.ok { border-color: var(--ok); }
+
   /* Botones flotantes */
   .flotantes { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40; display: grid; justify-items: end; gap: 10px; }
   body.en-oficina .flotantes, body.en-login .flotantes { display: none; }
@@ -833,7 +995,8 @@
 
   <div class="menu-movil" id="menuMovil" hidden>
     <a href="#servicios">Servicios</a><a href="#cotizar">¿Cuánto cuesta?</a><a href="#casos">Casos</a><a href="#metodo">Método</a>
-    <a href="#herramientas">Herramientas gratis</a><a href="#preguntas">Preguntas</a><a href="#contacto">Contacto</a><a class="js-entrar" href="#/ingresar">Ingresar</a>
+    <a href="#demo">Vea su app</a><a href="#soporte">Soporte</a>
+    <a href="#herramientas">Herramientas gratis</a><a href="#guia">Guía gratis</a><a href="#preguntas">Preguntas</a><a href="#solicitud">Cotice su proyecto</a><a href="#contacto">Contacto</a><a class="js-entrar" href="#/ingresar">Ingresar</a>
   </div>
 
   <main id="inicio">
@@ -925,6 +1088,10 @@
       <div><b data-contar-fijo="30">0</b><span>días de garantía</span></div>
       <div><b>$&nbsp;0</b><span>cuesta cotizar</span></div>
     </div>
+    <div class="meta-huila wrap reveal" id="metaHuila">
+      <p><span class="kick">Mi meta</span><b><span id="metaHechos">0</span> de <span id="metaTotal">100</span></b> negocios del Huila, del cuaderno al celular</p>
+      <div class="meta-barra" role="progressbar" aria-label="Avance de la meta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="metaBarra"></i></div>
+    </div>
 
     <section id="diferencia" class="diff">
       <div class="wrap diff-grid">
@@ -984,6 +1151,26 @@
           <li class="reveal" style="--d:.16s"><span class="rom">III</span><h3>App para celular y computador</h3><p>Publicada en Play Store o Microsoft Store, con sus datos guardados de forma segura en la nube.</p></li>
           <li class="reveal" style="--d:.24s"><span class="rom">IV</span><h3>Soporte mensual</h3><p>Copias de seguridad, arreglos y ajustes para que su sistema siga funcionando mientras usted atiende su negocio.</p></li>
         </ul>
+      </div>
+    </section>
+
+    <section id="demo">
+      <div class="wrap">
+        <div class="head-c">
+          <span class="kick reveal">Demo gratis</span>
+          <h2 class="reveal">Vea su app antes de pagar</h2>
+          <p class="section-lead reveal" style="--d:.1s">Escriba el nombre de su negocio y escoja un color. Así se vería su sistema en el celular.</p>
+        </div>
+        <div class="demo-app marco reveal">
+          <div class="demo-form">
+            <label class="field"><span>Nombre de su negocio</span><input id="demoNombre" maxlength="40" placeholder="Ej.: Tienda Doña Rosa" autocomplete="organization"></label>
+            <label class="field"><span>Tipo de negocio</span><select id="demoSector"></select></label>
+            <fieldset class="demo-colores"><legend>Color de su marca</legend><div id="demoColores"></div></fieldset>
+            <a class="btn btn-dark" id="demoWa" target="_blank" rel="noopener" href="#contacto">La quiero así</a>
+            <small>Es una muestra con datos de ejemplo. Su sistema se hace a la medida.</small>
+          </div>
+          <div class="demo-cel-wrap"><div class="demo-cel" id="demoCel" aria-live="polite"></div></div>
+        </div>
       </div>
     </section>
 
@@ -1088,6 +1275,18 @@
       </div>
     </section>
 
+    <section id="soporte">
+      <div class="wrap">
+        <div class="head-c">
+          <span class="kick reveal">Soporte mensual</span>
+          <h2 class="reveal">Planes para que su sistema no se detenga</h2>
+          <p class="section-lead reveal" style="--d:.1s">Después de los 30 días de garantía, usted escoge si quiere acompañamiento cada mes.</p>
+        </div>
+        <div class="planes" id="planes"></div>
+        <p class="planes-nota reveal">Valores de referencia por mes. El precio exacto depende del tamaño de su sistema y va por escrito en la propuesta.</p>
+      </div>
+    </section>
+
     <section id="sobre-mi">
       <div class="wrap about">
         <div>
@@ -1120,6 +1319,21 @@
       </div>
     </section>
 
+    <section id="guia">
+      <div class="wrap">
+        <div class="head-c">
+          <span class="kick reveal">Guía gratis</span>
+          <h2 class="reveal">Del cuaderno al celular en 5 pasos</h2>
+          <p class="section-lead reveal" style="--d:.1s">Lo que yo haría en su negocio, aunque no me contrate.</p>
+        </div>
+        <ol class="guia-pasos" id="guiaPasos"></ol>
+        <div class="guia-acciones reveal">
+          <button type="button" class="btn btn-dark" id="btnGuiaPDF">Descargar la guía en PDF</button>
+          <a class="btn" id="btnGuiaWa" target="_blank" rel="noopener" href="#guia">Enviarla por WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
     <section id="preguntas">
       <div class="wrap">
         <div class="head-c">
@@ -1139,6 +1353,36 @@
       </div>
     </section>
 
+    <section id="solicitud">
+      <div class="wrap">
+        <div class="head-c">
+          <span class="kick reveal">Cotice su proyecto</span>
+          <h2 class="reveal">Cuénteme qué necesita y yo le escribo</h2>
+          <p class="section-lead reveal" style="--d:.1s">Toma un minuto. Le respondo por WhatsApp con una propuesta, sin costo.</p>
+        </div>
+        <form class="sol marco reveal" id="solForm" novalidate>
+          <div class="sol-campos">
+            <div class="grid2">
+              <label class="field"><span>Su nombre *</span><input id="solNombre" maxlength="80" autocomplete="name" required></label>
+              <label class="field"><span>WhatsApp *</span><input id="solTel" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" placeholder="310 000 0000" required></label>
+            </div>
+            <div class="grid2">
+              <label class="field"><span>Nombre del negocio</span><input id="solNegocio" maxlength="80" autocomplete="organization"></label>
+              <label class="field"><span>Tipo de negocio</span><select id="solSector"></select></label>
+            </div>
+            <fieldset class="sol-tipo"><legend>¿Qué necesita?</legend><div class="opciones chicas" id="solTipo"></div></fieldset>
+            <label class="field"><span>Cuénteme un poco</span><textarea id="solDetalle" rows="3" maxlength="1500" placeholder="Ej.: tengo una tienda y quiero controlar el inventario y los fiados"></textarea></label>
+            <label class="field"><span>Presupuesto aproximado</span><select id="solPresupuesto"></select></label>
+            <label class="trampa" aria-hidden="true">No llene este campo<input id="solWeb" tabindex="-1" autocomplete="off"></label>
+            <label class="check sol-acepto"><input type="checkbox" id="solAcepto"> <span>Acepto que use mis datos solo para responderme. <a href="privacidad.html" target="_blank" rel="noopener">Tratamiento de datos</a></span></label>
+            <p class="sol-error" id="solError" role="alert" hidden></p>
+            <div class="sol-botones"><button class="btn btn-dark" type="submit" id="solEnviar">Enviar solicitud</button><a class="btn" data-wa href="#contacto">Prefiero escribir por WhatsApp</a></div>
+          </div>
+          <div class="sol-ok" id="solOk" hidden aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
     <section id="contacto">
       <div class="wrap">
         <div class="cta-box reveal">
@@ -1152,6 +1396,8 @@
             <button type="button" class="btn btn-line-claro" id="btnContacto">Guardar mi contacto</button>
             <button type="button" class="btn btn-line-claro" id="btnQR">Código QR</button>
             <button type="button" class="btn btn-line-claro" id="btnCompartir">Compartir esta página</button>
+            <a class="btn btn-line-claro" id="btnMaps" target="_blank" rel="noopener" href="#contacto" hidden>Vernos en Google Maps</a>
+            <a class="btn btn-line-claro" id="btnResena" target="_blank" rel="noopener" href="#contacto" hidden>Déjeme una reseña en Google</a>
           </div>
           <div class="pagos-pub" id="pagosPub" hidden><span class="kick">Formas de pago</span><ul id="pagosPubLista"></ul></div>
           <div class="qr-box" id="qrBox" hidden><div id="qrImg"></div><p>Escanéelo con la cámara para escribirme por WhatsApp.</p><a class="btn btn-line-claro btn-sm" id="qrBajar" download="whatsapp-andres-bolivar.png" href="#">Descargar para imprimir</a></div>
@@ -1200,6 +1446,12 @@
 </div>
 
 <div id="cargando" hidden><p>Cargando…</p></div>
+
+<!-- ======================= PROPUESTA POR ENLACE (para el cliente) ======================= -->
+<div id="pubprop" hidden>
+  <header class="pp-top"><div class="o-wrap"><span class="pp-marca" id="ppMarca">Propuesta</span><div class="actions" id="ppAcciones"></div></div></header>
+  <main class="o-wrap" id="ppMain"></main>
+</div>
 
 <!-- ======================= MI OFICINA ======================= -->
 <div id="oficina" hidden>
@@ -1271,6 +1523,23 @@ const HORARIO = { dias: [1, 2, 3, 4, 5, 6], desde: 8, hasta: 18, texto: "Lunes a
    recomendaciones funcionan igual; solo el chat queda apagado. */
 const ASISTENTE_URL = "";
 
+/* 4. Planes de soporte que salen en la página (valor por mes, de referencia).
+   Cámbielos a sus precios y a lo que de verdad ofrece. */
+const PLANES_SOPORTE = [
+  { n: "Básico", para: "Para que nada se pierda", v: 80000, items: ["Copias de seguridad cada semana", "Arreglo de errores", "Respuesta en 2 días hábiles"] },
+  { n: "Plus", para: "Para el día a día", v: 150000, destacado: true, items: ["Todo lo del plan Básico", "Copias de seguridad cada día", "2 horas de ajustes al mes", "Respuesta en 1 día hábil"] },
+  { n: "Premium", para: "Para negocios que crecen", v: 250000, items: ["Todo lo del plan Plus", "6 horas de ajustes al mes", "Informe mensual de uso", "Atención el mismo día"] },
+];
+
+/* 5. Google (opcional): el enlace de su ficha en Google Maps y el de "Escribir una reseña".
+   Mientras estén vacíos, los botones no aparecen. Vea LEEME.md. */
+const GOOGLE_MAPS = "";
+const GOOGLE_RESENA = "";
+
+/* 6. Meta que se muestra en la página y días de garantía de los carnets. */
+const META_NEGOCIOS = 100;
+const GARANTIA_DIAS = 30;
+
 const FB_URL = "https://www.gstatic.com/firebasejs/10.12.2/";
 const PDF_URL = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
 
@@ -1283,6 +1552,8 @@ const cells = (t, n) => lines(t).map((l) => { const c = l.split("|").map((x) => 
 const paras = (t) => String(t || "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).map((p) => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
 const has = (t) => String(t || "").trim().length > 0;
 const hoyISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const conPunto = (t) => (/[.!?]$/.test(t) ? t : t + ".");
+const fmtFechaHora = (t) => (t ? new Date(t).toLocaleString("es-CO", { day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" }) : "");
 const fmtFecha = (iso) => { if (!iso) return ""; const [y, m, d] = String(iso).split("-").map(Number); if (!y) return iso; return new Date(y, m - 1, d).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" }); };
 const toNum = (v) => { if (/usd|us\$/i.test(v)) return null; const d = String(v).replace(/[^\d]/g, ""); return d ? Number(d) : null; };
 const fmtCOP = (n) => "$ " + n.toLocaleString("es-CO");
@@ -1345,7 +1616,8 @@ function actualizarEntrar() {
 const S = {
   area: "sitio", fbPromise: null, fbError: null, authReady: false,
   A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
-  clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false }, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
+  clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false }, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
+  solicitudes: [], enlaces: [], etapaFiltro: "",
   app: null, appPromise: null, proyDraft: null, proyDraftId: null, chat: [], pensando: false, calc: null,
   view: { name: "panel", id: null }, quiet: false, q: "",
   draft: null, draftId: null,
@@ -1394,8 +1666,10 @@ const imgSegura = (u) => (/^data:image\/(jpeg|png|webp);base64,/i.test(String(u 
 const ordenProy = (a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0) || (b.creado || 0) - (a.creado || 0);
 function tarjetaProyecto(y) {
   const img = imgSegura(y.imagen), link = urlSegura(y.enlace), feats = lines(y.funciones), vid = urlSegura(y.video);
+  const antes = imgSegura(y.antes);
   return `<article class="case marco nuevo">
-    ${vid ? `<video class="case-video" src="${esc(vid)}"${img ? ` poster="${esc(img)}"` : ""} controls playsinline preload="none" aria-label="Video de presentación de ${esc(y.titulo || "el proyecto")}"></video>`
+    ${!vid && img && antes ? `<div class="ad"><img src="${esc(img)}" alt="Después: ${esc(y.titulo || "el sistema")}" loading="lazy"><img class="antes" src="${esc(antes)}" alt="Antes: cómo se llevaba antes" loading="lazy"><span class="et a">Antes</span><span class="et d">Después</span><span class="tirador" aria-hidden="true">⇆</span><input type="range" min="0" max="100" value="50" aria-label="Deslice para comparar antes y después"></div>`
+      : vid ? `<video class="case-video" src="${esc(vid)}"${img ? ` poster="${esc(img)}"` : ""} controls playsinline preload="none" aria-label="Video de presentación de ${esc(y.titulo || "el proyecto")}"></video>`
       : img ? `<img class="case-img" src="${esc(img)}" alt="${esc(y.titulo || "Proyecto")}" loading="lazy">` : ""}
     <p class="for">${esc(y.sector || "Proyecto")}</p><h3>${esc(y.titulo || "Proyecto")}</h3>
     ${has(y.descripcion) ? `<p class="desc">${esc(y.descripcion)}</p>` : ""}
@@ -1423,6 +1697,7 @@ async function cargarPortafolio() {
     const arr = snap.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort(ordenProy);
     lista.querySelectorAll(".case.nuevo").forEach((e) => e.remove());
     if (arr.length) lista.insertAdjacentHTML("afterbegin", arr.map(tarjetaProyecto).join(""));
+    pintarMeta();
   } catch (e) { if (e && e.code !== "sin-config") console.warn("Portafolio:", e); }
 }
 
@@ -1449,7 +1724,7 @@ function suscribir() {
   }, errDatos));
   S.unsubs.push(F.onSnapshot(F.collection(S.fdb, ...ruta("propuestas")), (snap) => {
     S.propuestas = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
-    S.loaded.p = true; alCambiarDatos();
+    S.loaded.p = true; sincronizarAprobaciones(); alCambiarDatos();
   }, errDatos));
   S.unsubs.push(F.onSnapshot(F.query(F.collection(S.fdb, "portafolio"), F.where("uid", "==", S.user.uid)), (snap) => {
     S.proyectos = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
@@ -1463,6 +1738,15 @@ function suscribir() {
     S.fxCfg = d.exists() ? d.data() : null;
     S.loaded.x = true;
   }, errDatos));
+  S.unsubs.push(F.onSnapshot(F.query(F.collection(S.fdb, "enlaces"), F.where("uid", "==", S.user.uid)), (snap) => {
+    S.enlaces = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+    S.loaded.e = true; sincronizarAprobaciones(); if (S.view.name === "propuesta") pintarEnlaceCard();
+  }, (e) => { console.warn("Enlaces:", e && e.code); S.loaded.e = true; }));
+  /* Solicitudes del formulario de la página. Si las reglas aún no las permiten, la oficina sigue igual. */
+  S.unsubs.push(F.onSnapshot(F.collection(S.fdb, "solicitudes"), (snap) => {
+    S.solicitudes = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+    S.loaded.s = true; marcarSolicitudes(); alCambiarDatos();
+  }, (e) => { console.warn("Solicitudes:", e && e.code); S.loaded.s = true; }));
   S.unsubs.push(F.onSnapshot(refDoc("config", "tarifas"), (d) => {
     S.tarifas = d.exists() ? d.data() : null;
     S.loaded.t = true; alCambiarDatos();
@@ -1476,8 +1760,8 @@ function desuscribir() {
   S.unsubs.forEach((u) => { try { u(); } catch (e) {} });
   S.unsubs = []; S.clientes = []; S.propuestas = []; S.perfil = null;
   S.proyectos = []; S.tarifas = null; S.proyDraft = null; S.proyDraftId = null; S.chat = [];
-  S.pagos = null; S.fxCfg = null;
-  S.loaded = { c: false, p: false, f: false, y: false, t: false, g: false, x: false }; S.draft = null; S.draftId = null;
+  S.pagos = null; S.fxCfg = null; S.solicitudes = []; S.enlaces = []; S.etapaFiltro = "";
+  S.loaded = { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false }; S.draft = null; S.draftId = null;
 }
 
 /* ================= Ingreso ================= */
@@ -1579,10 +1863,11 @@ function propuestaBase(clienteId) {
 }
 
 /* ================= Documento de la propuesta ================= */
-function docHTML(p) {
+/* ctx (opcional): { perfil, cliente } para dibujar la propuesta sin haber ingresado (enlace del cliente). */
+function docHTML(p, ctx) {
   const c = normHex(p.color, "#1F5C45"), a = normHex(p.acento, "#F2C94C");
   const vars = `--c:${c};--a:${a};--t0:${mix(c, 0.05)};--t1:${mix(c, 0.12)};--t2:${mix(c, 0.28)};`;
-  const pf = perfil(), cli = clienteDe(p.clienteId);
+  const pf = ctx ? Object.assign({}, PERFIL_BASE, ctx.perfil || {}) : perfil(), cli = ctx ? ctx.cliente : clienteDe(p.clienteId);
   const secs = [];
   const add = (t, lead, body) => secs.push({ t, lead: lead || "", body: body || "" });
 
@@ -1688,7 +1973,11 @@ function docHTML(p) {
   const body = secs.map((s, i) => `<section><div class="avoid"><h2><span class="n">${i + 1}</span>${esc(s.t)}</h2>${s.lead}</div>${s.body}</section>`).join("");
   const contacto = [pf.whatsapp && "WhatsApp " + pf.whatsapp, pf.correo].filter(Boolean).map((x) => `<span>${esc(x)}</span>`).join("");
   const firma = `<div class="firma avoid"><b>${esc(pf.nombre)}</b><span>${esc(pf.cargo)}${pf.negocio ? ", " + esc(pf.negocio) : ""}</span><span>${esc(pf.ciudad)}</span>${contacto}</div>`;
-  return `<div class="doc" style="${vars}">${cover}<div class="html2pdf__page-break"></div>${body}${firma}</div>`;
+  const ap = p.firma && p.firma.nombre ? p.firma : null, fimg = ap ? imgSegura(ap.firma) : "";
+  const aprob = ap ? `<div class="note avoid" style="margin-top:22px"><h3>Aprobación del cliente</h3>
+    <p>${esc(ap.nombre)}${has(ap.documento) ? ", " + esc(ap.documento) + "," : ""} aprobó esta propuesta el ${esc(conPunto(fmtFechaHora(ap.fecha)))}</p>
+    ${fimg ? `<img src="${esc(fimg)}" alt="Firma" style="height:80px;max-width:280px;object-fit:contain;display:block;margin-top:6px">` : ""}</div>` : "";
+  return `<div class="doc" style="${vars}">${cover}<div class="html2pdf__page-break"></div>${body}${firma}${aprob}</div>`;
 }
 
 /* ================= PDF ================= */
@@ -1704,23 +1993,23 @@ function cargarPDF() {
   }
   return pdfLib;
 }
-async function descargarPDF(p) {
+async function descargarPDF(p, ctx) {
   busy(true, "Generando PDF…");
   try { await cargarPDF(); }
   catch (e) { busy(false); toast("No se pudo cargar el generador de PDF. Revise su conexión."); return; }
   const holder = document.createElement("div");
   holder.style.cssText = "position:fixed;left:-10000px;top:0;";
-  holder.innerHTML = docHTML(p);
+  holder.innerHTML = docHTML(p, ctx);
   document.body.appendChild(holder);
   try {
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
     const nombre = p.nombreProducto || p.titulo || "Propuesta";
-    const cli = clienteDe(p.clienteId);
+    const cli = ctx ? ctx.cliente : clienteDe(p.clienteId);
     const file = ("Propuesta " + nombre + (cli ? " - " + nombreCliente(cli) : "")).replace(/[\\/:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) + ".pdf";
     const opt = {
       margin: [0.6, 0.6, 0.75, 0.6], filename: file,
       image: { type: "jpeg", quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0 },
       jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
       pagebreak: { mode: ["css", "legacy"], avoid: [".avoid", ".step", ".tcard", ".mod", "tr"] },
     };
@@ -1802,7 +2091,7 @@ function vPanel() {
       ${stat("Propuestas", P.length, borr + " en borrador · " + enviadas + (enviadas === 1 ? " enviada" : " enviadas"))}
       ${stat("Aprobación", decididas ? Math.round((aprob.length / decididas) * 100) + "%" : "—", decididas ? aprob.length + " de " + decididas + " decididas" : "Aún sin respuestas")}
       ${stat("Por cobrar", fmtCOP(porCobrar), deudores ? deudores + (deudores === 1 ? " proyecto con saldo" : " proyectos con saldo") : "Todo al día", "peso")}
-      ${stat("Cobrado este mes", fmtCOP(cobradoMes), "Abonos registrados", "peso")}
+      ${stat("Cobrado este mes", fmtCOP(cobradoMes), pctImpuestos() ? `Aparte ${fmtCOP(paraImpuestos(cobradoMes))} para impuestos` : "Abonos registrados", "peso")}
     </div>
     <div class="panel2">
       <div>
@@ -1825,23 +2114,68 @@ function vPanel() {
 /* ================= Vistas de la oficina ================= */
 const cargando = () => `<div class="esqueleto" aria-label="Cargando" role="status"><i class="medio"></i><i class="alto"></i><i></i><i></i><i class="medio"></i></div>`;
 
+/* Embudo de clientes y recordatorios de seguimiento */
+const ETAPAS_CLIENTE = ["Prospecto", "Cotizado", "Aprobado", "En desarrollo", "Entregado"];
+function etapaDe(c) {
+  if (ETAPAS_CLIENTE.includes(c.etapa)) return c.etapa;
+  const ps = S.propuestas.filter((p) => p.clienteId === c.id);
+  if (ps.some((p) => p.estado === "Aprobada")) return "Aprobado";
+  if (ps.some((p) => p.estado === "Enviada")) return "Cotizado";
+  return "Prospecto";
+}
+const sumarDias = (iso, n) => { const [y, m, d] = String(iso || hoyISO()).split("-").map(Number); const t = new Date(y, m - 1, d + n); return new Date(t.getTime() - t.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+function segEstado(c) {
+  if (!c.seguimiento) return "";
+  const h = hoyISO();
+  return c.seguimiento < h ? "atrasado" : c.seguimiento === h ? "hoy" : "proximo";
+}
+const segPendientes = () => S.clientes.filter((c) => ["hoy", "atrasado"].includes(segEstado(c))).sort((a, b) => String(a.seguimiento).localeCompare(String(b.seguimiento)));
+const solNuevas = () => S.solicitudes.filter((x) => (x.estado || "nueva") === "nueva").sort((a, b) => (b.creado || 0) - (a.creado || 0));
+function marcarSolicitudes() {
+  const b = document.querySelector('.tabs [data-tab="clientes"]'); if (!b) return;
+  const n = solNuevas().length;
+  if (n) b.dataset.aviso = n > 9 ? "9+" : String(n); else delete b.dataset.aviso;
+}
+function msgSolicitud(x) {
+  return `Hola ${String(x.nombre || "").split(" ")[0]}, ¿cómo va? Soy Andrés Bolívar. Recibí su solicitud en mi página${x.negocio ? " para " + x.negocio : ""}. ¿Tiene unos minutos para contarme un poco más?`;
+}
+function vSolicitudes() {
+  const arr = solNuevas(); if (!arr.length) return "";
+  return `<h2 class="o-h2">Solicitudes de su página <span class="aviso-n">${arr.length}</span></h2>
+    <ul class="solis">${arr.map((x) => `<li class="o-card">
+      <div class="soli-top"><div><b>${esc(x.nombre || "Sin nombre")}</b><small>${esc([x.negocio, x.sector].filter(Boolean).join(" · "))}</small></div><small>${esc(hace(x.creado))}</small></div>
+      <p class="soli-tags">${[x.tipo, x.presupuesto].filter(Boolean).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</p>
+      ${has(x.detalle) ? `<p class="soli-det">${esc(x.detalle)}</p>` : ""}
+      ${has(x.cotizacion) ? `<p class="note-ui" style="margin:0 0 10px">${esc(x.cotizacion)}</p>` : ""}
+      <div class="actions">${waLink(x.telefono) ? `<a class="btn btn-sm btn-primary" href="${waLink(x.telefono)}?text=${encodeURIComponent(msgSolicitud(x))}" target="_blank" rel="noopener">Responder por WhatsApp</a>` : ""}
+        <button class="btn btn-sm" data-act="convertirSolicitud" data-id="${x.id}">Pasar a clientes</button><button class="btn btn-sm btn-danger" data-act="descartarSolicitud" data-id="${x.id}">Descartar</button></div>
+    </li>`).join("")}</ul>`;
+}
+function vEmbudo() {
+  const cuenta = (e) => S.clientes.filter((c) => etapaDe(c) === e).length;
+  const b = (k, t, n) => `<button type="button" data-act="filtroEtapa" data-k="${esc(k)}" aria-pressed="${S.etapaFiltro === k}"><b>${n}</b><span>${esc(t)}</span></button>`;
+  return `<div class="embudo" role="group" aria-label="Filtrar por etapa">${b("", "Todos", S.clientes.length)}${ETAPAS_CLIENTE.map((e) => b(e, e, cuenta(e))).join("")}</div>`;
+}
 function vClientes() {
   if (!S.loaded.c) return cargando();
   const n = S.clientes.length;
   return `
     <div class="o-head"><div><h1 class="o-h1">Clientes</h1><p class="sub">${n ? n + (n === 1 ? " cliente" : " clientes") : "Aquí va su lista de clientes"}</p></div>
       <button class="btn btn-primary" data-act="nuevoCliente">Nuevo cliente</button></div>
-    ${n ? `<input type="search" class="o-search" id="q" placeholder="Buscar por nombre, negocio o teléfono" value="${esc(S.q)}" aria-label="Buscar clientes"><div id="clist">${listaClientes()}</div>`
+    ${vSolicitudes()}
+    ${n ? `${vEmbudo()}<input type="search" class="o-search" id="q" placeholder="Buscar por nombre, negocio o teléfono" value="${esc(S.q)}" aria-label="Buscar clientes"><div id="clist">${listaClientes()}</div>`
         : `<div class="o-card o-empty"><p>Todavía no tiene clientes. Agregue el primero para empezar a hacerle propuestas.</p><button class="btn btn-primary" data-act="nuevoCliente">Agregar cliente</button></div>`}`;
 }
 function listaClientes() {
   const q = S.q.trim().toLowerCase();
   const arr = S.clientes.filter((c) => !q || [c.nombre, c.negocio, c.telefono, c.documento].join(" ").toLowerCase().includes(q))
+    .filter((c) => !S.etapaFiltro || etapaDe(c) === S.etapaFiltro)
     .sort((a, b) => nombreCliente(a).localeCompare(nombreCliente(b), "es"));
-  if (!arr.length) return `<p class="o-empty">Ningún cliente coincide con la búsqueda.</p>`;
+  if (!arr.length) return `<p class="o-empty">${S.etapaFiltro && !q ? `No hay clientes en la etapa «${esc(S.etapaFiltro)}».` : "Ningún cliente coincide con la búsqueda."}</p>`;
   return `<ul class="o-list">${arr.map((c) => {
-    const np = S.propuestas.filter((p) => p.clienteId === c.id).length;
-    return `<li><button class="item" data-act="verCliente" data-id="${c.id}"><span class="avatar">${esc(iniciales(nombreCliente(c)))}</span><span class="main"><b>${esc(nombreCliente(c))}</b><small>${esc(c.negocio ? c.nombre : c.telefono || c.ciudad || "")}</small></span>${np ? `<span class="count">${np} ${np === 1 ? "propuesta" : "propuestas"}</span>` : ""}</button></li>`;
+    const np = S.propuestas.filter((p) => p.clienteId === c.id).length, se = segEstado(c);
+    const seg = se === "atrasado" ? `<span class="chip seg-atrasado">Seguimiento atrasado</span>` : se === "hoy" ? `<span class="chip seg-hoy">Seguimiento hoy</span>` : "";
+    return `<li><button class="item" data-act="verCliente" data-id="${c.id}"><span class="avatar">${esc(iniciales(nombreCliente(c)))}</span><span class="main"><b>${esc(nombreCliente(c))}</b><small>${esc([c.negocio ? c.nombre : c.telefono || c.ciudad || "", etapaDe(c)].filter(Boolean).join(" · "))}${np ? ` · ${np} ${np === 1 ? "propuesta" : "propuestas"}` : ""}</small></span>${seg}</button></li>`;
   }).join("")}</ul>`;
 }
 
@@ -1870,6 +2204,17 @@ function vCliente(id) {
       ${row("Notas", esc(c.notas).replace(/\n/g, "<br>"))}
       ${sinDatos ? `<div><dt>Datos</dt><dd>Sin datos de contacto. Toque Editar para agregarlos.</dd></div>` : ""}
     </dl></div>
+    <h2 class="o-h2">Etapa y seguimiento</h2>
+    <div class="o-card">
+      <div class="grid2">
+        <label class="field"><span>Etapa</span><select id="ce_etapa" data-id="${c.id}"><option value="">Automática (${esc(etapaDe(Object.assign({}, c, { etapa: "" })))})</option>${ETAPAS_CLIENTE.map((e) => `<option${c.etapa === e ? " selected" : ""}>${e}</option>`).join("")}</select><small>Automática: se calcula con sus propuestas.</small></label>
+        <label class="field"><span>Próximo seguimiento</span><input id="ce_seg" type="date" value="${esc(c.seguimiento || "")}">${segEstado(c) === "atrasado" ? `<small class="txt-danger">Atrasado: era para el ${esc(fmtFecha(c.seguimiento))}.</small>` : segEstado(c) === "hoy" ? `<small class="txt-danger">Es para hoy.</small>` : ""}</label>
+      </div>
+      <label class="field"><span>¿Qué tiene que hacer?</span><input id="ce_segNota" maxlength="200" value="${esc(c.seguimientoNota || "")}" placeholder="Ej.: Llamar a don Luis para saber si revisó la propuesta"></label>
+      <div class="actions"><button class="btn btn-primary btn-sm" data-act="guardarSeguimiento" data-id="${c.id}">Guardar recordatorio</button>
+        <button class="btn btn-sm" data-act="posponerSeguimiento" data-id="${c.id}" data-n="3">En 3 días</button><button class="btn btn-sm" data-act="posponerSeguimiento" data-id="${c.id}" data-n="7">En una semana</button>
+        ${c.seguimiento ? `<button class="btn btn-sm" data-act="seguimientoHecho" data-id="${c.id}">Ya lo hice</button>` : ""}</div>
+    </div>
     <h2 class="o-h2">Propuestas</h2>
     ${props.length ? listaPropuestas(props, false) : `<p class="sub">Todavía no tiene propuestas para este cliente.</p>`}
     <div class="actions" style="margin-top:28px"><button class="btn btn-danger" data-act="eliminarCliente" data-id="${c.id}">Eliminar cliente</button></div>
@@ -1889,6 +2234,7 @@ function vClienteForm(id) {
       <div class="grid2">${f("documento", "NIT o cédula")}${f("telefono", "Teléfono o WhatsApp", "tel", "Ej.: 310 000 0000")}</div>
       <div class="grid2">${f("correo", "Correo", "email")}${f("ciudad", "Ciudad", "text", "Ej.: Neiva")}</div>
       ${f("direccion", "Dirección")}
+      <label class="field"><span>Etapa</span><select id="f_etapa"><option value="">Automática, según sus propuestas</option>${ETAPAS_CLIENTE.map((e) => `<option${c.etapa === e ? " selected" : ""}>${e}</option>`).join("")}</select></label>
       <label class="field"><span>Notas</span><textarea id="f_notas" rows="3" placeholder="Qué necesita, cómo lo conoció, acuerdos…">${esc(c.notas)}</textarea></label>
       <div class="actions"><button class="btn btn-primary" data-act="guardarCliente" data-id="${id || ""}">Guardar cliente</button></div>
     </div>`;
@@ -2007,10 +2353,11 @@ function vPropuesta(id) {
       <button class="btn btn-primary" data-act="descargar">Descargar PDF</button>
       <button class="btn" data-act="vista">Vista previa</button>
     </div>
+    <div id="enlaceCard">${vEnlaceCard(d)}</div>
     ${vPagosPropuesta(d)}
     ${secs}
     <div class="actions" style="margin-top:24px">
-      ${d.estado === "Aprobada" ? `<button class="btn btn-primary" data-act="publicarDesdePropuesta" data-id="${S.draftId}">Publicar como proyecto</button>` : ""}
+      ${d.estado === "Aprobada" ? `<button class="btn btn-primary" data-act="publicarDesdePropuesta" data-id="${S.draftId}">Publicar como proyecto</button><button class="btn" data-act="carnetPDF">Carnet de garantía</button>` : ""}
       <button class="btn" data-act="duplicar">Duplicar propuesta</button>
       <button class="btn btn-danger" data-act="eliminarPropuesta">Eliminar</button>
     </div>`;
@@ -2054,6 +2401,8 @@ const METODOS = [
   ["paypal", "PayPal", "Enlace de PayPal.me", "https://paypal.me/…"],
 ];
 const pagosCfg = () => Object.assign({ efectivo: true, tipoCuenta: "Ahorros", publicar: true }, S.pagos || {});
+const pctImpuestos = () => { const n = Number(String(pagosCfg().impuestos || "").replace(",", ".").replace(/[^\d.]/g, "")); return n > 0 && n <= 60 ? n : 0; };
+const paraImpuestos = (v) => Math.round(((Number(v) || 0) * pctImpuestos()) / 100 / 100) * 100;
 function metodosActivos(c) {
   c = c || pagosCfg();
   const out = [];
@@ -2096,6 +2445,7 @@ function vPagosCfg() {
         <div class="actions"><label class="btn btn-sm" style="cursor:pointer">Subir QR<input type="file" id="qrPagoFile" accept="image/*" hidden></label>${qr ? `<button class="btn btn-sm" data-act="quitarQrPago">Quitar</button>` : ""}</div>
         <small>Descárguelo desde la app de Nequi o de su banco. Sale en la cuenta de cobro en PDF.</small></div>
       ${f("nota", "Nota para el cliente (opcional)", "Envíe el comprobante por WhatsApp, por favor.")}
+      ${f("impuestos", "Porcentaje que aparta para impuestos (opcional)", "Ej.: 10", "De cada pago que registre, la página le dice cuánto guardar. Pregúntele a su contador el porcentaje que le conviene.")}
       <label class="check"><input type="checkbox" data-pg="publicar"${c.publicar ? " checked" : ""}> Mostrar en mi página qué formas de pago recibo (solo los nombres, no los números)</label>
       <div class="actions"><button class="btn btn-primary" data-act="guardarPagos">Guardar formas de pago</button></div>
     </div>`;
@@ -2139,7 +2489,7 @@ function pdfDesdeHTML(html, archivo) {
     const holder = document.createElement("div"); holder.style.cssText = "position:fixed;left:-10000px;top:0;"; holder.innerHTML = html; document.body.appendChild(holder);
     try {
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      await window.html2pdf().set({ margin: [0.6, 0.6, 0.6, 0.6], filename: archivo, image: { type: "jpeg", quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" }, jsPDF: { unit: "in", format: "letter", orientation: "portrait" } }).from(holder.firstElementChild).save();
+      await window.html2pdf().set({ margin: [0.6, 0.6, 0.6, 0.6], filename: archivo, image: { type: "jpeg", quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0 }, jsPDF: { unit: "in", format: "letter", orientation: "portrait" } }).from(holder.firstElementChild).save();
       toast("PDF descargado");
     } finally { holder.remove(); busy(false); }
   }).catch((e) => { busy(false); console.error(e); toast("No se pudo generar el PDF. Revise su conexión."); });
@@ -2173,6 +2523,148 @@ function siguienteCobro() {
   return S.propuestas.reduce((m, p) => Math.max(m, ...(Array.isArray(p.cobros) ? p.cobros.map((x) => Number(x.num) || 0) : [0])), 0) + 1;
 }
 
+/* ================= Propuesta por enlace con firma ================= */
+const enlaceDe = (pid) => S.enlaces.find((e) => e.propuestaId === pid);
+const urlEnlace = (t) => location.href.split("#")[0].split("?")[0] + "#/p/" + t;
+function nuevoToken() { const b = new Uint8Array(18); crypto.getRandomValues(b); return btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function vEnlaceCard(d) {
+  const e = enlaceDe(S.draftId), ap = e && e.aprobacion;
+  if (ap) {
+    const f = imgSegura(ap.firma);
+    return `<div class="o-card enlace-card ok"><span class="kick">Aprobada y firmada</span>
+      <p><b>${esc(ap.nombre)}</b>${has(ap.documento) ? " · " + esc(ap.documento) : ""} aprobó la propuesta el ${esc(conPunto(fmtFechaHora(ap.fecha)))}</p>
+      ${f ? `<img class="firma-img" src="${esc(f)}" alt="Firma de ${esc(ap.nombre)}">` : ""}
+      <div class="actions"><a class="btn btn-sm" href="#/p/${esc(e.id)}" target="_blank" rel="noopener">Ver lo que firmó</a><button class="btn btn-sm" data-act="copiarEnlace">Copiar enlace</button></div></div>`;
+  }
+  if (e) {
+    const viejo = (d.actualizado || 0) > (e.actualizado || 0) + 2000;
+    return `<div class="o-card enlace-card"><span class="kick">Enlace para el cliente</span>
+      <p>Enviado ${esc(hace(e.actualizado))}. ${e.visto ? `<b>El cliente la abrió ${esc(hace(e.visto))}.</b>` : "El cliente todavía no la ha abierto."}</p>
+      ${viejo ? `<p class="note-ui" style="margin:0 0 10px">Cambió la propuesta después de enviarla. Toque «Enviar de nuevo» para que el cliente vea la versión nueva.</p>` : ""}
+      <div class="actions"><button class="btn btn-sm btn-primary" data-act="enviarEnlace">${viejo ? "Enviar de nuevo" : "Enviar por WhatsApp"}</button><button class="btn btn-sm" data-act="copiarEnlace">Copiar enlace</button><a class="btn btn-sm" href="#/p/${esc(e.id)}" target="_blank" rel="noopener">Ver como el cliente</a><button class="btn btn-sm btn-danger" data-act="quitarEnlace">Quitar enlace</button></div></div>`;
+  }
+  return `<div class="o-card enlace-card"><span class="kick">Enviar como página web</span>
+    <p>El cliente abre la propuesta en el celular, la lee completa y la aprueba con su firma. Usted ve cuándo la abrió y le llega la aprobación aquí.</p>
+    <div class="actions"><button class="btn btn-sm btn-primary" data-act="enviarEnlace">Crear enlace y enviar por WhatsApp</button></div></div>`;
+}
+function pintarEnlaceCard() { const c = $("#enlaceCard"); if (c && S.draft) c.innerHTML = vEnlaceCard(S.draft); }
+function datosPublicos(d) {
+  const { pagos, cobros, garantia, enlaceToken, firma, ...resto } = d;
+  return JSON.parse(JSON.stringify(resto));
+}
+async function publicarEnlace() {
+  const d = S.draft, id = S.draftId; if (!d) return null;
+  if (saveT || saving) await guardarAhora();
+  const e = enlaceDe(id);
+  if (e && e.aprobacion) return e.id;
+  const token = (e && e.id) || d.enlaceToken || nuevoToken(), pf = perfil(), cli = clienteDe(d.clienteId);
+  const data = {
+    uid: S.user.uid, propuestaId: id, datos: datosPublicos(d),
+    perfil: { nombre: pf.nombre, cargo: pf.cargo, negocio: pf.negocio, ciudad: pf.ciudad, whatsapp: pf.whatsapp, correo: pf.correo },
+    cliente: cli ? { nombre: cli.nombre || "", negocio: cli.negocio || "", documento: cli.documento || "" } : null,
+    aprobacion: null, visto: (e && e.visto) || 0, creado: (e && e.creado) || Date.now(), actualizado: Date.now(),
+  };
+  await S.F.setDoc(S.F.doc(S.fdb, "enlaces", token), data);
+  if (d.enlaceToken !== token) { d.enlaceToken = token; await guardarAhora(); }
+  return token;
+}
+function sincronizarAprobaciones() {
+  S.enlaces.filter((e) => e.aprobacion && e.aprobacion.fecha).forEach((e) => {
+    const p = S.propuestas.find((x) => x.id === e.propuestaId);
+    if (!p || (p.firma && p.firma.fecha === e.aprobacion.fecha)) return;
+    const cambio = { estado: "Aprobada", firma: e.aprobacion, actualizado: Date.now() };
+    if (S.draftId === p.id && S.draft) Object.assign(S.draft, cambio);
+    S.F.updateDoc(refDoc("propuestas", p.id), cambio).catch(dbError);
+    toast(`¡${e.aprobacion.nombre} aprobó y firmó «${p.titulo || p.nombreProducto || "la propuesta"}»!`);
+  });
+}
+
+/* La página que ve el cliente */
+async function abrirEnlace(token) {
+  const main = $("#ppMain"), acc = $("#ppAcciones");
+  acc.innerHTML = ""; main.innerHTML = `<p class="pp-msg">Cargando la propuesta…</p>`;
+  let e;
+  try { await cargarApp(); const d = await S.F.getDoc(S.F.doc(S.fdb, "enlaces", token)); e = d.exists() ? d.data() : null; }
+  catch (er) { console.warn(er); main.innerHTML = `<p class="pp-msg">No se pudo abrir la propuesta. Revise su conexión e intente de nuevo.</p>`; return; }
+  if (!e || !e.datos) { main.innerHTML = `<p class="pp-msg">Este enlace no existe o ya no está disponible. Pídale uno nuevo a quien se lo envió.</p>`; return; }
+  S.pp = { token, e };
+  if (!e.visto && !e.aprobacion && !ls.get("sesion")) S.F.updateDoc(S.F.doc(S.fdb, "enlaces", token), { visto: Date.now() }).catch(() => {});
+  pintarEnlacePublico();
+}
+function ctxEnlace() { const e = S.pp.e; return { perfil: e.perfil || {}, cliente: e.cliente || null }; }
+function pintarEnlacePublico() {
+  const { e } = S.pp, ctx = ctxEnlace(), pf = Object.assign({}, PERFIL_BASE, ctx.perfil), ap = e.aprobacion;
+  const datos = Object.assign({}, e.datos, ap ? { firma: ap } : {});
+  const titulo = e.datos.titulo || e.datos.nombreProducto || "Propuesta";
+  document.title = titulo + " · " + pf.nombre;
+  $("#ppMarca").textContent = pf.negocio || pf.nombre;
+  const wa = waLink(pf.whatsapp) || "https://wa.me/" + WHATSAPP;
+  $("#ppAcciones").innerHTML = `<button class="btn btn-sm" type="button" id="ppPDF">Descargar PDF</button><a class="btn btn-sm" target="_blank" rel="noopener" href="${esc(wa)}?text=${encodeURIComponent(`Hola ${pf.nombre.split(" ")[0]}, tengo una pregunta sobre la propuesta «${titulo}».`)}">Tengo una pregunta</a>`;
+  const total = totalInversion(e.datos);
+  $("#ppMain").innerHTML = `
+    <div class="pp-head"><span class="kick">Propuesta${ctx.cliente ? " para " + esc(nombreCliente(ctx.cliente)) : ""}</span><h1 class="o-h1">${esc(titulo)}</h1>
+      <p class="sub">De ${esc(pf.nombre)}${total ? " · Inversión: " + esc(fmtCOP(total)) : ""}${has(e.datos.tiempoEntrega) ? " · Entrega: " + esc(e.datos.tiempoEntrega) : ""}</p>
+      <a class="btn btn-primary pp-ir" href="#ppAprobar" data-ir="ppAprobar">${ap ? "Ver la aprobación" : "Ir a aprobar"}</a></div>
+    <div class="preview"><div class="page">${docHTML(datos, ctx)}</div></div>
+    <section class="o-card pp-aprobar" id="ppAprobar">${ap ? vAprobada(ap, pf, titulo) : vFormFirma(ctx)}</section>
+    <p class="pie">Propuesta enviada por ${esc(pf.nombre)} · ${esc(pf.ciudad)}</p>`;
+  ajustarVista();
+  if (!ap) prepararFirma();
+}
+function vAprobada(ap, pf, titulo) {
+  const f = imgSegura(ap.firma), wa = waLink(pf.whatsapp) || "https://wa.me/" + WHATSAPP;
+  return `<span class="kick">Propuesta aprobada</span><h2 class="o-h1" style="font-size:1.7rem">¡Gracias, ${esc(String(ap.nombre).split(" ")[0])}!</h2>
+    <p>${esc(ap.nombre)}${has(ap.documento) ? " (" + esc(ap.documento) + ")" : ""} aprobó esta propuesta el ${esc(conPunto(fmtFechaHora(ap.fecha)))}</p>
+    ${f ? `<img class="firma-img" src="${esc(f)}" alt="Firma">` : ""}
+    <p class="sub">${esc(pf.nombre)} ya recibió la aprobación. El siguiente paso es el anticipo para empezar.</p>
+    <div class="actions" style="margin-top:12px"><a class="btn btn-primary" target="_blank" rel="noopener" href="${esc(wa)}?text=${encodeURIComponent(`Hola ${pf.nombre.split(" ")[0]}, ya aprobé y firmé la propuesta «${titulo}». ¿Cómo seguimos?`)}">Avisar por WhatsApp</a></div>`;
+}
+function vFormFirma(ctx) {
+  const c = ctx.cliente || {};
+  return `<span class="kick">Aprobar la propuesta</span><h2 class="o-h1" style="font-size:1.7rem">¿Está de acuerdo? Apruébela aquí</h2>
+    <p class="sub" style="margin-bottom:16px">Su firma queda guardada con la fecha y la hora. Si tiene dudas, use «Tengo una pregunta» antes de firmar.</p>
+    <div class="grid2"><label class="field"><span>Nombre completo</span><input id="ppNombre" maxlength="120" autocomplete="name" value="${esc(c.nombre || "")}"></label>
+      <label class="field"><span>Cédula o NIT</span><input id="ppDoc" maxlength="40" value="${esc(c.documento || "")}"></label></div>
+    <div class="field"><span>Firme con el dedo o el mouse</span><div class="firma-caja"><canvas id="ppFirma" aria-label="Espacio para firmar"></canvas><button type="button" class="btn btn-sm" id="ppBorrar">Borrar</button></div></div>
+    <label class="check" style="align-items:flex-start;font-weight:400"><input type="checkbox" id="ppAcepto"> <span>Leí la propuesta y acepto el alcance, el valor y la forma de pago.</span></label>
+    <p class="login-msg" id="ppError" role="alert" hidden></p>
+    <button class="btn btn-primary" type="button" id="ppFirmar" style="width:100%">Aprobar y firmar</button>`;
+}
+function prepararFirma() {
+  const cv = $("#ppFirma"); if (!cv) return;
+  const cx = cv.getContext("2d"); let trazos = 0, dib = false, ult = null;
+  const tam = () => { const r = cv.getBoundingClientRect(), k = window.devicePixelRatio || 1; cv.width = r.width * k; cv.height = r.height * k; cx.setTransform(k, 0, 0, k, 0, 0); cx.lineWidth = 2.4; cx.lineCap = cx.lineJoin = "round"; cx.strokeStyle = "#1A1816"; trazos = 0; };
+  tam();
+  const pt = (ev) => { const r = cv.getBoundingClientRect(); return [ev.clientX - r.left, ev.clientY - r.top]; };
+  cv.addEventListener("pointerdown", (ev) => { dib = true; ult = pt(ev); cv.setPointerCapture(ev.pointerId); ev.preventDefault(); });
+  cv.addEventListener("pointermove", (ev) => { if (!dib) return; const p = pt(ev); cx.beginPath(); cx.moveTo(ult[0], ult[1]); cx.lineTo(p[0], p[1]); cx.stroke(); ult = p; trazos++; });
+  ["pointerup", "pointercancel"].forEach((t) => cv.addEventListener(t, () => { dib = false; }));
+  $("#ppBorrar").addEventListener("click", () => { cx.clearRect(0, 0, cv.width, cv.height); trazos = 0; });
+  $("#ppFirmar").addEventListener("click", async () => {
+    const err = (m) => { const e = $("#ppError"); e.hidden = !m; e.textContent = m || ""; e.className = "login-msg"; };
+    const nombre = $("#ppNombre").value.trim(), documento = $("#ppDoc").value.trim();
+    if (nombre.length < 3) { err("Escriba su nombre completo."); return; }
+    if (trazos < 8) { err("Firme en el recuadro."); return; }
+    if (!$("#ppAcepto").checked) { err("Marque la casilla para confirmar que acepta la propuesta."); return; }
+    const out = document.createElement("canvas"); out.width = 500; out.height = Math.round((500 * cv.height) / cv.width);
+    const o = out.getContext("2d"); o.drawImage(cv, 0, 0, out.width, out.height);
+    const aprobacion = { nombre, documento, firma: out.toDataURL("image/png"), fecha: Date.now(), acepto: true };
+    const b = $("#ppFirmar"); b.disabled = true; b.textContent = "Guardando…";
+    try {
+      await S.F.updateDoc(S.F.doc(S.fdb, "enlaces", S.pp.token), { aprobacion });
+      S.pp.e.aprobacion = aprobacion; pintarEnlacePublico();
+      $("#ppAprobar").scrollIntoView({ block: "start" });
+    } catch (er) {
+      console.warn(er); b.disabled = false; b.textContent = "Aprobar y firmar";
+      err(er && er.code === "permission-denied" ? "Esta propuesta ya fue aprobada o el enlace cambió. Recargue la página." : "No se pudo guardar. Revise su conexión e intente de nuevo.");
+    }
+  });
+}
+$("#pubprop").addEventListener("click", (ev) => {
+  if (ev.target.closest("#ppPDF") && S.pp) { const e = S.pp.e; descargarPDF(Object.assign({}, e.datos, e.aprobacion ? { firma: e.aprobacion } : {}), ctxEnlace()); }
+  const ir = ev.target.closest("[data-ir]"); if (ir) { ev.preventDefault(); const t = document.getElementById(ir.dataset.ir); if (t) t.scrollIntoView({ block: "start" }); }
+});
+
 /* ================= Proyectos (portafolio) ================= */
 function vProyectos() {
   if (!S.loaded.y) return cargando();
@@ -2188,7 +2680,7 @@ function vProyectos() {
       : `<div class="o-card o-empty"><p>Cuando entregue un proyecto, súbalo aquí con una foto. Si lo marca como publicado, aparece solo en la sección Casos de su página.</p><div class="actions" style="justify-content:center"><button class="btn btn-primary" data-act="ir" data-to="publicar-ia">Publicar con IA</button><button class="btn" data-act="nuevoProyecto">Llenar a mano</button></div></div>`}`;
 }
 function proyectoBase(extra) {
-  return Object.assign({ titulo: "", sector: "", descripcion: "", funciones: "", enlace: "", imagen: "", clienteId: "", propuestaId: "", publicado: false, orden: 0, creado: Date.now() }, extra || {});
+  return Object.assign({ titulo: "", sector: "", descripcion: "", funciones: "", enlace: "", imagen: "", antes: "", clienteId: "", propuestaId: "", publicado: false, orden: 0, creado: Date.now() }, extra || {});
 }
 function cargarProyDraft(id) {
   if (S.proyDraftId === id && S.proyDraft) return true;
@@ -2219,6 +2711,10 @@ function vProyecto(id) {
         ${img ? `<img class="img-prev" id="pf_prev" src="${esc(img)}" alt="">` : `<img class="img-prev" id="pf_prev" alt="" hidden>`}
         <div class="actions"><label class="btn btn-sm" style="cursor:pointer">Elegir foto<input type="file" id="pf_img" accept="image/*" hidden></label>${img ? `<button class="btn btn-sm" data-act="quitarFoto">Quitar foto</button>` : ""}</div>
         <small>Se reduce sola para que la página cargue rápido.</small></div>
+      <div class="field"><span>Foto de antes (opcional)</span>
+        ${imgSegura(d.antes) ? `<img class="img-prev" id="pf_antes_prev" src="${esc(imgSegura(d.antes))}" alt="">` : `<img class="img-prev" id="pf_antes_prev" alt="" hidden>`}
+        <div class="actions"><label class="btn btn-sm" style="cursor:pointer">Elegir foto de antes<input type="file" id="pf_antes" accept="image/*" hidden></label>${imgSegura(d.antes) ? `<button class="btn btn-sm" data-act="quitarAntes">Quitar</button>` : ""}</div>
+        <small>Una foto del cuaderno o del Excel con que trabajaba el cliente. En la página sale un deslizador para comparar el antes y el después.</small></div>
       <div class="grid2">
         <label class="field"><span>Cliente (privado)</span><select data-pk="clienteId"><option value="">Sin cliente</option>${opts.map((c) => `<option value="${c.id}"${c.id === d.clienteId ? " selected" : ""}>${esc(nombreCliente(c))}</option>`).join("")}</select><small>No se muestra en la página.</small></label>
         <label class="field"><span>Orden</span><input data-pk="orden" type="number" inputmode="numeric" value="${esc(d.orden || 0)}"><small>Los números menores salen primero.</small></label>
@@ -2330,6 +2826,15 @@ const dias = (t) => (t ? Math.floor((Date.now() - t) / 86400000) : 0);
 function recomendaciones() {
   const C = S.clientes, P = S.propuestas, Y = S.proyectos, out = [];
   const add = (prio, titulo, detalle, acciones) => out.push({ prio, titulo, detalle, acciones: acciones || "" });
+  const nuevas = solNuevas();
+  if (nuevas.length) add(0, nuevas.length === 1 ? `Responda la solicitud de ${nuevas[0].nombre || "su página"}` : `Tiene ${nuevas.length} solicitudes nuevas de su página`,
+    nuevas.slice(0, 3).map((x) => [x.nombre, x.negocio].filter(Boolean).join(", ")).join(" · ") + ". Responder rápido es lo que más ayuda a cerrar la venta.",
+    `<button class="btn btn-sm btn-primary" data-act="ir" data-to="clientes">Ver solicitudes</button>`);
+  segPendientes().forEach((c) => {
+    const wa = waLink(c.telefono), at = segEstado(c) === "atrasado";
+    add(0, `${at ? "Seguimiento atrasado" : "Hoy"}: ${nombreCliente(c)}`, (c.seguimientoNota || "Tiene un seguimiento pendiente.") + (at ? ` Era para el ${fmtFecha(c.seguimiento)}.` : ""),
+      (wa ? `<a class="btn btn-sm btn-primary" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>` : "") + `<button class="btn btn-sm" data-act="seguimientoHecho" data-id="${c.id}">Ya lo hice</button><button class="btn btn-sm" data-act="verCliente" data-id="${c.id}">Ver cliente</button>`);
+  });
   P.filter((p) => p.estado === "Enviada" && dias(p.actualizado) >= 3).forEach((p) => {
     const c = clienteDe(p.clienteId), wa = c && waLink(c.telefono), n = dias(p.actualizado);
     const txt = encodeURIComponent(`Hola${c && c.nombre ? " " + c.nombre.split(" ")[0] : ""}, ¿cómo va? Le escribo para saber si pudo revisar la propuesta "${p.titulo || p.nombreProducto || ""}". Quedo atento a sus preguntas.`);
@@ -2911,6 +3416,7 @@ function parseHash() {
   if (!h.startsWith("#/")) return { area: "sitio" };
   const parts = h.slice(2).split("/").filter(Boolean);
   if (parts[0] === "ingresar") return { area: "login" };
+  if (parts[0] === "p" && parts[1]) return { area: "propuesta", token: decodeURIComponent(parts[1]) };
   if (parts[0] === "oficina") {
     const name = TAB_DE[parts[1]] ? parts[1] : "panel";
     return { area: "oficina", view: { name, id: parts[2] ? decodeURIComponent(parts[2]) : null } };
@@ -2924,7 +3430,9 @@ function mostrar(area) {
   $("#login").hidden = area !== "login";
   $("#cargando").hidden = area !== "cargando";
   $("#oficina").hidden = area !== "oficina";
+  $("#pubprop").hidden = area !== "propuesta";
   document.body.classList.toggle("en-oficina", area === "oficina");
+  document.body.classList.toggle("en-prop", area === "propuesta");
   document.body.classList.toggle("en-login", area === "login" || area === "cargando");
   if (area === "sitio" && antes !== "sitio") {
     const el = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
@@ -2935,6 +3443,7 @@ function route() {
   cerrarCamara();
   const r = parseHash();
   if (r.area === "sitio") { mostrar("sitio"); return; }
+  if (r.area === "propuesta") { mostrar("propuesta"); window.scrollTo(0, 0); abrirEnlace(r.token); return; }
   if (!S.fbPromise) cargarFirebase();
   if (S.fbError || (S.authReady && !S.user)) { mostrar("login"); prepararLogin(); return; }
   if (!S.authReady) { mostrar("cargando"); return; }
@@ -2969,11 +3478,12 @@ function alCambiarDatos() {
   renderOficina();
 }
 function ajustarVista() {
-  const wrap = $(".preview"), page = $(".preview .page");
+  const sel = S.area === "propuesta" ? "#pubprop " : "#oficina ";
+  const wrap = $(sel + ".preview"), page = $(sel + ".preview .page");
   if (!wrap || !page) return;
   page.style.zoom = Math.min(1, (wrap.clientWidth - 24) / 780);
 }
-window.addEventListener("resize", () => { if (S.area === "oficina" && S.view.name === "vista") ajustarVista(); });
+window.addEventListener("resize", () => { if ((S.area === "oficina" && S.view.name === "vista") || S.area === "propuesta") ajustarVista(); });
 window.addEventListener("hashchange", route);
 
 /* ================= Acciones ================= */
@@ -2990,7 +3500,7 @@ const ACT = {
   editarCliente: (el) => go("editar-cliente", el.dataset.id),
   guardarCliente(el) {
     const val = (k) => ($("#f_" + k)?.value || "").trim();
-    const data = { nombre: val("nombre"), negocio: val("negocio"), documento: val("documento"), telefono: val("telefono"), correo: val("correo"), ciudad: val("ciudad"), direccion: val("direccion"), notas: ($("#f_notas")?.value || "").trim(), actualizado: Date.now() };
+    const data = { nombre: val("nombre"), negocio: val("negocio"), documento: val("documento"), telefono: val("telefono"), correo: val("correo"), ciudad: val("ciudad"), direccion: val("direccion"), etapa: ($("#f_etapa")?.value || ""), notas: ($("#f_notas")?.value || "").trim(), actualizado: Date.now() };
     if (!data.nombre && !data.negocio) { toast("Escriba al menos el nombre o el negocio."); return; }
     const id = el.dataset.id;
     if (id) {
@@ -3185,7 +3695,8 @@ const ACT = {
     const ab = { id: Math.random().toString(36).slice(2, 9), valor, fecha: ($("#ab_fecha") || {}).value || hoyISO(), metodo: ($("#ab_metodo") || {}).value || "", nota: (($("#ab_nota") || {}).value || "").trim(), creado: Date.now() };
     d.pagos = [...pagosDe(d), ab].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)));
     S.pagosAbierto = true; guardarAhora(); renderOficina();
-    toast(saldoDe(d) ? `Abono registrado. Saldo: ${fmtCOP(saldoDe(d))}` : "¡Pagado completo!");
+    const imp = pctImpuestos() ? ` Aparte ${fmtCOP(paraImpuestos(valor))} para impuestos.` : "";
+    toast((saldoDe(d) ? `Abono registrado. Saldo: ${fmtCOP(saldoDe(d))}.` : "¡Pagado completo!") + imp);
   },
   quitarAbono(el) {
     armar(el, "¿Seguro?", () => { S.draft.pagos = pagosDe(S.draft).filter((x) => x.id !== el.dataset.id); S.pagosAbierto = true; guardarAhora(); renderOficina(); toast("Abono quitado"); });
@@ -3232,6 +3743,83 @@ const ACT = {
     const F = window.FUNCIONES || [], favs = fxFavs();
     const t = "Quiero estas funciones para mi página:\n" + F.filter((f) => favs.has(f.n)).map((f) => `${f.n}. ${f.t}`).join("\n");
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast("Lista copiada. Péguela en el chat para que la construyamos.")).catch(() => toast("No se pudo copiar."));
+  },
+  async enviarEnlace(el) {
+    el.disabled = true;
+    try {
+      const token = await publicarEnlace(); if (!token) return;
+      const d = S.draft, c = clienteDe(d.clienteId), nombre = c && c.nombre ? " " + c.nombre.split(" ")[0] : "";
+      const txt = `Hola${nombre}, ¿cómo va? Le comparto la propuesta "${d.titulo || d.nombreProducto || "de su proyecto"}". La puede leer en el celular y, si está de acuerdo, aprobarla con su firma ahí mismo:\n${urlEnlace(token)}`;
+      window.open(((c && waLink(c.telefono)) || "https://wa.me/") + "?text=" + encodeURIComponent(txt), "_blank", "noopener");
+      if ((d.estado || "Borrador") === "Borrador") { d.estado = "Enviada"; guardarAhora(); }
+      toast("Enlace listo"); pintarEnlaceCard();
+    } catch (e) { dbError(e); } finally { if (el.isConnected) el.disabled = false; }
+  },
+  copiarEnlace() {
+    const e = enlaceDe(S.draftId); if (!e) return;
+    (navigator.clipboard ? navigator.clipboard.writeText(urlEnlace(e.id)) : Promise.reject()).then(() => toast("Enlace copiado")).catch(() => toast(urlEnlace(e.id)));
+  },
+  quitarEnlace(el) {
+    armar(el, "¿Seguro? El cliente ya no podrá abrirla", () => {
+      const e = enlaceDe(S.draftId); if (!e) return;
+      S.F.deleteDoc(S.F.doc(S.fdb, "enlaces", e.id)).catch(dbError);
+      S.draft.enlaceToken = ""; guardarAhora(); toast("Enlace quitado");
+    });
+  },
+  filtroEtapa(el) { S.etapaFiltro = el.dataset.k || ""; renderOficina(); },
+  guardarSeguimiento(el) {
+    const fecha = ($("#ce_seg") || {}).value || "", nota = (($("#ce_segNota") || {}).value || "").trim();
+    if (!fecha) { toast("Escoja la fecha del seguimiento."); return; }
+    S.F.updateDoc(refDoc("clientes", el.dataset.id), { seguimiento: fecha, seguimientoNota: nota, actualizado: Date.now() }).catch(dbError);
+    toast("Recordatorio para el " + fmtFecha(fecha));
+  },
+  posponerSeguimiento(el) {
+    const fecha = sumarDias(hoyISO(), Number(el.dataset.n) || 3), nota = (($("#ce_segNota") || {}).value || "").trim();
+    S.F.updateDoc(refDoc("clientes", el.dataset.id), { seguimiento: fecha, seguimientoNota: nota, actualizado: Date.now() }).catch(dbError);
+    toast("Recordatorio para el " + fmtFecha(fecha));
+  },
+  seguimientoHecho(el) {
+    S.F.updateDoc(refDoc("clientes", el.dataset.id), { seguimiento: "", seguimientoNota: "", actualizado: Date.now() }).catch(dbError);
+    toast("Seguimiento hecho");
+  },
+  convertirSolicitud(el) {
+    const x = S.solicitudes.find((y) => y.id === el.dataset.id); if (!x) return;
+    const notas = [`Solicitud de la página (${fmtFecha(new Date(x.creado || Date.now()).toISOString().slice(0, 10))}).`, x.tipo && "Necesita: " + x.tipo + ".", x.detalle, x.presupuesto && "Presupuesto: " + x.presupuesto + ".", x.cotizacion].filter(Boolean).join("\n");
+    const ref = refNuevo("clientes");
+    S.F.setDoc(ref, { nombre: x.nombre || "", negocio: x.negocio || "", telefono: x.telefono || "", documento: "", correo: "", ciudad: "", direccion: "", notas, etapa: "Prospecto",
+      seguimiento: hoyISO(), seguimientoNota: "Responder la solicitud de la página", creado: Date.now(), actualizado: Date.now() }).catch(dbError);
+    S.F.updateDoc(S.F.doc(S.fdb, "solicitudes", x.id), { estado: "convertida", clienteId: ref.id }).catch(dbError);
+    toast("Ahora es su cliente"); go("cliente", ref.id);
+  },
+  descartarSolicitud(el) {
+    armar(el, "¿Seguro?", () => { S.F.deleteDoc(S.F.doc(S.fdb, "solicitudes", el.dataset.id)).catch(dbError); toast("Solicitud descartada"); });
+  },
+  quitarAntes() { if (!S.proyDraft) return; S.proyDraft.antes = ""; S.quiet = false; renderOficina(); S.quiet = true; },
+  async carnetPDF() {
+    const d = S.draft; if (!d) return;
+    if (!d.garantia || !d.garantia.entrega) { d.garantia = { entrega: hoyISO(), hasta: sumarDias(hoyISO(), GARANTIA_DIAS) }; guardarAhora(); }
+    const pf = perfil(), cli = clienteDe(d.clienteId), g = d.garantia;
+    const c = normHex(d.color, "#1F5C45"), a = normHex(d.acento, "#F2C94C");
+    let qr = ""; try { qr = await qrDataURL(waLink(pf.whatsapp) || "https://wa.me/" + WHATSAPP, 6); } catch (e) {}
+    const html = `<div style="width:700px;padding:10px 4px;font-family:Arial,Helvetica,sans-serif;color:#1F2A27">
+      <div style="border:2px solid ${c};border-radius:18px;overflow:hidden">
+        <div style="background:${c};color:#FFF;padding:22px 26px;display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:12px;letter-spacing:3px;text-transform:uppercase;opacity:.85">Carnet de garantía</div><div style="font-size:26px;font-weight:700;margin-top:4px">${esc(d.titulo || d.nombreProducto || "Proyecto")}</div></div>
+          <div style="background:${a};color:#1F2A27;border-radius:999px;padding:8px 16px;font-weight:700;font-size:14px;white-space:nowrap">${GARANTIA_DIAS} días</div>
+        </div>
+        <div style="padding:22px 26px;display:flex;gap:24px">
+          <div style="flex:1">
+            <table style="width:100%;border-collapse:collapse;font-size:13.5px">
+              ${[["Cliente", nombreCliente(cli)], ["Entregado el", fmtFecha(g.entrega)], ["Garantía hasta", fmtFecha(g.hasta)], ["Desarrollado por", pf.nombre]].map(([k, v]) => `<tr><td style="padding:7px 0;color:#6A7671;border-bottom:1px solid #E3E8E6;width:42%">${esc(k)}</td><td style="padding:7px 0;font-weight:700;border-bottom:1px solid #E3E8E6">${esc(v)}</td></tr>`).join("")}
+            </table>
+            <p style="font-size:12.5px;line-height:1.5;margin:14px 0 6px"><b>Cubre:</b> corrección sin costo de errores en las funciones entregadas.</p>
+            <p style="font-size:12.5px;line-height:1.5;margin:0"><b>No cubre:</b> funciones nuevas, cambios hechos por otras personas ni fallas de internet, equipos o servicios de terceros.</p>
+          </div>
+          ${qr ? `<div style="text-align:center;width:150px;flex:none"><img src="${qr}" alt="" style="width:140px;height:140px"><div style="font-size:11px;color:#6A7671;margin-top:4px">Escanee para pedir soporte por WhatsApp</div></div>` : ""}
+        </div>
+        <div style="background:#F4F6F5;padding:12px 26px;font-size:12px;color:#4A5551">Para usar la garantía escriba por WhatsApp al ${esc(pf.whatsapp)}${pf.correo ? " o al correo " + esc(pf.correo) : ""}.</div>
+      </div></div>`;
+    pdfDesdeHTML(html, archivoSeguro(`Carnet de garantia ${nombreCliente(cli)} ${d.titulo || ""}`));
   },
   guardarPerfil() {
     const val = (k) => ($("#p_" + k)?.value || "").trim();
@@ -3283,6 +3871,17 @@ function onField(e) {
   }
   const pk = e.target.closest("[data-pk]");
   if (pk && S.proyDraft) { S.proyDraft[pk.dataset.pk] = pk.type === "checkbox" ? pk.checked : pk.value; return; }
+  if (e.target.id === "pf_antes" && e.type === "change" && e.target.files[0] && S.proyDraft) {
+    const d = S.proyDraft;
+    reducirFoto(e.target.files[0]).then((url) => { d.antes = url; const pv = $("#pf_antes_prev"); if (pv) { pv.src = url; pv.hidden = false; } }).catch(() => toast("No se pudo leer la foto. Pruebe con otra."));
+    return;
+  }
+  if (e.target.id === "ce_etapa" && e.type === "change") {
+    S.F.updateDoc(refDoc("clientes", e.target.dataset.id), { etapa: e.target.value, actualizado: Date.now() }).catch(dbError);
+    toast(e.target.value ? "Etapa: " + e.target.value : "Etapa automática");
+    return;
+  }
+  if (S.view.name === "cliente" && ["ce_seg", "ce_segNota"].includes(e.target.id)) return;
   if (e.target.id === "pf_img" && e.type === "change" && e.target.files[0] && S.proyDraft) {
     const d = S.proyDraft;
     reducirFoto(e.target.files[0]).then((url) => {
@@ -3398,6 +3997,7 @@ function cifras() {
 })();
 
 /* Cotizador para visitantes (usa las tarifas de referencia de TARIFAS_BASE) */
+let cotResumen = "";
 const COT_MODS = ["inventario", "ventas", "fiados", "clientes", "roles", "reportes", "facturacion", "turnos", "catalogoWa", "offline", "migracion", "playstore"];
 (function cotizador() {
   const tipos = $("#cotTipo"), mods = $("#cotMods"); if (!tipos) return;
@@ -3411,6 +4011,7 @@ const COT_MODS = ["inventario", "ventas", "fiados", "clientes", "roles", "report
     $("#cotTiempo").textContent = `Entrega aproximada: ${sem} ${sem === 1 ? "semana" : "semanas"}`;
     const lista = st.mods.map((m) => "- " + t.modulos[m].n).join("\n");
     $("#cotWa").href = waUrl(`Hola Andrés, calculé en su página un precio para: ${t.tipos[st.tipo].n}${lista ? "\nCon estas funciones:\n" + lista : ""}\n¿Me puede dar el precio exacto?`);
+    cotResumen = `Calculadora: ${t.tipos[st.tipo].n}${st.mods.length ? " con " + st.mods.map((m) => t.modulos[m].n).join(", ") : ""} (${fmtCOP(min)} a ${fmtCOP(max)})`;
   };
   tipos.addEventListener("change", (e) => { st.tipo = e.target.value; pintar(); });
   mods.addEventListener("change", () => { st.mods = [...mods.querySelectorAll("input:checked")].map((i) => i.value); pintar(); });
@@ -3479,6 +4080,19 @@ const TOOLS = {
 })();
 
 /* Contacto: horario, llamar, guardar contacto, QR y compartir */
+/* Código QR como imagen (usa qrcode.js, que se carga solo cuando hace falta) */
+let qrLib = null;
+async function qrDataURL(texto, k = 10) {
+  if (!window.qrcode) {
+    if (!qrLib) qrLib = new Promise((ok, mal) => { const sc = document.createElement("script"); sc.src = "qrcode.js"; sc.onload = ok; sc.onerror = () => { qrLib = null; mal(new Error("qr")); }; document.head.appendChild(sc); });
+    await qrLib;
+  }
+  const q = window.qrcode(0, "M"); q.addData(texto); q.make();
+  const n = q.getModuleCount(), m = 4, cv = document.createElement("canvas"); cv.width = cv.height = (n + m * 2) * k;
+  const cx = cv.getContext("2d"); cx.fillStyle = "#FFF"; cx.fillRect(0, 0, cv.width, cv.height); cx.fillStyle = "#1A1816";
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) cx.fillRect((c + m) * k, (r + m) * k, k, k);
+  return cv.toDataURL("image/png");
+}
 function horaColombia() { const d = new Date(Date.now() + (new Date().getTimezoneOffset() - 300) * 60000); return { dia: d.getDay(), hora: d.getHours() + d.getMinutes() / 60 }; }
 (function contacto() {
   const h = horaColombia(), abierto = HORARIO.dias.includes(h.dia) && h.hora >= HORARIO.desde && h.hora < HORARIO.hasta;
@@ -3497,12 +4111,7 @@ function horaColombia() { const d = new Date(Date.now() + (new Date().getTimezon
   if (bq) bq.addEventListener("click", async () => {
     if (!box.hidden) { box.hidden = true; return; }
     try {
-      if (!window.qrcode) await new Promise((ok, mal) => { const sc = document.createElement("script"); sc.src = "qrcode.js"; sc.onload = ok; sc.onerror = mal; document.head.appendChild(sc); });
-      const q = window.qrcode(0, "M"); q.addData(waUrl(MENSAJE)); q.make();
-      const n = q.getModuleCount(), k = 10, m = 4, cv = document.createElement("canvas"); cv.width = cv.height = (n + m * 2) * k;
-      const cx = cv.getContext("2d"); cx.fillStyle = "#FFF"; cx.fillRect(0, 0, cv.width, cv.height); cx.fillStyle = "#1A1816";
-      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) cx.fillRect((c + m) * k, (r + m) * k, k, k);
-      const url = cv.toDataURL("image/png");
+      const url = await qrDataURL(waUrl(MENSAJE));
       $("#qrImg").innerHTML = `<img src="${url}" alt="Código QR para escribirle a Andrés Bolívar por WhatsApp">`;
       $("#qrBajar").href = url; box.hidden = false;
     } catch (e) { toast("No se pudo crear el código QR."); }
@@ -3568,6 +4177,137 @@ function horaColombia() { const d = new Date(Date.now() + (new Date().getTimezon
 
 /* App instalable y funciona sin conexión (solo en la página publicada, con https) */
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+
+/* ================= Etapa 3: página pública ================= */
+const SECTOR_OPC = [["tiendas", "Tienda"], ["restaurantes", "Restaurante"], ["parqueaderos", "Parqueadero"], ["fincas", "Finca"], ["vigilancia", "Empresa de vigilancia"], ["veterinarias", "Veterinaria"], ["otro", "Otro"]];
+const sectorParam = new URLSearchParams(location.search).get("sector");
+
+/* Meta: negocios digitalizados (cuenta los casos que hay en la página) */
+function pintarMeta() {
+  const n = $("#metaHechos"), b = $("#metaBarra"); if (!n) return;
+  const hechos = Math.min(META_NEGOCIOS, cifras().proyectos), pct = Math.round((hechos / META_NEGOCIOS) * 100);
+  n.textContent = hechos; $("#metaTotal").textContent = META_NEGOCIOS;
+  b.style.width = Math.max(2, pct) + "%"; b.parentElement.setAttribute("aria-valuenow", String(pct));
+}
+pintarMeta();
+
+/* Demo instantánea: el visitante ve su app con su nombre y su color */
+const DEMO = {
+  tiendas: { sub: "Caja de hoy", stats: [["Ventas hoy", "$ 845.000"], ["Le deben", "$ 230.000"]], aviso: "3 productos están por agotarse", filas: [["Venta", "Arroz x 5 lb", "$ 18.500"], ["Fiado", "Doña Marta", "$ 35.000"], ["Venta", "Gaseosa 1,5 L", "$ 6.000"], ["Gasto", "Proveedor", "$ 120.000"], ["Venta", "Aceite 1 L", "$ 12.900"]], nav: ["Inicio", "Ventas", "Inventario", "Fiados"] },
+  restaurantes: { sub: "Servicio de hoy", stats: [["Ventas hoy", "$ 1.320.000"], ["Mesas ocupadas", "7 de 12"]], aviso: "2 domicilios esperando repartidor", filas: [["Mesa 4", "2 bandejas paisas", "$ 52.000"], ["Domicilio", "Calle 8 # 5-20", "$ 31.000"], ["Mesa 1", "Almuerzo ejecutivo x 3", "$ 45.000"], ["Mesa 7", "Jugos x 4", "$ 16.000"], ["Domicilio", "Barrio Altico", "$ 24.000"]], nav: ["Inicio", "Mesas", "Pedidos", "Caja"] },
+  parqueaderos: { sub: "Turno de la mañana", stats: [["Recaudo hoy", "$ 410.000"], ["Adentro ahora", "23"]], aviso: "4 mensualidades vencen esta semana", filas: [["Carro", "GHT 482 · 2 h 10 min", "$ 6.500"], ["Moto", "QWE 71F · 45 min", "$ 2.000"], ["Mensual", "Bus TRV 330", "$ 180.000"], ["Carro", "JKL 905 · 4 h", "$ 12.000"], ["Moto", "ZXC 12D · 1 h", "$ 2.000"]], nav: ["Inicio", "Entradas", "Mensuales", "Turnos"] },
+  fincas: { sub: "Cosecha 2026", stats: [["Invertido", "$ 8.450.000"], ["Por kilo", "$ 9.800"]], aviso: "Pago a recolectores el sábado", filas: [["Insumo", "Abono 10 bultos", "$ 1.250.000"], ["Jornal", "Recolección · 6 personas", "$ 540.000"], ["Transporte", "Viaje a Neiva", "$ 180.000"], ["Insumo", "Fungicida", "$ 210.000"], ["Jornal", "Deshierba · 3 personas", "$ 270.000"]], nav: ["Inicio", "Gastos", "Jornales", "Reportes"] },
+  vigilancia: { sub: "Quincena actual", stats: [["Horas extra", "186 h"], ["Valor a pagar", "$ 2.940.000"]], aviso: "2 puestos sin guarda asignado mañana", filas: [["Turno", "Carlos R. · Noche", "12 h"], ["Extra", "Andrea M. · Domingo", "+ 4 h"], ["Turno", "Luis P. · Día", "12 h"], ["Descanso", "Jorge V.", "Libre"], ["Turno", "Marta C. · Noche", "12 h"]], nav: ["Inicio", "Turnos", "Guardas", "Pagos"] },
+  veterinarias: { sub: "Agenda de hoy", stats: [["Citas hoy", "11"], ["Ventas hoy", "$ 690.000"]], aviso: "5 mascotas tienen vacuna pendiente", filas: [["Cita", "Luna · Vacuna", "9:00 a. m."], ["Venta", "Concentrado 8 kg", "$ 98.000"], ["Cita", "Max · Control", "10:30 a. m."], ["Venta", "Antipulgas", "$ 42.000"], ["Cita", "Kira · Baño", "2:00 p. m."]], nav: ["Inicio", "Citas", "Mascotas", "Ventas"] },
+  otro: { sub: "Resumen de hoy", stats: [["Ventas hoy", "$ 780.000"], ["Por cobrar", "$ 310.000"]], aviso: "Tiene 2 pedidos por entregar", filas: [["Venta", "Pedido de Laura", "$ 120.000"], ["Pago", "Abono de Pedro", "$ 80.000"], ["Gasto", "Materiales", "$ 95.000"], ["Venta", "Pedido de Ana", "$ 64.000"], ["Pedido", "Juan · para el viernes", "$ 150.000"]], nav: ["Inicio", "Ventas", "Clientes", "Reportes"] },
+};
+const DEMO_COLORES = [["#1F5C45", "verde"], ["#1D3A6E", "azul"], ["#8C2F39", "vino"], ["#C26A2E", "naranja"], ["#5B3E8F", "morado"], ["#1A1816", "negro"]];
+(function demoApp() {
+  const sel = $("#demoSector"), cel = $("#demoCel"), cols = $("#demoColores"), nom = $("#demoNombre"); if (!cel) return;
+  sel.innerHTML = SECTOR_OPC.map(([k, n]) => `<option value="${k}"${k === (DEMO[sectorParam] ? sectorParam : "tiendas") ? " selected" : ""}>${esc(n)}</option>`).join("");
+  cols.innerHTML = DEMO_COLORES.map(([c, n], i) => `<label title="${esc(n)}"><input type="radio" name="demoColor" value="${c}"${i === 0 ? " checked" : ""} aria-label="Color ${esc(n)}"><span style="--c:${c}"></span></label>`).join("");
+  const pintar = () => {
+    const k = sel.value, d = DEMO[k] || DEMO.otro, color = (cols.querySelector("input:checked") || {}).value || DEMO_COLORES[0][0];
+    const sectorN = (SECTOR_OPC.find((x) => x[0] === k) || [0, "Negocio"])[1];
+    const nombre = nom.value.trim() || (k === "otro" ? "Mi negocio" : sectorN + " de ejemplo");
+    cel.style.setProperty("--dc", color);
+    cel.innerHTML = `<div class="demo-pant"><div class="demo-top"><div class="fila"><span class="demo-logo">${esc(iniciales(nombre))}</span><div><b>${esc(nombre)}</b><small>${esc(d.sub)}</small></div></div>
+      <div class="demo-stats">${d.stats.map(([a, b]) => `<div><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join("")}</div></div>
+      <div class="demo-cuerpo"><p class="demo-aviso">${esc(d.aviso)}</p><ul class="demo-lista">${d.filas.map(([t, x, v]) => `<li><i>${esc(t)}</i><span>${esc(x)}</span><em>${esc(v)}</em></li>`).join("")}</ul></div>
+      <div class="demo-nav">${d.nav.map((x) => `<span>${esc(x)}</span>`).join("")}</div></div>`;
+    const cn = (DEMO_COLORES.find((x) => x[0] === color) || [0, ""])[1];
+    $("#demoWa").href = waUrl(`Hola Andrés, probé la demo de su página. Quiero un sistema así para ${nom.value.trim() || "mi negocio"} (${sectorN.toLowerCase()}), con el color ${cn}.`);
+  };
+  [sel, cols, nom].forEach((el) => { el.addEventListener("input", pintar); el.addEventListener("change", pintar); });
+  pintar();
+})();
+
+/* Planes de soporte */
+(function planes() {
+  const box = $("#planes"); if (!box) return;
+  box.innerHTML = PLANES_SOPORTE.map((p, i) => `<article class="plan marco reveal${p.destacado ? " destacado" : ""}" style="--d:${i * 0.08}s">
+    <span class="sello-plan"${p.destacado ? "" : ' style="visibility:hidden" aria-hidden="true"'}>Recomendado</span><h3>${esc(p.n)}</h3><p class="para">${esc(p.para)}</p>
+    <p class="precio">${esc(fmtCOP(p.v))}<small>al mes</small></p>
+    <ul>${p.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+    <a class="btn${p.destacado ? "" : " btn-dark"}" target="_blank" rel="noopener" href="${esc(waUrl(`Hola Andrés, me interesa el plan de soporte ${p.n} (${fmtCOP(p.v)} al mes). ¿Me cuenta más?`))}">Quiero el plan ${esc(p.n)}</a>
+  </article>`).join("");
+  box.querySelectorAll(".reveal").forEach((e) => e.classList.add("in"));
+})();
+
+/* Guía: del cuaderno al celular en 5 pasos */
+const GUIA = [
+  ["Mire qué anota hoy", "Durante una semana, fíjese qué escribe en el cuaderno: ventas, fiados, gastos, pedidos. Eso es lo que su sistema debe hacer primero.", "Tómele foto a dos páginas de su cuaderno."],
+  ["Escoja lo que más le duele", "No pase todo de una vez. Empiece por lo que más plata o tiempo le cuesta: casi siempre son los fiados o el inventario.", "Escriba en una frase qué es lo que más se le pierde."],
+  ["Ordene sus listas", "Haga una lista de productos con su precio y otra de clientes con su teléfono. Sirve una hoja de Excel o el mismo cuaderno, pero en orden.", "Empiece con los 20 productos que más vende."],
+  ["Pruebe dos semanas", "Use el sistema para una sola cosa durante dos semanas, junto con el cuaderno. Así confía en los números antes de soltar el papel.", "Escoja el día en que va a empezar."],
+  ["Sume a su equipo y mire los números", "Cuando ya confíe, cree un usuario para cada persona y revise los reportes cada semana: qué se vende, quién debe y cuánto entra.", "Aparte 15 minutos los lunes para mirar el reporte."],
+];
+const ROMANOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+(function guia() {
+  const ol = $("#guiaPasos"); if (!ol) return;
+  ol.innerHTML = GUIA.map(([t, p, h], i) => `<li class="reveal in"><span class="num">${ROMANOS[i]}</span><h3>${esc(t)}</h3><p>${esc(p)}</p><p class="hoy"><b>Hágalo hoy</b>${esc(h)}</p></li>`).join("");
+  const url = (location.protocol.startsWith("http") ? location.href.split("#")[0] : "") + "#guia";
+  $("#btnGuiaWa").href = "https://wa.me/?text=" + encodeURIComponent(`Mire esta guía gratis: «Del cuaderno al celular en 5 pasos», de Andrés Bolívar. ${url}`);
+  $("#btnGuiaPDF").addEventListener("click", () => {
+    const html = `<div style="width:700px;font-family:Georgia,'Times New Roman',serif;color:#1A1816;background:#FFF;padding:8px 4px">
+      <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6B645A;margin:0 0 8px">Guía gratis · Andrés Bolívar</p>
+      <h1 style="font-size:34px;line-height:1.1;font-weight:normal;margin:0 0 6px;text-transform:uppercase">Del cuaderno al celular en 5 pasos</h1>
+      <p style="font-family:Arial,sans-serif;font-size:13px;color:#5E5850;margin:0 0 22px">Lo que yo haría en su negocio, aunque no me contrate.</p>
+      ${GUIA.map(([t, p, h], i) => `<div style="display:flex;gap:18px;border-top:1px solid #D6CEC0;padding:16px 0;page-break-inside:avoid"><div style="font-size:30px;width:52px;flex:none">${ROMANOS[i]}</div><div><h2 style="font-size:19px;font-weight:normal;text-transform:uppercase;margin:0 0 6px">${esc(t)}</h2><p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.55;color:#3A3631;margin:0 0 8px">${esc(p)}</p><p style="font-family:Arial,sans-serif;font-size:12.5px;margin:0"><b style="letter-spacing:2px;text-transform:uppercase;font-size:10px">Hágalo hoy:</b> ${esc(h)}</p></div></div>`).join("")}
+      <div style="border-top:1px solid #1A1816;margin-top:8px;padding-top:16px;font-family:Arial,sans-serif;font-size:13px">¿Quiere ayuda con su negocio? Escríbame por WhatsApp: <b>+${esc(WHATSAPP)}</b> · Neiva, Huila</div></div>`;
+    pdfDesdeHTML(html, "Guia del cuaderno al celular - Andres Bolivar.pdf");
+  });
+})();
+
+/* Formulario "Cotice su proyecto": se guarda en Mi oficina (solicitudes) o se envía por WhatsApp */
+const SOL_TIPOS = ["Página web", "Sistema a la medida", "App para celular", "No estoy seguro"];
+const SOL_PRESUPUESTO = ["Todavía no sé", "Menos de $ 1.000.000", "$ 1.000.000 a $ 3.000.000", "$ 3.000.000 a $ 6.000.000", "Más de $ 6.000.000"];
+(function solicitud() {
+  const form = $("#solForm"); if (!form) return;
+  $("#solSector").innerHTML = `<option value="">Escoja una opción</option>` + SECTOR_OPC.map(([k, n]) => `<option value="${esc(n)}"${k === sectorParam ? " selected" : ""}>${esc(n)}</option>`).join("");
+  $("#solTipo").innerHTML = SOL_TIPOS.map((t, i) => `<label><input type="radio" name="solTipo" value="${esc(t)}"${i === 3 ? " checked" : ""}>${esc(t)}</label>`).join("");
+  $("#solPresupuesto").innerHTML = SOL_PRESUPUESTO.map((t) => `<option>${esc(t)}</option>`).join("");
+  const err = (m) => { const e = $("#solError"); e.hidden = !m; e.textContent = m || ""; };
+  const v = (id) => ($(id).value || "").trim();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault(); err("");
+    const tel = v("#solTel").replace(/[^\d+]/g, "");
+    if (!v("#solNombre")) { err("Escriba su nombre."); $("#solNombre").focus(); return; }
+    if (tel.replace(/\D/g, "").length < 7) { err("Escriba un número de WhatsApp válido."); $("#solTel").focus(); return; }
+    if (!$("#solAcepto").checked) { err("Para responderle necesito su autorización para usar sus datos."); $("#solAcepto").focus(); return; }
+    const data = {
+      nombre: v("#solNombre").slice(0, 80), telefono: tel.slice(0, 20), negocio: v("#solNegocio").slice(0, 80), sector: v("#solSector").slice(0, 60),
+      tipo: (form.querySelector('[name="solTipo"]:checked') || {}).value || "", detalle: v("#solDetalle").slice(0, 1500), presupuesto: v("#solPresupuesto"),
+      cotizacion: cotResumen.slice(0, 600), origen: sectorParam ? "sector=" + String(sectorParam).slice(0, 30) : "pagina", estado: "nueva", creado: Date.now(),
+    };
+    const btn = $("#solEnviar"); btn.disabled = true; btn.textContent = "Enviando…";
+    let guardada = false;
+    if (!v("#solWeb")) {
+      try { await cargarApp(); await S.F.addDoc(S.F.collection(S.fdb, "solicitudes"), data); guardada = true; }
+      catch (er) { if (er && er.code !== "sin-config") console.warn("Solicitud:", er); }
+    } else guardada = true;
+    btn.disabled = false; btn.textContent = "Enviar solicitud";
+    const msg = `Hola Andrés, soy ${data.nombre}${data.negocio ? " de " + data.negocio : ""}${data.sector ? " (" + data.sector.toLowerCase() + ")" : ""}. Necesito: ${data.tipo}.${data.detalle ? "\n" + data.detalle : ""}\nPresupuesto: ${data.presupuesto}.${data.cotizacion ? "\n" + data.cotizacion : ""}`;
+    const nombre = esc(data.nombre.split(" ")[0]);
+    $(".sol-campos").hidden = true;
+    const ok = $("#solOk"); ok.hidden = false;
+    ok.innerHTML = guardada
+      ? `<span class="kick">Solicitud recibida</span><b>¡Gracias, ${nombre}!</b><p>Ya me llegó su solicitud. Le escribo al ${esc(data.telefono)} por WhatsApp en horario de atención (${esc(HORARIO.texto)}).</p><a class="btn" target="_blank" rel="noopener" href="${esc(waUrl(msg))}">Si quiere, escríbame ya por WhatsApp</a>`
+      : `<span class="kick">Último paso</span><b>${nombre}, envíemela por WhatsApp</b><p>Toque el botón y se abre WhatsApp con su solicitud ya escrita. Solo tiene que darle enviar.</p><a class="btn btn-dark" target="_blank" rel="noopener" href="${esc(waUrl(msg))}">Enviar por WhatsApp</a>`;
+    ok.scrollIntoView({ block: "center" });
+  });
+})();
+
+/* Google: ficha de Maps y reseñas */
+(function google() {
+  const m = urlSegura(GOOGLE_MAPS), r = urlSegura(GOOGLE_RESENA);
+  if (m) { $("#btnMaps").href = m; $("#btnMaps").hidden = false; }
+  if (r) { $("#btnResena").href = r; $("#btnResena").hidden = false; }
+  if (m) { const sc = document.createElement("script"); sc.type = "application/ld+json"; sc.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "ProfessionalService", name: "Andrés Bolívar · Páginas web y aplicaciones", hasMap: m, sameAs: [m] }); document.head.appendChild(sc); }
+})();
+
+/* Antes y después en los casos */
+$("#casosLista") && $("#casosLista").addEventListener("input", (e) => { if (e.target.matches(".ad input")) e.target.closest(".ad").style.setProperty("--p", e.target.value + "%"); });
 
 /* ================= Arranque ================= */
 if (location.hash.startsWith("#/") || ls.get("sesion")) cargarFirebase();
