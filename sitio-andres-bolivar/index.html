@@ -398,6 +398,58 @@
   .act small { display: block; color: var(--muted); font-size: .82rem; }
   .pie { text-align: center; margin: 22px 0 6px; font-size: .68rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
 
+  /* Portafolio público */
+  #sitio .case-img { position: relative; display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; margin: 0 0 22px; border: 1px solid var(--linea); background: var(--crema-2); }
+  #sitio .case-link { position: relative; display: inline-block; margin-top: 16px; color: var(--negro); font-size: .76rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; text-decoration: none; border-bottom: 1px solid var(--negro); padding-bottom: 3px; }
+  #sitio .case-link:hover { opacity: .7; }
+  #sitio .case.nuevo .for::after { content: " · Entregado"; }
+
+  /* Oficina: proyectos */
+  .thumb { flex: none; width: 64px; height: 44px; object-fit: cover; border: 1px solid var(--line); background: var(--ink-soft); }
+  .check { display: flex; align-items: center; gap: 10px; margin: 4px 0 16px; font-weight: 500; cursor: pointer; }
+  .check input { width: 20px; height: 20px; accent-color: var(--ink); }
+  .img-prev { display: block; width: 100%; max-width: 420px; aspect-ratio: 16 / 10; object-fit: cover; border: 1px solid var(--line); margin: 0 0 10px; }
+
+  /* Oficina: asistente */
+  .asis { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 860px) { .asis { grid-template-columns: minmax(0, 1fr); } }
+  .asis .o-card > .o-h2:first-child { margin-top: 0; }
+  .mods-calc { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin: 4px 0 14px; }
+  @media (max-width: 480px) { .mods-calc { grid-template-columns: 1fr; } }
+  .mods-calc label { display: flex; align-items: flex-start; gap: 8px; font-size: .93rem; cursor: pointer; line-height: 1.35; }
+  .mods-calc input { margin-top: 2px; width: 17px; height: 17px; flex: none; accent-color: var(--ink); }
+  .res { border-top: 1px solid var(--line-strong); margin-top: 6px; padding-top: 16px; text-align: center; }
+  .res .rango { display: flex; justify-content: center; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .res .rango small { color: var(--muted); font-size: .82rem; }
+  .res .rec { display: block; font-family: var(--serif); font-weight: 500; font-size: clamp(1.9rem, 6vw, 2.6rem); line-height: 1.1; margin: 4px 0; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  .res .k { font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+  .res .datos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+  .res .datos div { border: 1px solid var(--line); padding: 10px; }
+  .res .datos b { display: block; font-size: 1.05rem; }
+  .desg { width: 100%; border-collapse: collapse; font-size: .88rem; text-align: left; margin-bottom: 14px; }
+  .desg td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  .desg td.r { text-align: right; white-space: nowrap; }
+  .reco { list-style: none; margin: 0; padding: 0; }
+  .reco li { display: grid; grid-template-columns: 26px 1fr; gap: 4px 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .reco li:first-child { border-top: 0; padding-top: 0; }
+  .reco .ic { font-family: var(--serif); font-size: 1rem; color: var(--muted); }
+  .reco b { font-weight: 500; }
+  .reco small { display: block; color: var(--muted); font-size: .85rem; }
+  .reco .actions { grid-column: 2; margin-top: 8px; }
+  .chat { display: flex; flex-direction: column; gap: 10px; max-height: 460px; overflow-y: auto; margin: 0 0 12px; padding-right: 4px; }
+  .msg { padding: 11px 14px; border-radius: 4px; max-width: 92%; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .95rem; }
+  .msg.user { align-self: flex-end; background: var(--ink); color: var(--btn-text); }
+  .msg.assistant { align-self: flex-start; background: var(--hover); border: 1px solid var(--line); }
+  .msg.err { align-self: stretch; max-width: none; background: var(--danger-soft); color: var(--danger); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .chips button { font: inherit; font-size: .84rem; padding: 7px 12px; border: 1px solid var(--line-strong); border-radius: 999px; background: none; color: var(--text); cursor: pointer; text-align: left; }
+  .chips button:hover { background: var(--hover); }
+  .ask { display: flex; gap: 8px; align-items: flex-end; }
+  .ask textarea { flex: 1; font: inherit; font-size: 16px; color: var(--text); background: var(--field); border: 1px solid var(--line-strong); border-radius: 6px; padding: 10px 12px; resize: vertical; min-height: 48px; }
+  .aviso { font-size: .88rem; color: var(--muted); background: var(--hover); border-left: 2px solid var(--line-strong); padding: 10px 12px; margin: 0 0 12px; }
+  .icon-btn { display: inline-grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--ink); border-radius: 8px; background: none; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { background: var(--ink-soft); }
+
   .tabs {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface);
     border-top: 1px solid var(--line-strong); display: flex; justify-content: center; gap: 4px;
@@ -653,7 +705,7 @@
           <h2 class="reveal">Algunos proyectos</h2>
           <p class="section-lead reveal" style="--d:.1s">Sistemas reales, hechos para las necesidades de negocios y trabajadores de la región.</p>
         </div>
-        <div class="cases">
+        <div class="cases" id="casosLista">
           <article class="case marco reveal">
             <p class="for">Para parqueaderos</p><h3>Control de parqueadero</h3>
             <p class="desc">Se anota la placa al entrar y el sistema cobra solo según el tiempo que estuvo el vehículo. Maneja mensualidades para carro, moto, bus, chiva y tractomula.</p>
@@ -774,6 +826,7 @@
     <div class="o-wrap">
       <div class="o-brand"><strong>Mi oficina</strong><span id="sync">Conectando…</span></div>
       <div class="o-top-actions">
+        <button class="icon-btn" type="button" id="btnDatos" aria-label="Mis datos" title="Mis datos"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M4 21c.8-4 4-6.5 8-6.5s7.2 2.5 8 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
         <a class="btn btn-sm" href="#inicio">Mi página</a>
         <button class="btn btn-sm" type="button" id="btnSalir">Salir</button>
       </div>
@@ -793,9 +846,13 @@
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3V20a1.2 1.2 0 0 1-1.2 1.2H6A1.2 1.2 0 0 1 4.8 20V4A1.2 1.2 0 0 1 6 2.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v4.8h4.8M8.5 12.5h7M8.5 16.5h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       Propuestas
     </button>
-    <button type="button" data-tab="datos">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M4 21c.8-4 4-6.5 8-6.5s7.2 2.5 8 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      Mis datos
+    <button type="button" data-tab="proyectos">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="14" stroke="currentColor" stroke-width="1.6"/><path d="M3 14l5-4 4 3 3-2 6 4M8 21h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Proyectos
+    </button>
+    <button type="button" data-tab="asistente">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c.5 4.2 3.3 7 7.5 7.5-4.2.5-7 3.3-7.5 7.5-.5-4.2-3.3-7-7.5-7.5 4.2-.5 7-3.3 7.5-7.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18.5 16v5M16 18.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Asistente
     </button>
   </nav>
 </div>
@@ -821,6 +878,11 @@ const firebaseConfig = {
 /* 2. WhatsApp de los botones de la página */
 const WHATSAPP = "573128288339";
 const MENSAJE = "Hola Andrés, vi su página y me gustaría una cotización para mi negocio.";
+
+/* 3. Asistente con IA (opcional). Pegue aquí la dirección de su función "asistente"
+   después de publicarla (vea LEEME.md). Mientras esté vacía, la calculadora y las
+   recomendaciones funcionan igual; solo el chat queda apagado. */
+const ASISTENTE_URL = "";
 
 const FB_URL = "https://www.gstatic.com/firebasejs/10.12.2/";
 const PDF_URL = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
@@ -898,7 +960,8 @@ function actualizarEntrar() {
 const S = {
   area: "sitio", fbPromise: null, fbError: null, authReady: false,
   A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
-  clientes: [], propuestas: [], perfil: null, loaded: { c: false, p: false, f: false },
+  clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false },
+  app: null, appPromise: null, proyDraft: null, proyDraftId: null, chat: [], pensando: false, calc: null,
   view: { name: "panel", id: null }, quiet: false, q: "",
   draft: null, draftId: null,
 };
@@ -911,15 +974,24 @@ const nombreCliente = (c) => (c ? c.negocio || c.nombre || "Cliente" : "Sin clie
 
 /* ================= Firebase ================= */
 const configurado = !Object.values(firebaseConfig).some((v) => String(v).includes("PEGUE"));
+/* La base de datos se carga sola en la página pública (para mostrar el portafolio);
+   el ingreso se carga solo cuando hace falta. */
+function cargarApp() {
+  if (S.appPromise) return S.appPromise;
+  S.appPromise = (async () => {
+    if (!configurado) { const e = new Error("sin-config"); e.code = "sin-config"; throw e; }
+    const [appM, fsM] = await Promise.all([import(FB_URL + "firebase-app.js"), import(FB_URL + "firebase-firestore.js")]);
+    S.app = appM.initializeApp(firebaseConfig);
+    S.F = fsM; S.fdb = fsM.getFirestore(S.app);
+  })();
+  return S.appPromise;
+}
 function cargarFirebase() {
   if (S.fbPromise) return S.fbPromise;
   S.fbPromise = (async () => {
-    if (!configurado) { const e = new Error("sin-config"); e.code = "sin-config"; throw e; }
-    const [appM, authM, fsM] = await Promise.all([
-      import(FB_URL + "firebase-app.js"), import(FB_URL + "firebase-auth.js"), import(FB_URL + "firebase-firestore.js"),
-    ]);
-    const app = appM.initializeApp(firebaseConfig);
-    S.A = authM; S.F = fsM; S.auth = authM.getAuth(app); S.fdb = fsM.getFirestore(app);
+    await cargarApp();
+    const authM = await import(FB_URL + "firebase-auth.js");
+    S.A = authM; S.auth = authM.getAuth(S.app);
     authM.onAuthStateChanged(S.auth, (u) => {
       S.user = u || null; S.authReady = true;
       if (u) { ls.set("sesion", "1"); suscribir(); } else { ls.del("sesion"); desuscribir(); }
@@ -930,6 +1002,34 @@ function cargarFirebase() {
   S.fbPromise.catch((e) => { S.fbError = e; S.authReady = true; route(); });
   return S.fbPromise;
 }
+
+/* ================= Portafolio público ================= */
+const urlSegura = (u) => (/^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "");
+const imgSegura = (u) => (/^data:image\/(jpeg|png|webp);base64,/i.test(String(u || "")) ? u : urlSegura(u));
+const ordenProy = (a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0) || (b.creado || 0) - (a.creado || 0);
+function tarjetaProyecto(y) {
+  const img = imgSegura(y.imagen), link = urlSegura(y.enlace), feats = lines(y.funciones);
+  return `<article class="case marco nuevo">
+    ${img ? `<img class="case-img" src="${esc(img)}" alt="${esc(y.titulo || "Proyecto")}" loading="lazy">` : ""}
+    <p class="for">${esc(y.sector || "Proyecto")}</p><h3>${esc(y.titulo || "Proyecto")}</h3>
+    ${has(y.descripcion) ? `<p class="desc">${esc(y.descripcion)}</p>` : ""}
+    ${feats.length ? `<ul class="feat">${feats.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
+    ${link ? `<a class="case-link" href="${esc(link)}" target="_blank" rel="noopener">Ver proyecto →</a>` : ""}
+  </article>`;
+}
+async function cargarPortafolio() {
+  const lista = $("#casosLista");
+  if (!lista) return;
+  try {
+    await cargarApp();
+    const F = S.F;
+    const snap = await F.getDocs(F.query(F.collection(S.fdb, "portafolio"), F.where("publicado", "==", true)));
+    const arr = snap.docs.map((d) => Object.assign({ id: d.id }, d.data())).sort(ordenProy);
+    lista.querySelectorAll(".case.nuevo").forEach((e) => e.remove());
+    if (arr.length) lista.insertAdjacentHTML("afterbegin", arr.map(tarjetaProyecto).join(""));
+  } catch (e) { if (e && e.code !== "sin-config") console.warn("Portafolio:", e); }
+}
+
 const ruta = (...segs) => ["usuarios", S.user.uid, ...segs];
 const refDoc = (col, id) => S.F.doc(S.fdb, ...ruta(col, id));
 const refNuevo = (col) => S.F.doc(S.F.collection(S.fdb, ...ruta(col)));
@@ -955,6 +1055,14 @@ function suscribir() {
     S.propuestas = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
     S.loaded.p = true; alCambiarDatos();
   }, errDatos));
+  S.unsubs.push(F.onSnapshot(F.query(F.collection(S.fdb, "portafolio"), F.where("uid", "==", S.user.uid)), (snap) => {
+    S.proyectos = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+    S.loaded.y = true; alCambiarDatos();
+  }, errDatos));
+  S.unsubs.push(F.onSnapshot(refDoc("config", "tarifas"), (d) => {
+    S.tarifas = d.exists() ? d.data() : null;
+    S.loaded.t = true; alCambiarDatos();
+  }, errDatos));
   S.unsubs.push(F.onSnapshot(refDoc("config", "perfil"), (d) => {
     S.perfil = d.exists() ? d.data() : null;
     S.loaded.f = true; alCambiarDatos();
@@ -963,7 +1071,8 @@ function suscribir() {
 function desuscribir() {
   S.unsubs.forEach((u) => { try { u(); } catch (e) {} });
   S.unsubs = []; S.clientes = []; S.propuestas = []; S.perfil = null;
-  S.loaded = { c: false, p: false, f: false }; S.draft = null; S.draftId = null;
+  S.proyectos = []; S.tarifas = null; S.proyDraft = null; S.proyDraftId = null; S.chat = [];
+  S.loaded = { c: false, p: false, f: false, y: false, t: false }; S.draft = null; S.draftId = null;
 }
 
 /* ================= Ingreso ================= */
@@ -1257,7 +1366,7 @@ const hace = (t) => {
   return d === 1 ? "ayer" : "hace " + d + " días";
 };
 function vPanel() {
-  if (!S.loaded.c || !S.loaded.p) return cargando();
+  if (!S.loaded.c || !S.loaded.p || !S.loaded.y) return cargando();
   const C = S.clientes, P = S.propuestas;
   const cuenta = (e) => P.filter((p) => (p.estado || "Borrador") === e).length;
   const aprob = P.filter((p) => p.estado === "Aprobada");
@@ -1296,6 +1405,8 @@ function vPanel() {
       <div>
         <h2 class="o-h2">Propuestas por estado</h2>
         <div class="barras">${barra("Borrador", borr)}${barra("Enviada", enviadas)}${barra("Aprobada", aprob.length)}${barra("No aprobada", noap)}</div>
+        <h2 class="o-h2" style="margin-top:24px">El asistente recomienda</h2>${vRecos(3)}
+        <button class="mas" data-act="ir" data-to="asistente">Abrir el asistente →</button>
         ${act ? `<h2 class="o-h2" style="margin-top:24px">Actividad reciente</h2><ul class="act" style="margin-top:0;border-top:0;padding-top:0">${act}</ul>` : ""}
       </div>
     </div>
@@ -1489,6 +1600,7 @@ function vPropuesta(id) {
     </div>
     ${secs}
     <div class="actions" style="margin-top:24px">
+      ${d.estado === "Aprobada" ? `<button class="btn btn-primary" data-act="publicarDesdePropuesta" data-id="${S.draftId}">Publicar como proyecto</button>` : ""}
       <button class="btn" data-act="duplicar">Duplicar propuesta</button>
       <button class="btn btn-danger" data-act="eliminarPropuesta">Eliminar</button>
     </div>`;
@@ -1519,14 +1631,278 @@ function vDatos() {
     <p class="note-ui">Sesión iniciada como ${esc(S.user ? S.user.email : "")}.</p>`;
 }
 
+/* ================= Proyectos (portafolio) ================= */
+function vProyectos() {
+  if (!S.loaded.y) return cargando();
+  const arr = [...S.proyectos].sort(ordenProy);
+  const pub = arr.filter((y) => y.publicado).length;
+  return `
+    <div class="o-head"><div><h1 class="o-h1">Proyectos</h1><p class="sub">${arr.length ? `${pub} ${pub === 1 ? "publicado" : "publicados"} en su página · ${arr.length - pub} sin publicar` : "Los proyectos que vendió, para mostrarlos en su página"}</p></div>
+      <div class="actions"><a class="btn" href="#casos" data-ver-pagina>Ver en mi página</a><button class="btn btn-primary" data-act="nuevoProyecto">Nuevo proyecto</button></div></div>
+    ${arr.length ? `<ul class="o-list">${arr.map((y) => {
+      const img = imgSegura(y.imagen);
+      return `<li><button class="item" data-act="editarProyecto" data-id="${y.id}">${img ? `<img class="thumb" src="${esc(img)}" alt="">` : `<span class="thumb"></span>`}<span class="main"><b>${esc(y.titulo || "Proyecto sin título")}</b><small>${esc([y.sector, nombreCliente(clienteDe(y.clienteId))].filter((x) => x && x !== "Sin cliente").join(" · "))}</small></span><span class="chip ${y.publicado ? "aprobada" : ""}">${y.publicado ? "Publicado" : "Oculto"}</span></button></li>`;
+    }).join("")}</ul>`
+      : `<div class="o-card o-empty"><p>Cuando entregue un proyecto, súbalo aquí con una foto. Si lo marca como publicado, aparece solo en la sección Casos de su página.</p><button class="btn btn-primary" data-act="nuevoProyecto">Subir mi primer proyecto</button></div>`}`;
+}
+function proyectoBase(extra) {
+  return Object.assign({ titulo: "", sector: "", descripcion: "", funciones: "", enlace: "", imagen: "", clienteId: "", propuestaId: "", publicado: false, orden: 0, creado: Date.now() }, extra || {});
+}
+function cargarProyDraft(id) {
+  if (S.proyDraftId === id && S.proyDraft) return true;
+  const y = S.proyectos.find((x) => x.id === id);
+  if (!y) return false;
+  const { id: _omit, ...data } = y;
+  S.proyDraft = proyectoBase(data); S.proyDraftId = id;
+  return true;
+}
+function vProyecto(id) {
+  if (!cargarProyDraft(id)) {
+    if (!S.loaded.y) return cargando();
+    return `<button class="back" data-act="ir" data-to="proyectos">${chevron}Proyectos</button><p class="o-empty">Este proyecto ya no existe.</p>`;
+  }
+  const d = S.proyDraft, img = imgSegura(d.imagen);
+  const opts = [...S.clientes].sort((a, b) => nombreCliente(a).localeCompare(nombreCliente(b), "es"));
+  const f = (k, label, ph = "", help = "") => `<label class="field"><span>${label}</span><input data-pk="${k}" type="text" value="${esc(d[k])}" placeholder="${esc(ph)}">${help ? `<small>${help}</small>` : ""}</label>`;
+  return `
+    <button class="back" data-act="ir" data-to="proyectos">${chevron}Proyectos</button>
+    <div class="o-head"><div><h1 class="o-h1">${esc(d.titulo || "Nuevo proyecto")}</h1><p class="sub">Así se verá en la sección Casos de su página.</p></div></div>
+    <div class="o-card">
+      <label class="check"><input type="checkbox" data-pk="publicado"${d.publicado ? " checked" : ""}> Publicado en mi página</label>
+      <div class="grid2">${f("titulo", "Nombre del proyecto", "Ej.: Sistema de ventas para perfumería")}${f("sector", "Para quién", "Ej.: Para tiendas")}</div>
+      <label class="field"><span>Descripción</span><textarea data-pk="descripcion" rows="3" placeholder="Qué hace y qué problema le resolvió al cliente">${esc(d.descripcion)}</textarea></label>
+      <label class="field"><span>Funciones</span><textarea data-pk="funciones" rows="4" placeholder="Inventario&#10;Ventas y fiados&#10;Reportes en PDF">${esc(d.funciones)}</textarea><small>Una por línea.</small></label>
+      ${f("enlace", "Enlace para verlo (opcional)", "https://…", "Si es una página web, pegue la dirección. Debe empezar por https://")}
+      <div class="field"><span>Foto o pantallazo</span>
+        ${img ? `<img class="img-prev" id="pf_prev" src="${esc(img)}" alt="">` : `<img class="img-prev" id="pf_prev" alt="" hidden>`}
+        <div class="actions"><label class="btn btn-sm" style="cursor:pointer">Elegir foto<input type="file" id="pf_img" accept="image/*" hidden></label>${img ? `<button class="btn btn-sm" data-act="quitarFoto">Quitar foto</button>` : ""}</div>
+        <small>Se reduce sola para que la página cargue rápido.</small></div>
+      <div class="grid2">
+        <label class="field"><span>Cliente (privado)</span><select data-pk="clienteId"><option value="">Sin cliente</option>${opts.map((c) => `<option value="${c.id}"${c.id === d.clienteId ? " selected" : ""}>${esc(nombreCliente(c))}</option>`).join("")}</select><small>No se muestra en la página.</small></label>
+        <label class="field"><span>Orden</span><input data-pk="orden" type="number" inputmode="numeric" value="${esc(d.orden || 0)}"><small>Los números menores salen primero.</small></label>
+      </div>
+      <div class="actions"><button class="btn btn-primary" data-act="guardarProyecto">Guardar proyecto</button></div>
+    </div>
+    <div class="actions" style="margin-top:24px"><button class="btn btn-danger" data-act="eliminarProyecto">Eliminar proyecto</button></div>`;
+}
+function reducirFoto(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const w = Math.min(1200, im.naturalWidth), h = Math.round((im.naturalHeight * w) / im.naturalWidth);
+      const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+      cv.getContext("2d").drawImage(im, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      let q = 0.82, out = cv.toDataURL("image/jpeg", q);
+      while (out.length > 650000 && q > 0.4) { q -= 0.1; out = cv.toDataURL("image/jpeg", q); }
+      res(out);
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error("foto")); };
+    im.src = url;
+  });
+}
+
+/* ================= Asistente: calculadora de precios ================= */
+/* Tarifas de referencia en pesos. Son un punto de partida: cámbielas en "Ajustar mis precios". */
+const TARIFAS_BASE = {
+  tipos: {
+    landing: { n: "Página web informativa", v: 700000, sem: 1 },
+    catalogo: { n: "Página con catálogo o tienda", v: 1500000, sem: 2 },
+    sistema: { n: "Sistema a la medida (web)", v: 2500000, sem: 3 },
+    app: { n: "App para celular y computador", v: 3500000, sem: 4 },
+  },
+  modulos: {
+    inventario: { n: "Inventario", v: 600000 },
+    ventas: { n: "Ventas / punto de venta", v: 600000 },
+    fiados: { n: "Fiados y cartera", v: 400000 },
+    clientes: { n: "Clientes y proveedores", v: 300000 },
+    roles: { n: "Usuarios y permisos", v: 400000 },
+    reportes: { n: "Reportes PDF y Excel", v: 350000 },
+    facturacion: { n: "Facturación e IVA", v: 500000 },
+    turnos: { n: "Turnos y horas extra", v: 500000 },
+    catalogoWa: { n: "Catálogo para WhatsApp", v: 300000 },
+    sincro: { n: "Conexión proveedor-cliente", v: 700000 },
+    offline: { n: "Funciona sin internet", v: 400000 },
+    migracion: { n: "Pasar datos del cuaderno o Excel", v: 250000 },
+    dominio: { n: "Dominio y correo propio", v: 150000 },
+    playstore: { n: "Publicación en Play Store", v: 300000 },
+    msstore: { n: "Publicación en Microsoft Store", v: 200000 },
+  },
+  soporte: 6,
+};
+const COMPLEJIDAD = { simple: ["Sencillo", 0.85], normal: ["Normal", 1], compleja: ["Complejo", 1.3] };
+function tarifas() {
+  const t = JSON.parse(JSON.stringify(TARIFAS_BASE)), g = S.tarifas || {};
+  for (const k in t.tipos) if (Number(g["t_" + k]) > 0) t.tipos[k].v = Number(g["t_" + k]);
+  for (const k in t.modulos) if (Number(g["m_" + k]) > 0) t.modulos[k].v = Number(g["m_" + k]);
+  if (Number(g.soporte) > 0) t.soporte = Number(g.soporte);
+  return t;
+}
+const r50 = (n) => Math.round(n / 50000) * 50000;
+const r10 = (n) => Math.round(n / 10000) * 10000;
+function calcular(c) {
+  const t = tarifas(), f = COMPLEJIDAD[c.complejidad][1] * (c.urgente ? 1.2 : 1);
+  const lineas = [[t.tipos[c.tipo].n, r50(t.tipos[c.tipo].v * f)]].concat(c.mods.filter((m) => t.modulos[m]).map((m) => [t.modulos[m].n, r50(t.modulos[m].v * f)]));
+  const rec = lineas.reduce((a, l) => a + l[1], 0);
+  const sem = Math.max(1, Math.ceil((t.tipos[c.tipo].sem + c.mods.length * 0.6) * COMPLEJIDAD[c.complejidad][1] / (c.urgente ? 1.35 : 1)));
+  return { lineas, rec, min: r50(rec * 0.85), max: r50(rec * 1.2), sem, soporte: Math.max(80000, r10((rec * t.soporte) / 100)) };
+}
+function calcState() {
+  if (!S.calc) S.calc = { tipo: "sistema", complejidad: "normal", urgente: false, mods: ["inventario", "ventas", "reportes"] };
+  return S.calc;
+}
+function vCalcRes() {
+  const r = calcular(calcState());
+  return `<div class="res">
+    <span class="k">Precio recomendado</span>
+    <b class="rec">${fmtCOP(r.rec)}</b>
+    <div class="rango"><small>Mínimo ${fmtCOP(r.min)}</small><small>Máximo ${fmtCOP(r.max)}</small></div>
+    <div class="datos"><div><span class="k">Entrega</span><b>${r.sem} ${r.sem === 1 ? "semana" : "semanas"}</b></div><div><span class="k">Soporte mensual</span><b>${fmtCOP(r.soporte)}</b></div></div>
+    <table class="desg">${r.lineas.map((l) => `<tr><td>${esc(l[0])}</td><td class="r">${fmtCOP(l[1])}</td></tr>`).join("")}</table>
+    <div class="actions" style="justify-content:center"><button class="btn btn-primary" data-act="calcPropuesta">Crear propuesta con este precio</button></div>
+    <p class="note-ui">Es una estimación con sus tarifas. Usted decide el precio final.</p>
+  </div>`;
+}
+function vCalc() {
+  const c = calcState(), t = tarifas();
+  return `
+    <h2 class="o-h2">¿En cuánto lo vendo?</h2>
+    <label class="field"><span>Tipo de proyecto</span><select data-calc="tipo">${Object.entries(t.tipos).map(([k, v]) => `<option value="${k}"${k === c.tipo ? " selected" : ""}>${esc(v.n)}</option>`).join("")}</select></label>
+    <div class="field"><span>Funciones que necesita</span><div class="mods-calc">${Object.entries(t.modulos).map(([k, v]) => `<label><input type="checkbox" data-calc="mod" value="${k}"${c.mods.includes(k) ? " checked" : ""}>${esc(v.n)}</label>`).join("")}</div></div>
+    <div class="grid2">
+      <label class="field"><span>Dificultad</span><select data-calc="complejidad">${Object.entries(COMPLEJIDAD).map(([k, v]) => `<option value="${k}"${k === c.complejidad ? " selected" : ""}>${v[0]}</option>`).join("")}</select></label>
+      <label class="field"><span>Entrega</span><select data-calc="urgente"><option value="no"${c.urgente ? "" : " selected"}>Normal</option><option value="si"${c.urgente ? " selected" : ""}>Urgente (+20 %)</option></select></label>
+    </div>
+    <div id="calcRes">${vCalcRes()}</div>
+    <details class="sec" style="margin:16px 0 0"><summary>Ajustar mis precios</summary><div class="in">
+      <p class="note-ui">Valores base en pesos. Se guardan en su cuenta.</p>
+      <div class="grid2">${Object.entries(t.tipos).map(([k, v]) => `<label class="field"><span>${esc(v.n)}</span><input data-tk="t_${k}" type="number" inputmode="numeric" step="50000" value="${v.v}"></label>`).join("")}</div>
+      <div class="grid2">${Object.entries(t.modulos).map(([k, v]) => `<label class="field"><span>${esc(v.n)}</span><input data-tk="m_${k}" type="number" inputmode="numeric" step="50000" value="${v.v}"></label>`).join("")}</div>
+      <label class="field"><span>Soporte mensual (% del valor)</span><input data-tk="soporte" type="number" inputmode="numeric" value="${t.soporte}"></label>
+      <div class="actions" style="margin-bottom:12px"><button class="btn btn-primary" data-act="guardarTarifas">Guardar mis precios</button><button class="btn" data-act="restaurarTarifas">Volver a los de fábrica</button></div>
+    </div></details>`;
+}
+
+/* ================= Asistente: recomendaciones ================= */
+const dias = (t) => (t ? Math.floor((Date.now() - t) / 86400000) : 0);
+function recomendaciones() {
+  const C = S.clientes, P = S.propuestas, Y = S.proyectos, out = [];
+  const add = (prio, titulo, detalle, acciones) => out.push({ prio, titulo, detalle, acciones: acciones || "" });
+  P.filter((p) => p.estado === "Enviada" && dias(p.actualizado) >= 3).forEach((p) => {
+    const c = clienteDe(p.clienteId), wa = c && waLink(c.telefono), n = dias(p.actualizado);
+    const txt = encodeURIComponent(`Hola${c && c.nombre ? " " + c.nombre.split(" ")[0] : ""}, ¿cómo va? Le escribo para saber si pudo revisar la propuesta "${p.titulo || p.nombreProducto || ""}". Quedo atento a sus preguntas.`);
+    add(1, `Haga seguimiento a ${nombreCliente(c)}`, `La propuesta "${p.titulo || "sin título"}" se envió hace ${n} días y no tiene respuesta.`,
+      (wa ? `<a class="btn btn-sm btn-primary" href="${wa}?text=${txt}" target="_blank" rel="noopener">Escribir por WhatsApp</a>` : "") + `<button class="btn btn-sm" data-act="abrirPropuesta" data-id="${p.id}">Ver propuesta</button>`);
+  });
+  P.filter((p) => p.estado === "Aprobada" && !Y.some((y) => y.propuestaId === p.id)).forEach((p) =>
+    add(2, `Publique "${p.titulo || p.nombreProducto || "el proyecto"}" en su página`, `Ya está aprobado. Mostrarlo en Casos le ayuda a conseguir más clientes.`,
+      `<button class="btn btn-sm btn-primary" data-act="publicarDesdePropuesta" data-id="${p.id}">Crear proyecto</button>`));
+  P.filter((p) => p.estado === "Aprobada").map((p) => clienteDe(p.clienteId)).filter(Boolean)
+    .filter((c, i, a) => a.indexOf(c) === i).slice(0, 3).forEach((c) =>
+      add(3, `Ofrézcale soporte mensual a ${nombreCliente(c)}`, `Es un ingreso fijo: copias de seguridad, arreglos y ajustes cada mes.`,
+        `<button class="btn btn-sm" data-act="verCliente" data-id="${c.id}">Ver cliente</button>`));
+  P.filter((p) => (p.estado || "Borrador") === "Borrador" && dias(p.actualizado) >= 7).forEach((p) =>
+    add(3, `Termine el borrador "${p.titulo || p.nombreProducto || "sin título"}"`, `Lleva ${dias(p.actualizado)} días sin cambios. Envíelo o elimínelo para tener la lista en orden.`,
+      `<button class="btn btn-sm" data-act="abrirPropuesta" data-id="${p.id}">Abrir</button>`));
+  C.filter((c) => !P.some((p) => p.clienteId === c.id)).slice(0, 3).forEach((c) =>
+    add(2, `Prepare una propuesta para ${nombreCliente(c)}`, `Este cliente todavía no tiene ninguna propuesta.`,
+      `<button class="btn btn-sm" data-act="nuevaPropuesta" data-id="${c.id}">Nueva propuesta</button>`));
+  const ap = P.filter((p) => p.estado === "Aprobada").length, no = P.filter((p) => p.estado === "No aprobada").length;
+  if (ap + no >= 3 && ap / (ap + no) < 0.4) add(2, "Revise sus precios o su forma de presentar", `Solo ${ap} de ${ap + no} propuestas decididas fueron aprobadas. Pruebe ofrecer una versión más sencilla y económica como opción.`);
+  if (!Y.some((y) => y.publicado)) add(2, "Publique su primer proyecto", "Su página muestra solo los ejemplos. Los proyectos reales generan más confianza.", `<button class="btn btn-sm btn-primary" data-act="nuevoProyecto">Subir proyecto</button>`);
+  if (!C.length) add(1, "Agregue su primer cliente", "Empiece por los negocios con los que ya habló.", `<button class="btn btn-sm btn-primary" data-act="nuevoCliente">Nuevo cliente</button>`);
+  if (!has(perfil().correo)) add(4, "Complete sus datos", "Agregue su correo para que salga en la firma de las propuestas.", `<button class="btn btn-sm" data-act="ir" data-to="datos">Mis datos</button>`);
+  return out.sort((a, b) => a.prio - b.prio);
+}
+function vRecos(max) {
+  const r = recomendaciones().slice(0, max || 99);
+  if (!r.length) return `<p class="sub">Todo al día. No hay pendientes por ahora.</p>`;
+  return `<ul class="reco">${r.map((x, i) => `<li><span class="ic">${["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][i] || "·"}</span><div><b>${esc(x.titulo)}</b><small>${esc(x.detalle)}</small></div>${x.acciones ? `<div class="actions">${x.acciones}</div>` : ""}</li>`).join("")}</ul>`;
+}
+
+/* ================= Asistente: chat con IA ================= */
+const SUGERENCIAS = [
+  "¿Cuánto cobro por una página web para una panadería en Neiva?",
+  "¿Qué les puedo ofrecer a mis clientes este mes?",
+  "Escríbame un mensaje de WhatsApp para ofrecer soporte mensual",
+  "Descríbame para mi portafolio el último proyecto que aprobé",
+];
+function contextoIA() {
+  const t = tarifas(), pf = perfil();
+  const cl = S.clientes.slice(0, 60).map((c) => `- ${nombreCliente(c)}${c.ciudad ? " (" + c.ciudad + ")" : ""}`).join("\n");
+  const pr = [...S.propuestas].sort((a, b) => (b.actualizado || 0) - (a.actualizado || 0)).slice(0, 60).map((p) =>
+    `- "${p.titulo || p.nombreProducto || "sin título"}" para ${nombreCliente(clienteDe(p.clienteId))}: ${p.estado || "Borrador"}, ${totalInversion(p) ? fmtCOP(totalInversion(p)) : "sin valor"}, actualizada hace ${dias(p.actualizado)} días`).join("\n");
+  const py = S.proyectos.slice(0, 40).map((y) => `- ${y.titulo || "sin título"} (${y.sector || "sin sector"}) ${y.publicado ? "publicado" : "oculto"}`).join("\n");
+  return [`Fecha de hoy: ${fmtFecha(hoyISO())}.`, `Desarrollador: ${pf.nombre}, ${pf.ciudad}.`,
+    `Tarifas base: ${Object.values(t.tipos).map((x) => x.n + " " + fmtCOP(x.v)).join("; ")}. Módulos: ${Object.values(t.modulos).map((x) => x.n + " " + fmtCOP(x.v)).join("; ")}. Soporte mensual: ${t.soporte} % del valor.`,
+    `Clientes (${S.clientes.length}):\n${cl || "ninguno"}`, `Propuestas (${S.propuestas.length}):\n${pr || "ninguna"}`, `Proyectos del portafolio:\n${py || "ninguno"}`].join("\n\n");
+}
+function vChatMsgs() {
+  if (!S.chat.length) return "";
+  return S.chat.map((m) => `<div class="msg ${m.role}">${esc(m.content)}</div>`).join("") + (S.pensando ? `<div class="msg assistant">Pensando…</div>` : "");
+}
+function vChat() {
+  const activo = !!ASISTENTE_URL;
+  return `
+    <h2 class="o-h2">Pregúntele a la IA</h2>
+    ${activo ? "" : `<p class="aviso">El chat con IA está apagado. Para activarlo, publique la función del asistente y pegue su dirección en <b>ASISTENTE_URL</b> (pasos en LEEME.md). La calculadora y las recomendaciones ya funcionan.</p>`}
+    <div class="chat" id="chat">${vChatMsgs()}</div>
+    ${S.chat.length ? "" : `<div class="chips">${SUGERENCIAS.map((q, i) => `<button type="button" data-act="sugerencia" data-i="${i}"${activo ? "" : " disabled"}>${esc(q)}</button>`).join("")}</div>`}
+    <div class="ask"><textarea id="pregunta" rows="2" placeholder="Escriba su pregunta…"${activo ? "" : " disabled"}></textarea><button class="btn btn-primary" data-act="preguntar"${activo && !S.pensando ? "" : " disabled"}>Enviar</button></div>
+    ${S.chat.length ? `<button class="mas" data-act="limpiarChat">Empezar otra conversación</button>` : ""}`;
+}
+async function preguntar(texto) {
+  texto = String(texto || "").trim();
+  if (!texto || S.pensando || !ASISTENTE_URL) return;
+  S.chat = S.chat.filter((m) => m.role !== "err");
+  S.chat.push({ role: "user", content: texto }); S.pensando = true; pintarChat(true);
+  try {
+    const token = await S.user.getIdToken();
+    const r = await fetch(ASISTENTE_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ mensajes: S.chat, contexto: contextoIA() }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.texto) throw new Error(j.error || "No se pudo conectar con el asistente.");
+    S.chat.push({ role: "assistant", content: j.texto });
+  } catch (e) {
+    S.chat.pop();
+    S.chat.push({ role: "err", content: e.message || "No se pudo conectar con el asistente." });
+    S.pensando = false; pintarChat();
+    const q = $("#pregunta"); if (q) q.value = texto;
+    return;
+  }
+  S.pensando = false; pintarChat(true);
+}
+function pintarChat(limpiar) {
+  const box = $("#chatBox");
+  if (!box || S.view.name !== "asistente") return;
+  const q = $("#pregunta"), v = q ? q.value : "";
+  box.innerHTML = vChat();
+  const q2 = $("#pregunta"); if (q2) q2.value = limpiar ? "" : v;
+  const c = $("#chat"); if (c) c.scrollTop = c.scrollHeight;
+}
+function vAsistente() {
+  if (!S.loaded.c || !S.loaded.p || !S.loaded.y) return cargando();
+  return `
+    <div class="o-head"><div><h1 class="o-h1">Asistente</h1><p class="sub">Precios, recomendaciones y una IA que conoce sus clientes.</p></div></div>
+    <div class="asis">
+      <div class="o-card">${vCalc()}</div>
+      <div style="display:grid;gap:16px">
+        <div class="o-card"><h2 class="o-h2">Recomendaciones para hoy</h2>${vRecos()}</div>
+        <div class="o-card" id="chatBox">${vChat()}</div>
+      </div>
+    </div>`;
+}
+
 /* ================= Navegación ================= */
-const TAB_DE = { panel: "panel", clientes: "clientes", cliente: "clientes", "nuevo-cliente": "clientes", "editar-cliente": "clientes", propuestas: "propuestas", propuesta: "propuestas", vista: "propuestas", datos: "datos" };
-const QUIETAS = ["nuevo-cliente", "editar-cliente", "propuesta", "datos"];
+const TAB_DE = { panel: "panel", proyectos: "proyectos", proyecto: "proyectos", asistente: "asistente", clientes: "clientes", cliente: "clientes", "nuevo-cliente": "clientes", "editar-cliente": "clientes", propuestas: "propuestas", propuesta: "propuestas", vista: "propuestas", datos: "datos" };
+const QUIETAS = ["nuevo-cliente", "editar-cliente", "propuesta", "datos", "proyecto", "asistente"];
 function listoParaQuieta(name) {
   if (name === "nuevo-cliente") return true;
   if (name === "editar-cliente") return S.loaded.c;
   if (name === "propuesta") return !!S.draft && S.draftId === S.view.id;
   if (name === "datos") return S.loaded.f;
+  if (name === "proyecto") return !!S.proyDraft && S.proyDraftId === S.view.id;
+  if (name === "asistente") return S.loaded.c && S.loaded.p && S.loaded.y;
   return false;
 }
 function parseHash() {
@@ -1575,6 +1951,7 @@ function renderOficina() {
   const vistas = {
     panel: vPanel, clientes: vClientes, cliente: () => vCliente(v.id), "nuevo-cliente": () => vClienteForm(null), "editar-cliente": () => vClienteForm(v.id),
     propuestas: vPropuestas, propuesta: () => vPropuesta(v.id), vista: () => vVista(v.id), datos: vDatos,
+    proyectos: vProyectos, proyecto: () => vProyecto(v.id), asistente: vAsistente,
   };
   $("#o-app").innerHTML = (vistas[v.name] || vPanel)();
   S.quiet = QUIETAS.includes(v.name) && listoParaQuieta(v.name);
@@ -1656,6 +2033,78 @@ const ACT = {
       toast("Propuesta eliminada"); go("propuestas");
     });
   },
+  nuevoProyecto() {
+    const ref = S.F.doc(S.F.collection(S.fdb, "portafolio"));
+    S.proyDraft = proyectoBase(); S.proyDraftId = ref.id;
+    go("proyecto", ref.id);
+  },
+  editarProyecto: (el) => go("proyecto", el.dataset.id),
+  publicarDesdePropuesta(el) {
+    const pr = S.propuestas.find((x) => x.id === el.dataset.id) || (S.draftId === el.dataset.id ? S.draft : null);
+    if (!pr) return;
+    const ya = S.proyectos.find((y) => y.propuestaId === el.dataset.id);
+    if (ya) { go("proyecto", ya.id); return; }
+    const mods = rawLines(pr.modulos).filter((l) => !/^[-•*]/.test(l));
+    const ref = S.F.doc(S.F.collection(S.fdb, "portafolio"));
+    S.proyDraft = proyectoBase({
+      titulo: pr.titulo || pr.nombreProducto || "", descripcion: pr.subtitulo || String(pr.resumen || "").split(/\n\s*\n/)[0] || "",
+      funciones: (mods.length ? mods : lines(pr.modulos)).slice(0, 8).join("\n"), clienteId: pr.clienteId || "", propuestaId: el.dataset.id, publicado: true,
+    });
+    S.proyDraftId = ref.id;
+    go("proyecto", ref.id);
+    toast("Revise los datos y guarde el proyecto");
+  },
+  quitarFoto() { if (!S.proyDraft) return; S.proyDraft.imagen = ""; S.quiet = false; renderOficina(); S.quiet = true; },
+  guardarProyecto() {
+    const d = S.proyDraft, id = S.proyDraftId;
+    if (!d || !id) return;
+    if (!has(d.titulo)) { toast("Escriba el nombre del proyecto."); return; }
+    if (has(d.enlace) && !urlSegura(d.enlace)) { toast("El enlace debe empezar por https://"); return; }
+    const data = Object.assign({}, d, { uid: S.user.uid, orden: Number(d.orden) || 0, publicado: !!d.publicado, actualizado: Date.now() });
+    S.F.setDoc(S.F.doc(S.fdb, "portafolio", id), data).then(() => cargarPortafolio()).catch(dbError);
+    toast(data.publicado ? "Proyecto guardado y publicado en su página" : "Proyecto guardado (oculto)");
+    S.proyDraft = null; S.proyDraftId = null;
+    go("proyectos");
+  },
+  eliminarProyecto(el) {
+    armar(el, "Toque otra vez para eliminar", () => {
+      S.F.deleteDoc(S.F.doc(S.fdb, "portafolio", S.proyDraftId)).then(() => cargarPortafolio()).catch(dbError);
+      S.proyDraft = null; S.proyDraftId = null;
+      toast("Proyecto eliminado"); go("proyectos");
+    });
+  },
+  calcPropuesta() {
+    const c = calcState(), r = calcular(c), t = tarifas();
+    const ref = refNuevo("propuestas");
+    const data = Object.assign(propuestaBase(""), {
+      nombreProducto: "", titulo: t.tipos[c.tipo].n,
+      modulos: c.mods.map((m) => t.modulos[m] && t.modulos[m].n).filter(Boolean).join("\n"),
+      inversion: r.lineas.map((l) => `${l[0]} | ${fmtCOP(l[1])}`).join("\n"),
+      tiempoEntrega: r.sem + (r.sem === 1 ? " semana" : " semanas"),
+      costosNota: `Soporte mensual opcional: ${fmtCOP(r.soporte)}. Valores de referencia, sujetos a cambios de cada plataforma.`,
+    });
+    S.draft = data; S.draftId = ref.id;
+    S.F.setDoc(ref, data).catch(dbError);
+    go("propuesta", ref.id);
+    toast("Propuesta creada con el precio calculado");
+  },
+  guardarTarifas() {
+    const data = {};
+    document.querySelectorAll("[data-tk]").forEach((i) => { const n = Number(i.value); if (n > 0) data[i.dataset.tk] = n; });
+    S.F.setDoc(refDoc("config", "tarifas"), data).catch(dbError);
+    S.tarifas = data; S.quiet = false; renderOficina();
+    toast("Precios guardados");
+  },
+  restaurarTarifas(el) {
+    armar(el, "Toque otra vez para confirmar", () => {
+      S.F.setDoc(refDoc("config", "tarifas"), {}).catch(dbError);
+      S.tarifas = {}; S.quiet = false; renderOficina();
+      toast("Precios de fábrica restaurados");
+    });
+  },
+  sugerencia: (el) => preguntar(SUGERENCIAS[Number(el.dataset.i)]),
+  preguntar: () => preguntar(($("#pregunta") || {}).value),
+  limpiarChat: () => { S.chat = []; pintarChat(true); },
   guardarPerfil() {
     const val = (k) => ($("#p_" + k)?.value || "").trim();
     const data = { nombre: val("nombre"), cargo: val("cargo"), negocio: val("negocio"), ciudad: val("ciudad"), whatsapp: val("whatsapp"), correo: val("correo") };
@@ -1674,6 +2123,25 @@ document.querySelector(".tabs").addEventListener("click", (e) => {
 });
 function onField(e) {
   if (e.target.id === "q") { S.q = e.target.value; const l = $("#clist"); if (l) l.innerHTML = listaClientes(); return; }
+  const cf = e.target.closest("[data-calc]");
+  if (cf) {
+    const c = calcState(), k = cf.dataset.calc;
+    if (k === "mod") c.mods = [...document.querySelectorAll('[data-calc="mod"]:checked')].map((i) => i.value);
+    else if (k === "urgente") c.urgente = cf.value === "si";
+    else c[k] = cf.value;
+    const r = $("#calcRes"); if (r) r.innerHTML = vCalcRes();
+    return;
+  }
+  const pk = e.target.closest("[data-pk]");
+  if (pk && S.proyDraft) { S.proyDraft[pk.dataset.pk] = pk.type === "checkbox" ? pk.checked : pk.value; return; }
+  if (e.target.id === "pf_img" && e.type === "change" && e.target.files[0] && S.proyDraft) {
+    const d = S.proyDraft;
+    reducirFoto(e.target.files[0]).then((url) => {
+      d.imagen = url;
+      const pv = $("#pf_prev"); if (pv) { pv.src = url; pv.hidden = false; }
+    }).catch(() => toast("No se pudo leer la foto. Pruebe con otra."));
+    return;
+  }
   const f = e.target.closest("[data-k]");
   if (!f || S.view.name !== "propuesta" || !S.draft) return;
   if (S.draft[f.dataset.k] === f.value) return;
@@ -1682,10 +2150,13 @@ function onField(e) {
 }
 $("#o-app").addEventListener("input", onField);
 $("#o-app").addEventListener("change", onField);
+$("#o-app").addEventListener("keydown", (e) => { if (e.target.id === "pregunta" && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); preguntar(e.target.value); } });
+$("#btnDatos").addEventListener("click", () => go("datos"));
 window.addEventListener("pagehide", () => { if (saveT) guardarAhora(); });
 
 /* ================= Arranque ================= */
 if (location.hash.startsWith("#/") || ls.get("sesion")) cargarFirebase();
+if (configurado) cargarPortafolio();
 route();
 </script>
 </body>
