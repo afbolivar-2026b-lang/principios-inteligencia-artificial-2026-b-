@@ -16,7 +16,8 @@
       "functions/**",
       "LEEME.md",
       "**/.*",
-      "storage.rules"
+      "storage.rules",
+      "1000-FUNCIONES.md"
     ]
   },
   "storage": {

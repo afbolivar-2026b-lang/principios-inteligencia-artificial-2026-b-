@@ -8,7 +8,7 @@ Ideas para su página pública y para **Mi oficina**. Todas encajan con lo que y
 - 🔵 **Firebase**: necesita su Firebase conectado (paso 1 y 2 del `LEEME.md`).
 - 🟣 **IA**: necesita el asistente activado (paso 4 del `LEEME.md`).
 - 🟠 **Servicio externo**: necesita una cuenta o un contrato aparte (pagos, DIAN, Meta, SMS), casi siempre con costo.
-- ✅ **Ya está hecha** en su página.
+- ✅ **Ya está hecha** en su página (dice en qué etapa se hizo).
 
 Las marcadas con ⭐ son las que yo haría primero.
 
@@ -20,9 +20,9 @@ Las marcadas con ⭐ son las que yo haría primero.
 
 ## A. Página pública: conseguir clientes (1–30)
 1. ⭐🔵 Formulario "Cotice su proyecto": tipo de negocio, qué necesita y presupuesto
-2. ⭐🟢 Calculadora de precio aproximado para visitantes según las funciones que elijan
-3. 🟢 Cuestionario "¿Qué sistema necesita su negocio?" con recomendación al final
-4. ⭐🟢 Botón flotante de WhatsApp siempre visible
+2. ✅ Calculadora de precio aproximado para visitantes según las funciones que elijan *(Etapa 1)*
+3. ✅ Cuestionario "¿Qué sistema necesita su negocio?" con recomendación al final *(Etapa 1)*
+4. ✅ Botón flotante de WhatsApp siempre visible *(Etapa 1)*
 5. 🔵 Botón para agendar una cita o visita al negocio
 6. 🟢 Planes con precio de referencia (Básico, Negocio, Empresa)
 7. 🟢 Comparador de planes en tabla
@@ -45,7 +45,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 24. 🟢 Mapa de cobertura en el Huila
 25. 🔵 Lista de espera para nuevos proyectos (cupos del mes)
 26. 🔵 Indicador "Cupos disponibles este mes: 2"
-27. 🟢 Botón "Llamar ahora" en celular
+27. ✅ Botón "Llamar ahora" en celular *(Etapa 1)*
 28. 🔵 Formulario rápido de 3 preguntas en la portada
 29. 🟣 Chat con respuestas automáticas a las preguntas frecuentes
 30. 🟢 Página de gracias después de cotizar, con próximos pasos
@@ -61,8 +61,8 @@ Las marcadas con ⭐ son las que yo haría primero.
 38. 🟢 Página "Sobre mí" con foto y trayectoria
 39. 🟢 Línea de tiempo de su experiencia
 40. 🟢 Certificados y estudios (CORHUILA)
-41. 🟢 Garantía explicada claramente
-42. 🟢 Política de privacidad
+41. ✅ Garantía explicada claramente *(Etapa 1)*
+42. ✅ Política de privacidad *(Etapa 1)*
 43. 🟢 Términos y condiciones
 44. 🟢 Página "Cómo protejo sus datos"
 45. 🟢 Glosario sencillo (qué es la nube, qué es un dominio)
@@ -74,12 +74,12 @@ Las marcadas con ⭐ son las que yo haría primero.
 
 ## C. Google y visibilidad (51–70)
 51. ⭐🟢 Ficha de Google Business conectada con la página
-52. 🟢 Datos estructurados (Schema) de negocio local
-53. 🟢 Mapa del sitio (sitemap.xml)
-54. 🟢 Archivo robots.txt
-55. 🟢 Títulos y descripciones optimizados en cada página
-56. 🟢 Imagen para compartir en redes (Open Graph)
-57. 🟢 Vista previa bonita al compartir por WhatsApp
+52. ✅ Datos estructurados (Schema) de negocio local *(Etapa 1)*
+53. ✅ Mapa del sitio (sitemap.xml) *(Etapa 1)*
+54. ✅ Archivo robots.txt *(Etapa 1)*
+55. ✅ Títulos y descripciones optimizados en cada página *(Etapa 1)*
+56. ✅ Imagen para compartir en redes (Open Graph) *(Etapa 1)*
+57. ✅ Vista previa bonita al compartir por WhatsApp *(Etapa 1)*
 58. 🟢 Páginas por palabra clave: "páginas web Neiva", "software para tiendas Huila"
 59. 🟢 Carga rápida con imágenes optimizadas
 60. 🟢 Google Analytics o Plausible para ver las visitas
@@ -89,21 +89,21 @@ Las marcadas con ⭐ son las que yo haría primero.
 64. 🟢 URL amigables
 65. 🟠 Dominio propio (.com.co)
 66. 🟠 Correo profesional (andres@sudominio.co)
-67. 🟢 Página 404 bonita con enlace al inicio
+67. ✅ Página 404 bonita con enlace al inicio *(Etapa 1)*
 68. 🟢 Enlaces a Instagram, Facebook y TikTok
 69. 🟠 Feed de Instagram dentro de la página
-70. 🟢 Botón "Compartir esta página"
+70. ✅ Botón "Compartir esta página" *(Etapa 1)*
 
 ## D. WhatsApp y contacto (71–85)
-71. ⭐🟢 Mensajes de WhatsApp distintos según el botón ("Quiero una página", "Quiero un sistema")
-72. 🟢 Horario de atención visible
-73. 🟢 Indicador "En línea ahora" según el horario
+71. ✅ Mensajes de WhatsApp distintos según el botón ("Quiero una página", "Quiero un sistema") *(Etapa 1)*
+72. ✅ Horario de atención visible *(Etapa 1)*
+73. ✅ Indicador "En línea ahora" según el horario *(Etapa 1)*
 74. 🟢 Formulario que arma el mensaje de WhatsApp con los datos del cliente
-75. 🟢 Código QR de WhatsApp para imprimir
-76. 🟢 Tarjeta de presentación digital (vCard) descargable
-77. 🟢 Enlace para guardar su contacto en el celular
+75. ✅ Código QR de WhatsApp para imprimir *(Etapa 1)*
+76. ✅ Tarjeta de presentación digital (vCard) descargable *(Etapa 1)*
+77. ✅ Enlace para guardar su contacto en el celular *(Etapa 1)*
 78. 🔵 Formulario de correo como alternativa
-79. 🟢 Botón de llamada
+79. ✅ Botón de llamada *(Etapa 1)*
 80. 🟢 Dirección con enlace a Google Maps
 81. 🔵 Respuesta automática por correo al cotizar
 82. 🔵 Notificación a su celular cuando alguien cotiza
@@ -216,7 +216,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 179. 🔵 Registro de ingresos (quién entró y cuándo)
 180. 🔵 Roles: administrador y ayudante
 181. 🔵 Funciona sin internet y sincroniza después
-182. 🟢 Instalable como app en el celular (PWA)
+182. ✅ Instalable como app en el celular (PWA) *(Etapa 1)*
 183. 🔵 Notificaciones push
 184. 🔵 Copia de seguridad descargable
 185. 🔵 Restaurar desde una copia
@@ -227,15 +227,15 @@ Las marcadas con ⭐ son las que yo haría primero.
 190. 🟢 Modo de mantenimiento
 
 ## J. Diseño y experiencia (191–200)
-191. ⭐🟢 Botón para cambiar a modo oscuro
+191. ✅ Botón para cambiar a modo oscuro *(Etapa 1)*
 192. 🟢 Página en inglés para clientes de afuera
-193. 🟢 Tamaño de letra ajustable
+193. ✅ Tamaño de letra ajustable *(Etapa 1)*
 194. ✅ Animaciones suaves al bajar
-195. 🟢 Menú de hamburguesa en celular
-196. 🟢 Botón "volver arriba"
+195. ✅ Menú de hamburguesa en celular *(Etapa 1)*
+196. ✅ Botón "volver arriba" *(Etapa 1)*
 197. 🟢 Barra de progreso de lectura en el blog
 198. 🟢 Pantalla de carga con su logo
-199. 🟢 Atajos de teclado en Mi oficina
+199. ✅ Atajos de teclado en Mi oficina *(Etapa 1)*
 200. 🔵 Panel personalizable: escoger qué tarjetas ver
 
 ---
@@ -411,10 +411,10 @@ Las marcadas con ⭐ son las que yo haría primero.
 352. 🟢 Mapa del Huila con municipios donde tiene clientes
 353. 🔵 "Último proyecto entregado hace X días"
 354. 🟢 Planes mensuales en lugar de pago único
-355. 🟢 Modo de alto contraste
+355. ✅ Modo de alto contraste *(Etapa 1)*
 356. 🟢 Lectura en voz alta de la página
 357. 🟢 Versión ultraliviana para datos limitados
-358. 🟢 Botón "compartir con mi socio"
+358. ✅ Botón "compartir con mi socio" *(Etapa 1)*
 359. 🟢 Página "trabaje conmigo" para estudiantes
 360. 🟢 Sección de aliados: diseñadores, contadores, imprentas
 
@@ -468,31 +468,31 @@ Las marcadas con ⭐ son las que yo haría primero.
 
 ## U. Portada y diseño (401–420)
 401. 🟢 Frase de la portada distinta según la hora del día
-402. ⭐🟢 Portada distinta según el sector que trae el enlace (ej.: `?sector=tiendas`)
+402. ✅ Portada distinta según el sector que trae el enlace (ej.: `?sector=tiendas`) *(Etapa 1)*
 403. 🟢 Animación del cuaderno que se convierte en celular al bajar
 404. 🟢 Cursor elegante personalizado en computador
 405. 🟢 Textura de papel más real en el fondo
 406. 🟢 Transición suave entre secciones al tocar el menú
-407. 🟢 Menú que se esconde al bajar y aparece al subir
-408. 🟢 Indicador de la sección actual en el menú
+407. ✅ Menú que se esconde al bajar y aparece al subir *(Etapa 1)*
+408. ✅ Indicador de la sección actual en el menú *(Etapa 1)*
 409. 🟢 Franja de arquitectura con movimiento lento (parallax)
 410. 🟢 Toques de temporada discretos (diciembre, San Pedro)
-411. 🟢 Números que cuentan hacia arriba al aparecer
+411. ✅ Números que cuentan hacia arriba al aparecer *(Etapa 1)*
 412. 🟢 Firma "Andrés" que se dibuja a mano al llegar a "Quién está detrás"
 413. 🟢 Casos en galería deslizable en celular
 414. 🟢 Letra un poco más gruesa en pantallas pequeñas
-415. 🟢 Botón de WhatsApp que late suave después de 20 segundos
+415. ✅ Botón de WhatsApp que late suave después de 20 segundos *(Etapa 1)*
 416. 🟢 Fotos de Neiva en blanco y negro en "Sobre mí"
 417. 🟢 Foto suya profesional con marco editorial
-418. 🟢 Sello "Hecho en el Huila"
+418. ✅ Sello "Hecho en el Huila" *(Etapa 1)*
 419. 🟢 Frase rotativa en el pie de página
 420. 🟢 Modo presentación: la página se recorre sola para mostrarla en ferias
 
 ## V. Secciones nuevas de la página (421–440)
 421. ⭐🟢 Deslizador "antes y después" sobre dos imágenes
 422. 🟢 Herramientas que usa (Firebase, Google) explicadas sencillo
-423. 🟢 Sección honesta "Para quién no es este servicio"
-424. 🟢 Sección de garantías con íconos
+423. ✅ Sección honesta "Para quién no es este servicio" *(Etapa 1)*
+424. ✅ Sección de garantías con íconos *(Etapa 1)*
 425. 🟢 Preguntas frecuentes por sector
 426. 🟢 "Un día con su sistema": la rutina del dueño contada paso a paso
 427. 🟢 Premios y reconocimientos
@@ -504,7 +504,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 433. 🟢 Línea de tiempo de la tecnología en los negocios del Huila
 434. 🔵 Eventos donde va a estar (ferias, charlas)
 435. 🟢 Política de reembolsos
-436. 🟢 Tratamiento de datos según la Ley 1581 de Colombia
+436. ✅ Tratamiento de datos según la Ley 1581 de Colombia *(Etapa 1)*
 437. 🟢 Términos del soporte mensual
 438. 🟢 Página de prensa con kit descargable
 439. 🔵 Página de estado de los servicios (todo funcionando / en mantenimiento)
@@ -548,7 +548,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 473. 🟢 Registro mercantil o RUT visible
 474. 🔵 Muro de mensajes de agradecimiento (con permiso)
 475. 🟢 Comparación honesta con Excel y software genérico
-476. 🟢 Preguntas incómodas respondidas ("¿y si usted desaparece?")
+476. ✅ Preguntas incómodas respondidas ("¿y si usted desaparece?") *(Etapa 1)*
 477. 🔵 Contador de sistemas activos ahora
 478. 🟢 Mapa con fotos de locales de clientes (con permiso)
 479. 🟢 Política de confidencialidad de la información del negocio
@@ -557,12 +557,12 @@ Las marcadas con ⭐ son las que yo haría primero.
 ## Y. Herramientas gratis para visitantes (481–500)
 481. ⭐🟢 Guía "Del cuaderno al celular en 5 pasos"
 482. 🟢 Plantilla de fiados en Excel
-483. 🟢 Calculadora de punto de equilibrio
-484. 🟢 Calculadora de margen de ganancia por producto
-485. 🟢 Calculadora de IVA para comerciantes
-486. 🟢 Calculadora de cuánto cobrar por domicilio
+483. ✅ Calculadora de punto de equilibrio *(Etapa 1)*
+484. ✅ Calculadora de margen de ganancia por producto *(Etapa 1)*
+485. ✅ Calculadora de IVA para comerciantes *(Etapa 1)*
+486. ✅ Calculadora de cuánto cobrar por domicilio *(Etapa 1)*
 487. 🟢 Calculadora básica de nómina con prestaciones
-488. 🟢 Test "¿Qué tan digital es su negocio?" con puntaje
+488. ✅ Test "¿Qué tan digital es su negocio?" con puntaje *(Etapa 1)*
 489. 🟢 Videos de un minuto con trucos de WhatsApp Business
 490. 🟢 Guía para abrir Google Business
 491. 🟢 Guía para evitar estafas por internet
@@ -579,15 +579,15 @@ Las marcadas con ⭐ son las que yo haría primero.
 ## Z. Google y buscadores con IA (501–520)
 501. 🟢 Páginas por barrio de Neiva
 502. 🟢 Páginas por servicio y municipio ("inventario en Pitalito")
-503. 🟢 Preguntas con el formato que Google muestra en resultados
+503. ✅ Preguntas con el formato que Google muestra en resultados *(Etapa 1)*
 504. 🟢 Datos estructurados de cada caso
 505. 🟢 Datos estructurados de reseñas
 506. 🟢 Nombres de archivo y textos alternativos optimizados
 507. 🟢 Enlaces internos entre casos y servicios
-508. 🟢 Etiqueta canónica contra contenido duplicado
+508. ✅ Etiqueta canónica contra contenido duplicado *(Etapa 1)*
 509. 🟢 Precarga de la siguiente sección
 510. ⭐🟢 Optimización para que los asistentes de IA lo recomienden
-511. 🟢 Archivo `llms.txt` para buscadores con IA
+511. ✅ Archivo `llms.txt` para buscadores con IA *(Etapa 1)*
 512. 🟢 Perfiles en directorios colombianos de proveedores
 513. 🟢 Mapa del sitio de imágenes y videos
 514. 🔵 Páginas de casos creadas solas desde el portafolio
@@ -603,8 +603,8 @@ Las marcadas con ⭐ son las que yo haría primero.
 522. 🟢 Textos para lectores de pantalla en todos los íconos
 523. 🟢 Contraste revisado en toda la página
 524. 🟢 Botones grandes para personas mayores
-525. 🟢 Modo "letra grande" para dueños mayores
-526. 🟢 Botón para pausar animaciones
+525. ✅ Modo "letra grande" para dueños mayores *(Etapa 1)*
+526. ✅ Botón para pausar animaciones *(Etapa 1)*
 527. 🟢 Subtítulos en todos los videos
 528. 🟢 Lengua de señas en el video principal
 529. 🟢 Explicaciones con dibujos para quien lee poco
@@ -613,9 +613,9 @@ Las marcadas con ⭐ son las que yo haría primero.
 532. 🟢 Mensajes de error claros en formularios
 533. 🟢 Enfoque visible al navegar
 534. 🟢 Lo básico de la página funciona sin JavaScript
-535. 🟢 Versión bien formateada para imprimir
+535. ✅ Versión bien formateada para imprimir *(Etapa 1)*
 536. 🟢 Mi oficina compatible con lectores de pantalla
-537. 🟢 Accesos directos al instalar la app (nuevo cliente, nueva propuesta)
+537. ✅ Accesos directos al instalar la app (nuevo cliente, nueva propuesta) *(Etapa 1)*
 538. 🟢 Dictado por voz en los campos de Mi oficina
 539. 🟢 Tamaño de texto ajustable en la propuesta del cliente
 540. 🟣 Resumen en audio de la propuesta para el cliente que lee poco
@@ -625,7 +625,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 542. 🟢 Imágenes en formato WebP o AVIF
 543. 🟢 Carga diferida de las secciones de abajo
 544. 🟢 Precarga de la pantalla de ingreso
-545. 🟢 Página pública disponible sin conexión
+545. ✅ Página pública disponible sin conexión *(Etapa 1)*
 546. 🔵 Mi oficina sin internet con cola de cambios
 547. 🟢 Medición de velocidad real (Core Web Vitals)
 548. 🟢 Compresión de la página
@@ -633,7 +633,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 550. 🔵 Miniaturas del portafolio en tamaño pequeño y grande
 551. 🔵 Listas largas por páginas
 552. 🔵 Búsqueda instantánea con índice local
-553. 🟢 Esqueletos de carga elegantes en lugar de "Cargando…"
+553. ✅ Esqueletos de carga elegantes en lugar de "Cargando…" *(Etapa 1)*
 554. 🟢 Prueba de velocidad antes de publicar
 555. 🟢 Modo ahorro de datos que no carga videos
 556. 🔵 Fotos del portafolio servidas desde Storage
@@ -958,7 +958,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 845. 🔵 Respuestas rápidas guardadas
 846. 🟢 Guía para el catálogo de WhatsApp Business
 847. 🟢 Enlace corto personalizado
-848. 🟢 Mensaje de WhatsApp según la sección donde está el visitante
+848. ✅ Mensaje de WhatsApp según la sección donde está el visitante *(Etapa 1)*
 849. 🔵 Etiquetas iguales a las de WhatsApp Business
 850. 🟠 Bot de WhatsApp para preguntas frecuentes
 851. 🟠 Aviso por WhatsApp cuando entra una cotización
@@ -1065,7 +1065,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 942. 🔵 Contraseña fuerte obligatoria
 943. 🔵 Bloqueo tras intentos fallidos con aviso
 944. 🔵 Clave extra para ver precios privados
-945. 🟢 Botón para ocultar montos en pantalla cuando está en público
+945. ✅ Botón para ocultar montos en pantalla cuando está en público *(Etapa 1)*
 946. 🔵 Registro de quién cambió qué
 947. 🔵 Copia de seguridad cifrada
 948. 🔵 Permisos por ayudante (sin finanzas, por ejemplo)

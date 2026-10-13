@@ -10,6 +10,36 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;1,6..96,400&family=Jost:wght@400;500;600&family=Kalam:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#F4EFE7">
+<!-- Cambie SU-DOMINIO por la dirección real de su página (vea LEEME.md) -->
+<link rel="canonical" href="https://SU-DOMINIO/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CO">
+<meta property="og:site_name" content="Andrés Bolívar">
+<meta property="og:title" content="Andrés Bolívar · Su negocio, del cuaderno al celular">
+<meta property="og:description" content="Páginas web, sistemas y apps a la medida para negocios de Neiva y el Huila. Cotización gratis por WhatsApp.">
+<meta property="og:url" content="https://SU-DOMINIO/">
+<meta property="og:image" content="https://SU-DOMINIO/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icono-192.png">
+<meta name="apple-mobile-web-app-title" content="Andrés Bolívar">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "Andrés Bolívar · Páginas web y aplicaciones",
+  "description": "Páginas web, sistemas a la medida y apps para negocios de Neiva y el Huila: ventas, inventario, fiados, turnos y reportes.",
+  "url": "https://SU-DOMINIO/",
+  "image": "https://SU-DOMINIO/og.jpg",
+  "telephone": "+57 312 828 8339",
+  "areaServed": [{ "@type": "City", "name": "Neiva" }, { "@type": "AdministrativeArea", "name": "Huila" }],
+  "address": { "@type": "PostalAddress", "addressLocality": "Neiva", "addressRegion": "Huila", "addressCountry": "CO" },
+  "founder": { "@type": "Person", "name": "Andrés Felipe Bolívar Arias" },
+  "knowsAbout": ["Páginas web", "Sistemas de inventario", "Control de fiados", "Apps para celular", "Firebase"]
+}
+</script>
 <script>if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("anim");</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
@@ -119,12 +149,13 @@
   }
   #sitio .site-top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 84px; }
   #sitio .brand { color: var(--negro); text-decoration: none; white-space: nowrap; font-family: var(--serif); font-weight: 500; font-size: clamp(1.3rem, 3vw, 2.1rem); letter-spacing: .04em; text-transform: uppercase; line-height: 1; }
-  #sitio .nav { display: flex; align-items: center; gap: clamp(18px, 2.6vw, 38px); }
+  #sitio .nav { display: flex; align-items: center; gap: clamp(14px, 1.9vw, 30px); }
+  @media (max-width: 1320px) and (min-width: 1041px) { #sitio .brand { font-size: 1.55rem; } #sitio .nav .lnk, #sitio .nav .js-entrar { letter-spacing: .14em; } }
   #sitio .nav .lnk, #sitio .nav .js-entrar { position: relative; color: var(--negro); text-decoration: none; font-size: .8rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; }
   #sitio .nav .lnk::after { content: ""; position: absolute; left: 0; right: .2em; bottom: -6px; height: 1px; background: var(--negro); transform: scaleX(0); transform-origin: left; transition: transform .35s ease; }
   #sitio .nav .lnk:hover::after { transform: scaleX(1); }
   #sitio .nav .js-entrar { color: var(--gris); }
-  @media (max-width: 960px) { #sitio .nav .lnk { display: none; } }
+  @media (max-width: 1040px) { #sitio .nav .lnk { display: none; } }
   @media (max-width: 600px) {
     #sitio .site-top .wrap { height: 68px; gap: 10px; }
     #sitio .site-top .js-entrar { display: none; }
@@ -289,6 +320,151 @@
   #sitio footer a:hover { text-decoration: underline; text-underline-offset: 4px; }
   #sitio footer .fin { width: 100%; text-align: right; color: var(--tenue); font-size: .66rem; }
   @media (max-width: 760px) { #sitio footer .wrap { flex-direction: column; text-align: center; } #sitio footer .fin { text-align: center; } }
+
+  /* Menú: se esconde al bajar, marca la sección actual y tiene versión para celular */
+  #sitio .site-top { transition: transform .35s ease; }
+  #sitio .site-top.oculto { transform: translateY(-100%); }
+  #sitio .nav .lnk.actual::after { transform: scaleX(1); }
+  #sitio .menu-btn { display: none; width: 42px; height: 42px; border: 1px solid var(--negro); border-radius: 8px; background: none; cursor: pointer; position: relative; }
+  #sitio .menu-btn span { position: absolute; left: 11px; right: 11px; height: 1.5px; background: var(--negro); transition: transform .3s, top .3s; }
+  #sitio .menu-btn span:first-child { top: 16px; } #sitio .menu-btn span:last-child { top: 24px; }
+  #sitio .menu-btn[aria-expanded="true"] span:first-child { top: 20px; transform: rotate(45deg); }
+  #sitio .menu-btn[aria-expanded="true"] span:last-child { top: 20px; transform: rotate(-45deg); }
+  @media (max-width: 1040px) { #sitio .menu-btn { display: inline-block; } }
+  #sitio .menu-movil { position: sticky; top: 84px; z-index: 19; background: var(--crema); border-bottom: 1px solid var(--linea-2); padding: 8px clamp(20px, 5vw, 48px) 18px; display: grid; }
+  @media (max-width: 600px) { #sitio .menu-movil { top: 68px; } }
+  #sitio .menu-movil a { color: var(--negro); text-decoration: none; font-size: .9rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; padding: 14px 0; border-bottom: 1px solid var(--linea); }
+
+  /* Cifras */
+  #sitio .cifras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding-top: 34px; padding-bottom: 34px; text-align: center; }
+  #sitio .cifras div + div { border-left: 1px solid var(--linea); }
+  #sitio .cifras b { display: block; font-family: var(--serif); font-weight: 500; font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1.05; font-optical-sizing: none; font-variation-settings: "opsz" 18; font-variant-numeric: lining-nums tabular-nums; }
+  #sitio .cifras span { display: block; margin-top: 6px; font-size: .72rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--gris); }
+  @media (max-width: 700px) { #sitio .cifras { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 26px; } #sitio .cifras div:nth-child(3) { border-left: 0; } }
+
+  /* Cotizador */
+  #sitio .cotizador { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, .8fr); gap: 0; background: rgba(251, 248, 243, .7); }
+  #sitio .cotizador > * { position: relative; }
+  #sitio .cotizador fieldset { border: 0; margin: 0; padding: 30px 28px; min-width: 0; }
+  #sitio .cotizador fieldset + fieldset { border-left: 1px solid var(--linea); }
+  #sitio .cotizador legend { font-size: .74rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--gris); padding: 0; margin-bottom: 14px; float: left; width: 100%; }
+  #sitio .opciones { display: grid; gap: 8px; clear: both; }
+  #sitio .opciones label { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border: 1px solid var(--linea); cursor: pointer; font-size: .95rem; line-height: 1.35; background: #FBF8F3; }
+  #sitio .opciones label:has(input:checked) { border-color: var(--negro); box-shadow: inset 0 0 0 1px var(--negro); }
+  #sitio .opciones.chicas label { padding: 8px 10px; font-size: .9rem; }
+  #sitio .opciones input { accent-color: var(--negro); margin-top: 2px; flex: none; }
+  #sitio .cot-res { background: var(--negro); color: #E9E3D8; padding: 34px 26px; display: flex; flex-direction: column; justify-content: center; gap: 12px; text-align: center; }
+  #sitio .cot-res .kick { color: #A79F92; margin: 0; }
+  #sitio .cot-res b { font-family: var(--serif); font-weight: 500; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.2; color: var(--crema); font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  #sitio .cot-res small { color: #A79F92; font-size: .82rem; }
+  #sitio .cot-res .btn { background: var(--crema); color: var(--negro); border-color: var(--crema); }
+  @media (max-width: 960px) { #sitio .cotizador { grid-template-columns: minmax(0, 1fr); } #sitio .cotizador fieldset + fieldset { border-left: 0; border-top: 1px solid var(--linea); } }
+
+  /* Test digital */
+  #sitio .test { margin-top: 26px; padding: clamp(26px, 4vw, 44px); background: rgba(251, 248, 243, .7); }
+  #sitio .test > * { position: relative; }
+  #sitio .test-head { text-align: center; margin-bottom: 22px; }
+  #sitio .test-head h3 { font-size: clamp(1.6rem, 3vw, 2.2rem); text-transform: uppercase; letter-spacing: .02em; margin-bottom: 6px; }
+  #sitio .test-head p { margin: 0; color: var(--gris); }
+  #sitio .test-preg { list-style: none; margin: 0 auto; padding: 0; max-width: 760px; counter-reset: p; }
+  #sitio .test-preg li { display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; padding: 14px 0; border-top: 1px solid var(--linea); counter-increment: p; }
+  #sitio .test-preg li::before { content: counter(p, upper-roman); position: absolute; margin-left: -46px; font-family: var(--serif); color: var(--tenue); }
+  @media (max-width: 860px) { #sitio .test-preg li::before { display: none; } }
+  #sitio .si-no { display: inline-flex; border: 1px solid var(--negro); border-radius: 8px; overflow: hidden; }
+  #sitio .si-no button { font: inherit; font-size: .76rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; min-height: 42px; min-width: 64px; border: 0; background: none; color: var(--negro); cursor: pointer; }
+  #sitio .si-no button + button { border-left: 1px solid var(--negro); }
+  #sitio .si-no button[aria-pressed="true"] { background: var(--negro); color: var(--crema); }
+  #sitio .test-res { max-width: 760px; margin: 22px auto 0; text-align: center; border-top: 1px solid var(--negro); padding-top: 22px; }
+  #sitio .test-res b { display: block; font-family: var(--serif); font-weight: 500; font-size: clamp(2.6rem, 6vw, 3.6rem); line-height: 1; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  #sitio .test-res h4 { font-family: var(--serif); font-weight: 500; font-size: 1.4rem; margin: 10px 0 6px; }
+  #sitio .test-res p { color: var(--gris); max-width: 56ch; margin: 0 auto 16px; }
+
+  /* Garantías */
+  #sitio .garantias { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--negro); }
+  #sitio .garantias li { padding: 30px 22px 10px; text-align: center; }
+  #sitio .garantias li + li { border-left: 1px solid var(--linea); }
+  #sitio .garantias svg { color: var(--negro); margin-bottom: 12px; }
+  #sitio .garantias h3 { font-size: 1.25rem; margin-bottom: 8px; }
+  #sitio .garantias p { margin: 0; color: var(--gris); font-size: .96rem; }
+  @media (max-width: 900px) { #sitio .garantias { grid-template-columns: repeat(2, minmax(0, 1fr)); } #sitio .garantias li:nth-child(3) { border-left: 0; } }
+  @media (max-width: 520px) { #sitio .garantias { grid-template-columns: minmax(0, 1fr); } #sitio .garantias li + li { border-left: 0; border-top: 1px solid var(--linea); } }
+  #sitio .no-es { max-width: 760px; margin: 40px auto 0; padding: 24px 26px; border: 1px solid var(--linea-2); }
+  #sitio .no-es h3 { font-size: 1.3rem; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 10px; }
+  #sitio .no-es ul { margin: 0; padding-left: 18px; color: var(--gris); }
+  #sitio .no-es li { margin-bottom: 6px; }
+
+  /* Herramientas */
+  #sitio .tools { background: rgba(251, 248, 243, .7); }
+  #sitio .tools > * { position: relative; }
+  #sitio .tool-tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--linea-2); }
+  #sitio .tool-tabs button { flex: 1 1 auto; font: inherit; font-size: .76rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; padding: 16px 14px; background: none; border: 0; color: var(--gris); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  #sitio .tool-tabs button[aria-selected="true"] { color: var(--negro); border-bottom-color: var(--negro); }
+  #sitio .tool-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 26px; padding: clamp(22px, 4vw, 40px); align-items: center; }
+  @media (max-width: 760px) { #sitio .tool-body { grid-template-columns: minmax(0, 1fr); } }
+  #sitio .tool-body .field > span { color: var(--gris); }
+  #sitio .tool-body input, #sitio .tool-body select { width: 100%; font: inherit; font-size: 16px; color: var(--negro); background: #FFFDF9; border: 1px solid var(--linea-2); border-radius: 6px; padding: 11px 12px; }
+  #sitio .tool-out { text-align: center; border-left: 1px solid var(--linea); padding-left: 26px; }
+  @media (max-width: 760px) { #sitio .tool-out { border-left: 0; padding-left: 0; border-top: 1px solid var(--linea); padding-top: 20px; } }
+  #sitio .tool-out .kick { margin-bottom: 4px; }
+  #sitio .tool-out b { display: block; font-family: var(--serif); font-weight: 500; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; font-optical-sizing: none; font-variation-settings: "opsz" 18; }
+  #sitio .tool-out p { color: var(--gris); margin: 10px 0 0; font-size: .95rem; }
+
+  /* Contacto: más opciones */
+  #sitio .horario { display: flex; justify-content: center; align-items: center; gap: 8px; color: #CFC8BB; font-size: .92rem; margin: -14px 0 24px !important; }
+  #sitio .horario .punto { width: 9px; height: 9px; border-radius: 50%; background: #6B645A; }
+  #sitio .horario .punto.si { background: #8FC29F; box-shadow: 0 0 0 4px rgba(143, 194, 159, .2); }
+  #sitio .contacto-mas { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
+  @media (max-width: 600px) { #sitio .contacto-mas { display: grid; grid-template-columns: 1fr 1fr; } #sitio .contacto-mas .btn { padding: 0 10px; min-height: 52px; } }
+  #sitio .btn-line-claro { border: 1px solid rgba(244, 239, 230, .4) !important; color: var(--crema) !important; background: transparent !important; min-height: 44px; font-size: .74rem; }
+  #sitio .btn-line-claro:hover { border-color: var(--crema) !important; }
+  #sitio .qr-box { margin: 22px auto 0; display: grid; justify-items: center; gap: 10px; }
+  #sitio .qr-box #qrImg { background: #FFF; padding: 14px; line-height: 0; }
+  #sitio .qr-box #qrImg img { width: 200px; height: 200px; image-rendering: pixelated; }
+  #sitio .qr-box p { margin: 0 !important; font-size: .9rem; }
+  #sitio footer .sello { border: 1px solid var(--linea-2); padding: 2px 8px; }
+  #sitio footer .link-a11y { font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  #sitio footer .link-a11y:hover, #sitio footer .fin a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  /* Botones flotantes */
+  .flotantes { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 40; display: grid; justify-items: end; gap: 10px; }
+  body.en-oficina .flotantes, body.en-login .flotantes { display: none; }
+  .flotantes .arriba { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #1A1816; background: #F4EFE7; color: #1A1816; cursor: pointer; display: grid; place-items: center; }
+  .wa-flot { position: relative; width: 58px; height: 58px; border-radius: 50%; background: #1A1816; color: #F4EFE7; display: grid; place-items: center; box-shadow: 0 14px 30px -12px rgba(26, 24, 22, .6); }
+  .wa-flot .burbuja { position: absolute; right: 68px; top: 50%; transform: translateY(-50%) translateX(8px); white-space: nowrap; background: #F4EFE7; color: #1A1816; border: 1px solid #1A1816; padding: 8px 12px; font-size: .78rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; opacity: 0; pointer-events: none; transition: opacity .4s, transform .4s; }
+  .wa-flot.llama .burbuja { opacity: 1; transform: translateY(-50%); }
+  .anim .wa-flot.llama { animation: latido 2.4s ease-in-out 3; }
+  @keyframes latido { 0%, 100% { box-shadow: 0 14px 30px -12px rgba(26, 24, 22, .6), 0 0 0 0 rgba(26, 24, 22, .35); } 50% { box-shadow: 0 14px 30px -12px rgba(26, 24, 22, .6), 0 0 0 12px rgba(26, 24, 22, 0); } }
+
+  /* Accesibilidad */
+  .panel-a11y { position: fixed; left: max(16px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 45; background: #FBF8F3; color: #1A1816; border: 1px solid #1A1816; padding: 16px 18px; display: grid; gap: 10px; min-width: 230px; box-shadow: 0 20px 40px -20px rgba(26, 24, 22, .5); }
+  .panel-a11y b { font-family: var(--serif); font-weight: 500; font-size: 1.15rem; }
+  .panel-a11y label { display: flex; gap: 10px; align-items: center; cursor: pointer; }
+  .panel-a11y input { width: 18px; height: 18px; accent-color: #1A1816; }
+  html.a11y-grande { font-size: 118%; }
+  html.a11y-contraste #sitio { --gris: #2E2B27; --tenue: #4A443B; --linea: #8A8377; --linea-2: #5E5850; }
+  html.a11y-contraste #sitio .section-lead, html.a11y-contraste #sitio p { color: #1A1816; }
+  html.a11y-quieto *, html.a11y-quieto *::before, html.a11y-quieto *::after { animation: none !important; transition: none !important; }
+  html.a11y-quieto #sitio .reveal { opacity: 1 !important; transform: none !important; }
+
+  /* Mi oficina: ocultar montos y esqueletos de carga */
+  body.privado .stat b.peso, body.privado .tabla td.r:nth-child(2), body.privado .res .rec, body.privado .res .rango, body.privado .desg td.r,
+  body.privado .precio-ia .rec, body.privado .precio-ia .rango, body.privado .precio-ia .datos b, body.privado .res .datos b { filter: blur(9px); user-select: none; }
+  #btnPrivado[aria-pressed="true"] { background: var(--ink); color: var(--btn-text); }
+  .esqueleto { display: grid; gap: 12px; padding: 6px 0; }
+  .esqueleto i { display: block; height: 18px; border-radius: 4px; background: linear-gradient(90deg, var(--ink-soft), var(--hover), var(--ink-soft)); background-size: 200% 100%; }
+  .anim .esqueleto i { animation: brillo 1.4s ease-in-out infinite; }
+  .esqueleto i.alto { height: 92px; } .esqueleto i.medio { width: 60%; }
+  @keyframes brillo { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+  /* Impresión: solo el contenido */
+  @media print {
+    #sitio .site-top, .flotantes, .panel-a11y, #sitio .arq, #sitio .switch, #sitio .contacto-mas, #sitio .cot-res .btn, .menu-movil { display: none !important; }
+    #sitio { background: #FFF !important; }
+    #sitio section { padding: 24px 0 !important; break-inside: avoid; }
+    .anim #sitio .reveal { opacity: 1 !important; transform: none !important; }
+    #sitio .cta-box { background: #FFF !important; color: #000 !important; border: 1px solid #000; }
+    #sitio .cta-box h2, #sitio .cta-box p { color: #000 !important; }
+  }
 
   /* Aparición suave al bajar */
   .anim #sitio .reveal { opacity: 0; transform: translateY(18px); transition: opacity 1s ease, transform 1s cubic-bezier(.2, .8, .2, 1); transition-delay: var(--d, 0s); }
@@ -587,12 +763,19 @@
         <a class="lnk" href="#servicios">Servicios</a>
         <a class="lnk" href="#metodo">Método</a>
         <a class="lnk" href="#casos">Casos</a>
+        <a class="lnk" href="#cotizar">Precios</a>
         <a class="lnk" href="#contacto">Contacto</a>
         <a class="js-entrar" href="#/ingresar">Ingresar</a>
         <a class="btn btn-dark btn-sm" data-wa href="#contacto">WhatsApp</a>
+        <button type="button" class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menuMovil" aria-label="Abrir menú"><span></span><span></span></button>
       </nav>
     </div>
   </header>
+
+  <div class="menu-movil" id="menuMovil" hidden>
+    <a href="#servicios">Servicios</a><a href="#cotizar">¿Cuánto cuesta?</a><a href="#casos">Casos</a><a href="#metodo">Método</a>
+    <a href="#herramientas">Herramientas gratis</a><a href="#preguntas">Preguntas</a><a href="#contacto">Contacto</a><a class="js-entrar" href="#/ingresar">Ingresar</a>
+  </div>
 
   <main id="inicio">
     <div class="hero wrap">
@@ -677,6 +860,13 @@
       </div>
     </div>
 
+    <div class="cifras wrap" aria-label="En cifras">
+      <div><b data-contar="proyectos">0</b><span>proyectos entregados</span></div>
+      <div><b data-contar="sectores">0</b><span>tipos de negocio</span></div>
+      <div><b data-contar-fijo="30">0</b><span>días de garantía</span></div>
+      <div><b>$&nbsp;0</b><span>cuesta cotizar</span></div>
+    </div>
+
     <section id="diferencia" class="diff">
       <div class="wrap diff-grid">
         <div>
@@ -738,6 +928,33 @@
       </div>
     </section>
 
+    <section id="cotizar">
+      <div class="wrap">
+        <div class="head-c">
+          <span class="kick reveal">¿Cuánto cuesta?</span>
+          <h2 class="reveal">Calcule su precio en un minuto</h2>
+          <p class="section-lead reveal" style="--d:.1s">Escoja qué necesita y vea un rango de referencia. El precio exacto se lo doy por escrito, gratis.</p>
+        </div>
+        <div class="cotizador marco reveal">
+          <fieldset><legend>1. ¿Qué necesita?</legend><div class="opciones" id="cotTipo"></div></fieldset>
+          <fieldset><legend>2. ¿Qué funciones?</legend><div class="opciones chicas" id="cotMods"></div></fieldset>
+          <div class="cot-res" aria-live="polite">
+            <span class="kick">Rango de referencia</span>
+            <b id="cotRango">—</b>
+            <small id="cotTiempo"></small>
+            <a class="btn btn-dark" id="cotWa" target="_blank" rel="noopener" href="#contacto">Pedir el precio exacto por WhatsApp</a>
+            <small>Es una referencia. Cada negocio es distinto y el precio final depende de lo que hablemos.</small>
+          </div>
+        </div>
+
+        <div class="test marco reveal" id="test">
+          <div class="test-head"><span class="kick">Test gratis</span><h3>¿Qué tan digital es su negocio?</h3><p>Seis preguntas de sí o no. Al final le digo por dónde empezar.</p></div>
+          <ol class="test-preg" id="testPreg"></ol>
+          <div class="test-res" id="testRes" hidden aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="casos">
       <div class="wrap">
         <div class="head-c">
@@ -792,6 +1009,26 @@
       </div>
     </section>
 
+    <section id="garantias">
+      <div class="wrap">
+        <div class="head-c"><span class="kick reveal">Garantías</span><h2 class="reveal">Trabajar conmigo es seguro</h2></div>
+        <ul class="garantias">
+          <li class="reveal"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.8 4.5 5.6v5.6c0 4.6 3.1 8.6 7.5 10 4.4-1.4 7.5-5.4 7.5-10V5.6z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="m8.6 12 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>30 días de garantía</h3><p>Si algo falla después de la entrega, lo corrijo sin costo.</p></li>
+          <li class="reveal" style="--d:.08s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.3"/></svg><h3>Todo a su nombre</h3><p>Las cuentas, los datos y el código quedan a nombre de su negocio.</p></li>
+          <li class="reveal" style="--d:.16s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 2.8h8.5L19 7.3V20a1.2 1.2 0 0 1-1.2 1.2H6A1.2 1.2 0 0 1 4.8 20V4A1.2 1.2 0 0 1 6 2.8Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8.5 12.5h7M8.5 16.5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><h3>Precio por escrito</h3><p>Antes de empezar sabe qué incluye, cuánto cuesta y cuándo se entrega.</p></li>
+          <li class="reveal" style="--d:.24s"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12s3.5-6.5 9-6.5S21 12 21 12s-3.5 6.5-9 6.5S3 12 3 12Z" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.3"/></svg><h3>Usted ve los avances</h3><p>Le muestro el trabajo por etapas para que opine antes de seguir.</p></li>
+        </ul>
+        <div class="no-es reveal">
+          <h3>Para quién no es este servicio</h3>
+          <ul>
+            <li>Si busca lo más barato posible, sin acompañamiento ni garantía.</li>
+            <li>Si necesita contabilidad formal o declaraciones de impuestos: para eso, un contador.</li>
+            <li>Si lo necesita para mañana sin hablar antes de cómo trabaja su negocio.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
     <section id="sobre-mi">
       <div class="wrap about">
         <div>
@@ -801,6 +1038,26 @@
           <p class="reveal" style="--d:.2s">Me gusta entender primero cómo trabaja cada negocio, para que el sistema se adapte a usted y no le toque aprender algo complicado.</p>
         </div>
         <p class="sign reveal" style="--d:.3s" aria-hidden="true">Andrés<small>Neiva · Huila</small></p>
+      </div>
+    </section>
+
+    <section id="herramientas">
+      <div class="wrap">
+        <div class="head-c">
+          <span class="kick reveal">Herramientas gratis</span>
+          <h2 class="reveal">Calculadoras para su negocio</h2>
+          <p class="section-lead reveal" style="--d:.1s">Úselas cuando quiera. No piden datos ni registro.</p>
+        </div>
+        <div class="tools marco reveal">
+          <div class="tool-tabs" role="tablist" aria-label="Calculadoras">
+            <button type="button" role="tab" data-tool="margen" aria-selected="true">Ganancia</button>
+            <button type="button" role="tab" data-tool="precio" aria-selected="false">Precio de venta</button>
+            <button type="button" role="tab" data-tool="iva" aria-selected="false">IVA</button>
+            <button type="button" role="tab" data-tool="equilibrio" aria-selected="false">Punto de equilibrio</button>
+            <button type="button" role="tab" data-tool="domicilio" aria-selected="false">Domicilio</button>
+          </div>
+          <div class="tool-body" id="toolBody" role="tabpanel"></div>
+        </div>
       </div>
     </section>
 
@@ -816,6 +1073,9 @@
           <details><summary>Tengo todo en cuadernos o en Excel. ¿Toca empezar de cero?</summary><p>No. Pasamos su información al sistema para que siga desde donde va.</p></details>
           <details><summary>¿Mis datos quedan seguros?</summary><p>Quedan guardados en la nube de Google, con usuario y contraseña para cada persona. Las cuentas quedan a nombre suyo.</p></details>
           <details><summary>¿Y si algo falla después de la entrega?</summary><p>Tiene 30 días de garantía para corregir errores sin costo. Después puede tomar el soporte mensual.</p></details>
+          <details><summary>¿Y si un día usted no puede seguir atendiéndome?</summary><p>Las cuentas y los datos quedan a nombre de su negocio, y le entrego el código con las instrucciones. Así cualquier otro desarrollador puede continuar.</p></details>
+          <details><summary>¿Puedo pagar por partes?</summary><p>Sí. Se paga el 50 % al aprobar la propuesta y el otro 50 % al entregar.</p></details>
+          <details><summary>¿Cuánto se demora?</summary><p>Una página sencilla, una o dos semanas. Un sistema a la medida, entre tres y ocho semanas, según las funciones. El tiempo exacto va en la cotización.</p></details>
         </div>
       </div>
     </section>
@@ -826,7 +1086,15 @@
           <span class="kick">Contacto</span>
           <h2>Cuénteme qué necesita su negocio</h2>
           <p>Escríbame por WhatsApp y le respondo con una propuesta. La cotización no tiene costo.</p>
+          <p class="horario"><span class="punto" id="enLinea"></span><span id="horarioTxt"></span></p>
           <a class="btn" data-wa href="#contacto">Escribirme por WhatsApp</a>
+          <div class="contacto-mas">
+            <a class="btn btn-line-claro" id="btnLlamar" href="#contacto">Llamar</a>
+            <button type="button" class="btn btn-line-claro" id="btnContacto">Guardar mi contacto</button>
+            <button type="button" class="btn btn-line-claro" id="btnQR">Código QR</button>
+            <button type="button" class="btn btn-line-claro" id="btnCompartir">Compartir esta página</button>
+          </div>
+          <div class="qr-box" id="qrBox" hidden><div id="qrImg"></div><p>Escanéelo con la cámara para escribirme por WhatsApp.</p><a class="btn btn-line-claro btn-sm" id="qrBajar" download="whatsapp-andres-bolivar.png" href="#">Descargar para imprimir</a></div>
         </div>
       </div>
     </section>
@@ -837,9 +1105,22 @@
       <p>Andrés Bolívar · Páginas web y aplicaciones</p>
       <p><a href="#servicios">Servicios</a> · <a href="#metodo">Método</a> · <a href="#casos">Casos</a> · <a href="#contacto">Contacto</a></p>
       <p>Neiva · Huila · <a data-wa href="#contacto">WhatsApp</a> · <a class="js-entrar" href="#/ingresar">Ingresar</a></p>
-      <p class="fin">© 2026 · Diseño minimal · Hecho con cuidado</p>
+      <p class="fin"><span class="sello">Hecho en el Huila</span> · © 2026 · <a href="privacidad.html">Tratamiento de datos</a> · <button type="button" class="link-a11y" id="btnA11y" aria-expanded="false" aria-controls="panelA11y">Accesibilidad</button></p>
     </div>
   </footer>
+</div>
+
+<!-- Botones flotantes de la página pública -->
+<div class="flotantes" id="flotantes">
+  <button type="button" class="arriba" id="btnArriba" aria-label="Volver arriba" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 14l6-6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <a class="wa-flot" id="waFlot" target="_blank" rel="noopener" href="#contacto" aria-label="Escribir por WhatsApp"><span class="burbuja" id="waBurbuja">¿Hablamos?</span><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2a9.7 9.7 0 0 0-8.4 14.6L2.3 21.7l5-1.3A9.7 9.7 0 1 0 12 2.2Zm0 17.7a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 19.9Zm4.4-6c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.8 1c-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.5-.4h-.5a.9.9 0 0 0-.6.3 2.7 2.7 0 0 0-.9 2c0 1.2.9 2.4 1 2.5.1.2 1.8 2.7 4.3 3.8 1.6.7 2.2.7 3 .6.5-.1 1.4-.6 1.6-1.2.2-.6.2-1 .1-1.2l-.5-.3Z"/></svg></a>
+</div>
+<div class="panel-a11y" id="panelA11y" hidden role="dialog" aria-label="Opciones de accesibilidad">
+  <b>Accesibilidad</b>
+  <label><input type="checkbox" data-a11y="grande"> Letra más grande</label>
+  <label><input type="checkbox" data-a11y="contraste"> Más contraste</label>
+  <label><input type="checkbox" data-a11y="quieto"> Sin animaciones</label>
+  <button type="button" class="btn btn-sm" id="cerrarA11y">Listo</button>
 </div>
 
 <!-- ======================= INGRESO ======================= -->
@@ -866,6 +1147,8 @@
     <div class="o-wrap">
       <div class="o-brand"><strong>Mi oficina</strong><span id="sync">Conectando…</span></div>
       <div class="o-top-actions">
+        <button class="icon-btn" type="button" id="btnPrivado" aria-label="Ocultar montos" aria-pressed="false" title="Ocultar montos (para cuando está en público)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12s3.5-6.5 9-6.5S21 12 21 12s-3.5 6.5-9 6.5S3 12 3 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        <button class="icon-btn" type="button" id="btnTema" aria-label="Cambiar entre claro y oscuro" title="Claro u oscuro"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
         <button class="icon-btn" type="button" id="btnDatos" aria-label="Mis datos" title="Mis datos"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M4 21c.8-4 4-6.5 8-6.5s7.2 2.5 8 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
         <a class="btn btn-sm" href="#inicio">Mi página</a>
         <button class="btn btn-sm" type="button" id="btnSalir">Salir</button>
@@ -919,6 +1202,10 @@ const firebaseConfig = {
 const WHATSAPP = "573128288339";
 const MENSAJE = "Hola Andrés, vi su página y me gustaría una cotización para mi negocio.";
 
+/* 2b. Horario de atención (hora de Colombia). Ajústelo a su horario real.
+   Días: 0 = domingo … 6 = sábado. */
+const HORARIO = { dias: [1, 2, 3, 4, 5, 6], desde: 8, hasta: 18, texto: "Lunes a sábado, 8 a. m. a 6 p. m." };
+
 /* 3. Asistente con IA (opcional). Pegue aquí la dirección de su función "asistente"
    después de publicarla (vea LEEME.md). Mientras esté vacía, la calculadora y las
    recomendaciones funcionan igual; solo el chat queda apagado. */
@@ -957,10 +1244,8 @@ function busy(on, msg) { $("#busyMsg").textContent = msg || "Trabajando…"; $("
 function setSync(msg) { $("#sync").textContent = msg; }
 
 /* ================= Página pública ================= */
-document.querySelectorAll("[data-wa]").forEach((a) => {
-  a.href = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(MENSAJE);
-  a.target = "_blank"; a.rel = "noopener";
-});
+document.querySelectorAll("[data-wa]").forEach((a) => { a.target = "_blank"; a.rel = "noopener"; });
+
 
 (function demoCuaderno() {
   const frame = $("#sitio .frame");
@@ -1455,7 +1740,7 @@ function vPanel() {
 }
 
 /* ================= Vistas de la oficina ================= */
-const cargando = () => `<div class="o-empty"><p>Cargando…</p></div>`;
+const cargando = () => `<div class="esqueleto" aria-label="Cargando" role="status"><i class="medio"></i><i class="alto"></i><i></i><i></i><i class="medio"></i></div>`;
 
 function vClientes() {
   if (!S.loaded.c) return cargando();
@@ -2369,6 +2654,7 @@ function mostrar(area) {
   $("#cargando").hidden = area !== "cargando";
   $("#oficina").hidden = area !== "oficina";
   document.body.classList.toggle("en-oficina", area === "oficina");
+  document.body.classList.toggle("en-login", area === "login" || area === "cargando");
   if (area === "sitio" && antes !== "sitio") {
     const el = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
     if (el) el.scrollIntoView(); else window.scrollTo(0, 0);
@@ -2674,6 +2960,266 @@ $("#btnDatos").addEventListener("click", () => go("datos"));
   if (ev === "drop" && e.dataTransfer.files.length) agregarArchivos([...e.dataTransfer.files]);
 }));
 window.addEventListener("pagehide", () => { if (saveT) guardarAhora(); });
+
+/* ================= Etapa 1: página pública ================= */
+const waUrl = (msg) => "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg || MENSAJE);
+
+/* Portada según el sector del enlace: ?sector=tiendas */
+const SECTORES = {
+  tiendas: { h1: "Su tienda, del cuaderno al celular", lead: "Ventas, inventario y fiados en un solo lugar. Sepa cuánto hay en caja y quién le debe, desde el celular.", msg: "Hola Andrés, tengo una tienda y quiero dejar el cuaderno." },
+  restaurantes: { h1: "Su restaurante, del cuaderno al celular", lead: "Pedidos, mesas, domicilios y caja del día, organizados para que atienda más rápido.", msg: "Hola Andrés, tengo un restaurante y me gustaría un sistema." },
+  parqueaderos: { h1: "Su parqueadero, sin cuentas a mano", lead: "Se anota la placa y el sistema cobra solo según el tiempo. Mensualidades, turnos y reportes.", msg: "Hola Andrés, tengo un parqueadero y quiero el sistema de control." },
+  fincas: { h1: "Su finca, con las cuentas claras", lead: "Insumos, pago a trabajadores y transporte, para saber cuánto invirtió de verdad en cada cosecha.", msg: "Hola Andrés, tengo una finca y quiero llevar los gastos en el celular." },
+  vigilancia: { h1: "Turnos y horas extra, sin errores", lead: "Cada guarda registra sus turnos y el sistema suma las horas extra y el valor a pagar.", msg: "Hola Andrés, tengo una empresa de vigilancia y quiero el sistema de turnos." },
+  veterinarias: { h1: "Su veterinaria, organizada", lead: "Historias de cada mascota, vacunas, ventas e inventario en el celular.", msg: "Hola Andrés, tengo una veterinaria y me gustaría un sistema." },
+};
+const sectorActual = SECTORES[new URLSearchParams(location.search).get("sector")] || null;
+if (sectorActual) {
+  const h1 = $("#sitio .hero h1"), lead = $("#sitio .hero .lead");
+  if (h1) h1.textContent = sectorActual.h1;
+  if (lead) lead.textContent = sectorActual.lead;
+}
+
+/* Mensaje de WhatsApp según la sección donde está el visitante */
+const MSG_SECCION = {
+  inicio: MENSAJE, diferencia: "Hola Andrés, vi el ejemplo de la caja del día y quiero algo así para mi negocio.",
+  servicios: "Hola Andrés, quiero información sobre sus servicios.", cotizar: "Hola Andrés, estaba calculando el precio en su página y quiero una cotización exacta.",
+  casos: "Hola Andrés, vi sus proyectos y quiero uno parecido para mi negocio.", metodo: "Hola Andrés, me gustaría empezar. ¿Cuándo podemos hablar?",
+  garantias: "Hola Andrés, quiero una cotización para mi negocio.", herramientas: "Hola Andrés, usé sus calculadoras y quiero algo así para mi negocio.",
+  preguntas: "Hola Andrés, tengo una pregunta sobre su servicio.", contacto: MENSAJE,
+};
+let seccionActual = "inicio";
+const msgActual = () => (seccionActual === "inicio" || seccionActual === "contacto") && sectorActual ? sectorActual.msg : (MSG_SECCION[seccionActual] || MENSAJE);
+document.querySelectorAll("[data-wa]").forEach((a) => { a.href = waUrl(sectorActual ? sectorActual.msg : MENSAJE); });
+const waFlot = $("#waFlot");
+if (waFlot) waFlot.addEventListener("click", () => { waFlot.href = waUrl(msgActual()); });
+if (waFlot) waFlot.href = waUrl(msgActual());
+
+/* Menú: se esconde al bajar, aparece al subir, y marca la sección actual */
+(function menu() {
+  const top = $("#sitio .site-top"), btn = $("#menuBtn"), movil = $("#menuMovil"), arriba = $("#btnArriba");
+  let ultimo = window.scrollY;
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY;
+    if (top) top.classList.toggle("oculto", y > ultimo && y > 300 && movil.hidden);
+    ultimo = y;
+    if (arriba) arriba.hidden = y < 900;
+  }, { passive: true });
+  if (arriba) arriba.addEventListener("click", () => window.scrollTo({ top: 0, behavior: document.documentElement.classList.contains("anim") ? "smooth" : "auto" }));
+  const cerrar = () => { movil.hidden = true; btn.setAttribute("aria-expanded", "false"); btn.setAttribute("aria-label", "Abrir menú"); };
+  if (btn) btn.addEventListener("click", () => {
+    const abrir = movil.hidden; movil.hidden = !abrir;
+    btn.setAttribute("aria-expanded", String(abrir)); btn.setAttribute("aria-label", abrir ? "Cerrar menú" : "Abrir menú");
+  });
+  if (movil) movil.addEventListener("click", (e) => { if (e.target.closest("a")) cerrar(); });
+  if (!("IntersectionObserver" in window)) return;
+  const enlaces = [...document.querySelectorAll("#sitio .nav .lnk")];
+  const io = new IntersectionObserver((ents) => ents.forEach((e) => {
+    if (!e.isIntersecting) return;
+    seccionActual = e.target.id;
+    enlaces.forEach((a) => a.classList.toggle("actual", a.getAttribute("href") === "#" + e.target.id));
+  }), { rootMargin: "-45% 0px -50% 0px" });
+  document.querySelectorAll("#sitio main section[id], #sitio main#inicio").forEach((el) => io.observe(el));
+})();
+
+/* Botón flotante: a los 20 segundos saluda una vez */
+setTimeout(() => { if (waFlot && !document.hidden) { waFlot.classList.add("llama"); setTimeout(() => waFlot.classList.remove("llama"), 7000); } }, 20000);
+
+/* Cifras que cuentan hacia arriba */
+function contar(el, hasta) {
+  if (!document.documentElement.classList.contains("anim")) { el.textContent = hasta; return; }
+  const t0 = performance.now(), dur = 1200;
+  const paso = (t) => { const k = Math.min(1, (t - t0) / dur); el.textContent = Math.round(hasta * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(paso); };
+  requestAnimationFrame(paso);
+}
+function cifras() {
+  const cards = [...document.querySelectorAll("#casosLista .case")];
+  const sectores = new Set(cards.map((c) => (c.querySelector(".for") || {}).textContent).filter(Boolean).map((t) => t.trim().toLowerCase()));
+  return { proyectos: cards.length, sectores: sectores.size };
+}
+(function arrancarCifras() {
+  const box = $("#sitio .cifras"); if (!box) return;
+  const correr = () => {
+    const c = cifras();
+    box.querySelectorAll("[data-contar]").forEach((el) => contar(el, c[el.dataset.contar] || 0));
+    box.querySelectorAll("[data-contar-fijo]").forEach((el) => contar(el, Number(el.dataset.contarFijo)));
+  };
+  if (!("IntersectionObserver" in window)) { correr(); return; }
+  const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { correr(); io.disconnect(); } }, { threshold: 0.4 });
+  io.observe(box);
+})();
+
+/* Cotizador para visitantes (usa las tarifas de referencia de TARIFAS_BASE) */
+const COT_MODS = ["inventario", "ventas", "fiados", "clientes", "roles", "reportes", "facturacion", "turnos", "catalogoWa", "offline", "migracion", "playstore"];
+(function cotizador() {
+  const tipos = $("#cotTipo"), mods = $("#cotMods"); if (!tipos) return;
+  const st = { tipo: "catalogo", mods: ["catalogoWa"] };
+  tipos.innerHTML = Object.entries(TARIFAS_BASE.tipos).map(([k, v]) => `<label><input type="radio" name="cotTipo" value="${k}"${k === st.tipo ? " checked" : ""}>${esc(v.n)}</label>`).join("");
+  mods.innerHTML = COT_MODS.map((k) => `<label><input type="checkbox" value="${k}"${st.mods.includes(k) ? " checked" : ""}>${esc(TARIFAS_BASE.modulos[k].n)}</label>`).join("");
+  const pintar = () => {
+    const t = TARIFAS_BASE, base = t.tipos[st.tipo].v + st.mods.reduce((a, m) => a + t.modulos[m].v, 0);
+    const min = r50(base * 0.85), max = r50(base * 1.25), sem = Math.max(1, Math.ceil(t.tipos[st.tipo].sem + st.mods.length * 0.6));
+    $("#cotRango").textContent = `Entre ${fmtCOP(min)} y ${fmtCOP(max)}`;
+    $("#cotTiempo").textContent = `Entrega aproximada: ${sem} ${sem === 1 ? "semana" : "semanas"}`;
+    const lista = st.mods.map((m) => "- " + t.modulos[m].n).join("\n");
+    $("#cotWa").href = waUrl(`Hola Andrés, calculé en su página un precio para: ${t.tipos[st.tipo].n}${lista ? "\nCon estas funciones:\n" + lista : ""}\n¿Me puede dar el precio exacto?`);
+  };
+  tipos.addEventListener("change", (e) => { st.tipo = e.target.value; pintar(); });
+  mods.addEventListener("change", () => { st.mods = [...mods.querySelectorAll("input:checked")].map((i) => i.value); pintar(); });
+  pintar();
+})();
+
+/* Test: ¿Qué tan digital es su negocio? */
+const PREGUNTAS = [
+  "¿Sabe hoy, sin buscar en el cuaderno, cuánto le deben sus clientes?",
+  "¿Puede ver sus ventas del día desde el celular?",
+  "¿Su negocio aparece en Google Maps con fotos y horario?",
+  "¿Sus clientes pueden ver sus productos y precios antes de escribirle?",
+  "¿Sabe cuál fue su producto más vendido el mes pasado?",
+  "¿Sus empleados registran lo que hacen sin que usted tenga que estar?",
+];
+(function test() {
+  const ol = $("#testPreg"), res = $("#testRes"); if (!ol) return;
+  const resp = Array(PREGUNTAS.length).fill(null);
+  ol.innerHTML = PREGUNTAS.map((q, i) => `<li><span>${esc(q)}</span><span class="si-no" role="group" aria-label="Respuesta"><button type="button" data-i="${i}" data-v="1" aria-pressed="false">Sí</button><button type="button" data-i="${i}" data-v="0" aria-pressed="false">No</button></span></li>`).join("");
+  ol.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-i]"); if (!b) return;
+    resp[b.dataset.i] = Number(b.dataset.v);
+    b.parentElement.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    if (resp.some((r) => r === null)) return;
+    const pts = Math.round((resp.reduce((a, r) => a + r, 0) / resp.length) * 100);
+    const [titulo, txt, servicio] = pts >= 84 ? ["Su negocio va muy bien", "Ya tiene buena parte en orden. El siguiente paso es conectar todo en un solo sistema y sacar reportes sin esfuerzo.", "un sistema a la medida que conecte todo"]
+      : pts >= 50 ? ["Va por buen camino", "Tiene algunas cosas digitales, pero todavía depende del cuaderno para lo importante: lo que le deben y lo que vende.", "un sistema de ventas y fiados"]
+      : ["Es el momento de dar el paso", "Hoy casi todo depende de su memoria y del cuaderno. Con una página y un sistema sencillo puede ahorrar horas cada semana.", "una página web y un sistema sencillo"];
+    res.hidden = false;
+    res.innerHTML = `<span class="kick">Su resultado</span><b>${pts}/100</b><h4>${esc(titulo)}</h4><p>${esc(txt)}</p><a class="btn btn-dark" target="_blank" rel="noopener" href="${esc(waUrl(`Hola Andrés, hice el test de su página y saqué ${pts}/100. Me interesa ${servicio}.`))}">Hablemos por WhatsApp</a>`;
+  });
+})();
+
+/* Herramientas gratis */
+const numero = (v) => Number(String(v || "").replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+const pesos = (n) => "$ " + Math.round(n).toLocaleString("es-CO");
+const TOOLS = {
+  margen: { campos: [["costo", "¿Cuánto le cuesta el producto?", "8.000"], ["precio", "¿A cuánto lo vende?", "12.000"]],
+    calc: (v) => { const g = v.precio - v.costo, m = v.precio ? (g / v.precio) * 100 : 0; return [v.precio ? pesos(g) : "—", "de ganancia por unidad", v.precio ? `Su margen es del ${m.toFixed(1).replace(".", ",")} % sobre el precio de venta.` : ""]; } },
+  precio: { campos: [["costo", "¿Cuánto le cuesta el producto?", "8.000"], ["margen", "¿Qué margen quiere ganar? (%)", "30"]],
+    calc: (v) => { const p = v.margen < 100 ? v.costo / (1 - v.margen / 100) : 0; return [p ? pesos(p) : "—", "precio de venta sugerido", p ? `Así gana ${pesos(p - v.costo)} por unidad.` : "El margen debe ser menor a 100 %."]; } },
+  iva: { campos: [["valor", "Valor", "119.000"], ["tipo", "Ese valor…", "", [["con", "ya incluye el IVA"], ["sin", "no incluye el IVA"]]]],
+    calc: (v, raw) => { const con = raw.tipo !== "sin", base = con ? v.valor / 1.19 : v.valor, iva = base * 0.19; return [pesos(iva), "de IVA (19 %)", `Base: ${pesos(base)} · Total con IVA: ${pesos(base + iva)}. Consulte con su contador si su producto tiene otra tarifa.`]; } },
+  equilibrio: { campos: [["fijos", "Gastos fijos del mes (arriendo, servicios, sueldos)", "2.500.000"], ["precio", "Precio promedio de venta", "15.000"], ["costo", "Costo promedio de cada venta", "9.000"]],
+    calc: (v) => { const u = v.precio - v.costo; if (u <= 0) return ["—", "", "El precio debe ser mayor que el costo."]; const n = Math.ceil(v.fijos / u); return [n.toLocaleString("es-CO"), "ventas al mes para no perder", `Son unas ${Math.ceil(n / 26).toLocaleString("es-CO")} ventas por día (26 días al mes). Desde la venta ${(n + 1).toLocaleString("es-CO")} empieza a ganar.`]; } },
+  domicilio: { campos: [["km", "Distancia (km)", "4"], ["porKm", "Costo por kilómetro (gasolina y desgaste)", "700"], ["base", "Valor base por salida", "2.000"]],
+    calc: (v) => { const t = v.base + v.km * v.porKm, r = Math.ceil(t / 500) * 500; return [pesos(r), "precio sugerido del domicilio", `Costo calculado: ${pesos(t)}, redondeado a los $ 500.`]; } },
+};
+(function herramientas() {
+  const body = $("#toolBody"), tabs = document.querySelectorAll("#sitio .tool-tabs button"); if (!body) return;
+  let actual = "margen";
+  const pintar = () => {
+    const t = TOOLS[actual];
+    body.innerHTML = `<div>${t.campos.map(([k, l, ph, ops]) => `<label class="field"><span>${esc(l)}</span>${ops ? `<select data-t="${k}">${ops.map(([v, n]) => `<option value="${v}">${esc(n)}</option>`).join("")}</select>` : `<input data-t="${k}" inputmode="decimal" placeholder="${esc(ph)}" value="${esc(ph)}">`}</label>`).join("")}</div><div class="tool-out" aria-live="polite"></div>`;
+    calc();
+  };
+  const calc = () => {
+    const raw = {}, v = {};
+    body.querySelectorAll("[data-t]").forEach((i) => { raw[i.dataset.t] = i.value; v[i.dataset.t] = numero(i.value); });
+    const [n, l, d] = TOOLS[actual].calc(v, raw);
+    body.querySelector(".tool-out").innerHTML = `<span class="kick">Resultado</span><b>${esc(n)}</b><span class="kick" style="margin:6px 0 0">${esc(l)}</span>${d ? `<p>${esc(d)}</p>` : ""}`;
+  };
+  tabs.forEach((b) => b.addEventListener("click", () => { actual = b.dataset.tool; tabs.forEach((x) => x.setAttribute("aria-selected", String(x === b))); pintar(); }));
+  body.addEventListener("input", calc); body.addEventListener("change", calc);
+  pintar();
+})();
+
+/* Contacto: horario, llamar, guardar contacto, QR y compartir */
+function horaColombia() { const d = new Date(Date.now() + (new Date().getTimezoneOffset() - 300) * 60000); return { dia: d.getDay(), hora: d.getHours() + d.getMinutes() / 60 }; }
+(function contacto() {
+  const h = horaColombia(), abierto = HORARIO.dias.includes(h.dia) && h.hora >= HORARIO.desde && h.hora < HORARIO.hasta;
+  const p = $("#enLinea"), t = $("#horarioTxt");
+  if (p) p.classList.toggle("si", abierto);
+  if (t) t.textContent = (abierto ? "Disponible ahora · " : "Le respondo en horario de atención · ") + HORARIO.texto;
+  const tel = "+" + WHATSAPP;
+  const ll = $("#btnLlamar"); if (ll) ll.href = "tel:" + tel;
+  const bc = $("#btnContacto");
+  if (bc) bc.addEventListener("click", () => {
+    const vcf = ["BEGIN:VCARD", "VERSION:3.0", `N:Bolívar Arias;Andrés Felipe;;;`, `FN:${PERFIL_BASE.nombre}`, "ORG:Andrés Bolívar · Páginas web y aplicaciones", "TITLE:Desarrollador", `TEL;TYPE=CELL:${tel}`, "ADR;TYPE=WORK:;;;Neiva;Huila;;Colombia", `URL:${location.origin.startsWith("http") ? location.origin + location.pathname : ""}`, "END:VCARD"].join("\r\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([vcf], { type: "text/vcard" })); a.download = "Andres-Bolivar.vcf"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+  const bq = $("#btnQR"), box = $("#qrBox");
+  if (bq) bq.addEventListener("click", async () => {
+    if (!box.hidden) { box.hidden = true; return; }
+    try {
+      if (!window.qrcode) await new Promise((ok, mal) => { const sc = document.createElement("script"); sc.src = "qrcode.js"; sc.onload = ok; sc.onerror = mal; document.head.appendChild(sc); });
+      const q = window.qrcode(0, "M"); q.addData(waUrl(MENSAJE)); q.make();
+      const n = q.getModuleCount(), k = 10, m = 4, cv = document.createElement("canvas"); cv.width = cv.height = (n + m * 2) * k;
+      const cx = cv.getContext("2d"); cx.fillStyle = "#FFF"; cx.fillRect(0, 0, cv.width, cv.height); cx.fillStyle = "#1A1816";
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) cx.fillRect((c + m) * k, (r + m) * k, k, k);
+      const url = cv.toDataURL("image/png");
+      $("#qrImg").innerHTML = `<img src="${url}" alt="Código QR para escribirle a Andrés Bolívar por WhatsApp">`;
+      $("#qrBajar").href = url; box.hidden = false;
+    } catch (e) { toast("No se pudo crear el código QR."); }
+  });
+  const bs = $("#btnCompartir");
+  if (bs) bs.addEventListener("click", async () => {
+    const url = location.href.split("#")[0];
+    if (navigator.share) { try { await navigator.share({ title: "Andrés Bolívar · Páginas web y aplicaciones", text: "Mire esta página para digitalizar su negocio:", url }); } catch (e) {} return; }
+    try { await navigator.clipboard.writeText(url); toast("Enlace copiado"); } catch (e) { toast(url); }
+  });
+})();
+
+/* Accesibilidad: letra grande, contraste y sin animaciones (se recuerda en este navegador) */
+(function accesibilidad() {
+  const panel = $("#panelA11y"), btn = $("#btnA11y"); if (!panel) return;
+  const html = document.documentElement;
+  ["grande", "contraste", "quieto"].forEach((k) => {
+    const on = ls.get("a11y-" + k) === "1", cb = panel.querySelector(`[data-a11y="${k}"]`);
+    html.classList.toggle("a11y-" + k, on); cb.checked = on;
+    if (k === "quieto" && on) html.classList.remove("anim");
+    cb.addEventListener("change", () => {
+      html.classList.toggle("a11y-" + k, cb.checked); ls.set("a11y-" + k, cb.checked ? "1" : "0");
+      if (k === "quieto") html.classList.toggle("anim", !cb.checked && !matchMedia("(prefers-reduced-motion: reduce)").matches);
+    });
+  });
+  const abrir = (v) => { panel.hidden = !v; btn.setAttribute("aria-expanded", String(v)); if (v) panel.querySelector("input").focus(); };
+  btn.addEventListener("click", () => abrir(panel.hidden));
+  $("#cerrarA11y").addEventListener("click", () => { abrir(false); btn.focus(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) { abrir(false); btn.focus(); } });
+})();
+
+/* Mi oficina: claro u oscuro, ocultar montos y atajos de teclado */
+(function oficinaExtras() {
+  const html = document.documentElement, tema = ls.get("tema");
+  if (tema) html.dataset.theme = tema;
+  $("#btnTema").addEventListener("click", () => {
+    const oscuro = html.dataset.theme ? html.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    html.dataset.theme = oscuro ? "light" : "dark"; ls.set("tema", html.dataset.theme);
+  });
+  const bp = $("#btnPrivado");
+  const privado = (v) => { document.body.classList.toggle("privado", v); bp.setAttribute("aria-pressed", String(v)); ls.set("privado", v ? "1" : "0"); };
+  privado(ls.get("privado") === "1");
+  bp.addEventListener("click", () => privado(!document.body.classList.contains("privado")));
+  document.addEventListener("keydown", (e) => {
+    if (S.area !== "oficina" || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.closest("input, textarea, select, [contenteditable]")) return;
+    const ir = { n: "nuevo-cliente", "1": "panel", "2": "clientes", "3": "propuestas", "4": "proyectos", "5": "asistente" }[e.key.toLowerCase()];
+    if (ir) { e.preventDefault(); go(ir); return; }
+    if (e.key.toLowerCase() === "p") { e.preventDefault(); ACT.nuevaPropuesta({ dataset: {} }); return; }
+    if (e.key === "/") { e.preventDefault(); go("clientes"); setTimeout(() => { const q = $("#q"); if (q) q.focus(); }, 60); return; }
+    if (e.key === "?") toast("Atajos: N nuevo cliente · P nueva propuesta · / buscar · 1 a 5 cambiar de pestaña");
+  });
+})();
+
+/* Preguntas frecuentes en el formato que Google entiende */
+(function faqGoogle() {
+  const items = [...document.querySelectorAll("#preguntas details")].map((d) => ({ "@type": "Question", name: d.querySelector("summary").textContent.trim(), acceptedAnswer: { "@type": "Answer", text: d.querySelector("p").textContent.trim() } }));
+  if (!items.length) return;
+  const sc = document.createElement("script"); sc.type = "application/ld+json";
+  sc.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: items });
+  document.head.appendChild(sc);
+})();
+
+/* App instalable y funciona sin conexión (solo en la página publicada, con https) */
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 
 /* ================= Arranque ================= */
 if (location.hash.startsWith("#/") || ls.get("sesion")) cargarFirebase();

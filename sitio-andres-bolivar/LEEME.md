@@ -34,7 +34,14 @@ Con estas reglas:
 
 Recomendado: en **Authentication → Configuración → Acciones del usuario**, desactive la creación de cuentas nuevas, para que nadie más pueda registrarse.
 
-## 3. Publicar la página
+## 3. Antes de publicar: su dirección y su horario
+
+- **Su dirección web.** En `index.html`, `robots.txt`, `sitemap.xml` y `llms.txt` aparece `SU-DOMINIO`. Cámbielo por la dirección real de su página (por ejemplo `andresbolivar.com.co`), sin `https://` ni `/` al final. Así Google y WhatsApp muestran bien su página y la imagen al compartir (`og.jpg`).
+- **Su horario.** En `index.html`, busque `const HORARIO` y ponga sus días y horas reales. La página muestra "Disponible ahora" o "Le respondo en horario de atención" según la hora de Colombia.
+- **Precios de referencia.** La calculadora pública "¿Cuánto cuesta?" usa los valores de `TARIFAS_BASE` en `index.html`. Si cambia sus precios en Mi oficina, cambie también esos valores para que la página pública muestre rangos parecidos.
+- **Tratamiento de datos.** `privacidad.html` es una base general según la Ley 1581: revísela con un abogado antes de publicarla.
+
+## 3b. Publicar la página
 
 Puede subir `index.html` a Firebase Hosting, Netlify o cualquier hosting. Con Firebase:
 

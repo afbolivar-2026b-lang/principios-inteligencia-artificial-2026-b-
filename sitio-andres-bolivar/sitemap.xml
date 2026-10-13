@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://SU-DOMINIO/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://SU-DOMINIO/?sector=tiendas</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://SU-DOMINIO/?sector=restaurantes</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://SU-DOMINIO/?sector=parqueaderos</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://SU-DOMINIO/?sector=fincas</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://SU-DOMINIO/?sector=vigilancia</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://SU-DOMINIO/?sector=veterinarias</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://SU-DOMINIO/privacidad.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
