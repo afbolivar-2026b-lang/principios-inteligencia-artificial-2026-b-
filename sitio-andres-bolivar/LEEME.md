@@ -98,6 +98,20 @@ Vuelva a publicar la página (`firebase deploy --only hosting`) y el chat queda 
 
 Mientras `DIAGNOSTICO_URL` esté vacía, el diagnóstico de la página funciona igual, con reglas sencillas y sin IA.
 
+**Protección contra robots con App Check (opcional, recomendado cuando la página ya esté publicada).**
+
+1. En Firebase → **App Check** → su app web → registre **reCAPTCHA v3** (Google le da una «clave del sitio» y una «clave secreta»; la secreta se pega en Firebase, no en la página).
+2. Copie la **clave del sitio** en `index.html`:
+
+   ```js
+   const APPCHECK_SITE_KEY = "6Lc…";
+   ```
+
+3. Publique la página y revise en App Check → **Métricas** que las visitas salen como «verificadas».
+4. Cuando lo vea bien, active la protección del diagnóstico: `firebase deploy --only functions` y responda `si` cuando pida `EXIGIR_APPCHECK`. Desde ese momento solo su página puede usar el diagnóstico con IA.
+
+Ojo: **no** active «Aplicar» (*Enforce*) para Firestore en App Check si usa la app de Android, porque la app no lleva el sello de reCAPTCHA y dejaría de cargar sus datos. La página web sí lo lleva siempre.
+
 ## 5. Videos en la página (opcional)
 
 Los videos de presentación pesan mucho para la base de datos, por eso se guardan en **Firebase Storage**.
@@ -182,6 +196,13 @@ Sin Storage, el video se puede crear y **descargar** igual, para mandarlo por Wh
   - **Mejorar con IA** redacta el contrato más claro y escribe la explicación y el mensaje, sin cambiar valores, fechas ni medios de pago. Revíselo siempre antes de enviarlo.
   - Si envía la propuesta por enlace, el contrato va con ella: el cliente lo lee, lo descarga y lo firma junto con la propuesta.
   - Es una base general: revísela con un abogado.
+
+- **Sistemas y mensualidades** (Proyectos → **Sistemas y mensualidades**): los sistemas que ya entregó y mantiene.
+  - Ponga la dirección, el cliente, el plan de soporte (el valor se llena solo), el **día de cobro** de cada mes y desde qué mes cobra.
+  - Ve si cada página está **en línea** o **no responde**, cuánto recibe fijo cada mes y quién está atrasado.
+  - **Registrar pago** anota el mes más viejo que falta. **Cobrar por WhatsApp** manda el recordatorio con los meses, el total y sus formas de pago.
+  - Anote cuándo se vencen el **dominio** y el **hosting**: 30 días antes le aparece el aviso, y en el Panel salen las mensualidades atrasadas en «El asistente recomienda».
+  - Lo cobrado en mensualidades suma en «Cobrado este mes». No guarde contraseñas aquí.
 
 ## 7. App para Android (APK)
 

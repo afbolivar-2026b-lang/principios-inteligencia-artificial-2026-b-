@@ -630,6 +630,14 @@
   .sv-add select { width: 100%; }
   .plantillas { margin-bottom: 16px; }
   .plantillas .kick { margin-bottom: 4px; }
+  .sis-lista { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 12px; }
+  .sis { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; background: var(--card, transparent); min-width: 0; }
+  .sis-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .sis-top small { display: block; color: var(--muted); }
+  .sis-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-start; }
+  .sis-url { display: inline-block; margin: 6px 0 2px; font-size: .86rem; word-break: break-all; color: var(--text); }
+  .sis-alerta { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; background: var(--danger-soft); color: var(--danger); font-size: .86rem; }
+  .sis .actions { margin-top: 10px; }
   .rv-lista { list-style: none; margin: 0 0 14px; padding: 0; border-top: 1px solid var(--line); }
   .rv-lista li { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 0; border-bottom: 1px solid var(--line); }
   .rv-lista small { display: block; color: var(--muted); }
@@ -1697,6 +1705,10 @@ const GOOGLE_RESENA = "";
 const META_NEGOCIOS = 100;
 const GARANTIA_DIAS = 30;
 
+/* 7. App Check (opcional, contra robots). Pegue la "clave del sitio" de reCAPTCHA v3
+   que le da Firebase > App Check. Mientras esté vacía, no se usa. Vea LEEME.md. */
+const APPCHECK_SITE_KEY = "";
+
 const FB_URL = "https://www.gstatic.com/firebasejs/10.12.2/";
 const PDF_URL = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
 
@@ -1773,7 +1785,7 @@ function actualizarEntrar() {
 const S = {
   area: "sitio", fbPromise: null, fbError: null, authReady: false,
   A: null, F: null, auth: null, fdb: null, user: null, unsubs: [],
-  clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false }, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
+  clientes: [], propuestas: [], proyectos: [], perfil: null, tarifas: null, loaded: { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false, m: false }, sistemas: [], sisEnLinea: {}, pagos: null, fxCfg: null, fx: null, pagosAbierto: false,
   solicitudes: [], enlaces: [], etapaFiltro: "", testimonios: null, servicios: null, revendedores: null, grabacion: null, cuaderno: null, hayApk: false, instalable: false, contratoAbierto: false,
   app: null, appPromise: null, proyDraft: null, proyDraftId: null, chat: [], pensando: false, calc: null,
   view: { name: "panel", id: null }, quiet: false, q: "",
@@ -1796,9 +1808,21 @@ function cargarApp() {
     if (!configurado) { const e = new Error("sin-config"); e.code = "sin-config"; throw e; }
     const [appM, fsM] = await Promise.all([import(FB_URL + "firebase-app.js"), import(FB_URL + "firebase-firestore.js")]);
     S.app = appM.initializeApp(firebaseConfig);
+    /* App Check va antes de Firestore para que cada lectura y escritura lleve su sello.
+       En la app de Android no se usa: reCAPTCHA solo funciona en su dominio. */
+    if (APPCHECK_SITE_KEY && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
+      try { const ac = await import(FB_URL + "firebase-app-check.js"); S.AC = ac; S.appCheck = ac.initializeAppCheck(S.app, { provider: new ac.ReCaptchaV3Provider(APPCHECK_SITE_KEY), isTokenAutoRefreshEnabled: true }); }
+      catch (e) { console.warn("App Check:", e); }
+    }
     S.F = fsM; S.fdb = fsM.getFirestore(S.app);
   })();
   return S.appPromise;
+}
+/* Sello de App Check para las funciones públicas (vacío si no está configurado) */
+async function selloAppCheck() {
+  if (!APPCHECK_SITE_KEY || !configurado) return {};
+  try { await cargarApp(); if (!S.appCheck) return {}; const r = await S.AC.getToken(S.appCheck); return r && r.token ? { "X-Firebase-AppCheck": r.token } : {}; }
+  catch (e) { return {}; }
 }
 function cargarFirebase() {
   if (S.fbPromise) return S.fbPromise;
@@ -1908,6 +1932,10 @@ function suscribir() {
     S.solicitudes = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
     S.loaded.s = true; marcarSolicitudes(); alCambiarDatos();
   }, (e) => { console.warn("Solicitudes:", e && e.code); S.loaded.s = true; }));
+  S.unsubs.push(F.onSnapshot(F.collection(S.fdb, ...ruta("sistemas")), (snap) => {
+    S.sistemas = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+    S.loaded.m = true; alCambiarDatos();
+  }, errDatos));
   S.unsubs.push(F.onSnapshot(refDoc("config", "servicios"), (d) => { S.servicios = d.exists() && Array.isArray(d.data().items) ? d.data().items : []; }, errDatos));
   S.unsubs.push(F.onSnapshot(refDoc("config", "revendedores"), (d) => { S.revendedores = d.exists() ? d.data() : { comision: 0, items: [] }; }, errDatos));
   S.unsubs.push(F.onSnapshot(refDoc("config", "tarifas"), (d) => {
@@ -1924,7 +1952,7 @@ function desuscribir() {
   S.unsubs = []; S.clientes = []; S.propuestas = []; S.perfil = null;
   S.proyectos = []; S.tarifas = null; S.proyDraft = null; S.proyDraftId = null; S.chat = [];
   S.pagos = null; S.fxCfg = null; S.solicitudes = []; S.enlaces = []; S.etapaFiltro = "";
-  S.loaded = { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false }; S.draft = null; S.draftId = null;
+  S.loaded = { c: false, p: false, f: false, y: false, t: false, g: false, x: false, s: false, e: false, m: false }; S.sistemas = []; S.sisEnLinea = {}; S.draft = null; S.draftId = null;
 }
 
 /* ================= Ingreso ================= */
@@ -2231,7 +2259,7 @@ function vPanel() {
   const nuevos = C.filter((c) => c.creado && Date.now() - c.creado < MES).length;
   const enviadas = cuenta("Enviada"), borr = cuenta("Borrador"), noap = cuenta("No aprobada");
   const decididas = aprob.length + noap;
-  const porCobrar = aprob.reduce((a, p) => a + saldoDe(p), 0), cobradoMes = P.reduce((a, p) => a + pagosDe(p).filter((x) => String(x.fecha || "").startsWith(mesActual())).reduce((s, x) => s + (Number(x.valor) || 0), 0), 0);
+  const porCobrar = aprob.reduce((a, p) => a + saldoDe(p), 0), cobradoMes = P.reduce((a, p) => a + pagosDe(p).filter((x) => String(x.fecha || "").startsWith(mesActual())).reduce((s, x) => s + (Number(x.valor) || 0), 0), 0) + cobradoMensMes();
   const deudores = aprob.filter((p) => saldoDe(p) > 0).length;
   const pf = perfil();
   const stat = (t, v, sub, cls = "") => `<div class="stat marco"><span>${t}</span><b class="${cls}">${v}</b><small>${sub}</small></div>`;
@@ -2255,6 +2283,7 @@ function vPanel() {
       ${stat("Aprobación", decididas ? Math.round((aprob.length / decididas) * 100) + "%" : "—", decididas ? aprob.length + " de " + decididas + " decididas" : "Aún sin respuestas")}
       ${stat("Por cobrar", fmtCOP(porCobrar), deudores ? deudores + (deudores === 1 ? " proyecto con saldo" : " proyectos con saldo") : "Todo al día", "peso")}
       ${stat("Cobrado este mes", fmtCOP(cobradoMes), pctImpuestos() ? `Aparte ${fmtCOP(paraImpuestos(cobradoMes))} para impuestos` : "Abonos registrados", "peso")}
+      ${S.sistemas.length ? stat("Ingreso fijo mensual", fmtCOP(ingresoFijo()), S.sistemas.filter((x) => mesesDebe(x).length).length ? S.sistemas.filter((x) => mesesDebe(x).length).length + " con mensualidad atrasada" : "Mensualidades de soporte al día", "peso") : ""}
     </div>
     ${vTablero()}
     <div class="panel2">
@@ -2962,6 +2991,107 @@ function propuestaDePlantilla(k, clienteId) {
   });
 }
 
+/* ================= Sistemas de mis clientes y mensualidades de soporte ================= */
+const mesSig = (m) => { const [y, n] = m.split("-").map(Number); return n === 12 ? `${y + 1}-01` : `${y}-${String(n + 1).padStart(2, "0")}`; };
+const nombreMes = (m) => { const [y, n] = String(m).split("-").map(Number); return new Date(y, n - 1, 1).toLocaleDateString("es-CO", { month: "long", year: "numeric" }); };
+const corteDe = (s) => Math.min(28, Math.max(1, Number(s.diaCorte) || 5));
+/* Meses que ya pasaron su fecha de corte y no tienen pago */
+function mesesDebe(s) {
+  if (s.activo === false || !(Number(s.valor) > 0)) return [];
+  const pag = new Set((s.pagos || []).map((x) => x.mes)), hoy = hoyISO(), act = hoy.slice(0, 7), dia = Number(hoy.slice(8, 10));
+  const out = []; let m = s.desde || act;
+  for (let i = 0; m <= act && i < 120; i++, m = mesSig(m)) if (!pag.has(m) && (m < act || dia > corteDe(s))) out.push(m);
+  return out;
+}
+function estadoMens(s) {
+  if (s.activo === false) return { cls: "", t: "Pausado" };
+  if (!(Number(s.valor) > 0)) return { cls: "", t: "Sin mensualidad" };
+  const debe = mesesDebe(s);
+  if (debe.length) return { cls: "noaprobada", t: debe.length === 1 ? "Debe " + nombreMes(debe[0]).split(" ")[0] : `Debe ${debe.length} meses` };
+  const act = mesActual(), dia = Number(hoyISO().slice(8, 10));
+  if ((s.pagos || []).some((x) => x.mes === act)) return { cls: "aprobada", t: "Al día" };
+  const falta = corteDe(s) - dia;
+  return falta <= 5 ? { cls: "enviada", t: falta === 0 ? "Se cobra hoy" : `Se cobra en ${falta} ${falta === 1 ? "día" : "días"}` } : { cls: "aprobada", t: `Corte el ${corteDe(s)}` };
+}
+const mesAPagar = (s) => mesesDebe(s)[0] || (() => { const pag = new Set((s.pagos || []).map((x) => x.mes)); let m = mesActual(); while (pag.has(m)) m = mesSig(m); return m; })();
+/* Vencimientos de dominio y hosting en los próximos 30 días (o ya vencidos) */
+function vencimientos(s) {
+  const out = [];
+  [["dominioVence", "El dominio"], ["hostingVence", "El hosting"]].forEach(([k, t]) => {
+    if (!s[k]) return;
+    const d = Math.round((new Date(s[k] + "T00:00").getTime() - new Date(hoyISO() + "T00:00").getTime()) / 86400000);
+    if (d <= 30) out.push({ t, d, fecha: s[k] });
+  });
+  return out;
+}
+const ingresoFijo = () => S.sistemas.filter((s) => s.activo !== false).reduce((a, s) => a + (Number(s.valor) || 0), 0);
+const cobradoMensMes = () => S.sistemas.reduce((a, s) => a + (s.pagos || []).filter((x) => String(x.fecha || "").startsWith(mesActual())).reduce((b, x) => b + (Number(x.valor) || 0), 0), 0);
+function textoCobroMens(s) {
+  const c = clienteDe(s.clienteId), debe = mesesDebe(s), meses = debe.length ? debe : [mesAPagar(s)], g = S.pagos || {};
+  const total = meses.length * (Number(s.valor) || 0);
+  const pago = [g.nequi && `Nequi ${g.nequi}`, g.breb && `Bre-B ${g.breb}`, g.cuenta && `${g.banco || "cuenta"} ${g.tipoCuenta || ""} ${g.cuenta}`.replace(/\s+/g, " ")].filter(Boolean).join(", ");
+  return `Hola${c && c.nombre ? " " + c.nombre.split(" ")[0] : ""}, le escribe ${perfil().nombre.split(" ")[0]}. Le recuerdo la mensualidad de soporte de ${s.nombre || "su sistema"}${s.plan ? " (plan " + s.plan + ")" : ""}: ${meses.map((m) => nombreMes(m)).join(", ")}, por ${fmtCOP(total)}.${pago ? " Puede pagar por " + pago + "." : ""} Cuando pague, envíeme el comprobante por aquí. ¡Gracias!`;
+}
+function vSistemas() {
+  if (!S.loaded.m || !S.loaded.c) return cargando();
+  const L = [...S.sistemas].sort((a, b) => mesesDebe(b).length - mesesDebe(a).length || String(a.nombre).localeCompare(String(b.nombre)));
+  const act = L.filter((s) => s.activo !== false), atras = act.filter((s) => mesesDebe(s).length), venc = L.filter((s) => vencimientos(s).length);
+  const debeTotal = atras.reduce((a, s) => a + mesesDebe(s).length * (Number(s.valor) || 0), 0);
+  const stat = (t, v, sub, cls = "") => `<div class="stat marco"><span>${t}</span><b class="${cls}">${v}</b><small>${sub}</small></div>`;
+  const tarjeta = (s) => {
+    const c = clienteDe(s.clienteId), e = estadoMens(s), en = S.sisEnLinea[s.id], wa = c && waLink(c.telefono), vs = vencimientos(s);
+    return `<li class="sis"><div class="sis-top"><div><b>${esc(s.nombre || "Sistema")}</b><small>${esc(nombreCliente(c))}${s.plan ? " · Plan " + esc(s.plan) : ""}${Number(s.valor) > 0 ? " · " + esc(fmtCOP(Number(s.valor))) + " al mes" : ""}</small></div>
+      <div class="sis-chips"><span class="chip ${e.cls}">${esc(e.t)}</span>${s.url ? `<span class="chip ${en === true ? "aprobada" : en === false ? "noaprobada" : ""}" data-enlinea="${s.id}">${en === true ? "En línea" : en === false ? "No responde" : "Revisando…"}</span>` : ""}</div></div>
+      ${s.url ? `<a class="sis-url" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url.replace(/^https?:\/\//, ""))}</a>` : ""}
+      ${vs.map((v) => `<p class="sis-alerta">${esc(v.t)} ${v.d < 0 ? "se venció el" : v.d === 0 ? "se vence hoy," : "se vence el"} ${esc(fmtFecha(v.fecha))}${v.d > 0 ? ` (en ${v.d} ${v.d === 1 ? "día" : "días"})` : ""}. Renuévelo o avísele al cliente.</p>`).join("")}
+      ${s.respaldo ? `<small class="sub">Última copia de seguridad: ${esc(fmtFecha(s.respaldo))}</small>` : ""}
+      <div class="actions">${Number(s.valor) > 0 && s.activo !== false ? `<button class="btn btn-sm btn-primary" data-act="pagoMensualidad" data-id="${s.id}">Registrar pago de ${esc(nombreMes(mesAPagar(s)).split(" ")[0])}</button>` : ""}${wa && Number(s.valor) > 0 ? `<a class="btn btn-sm" target="_blank" rel="noopener" href="${wa}?text=${encodeURIComponent(textoCobroMens(s))}">Cobrar por WhatsApp</a>` : ""}<button class="btn btn-sm" data-act="respaldoHoy" data-id="${s.id}">Hice copia hoy</button><button class="btn btn-sm" data-act="ir" data-to="sistema" data-id="${s.id}">Editar</button></div></li>`;
+  };
+  return `<button class="back" data-act="ir" data-to="proyectos">${chevron}Proyectos</button>
+    <div class="o-head"><div><h1 class="o-h1">Sistemas de mis clientes</h1><p class="sub">Lo que ya entregó y mantiene: si está en línea, la mensualidad de soporte y cuándo se vence el dominio.</p></div>
+      <div class="actions"><button class="btn" data-act="revisarEnLinea">Revisar si están en línea</button><button class="btn btn-primary" data-act="ir" data-to="sistema">Agregar sistema</button></div></div>
+    <div class="stats">
+      ${stat("Sistemas activos", act.length, L.length - act.length ? `${L.length - act.length} pausados` : "Con soporte o en línea")}
+      ${stat("Ingreso fijo mensual", fmtCOP(ingresoFijo()), "Suma de las mensualidades", "peso")}
+      ${stat("Mensualidades atrasadas", fmtCOP(debeTotal), atras.length ? `${atras.length} ${atras.length === 1 ? "cliente" : "clientes"} por cobrar` : "Todos al día", "peso")}
+      ${stat("Por renovar", venc.length, venc.length ? "Dominio u hosting en 30 días" : "Nada por vencer")}
+    </div>
+    ${L.length ? `<ul class="sis-lista">${L.map(tarjeta).join("")}</ul>` : `<div class="o-card o-empty"><p>Aquí lleva los sistemas que ya entregó: la dirección, el plan de soporte, el día de cobro y cuándo se vence el dominio. La página le avisa cuando alguien se atrasa.</p><button class="btn btn-primary" data-act="ir" data-to="sistema">Agregar el primero</button></div>`}`;
+}
+function vSistemaForm(id) {
+  if (!S.loaded.m || !S.loaded.c) return cargando();
+  const s = id ? S.sistemas.find((x) => x.id === id) : { diaCorte: 5, desde: mesActual(), activo: true };
+  if (!s) return `<button class="back" data-act="ir" data-to="sistemas">${chevron}Sistemas</button><p class="o-empty">Este sistema ya no existe.</p>`;
+  const f = (k, label, type = "text", ph = "", extra = "") => `<label class="field"><span>${label}</span><input id="sm_${k}" type="${type}" value="${esc(k === "valor" && s.valor ? fmtCOP(Number(s.valor)) : s[k])}" placeholder="${esc(ph)}"${extra}></label>`;
+  const pag = [...(s.pagos || [])].sort((a, b) => (b.mes > a.mes ? 1 : -1));
+  return `<button class="back" data-act="ir" data-to="sistemas">${chevron}Sistemas</button>
+    <h1 class="o-h1" style="margin-bottom:16px">${id ? "Editar sistema" : "Agregar sistema"}</h1>
+    <div class="o-card">
+      <div class="grid2">${f("nombre", "Nombre del sistema", "text", "Ej.: Sistema de ventas Perfumería Esencia")}
+        <label class="field"><span>Cliente</span><select id="sm_clienteId"><option value="">Sin cliente</option>${S.clientes.map((c) => `<option value="${c.id}"${c.id === s.clienteId ? " selected" : ""}>${esc(nombreCliente(c))}</option>`).join("")}</select></label></div>
+      ${f("url", "Dirección en internet", "url", "https://…")}
+      <div class="grid2"><label class="field"><span>Plan de soporte</span><select id="sm_plan"><option value="">Sin plan</option>${PLANES_SOPORTE.map((p) => `<option${p.n === s.plan ? " selected" : ""} data-v="${p.v}">${esc(p.n)}</option>`).join("")}</select></label>${f("valor", "Valor mensual", "text", "$ 0", ' inputmode="numeric"')}</div>
+      <div class="grid2">${f("diaCorte", "Día de cobro de cada mes (1 a 28)", "number", "5", ' min="1" max="28"')}${f("desde", "Cobrar desde el mes", "month")}</div>
+      <div class="grid2">${f("dominioVence", "El dominio se vence el", "date")}${f("hostingVence", "El hosting se vence el", "date")}</div>
+      <div class="grid2">${f("respaldo", "Última copia de seguridad", "date")}<label class="check" style="margin-top:28px"><input type="checkbox" id="sm_activo"${s.activo !== false ? " checked" : ""}> Activo (cobrar la mensualidad)</label></div>
+      <label class="field"><span>Notas</span><textarea id="sm_notas" rows="3" placeholder="Accesos, dónde está alojado, qué incluye el plan…">${esc(s.notas)}</textarea></label>
+      <p class="sub" style="margin:0 0 12px">No guarde contraseñas aquí. Anote solo dónde están.</p>
+      <div class="actions"><button class="btn btn-primary" data-act="guardarSistema" data-id="${id || ""}">Guardar sistema</button>${id ? `<button class="btn btn-danger" data-act="eliminarSistema" data-id="${id}">Eliminar</button>` : ""}</div>
+    </div>
+    ${pag.length ? `<h2 class="o-h2">Pagos de mensualidad</h2><table class="tabla"><thead><tr><th>Mes</th><th class="r">Valor</th><th class="r">Pagado el</th></tr></thead><tbody>${pag.map((x) => `<tr><td>${esc(nombreMes(x.mes))}</td><td class="r">${esc(fmtCOP(Number(x.valor) || 0))}</td><td class="r">${esc(fmtFecha(x.fecha))}</td></tr>`).join("")}</tbody></table>` : ""}`;
+}
+/* Revisa si cada página responde. Con mode no-cors no se ve el contenido, solo si el servidor contestó. */
+async function revisarEnLinea(forzar) {
+  const L = S.sistemas.filter((s) => s.url && (forzar || S.sisEnLinea[s.id] === undefined));
+  await Promise.all(L.map(async (s) => {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
+    try { await fetch(s.url, { mode: "no-cors", cache: "no-store", signal: ctl.signal }); S.sisEnLinea[s.id] = true; } catch (e) { S.sisEnLinea[s.id] = false; }
+    clearTimeout(t);
+    const el = document.querySelector(`[data-enlinea="${s.id}"]`);
+    if (el) { el.className = "chip " + (S.sisEnLinea[s.id] ? "aprobada" : "noaprobada"); el.textContent = S.sisEnLinea[s.id] ? "En línea" : "No responde"; }
+  }));
+}
+
 /* ================= Programa de revendedores ================= */
 const revCfg = () => Object.assign({ comision: 0, items: [] }, S.revendedores || {});
 const codigoRev = (n) => String(n || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 16) || "socio";
@@ -3252,7 +3382,7 @@ function vProyectos() {
   const pub = arr.filter((y) => y.publicado).length;
   return `
     <div class="o-head"><div><h1 class="o-h1">Proyectos</h1><p class="sub">${arr.length ? `${pub} ${pub === 1 ? "publicado" : "publicados"} en su página · ${arr.length - pub} sin publicar` : "Los proyectos que vendió, para mostrarlos en su página"}</p></div>
-      <div class="actions"><a class="btn" href="#casos">Ver en mi página</a><button class="btn" data-act="nuevoProyecto">Nuevo proyecto</button><button class="btn btn-primary" data-act="ir" data-to="publicar-ia">Publicar con IA</button></div></div>
+      <div class="actions"><a class="btn" href="#casos">Ver en mi página</a><button class="btn" data-act="ir" data-to="sistemas">Sistemas y mensualidades</button><button class="btn" data-act="nuevoProyecto">Nuevo proyecto</button><button class="btn btn-primary" data-act="ir" data-to="publicar-ia">Publicar con IA</button></div></div>
     ${arr.length ? `<ul class="o-list">${arr.map((y) => {
       const img = imgSegura(y.imagen);
       return `<li><button class="item" data-act="editarProyecto" data-id="${y.id}">${img ? `<img class="thumb" src="${esc(img)}" alt="">` : `<span class="thumb"></span>`}<span class="main"><b>${esc(y.titulo || "Proyecto sin título")}</b><small>${esc([y.sector, nombreCliente(clienteDe(y.clienteId))].filter((x) => x && x !== "Sin cliente").join(" · "))}</small></span><span class="chip ${y.publicado ? "aprobada" : ""}">${y.publicado ? "Publicado" : "Oculto"}</span></button></li>`;
@@ -3426,6 +3556,14 @@ function recomendaciones() {
   P.filter((p) => p.estado === "Aprobada" && saldoDe(p) > 0).sort((a, b) => saldoDe(b) - saldoDe(a)).forEach((p) =>
     add(1, `Cobre el saldo de ${nombreCliente(clienteDe(p.clienteId))}: ${fmtCOP(saldoDe(p))}`, `"${p.titulo || p.nombreProducto || "Proyecto"}" está aprobado y le falta por pagar.`,
       `<button class="btn btn-sm btn-primary" data-act="abrirPropuesta" data-id="${p.id}">Ver pagos</button>`));
+  S.sistemas.filter((x) => mesesDebe(x).length).forEach((x) => {
+    const c = clienteDe(x.clienteId), wa = c && waLink(c.telefono), d = mesesDebe(x);
+    add(0, `Mensualidad atrasada: ${nombreCliente(c)}, ${fmtCOP(d.length * (Number(x.valor) || 0))}`, `${x.nombre || "Su sistema"} debe ${d.map((m) => nombreMes(m)).join(", ")}. El cobro era el día ${corteDe(x)}.`,
+      (wa ? `<a class="btn btn-sm btn-primary" href="${wa}?text=${encodeURIComponent(textoCobroMens(x))}" target="_blank" rel="noopener">Cobrar por WhatsApp</a>` : "") + `<button class="btn btn-sm" data-act="pagoMensualidad" data-id="${x.id}">Ya pagó</button>`);
+  });
+  S.sistemas.forEach((x) => vencimientos(x).forEach((v) =>
+    add(v.d < 0 ? 0 : 1, `${v.t} de ${x.nombre || nombreCliente(clienteDe(x.clienteId))} ${v.d < 0 ? "está vencido" : "se vence pronto"}`, `${v.d < 0 ? "Se venció el" : "Se vence el"} ${fmtFecha(v.fecha)}. Si se vence, la página del cliente se cae.`,
+      `<button class="btn btn-sm" data-act="ir" data-to="sistema" data-id="${x.id}">Actualizar fecha</button>`)));
   P.filter((p) => p.estado === "Aprobada" && !Y.some((y) => y.propuestaId === p.id)).forEach((p) =>
     add(2, `Publique "${p.titulo || p.nombreProducto || "el proyecto"}" en su página`, `Ya está aprobado. Mostrarlo en Casos le ayuda a conseguir más clientes.`,
       `<button class="btn btn-sm btn-primary" data-act="publicarDesdePropuesta" data-id="${p.id}">Crear proyecto</button>`));
@@ -3988,8 +4126,8 @@ function vFunciones() {
 function pintarFx() { const l = $("#fxLista"); if (l) l.innerHTML = vFxLista(); }
 
 /* ================= Navegación ================= */
-const TAB_DE = { panel: "panel", funciones: "panel", proyectos: "proyectos", proyecto: "proyectos", "publicar-ia": "proyectos", asistente: "asistente", clientes: "clientes", cliente: "clientes", "nuevo-cliente": "clientes", "editar-cliente": "clientes", propuestas: "propuestas", propuesta: "propuestas", vista: "propuestas", datos: "datos" };
-const QUIETAS = ["nuevo-cliente", "editar-cliente", "propuesta", "datos", "proyecto", "asistente", "publicar-ia", "funciones"];
+const TAB_DE = { panel: "panel", funciones: "panel", proyectos: "proyectos", proyecto: "proyectos", "publicar-ia": "proyectos", sistemas: "proyectos", sistema: "proyectos", asistente: "asistente", clientes: "clientes", cliente: "clientes", "nuevo-cliente": "clientes", "editar-cliente": "clientes", propuestas: "propuestas", propuesta: "propuestas", vista: "propuestas", datos: "datos" };
+const QUIETAS = ["nuevo-cliente", "editar-cliente", "propuesta", "datos", "proyecto", "asistente", "publicar-ia", "funciones", "sistema"];
 function listoParaQuieta(name) {
   if (name === "nuevo-cliente") return true;
   if (name === "editar-cliente") return S.loaded.c;
@@ -3999,6 +4137,7 @@ function listoParaQuieta(name) {
   if (name === "asistente") return S.loaded.c && S.loaded.p && S.loaded.y;
   if (name === "publicar-ia") return true;
   if (name === "funciones") return !!window.FUNCIONES;
+  if (name === "sistema") return S.loaded.m && S.loaded.c;
   return false;
 }
 function parseHash() {
@@ -4053,7 +4192,7 @@ function renderOficina() {
   const vistas = {
     panel: vPanel, clientes: vClientes, cliente: () => vCliente(v.id), "nuevo-cliente": () => vClienteForm(null), "editar-cliente": () => vClienteForm(v.id),
     propuestas: vPropuestas, propuesta: () => vPropuesta(v.id), vista: () => vVista(v.id), datos: vDatos,
-    proyectos: vProyectos, proyecto: () => vProyecto(v.id), asistente: vAsistente, "publicar-ia": vPublicarIA, funciones: vFunciones,
+    proyectos: vProyectos, proyecto: () => vProyecto(v.id), asistente: vAsistente, "publicar-ia": vPublicarIA, funciones: vFunciones, sistemas: vSistemas, sistema: () => vSistemaForm(v.id),
   };
   $("#o-app").innerHTML = (vistas[v.name] || vPanel)();
   S.quiet = QUIETAS.includes(v.name) && listoParaQuieta(v.name);
@@ -4062,6 +4201,7 @@ function renderOficina() {
   });
   if (v.name === "vista") ajustarVista();
   if (v.name === "propuestas") dictado($("#dictadoMic"), $("#dictadoTxt"));
+  if (v.name === "sistemas") revisarEnLinea();
 }
 function alCambiarDatos() {
   if (S.loaded.c && S.loaded.p) setSync("Guardado en la nube");
@@ -4103,6 +4243,33 @@ const ACT = {
       go("cliente", ref.id);
     }
     toast("Cliente guardado");
+  },
+  guardarSistema(el) {
+    const val = (k) => ($("#sm_" + k)?.value || "").trim();
+    const data = { nombre: val("nombre"), clienteId: val("clienteId"), url: val("url"), plan: val("plan"), valor: toNum(val("valor")) || 0,
+      diaCorte: Math.min(28, Math.max(1, Number(val("diaCorte")) || 5)), desde: val("desde") || mesActual(), dominioVence: val("dominioVence"), hostingVence: val("hostingVence"),
+      respaldo: val("respaldo"), activo: !!$("#sm_activo")?.checked, notas: val("notas"), actualizado: Date.now() };
+    if (data.url && !/^https?:\/\//i.test(data.url)) data.url = "https://" + data.url;
+    if (!data.nombre && !data.clienteId) { toast("Escriba el nombre del sistema o elija el cliente."); return; }
+    if (!data.nombre) data.nombre = "Sistema de " + nombreCliente(clienteDe(data.clienteId));
+    const id = el.dataset.id;
+    if (id) S.F.updateDoc(refDoc("sistemas", id), data).catch(dbError);
+    else S.F.setDoc(refNuevo("sistemas"), Object.assign(data, { pagos: [], creado: Date.now() })).catch(dbError);
+    delete S.sisEnLinea[id]; toast("Sistema guardado"); go("sistemas");
+  },
+  eliminarSistema(el) {
+    armar(el, "Toque otra vez para eliminar", () => { S.F.deleteDoc(refDoc("sistemas", el.dataset.id)).catch(dbError); toast("Sistema eliminado"); go("sistemas"); });
+  },
+  pagoMensualidad(el) {
+    const x = S.sistemas.find((y) => y.id === el.dataset.id); if (!x) return;
+    const mes = mesAPagar(x), pagos = (x.pagos || []).concat({ mes, valor: Number(x.valor) || 0, fecha: hoyISO() });
+    S.F.updateDoc(refDoc("sistemas", x.id), { pagos, actualizado: Date.now() }).catch(dbError);
+    toast(`Pago de ${nombreMes(mes)} registrado`);
+  },
+  respaldoHoy(el) { S.F.updateDoc(refDoc("sistemas", el.dataset.id), { respaldo: hoyISO(), actualizado: Date.now() }).catch(dbError); toast("Copia de seguridad anotada"); },
+  revisarEnLinea() {
+    document.querySelectorAll("[data-enlinea]").forEach((e) => { e.className = "chip"; e.textContent = "Revisando…"; });
+    revisarEnLinea(true).then(() => toast("Revisión terminada"));
   },
   eliminarCliente(el) {
     armar(el, "Toque otra vez para eliminar", () => {
@@ -4603,6 +4770,7 @@ function onField(e) {
     if (e.target.id === "fxQ") { fxState().q = e.target.value; fxState().limite = 150; pintarFx(); return; }
     if (e.target.id === "fxCat" && e.type === "change") { fxState().cat = e.target.value; fxState().limite = 150; pintarFx(); return; }
   }
+  if (e.target.id === "sm_plan" && e.type === "change") { const o = e.target.selectedOptions[0], v = $("#sm_valor"); if (o && o.dataset.v && v) v.value = fmtCOP(Number(o.dataset.v)); return; }
   if (e.target.id === "qrPagoFile" && e.type === "change" && e.target.files[0]) {
     reducirImagen(e.target.files[0], 600).then((r) => { S.pagos = Object.assign({}, S.pagos || {}, { qrNuevo: r.url }); const im = $("#qrPagoPrev"); if (im) { im.src = r.url; im.hidden = false; } toast("QR listo. Toque Guardar formas de pago."); }).catch(() => toast("No se pudo leer la imagen."));
     return;
@@ -5162,7 +5330,7 @@ function proyectoParecidoLocal(r, titulo) {
     const b = $("#dgEnviar"); b.disabled = true; b.textContent = "Analizando su negocio…";
     let d = null, conIA = false;
     if (DIAGNOSTICO_URL) {
-      try { const res = await fetch(DIAGNOSTICO_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(r) }); const j = await res.json().catch(() => ({})); if (res.ok && j.diagnostico) { d = j.diagnostico; conIA = true; } else if (res.status === 429) toast(j.error); }
+      try { const res = await fetch(DIAGNOSTICO_URL, { method: "POST", headers: Object.assign({ "Content-Type": "application/json" }, await selloAppCheck()), body: JSON.stringify(r) }); const j = await res.json().catch(() => ({})); if (res.ok && j.diagnostico) { d = j.diagnostico; conIA = true; } else if (res.status === 429) toast(j.error); }
       catch (er) { console.warn("Diagnóstico:", er); }
     }
     if (!d) {

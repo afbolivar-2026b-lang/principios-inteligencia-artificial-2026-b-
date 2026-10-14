@@ -5,6 +5,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { defineInt, defineSecret, defineString } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getAppCheck } from "firebase-admin/app-check";
 import { getFirestore } from "firebase-admin/firestore";
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
@@ -276,6 +277,13 @@ function responderError(res, error) {
    conexión y DIAGNOSTICOS_DIA en total. Usa las tarifas de Andrés y su portafolio publicado. */
 const DIAGNOSTICOS_DIA = defineInt("DIAGNOSTICOS_DIA", { default: 100 });
 const DIAGNOSTICOS_POR_PERSONA = defineInt("DIAGNOSTICOS_POR_PERSONA", { default: 5 });
+// App Check: con "si", el diagnóstico solo responde a su página (no a robots). Actívelo después de poner APPCHECK_SITE_KEY en index.html.
+const EXIGIR_APPCHECK = defineString("EXIGIR_APPCHECK", { default: "no" });
+async function appCheckValido(req) {
+  const t = req.get("X-Firebase-AppCheck");
+  if (!t) return false;
+  try { await getAppCheck().verifyToken(t); return true; } catch (e) { return false; }
+}
 const DIAG = betaJSONSchemaOutputFormat({
   type: "object",
   properties: {
@@ -324,6 +332,7 @@ export const diagnostico = onRequest(
   { secrets: [ANTHROPIC_API_KEY], cors: true, timeoutSeconds: 120, memory: "512MiB", maxInstances: 5 },
   async (req, res) => {
     if (req.method !== "POST") { res.status(405).json({ error: "Use POST." }); return; }
+    if (EXIGIR_APPCHECK.value() === "si" && !(await appCheckValido(req))) { res.status(401).json({ error: "No se pudo verificar la página. Recárguela e intente otra vez." }); return; }
     const b = req.body || {};
     const campo = (k, max) => String(b[k] || "").trim().slice(0, max);
     const respuestas = { negocio: campo("negocio", 80), sector: campo("sector", 60), comoLleva: campo("comoLleva", 200), problema: campo("problema", 1500), personas: campo("personas", 40), presupuesto: campo("presupuesto", 60) };

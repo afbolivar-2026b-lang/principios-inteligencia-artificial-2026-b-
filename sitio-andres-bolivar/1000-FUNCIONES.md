@@ -173,8 +173,8 @@ Las marcadas con ⭐ son las que yo haría primero.
 140. ✅ Enlace de pago con Wompi, Bold o Mercado Pago *(Etapa 2)*
 141. ✅ Pago por Nequi o Daviplata con QR *(Etapa 2)*
 142. ✅ Recordatorio de cobro por WhatsApp *(Etapa 2)*
-143. 🔵 Mensualidades de soporte con fecha de corte
-144. 🔵 Alerta de mensualidades vencidas
+143. ✅ Mensualidades de soporte con fecha de corte *(Etapa 6)*
+144. ✅ Alerta de mensualidades vencidas *(Etapa 6)*
 145. ✅ Ingresos del mes en el panel *(Etapa 2)*
 146. 🔵 Gráfica de ingresos de 12 meses
 147. 🔵 Meta mensual con barra de avance
@@ -459,7 +459,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 396. 🟠 Pagos con Nequi y PSE dentro de los sistemas
 397. 🟢 Inicio de sesión con huella o cara
 398. 🔵 Sincronización entre varias sedes
-399. ⭐🔵 Panel maestro de todos los sistemas de sus clientes
+399. ⭐✅ Panel maestro de todos los sistemas de sus clientes *(Etapa 6)*
 400. 🔵 Licencias: bloqueo con aviso si el cliente deja de pagar
 
 ---
@@ -1071,7 +1071,7 @@ Las marcadas con ⭐ son las que yo haría primero.
 948. 🔵 Permisos por ayudante (sin finanzas, por ejemplo)
 949. 🟢 Política de seguridad de contenido en la página
 950. 🟢 Protección contra páginas que la incrustan para engañar
-951. ⭐🔵 App Check de Firebase contra uso abusivo
+951. ⭐✅ App Check de Firebase contra uso abusivo *(Etapa 6)*
 952. ✅ Límite diario de uso del asistente *(Etapa 3)*
 953. 🔵 Tope de gasto mensual en la IA
 954. 🔵 Alertas de presupuesto en Google Cloud

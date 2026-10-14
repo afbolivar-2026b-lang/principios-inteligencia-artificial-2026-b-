@@ -1,18 +1,16 @@
 # Lo que falta: plan de las próximas etapas
 
-Hechas: **105 de 1000**. Faltan **895**. La lista completa, con el estado de cada una, está en `1000-FUNCIONES.md` y en **Mi oficina → Panel → Centro de funciones**.
+Hechas: **109 de 1000**. Faltan **891**. La lista completa, con el estado de cada una, está en `1000-FUNCIONES.md` y en **Mi oficina → Panel → Centro de funciones**.
 
 Aquí quedan guardadas en el orden en que las voy a hacer.
 
-## Etapa 6: las ⭐ que faltan
+## Etapa 7: la ⭐ que falta
 
 | N.º | Función | Qué necesita |
 |---|---|---|
-| 261 | Restaurantes: pedidos, mesas y domicilios | con Firebase |
-| 399 | Panel maestro de todos los sistemas de sus clientes | con Firebase |
-| 951 | App Check de Firebase contra uso abusivo | con Firebase |
+| 261 | Restaurantes: pedidos, mesas y domicilios | con Firebase (es un sistema completo, va en su propia etapa) |
 
-## Etapas 6 a 13: solo la página (no necesitan nada de usted)
+## Etapas 8 a 15: solo la página (no necesitan nada de usted)
 
 Son 254 funciones. Van primero porque se pueden usar apenas se publican.
 
