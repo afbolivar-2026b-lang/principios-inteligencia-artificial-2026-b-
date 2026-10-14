@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Andrés Bolívar | Páginas web y aplicaciones en Neiva</title>
+<title>Opita Digital | Páginas web y aplicaciones en Neiva</title>
 <meta name="description" content="Páginas web y aplicaciones a la medida para negocios de Neiva y el Huila: ventas, inventario, fiados, turnos y reportes.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231A1816'/><text x='50' y='70' font-family='Georgia,serif' font-size='62' text-anchor='middle' fill='%23F4EFE7'>B</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,8 +14,8 @@
 <link rel="canonical" href="https://SU-DOMINIO/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_CO">
-<meta property="og:site_name" content="Andrés Bolívar">
-<meta property="og:title" content="Andrés Bolívar · Su negocio, del cuaderno al celular">
+<meta property="og:site_name" content="Opita Digital">
+<meta property="og:title" content="Opita Digital · Su negocio opita, en el celular">
 <meta property="og:description" content="Páginas web, sistemas y apps a la medida para negocios de Neiva y el Huila. Cotización gratis por WhatsApp.">
 <meta property="og:url" content="https://SU-DOMINIO/">
 <meta property="og:image" content="https://SU-DOMINIO/og.jpg">
@@ -24,12 +24,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icono-192.png">
-<meta name="apple-mobile-web-app-title" content="Andrés Bolívar">
+<meta name="apple-mobile-web-app-title" content="Opita Digital">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
-  "name": "Andrés Bolívar · Páginas web y aplicaciones",
+  "name": "Opita Digital · Páginas web y aplicaciones",
+  "alternateName": "Andrés Bolívar",
   "description": "Páginas web, sistemas a la medida y apps para negocios de Neiva y el Huila: ventas, inventario, fiados, turnos y reportes.",
   "url": "https://SU-DOMINIO/",
   "image": "https://SU-DOMINIO/og.jpg",
@@ -1094,7 +1095,7 @@
 <div id="sitio">
   <header class="site-top">
     <div class="wrap">
-      <a class="brand" href="#inicio">Andrés Bolívar</a>
+      <a class="brand" href="#inicio">Opita Digital</a>
       <nav class="nav" aria-label="Principal">
         <a class="lnk" href="#servicios">Servicios</a>
         <a class="lnk" href="#metodo">Método</a>
@@ -1568,7 +1569,7 @@
 
   <footer>
     <div class="wrap">
-      <p>Andrés Bolívar · Páginas web y aplicaciones</p>
+      <p>Opita Digital · por Andrés Bolívar · Páginas web y aplicaciones</p>
       <p><a href="#servicios">Servicios</a> · <a href="#metodo">Método</a> · <a href="#casos">Casos</a> · <a href="#contacto">Contacto</a></p>
       <p>Neiva · Huila · <a data-wa href="#contacto">WhatsApp</a> · <a class="js-entrar" href="#/ingresar">Ingresar</a></p>
       <p class="fin"><span class="sello">Hecho en el Huila</span> · © 2026 · <a href="privacidad.html">Tratamiento de datos</a> · <button type="button" class="link-a11y" id="btnA11y" aria-expanded="false" aria-controls="panelA11y">Accesibilidad</button></p>
@@ -2338,7 +2339,7 @@ function marcarSolicitudes() {
   if (n) b.dataset.aviso = n > 9 ? "9+" : String(n); else delete b.dataset.aviso;
 }
 function msgSolicitud(x) {
-  return `Hola ${String(x.nombre || "").split(" ")[0]}, ¿cómo va? Soy Andrés Bolívar. Recibí su solicitud en mi página${x.negocio ? " para " + x.negocio : ""}. ¿Tiene unos minutos para contarme un poco más?`;
+  return `Hola ${String(x.nombre || "").split(" ")[0]}, ¿cómo va? Soy Andrés Bolívar, de Opita Digital. Recibí su solicitud en mi página${x.negocio ? " para " + x.negocio : ""}. ¿Tiene unos minutos para contarme un poco más?`;
 }
 function vSolicitudes() {
   const arr = solNuevas(); if (!arr.length) return "";
@@ -5053,7 +5054,7 @@ function horaColombia() { const d = new Date(Date.now() + (new Date().getTimezon
   const ll = $("#btnLlamar"); if (ll) ll.href = "tel:" + tel;
   const bc = $("#btnContacto");
   if (bc) bc.addEventListener("click", () => {
-    const vcf = ["BEGIN:VCARD", "VERSION:3.0", `N:Bolívar Arias;Andrés Felipe;;;`, `FN:${PERFIL_BASE.nombre}`, "ORG:Andrés Bolívar · Páginas web y aplicaciones", "TITLE:Desarrollador", `TEL;TYPE=CELL:${tel}`, "ADR;TYPE=WORK:;;;Neiva;Huila;;Colombia", `URL:${location.origin.startsWith("http") ? location.origin + location.pathname : ""}`, "END:VCARD"].join("\r\n");
+    const vcf = ["BEGIN:VCARD", "VERSION:3.0", `N:Bolívar Arias;Andrés Felipe;;;`, `FN:${PERFIL_BASE.nombre}`, "ORG:Opita Digital", "TITLE:Desarrollador", `TEL;TYPE=CELL:${tel}`, "ADR;TYPE=WORK:;;;Neiva;Huila;;Colombia", `URL:${location.origin.startsWith("http") ? location.origin + location.pathname : ""}`, "END:VCARD"].join("\r\n");
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([vcf], { type: "text/vcard" })); a.download = "Andres-Bolivar.vcf"; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   });
@@ -5069,7 +5070,7 @@ function horaColombia() { const d = new Date(Date.now() + (new Date().getTimezon
   const bs = $("#btnCompartir");
   if (bs) bs.addEventListener("click", async () => {
     const url = location.href.split("#")[0];
-    if (navigator.share) { try { await navigator.share({ title: "Andrés Bolívar · Páginas web y aplicaciones", text: "Mire esta página para digitalizar su negocio:", url }); } catch (e) {} return; }
+    if (navigator.share) { try { await navigator.share({ title: "Opita Digital · Páginas web y aplicaciones", text: "Mire esta página para digitalizar su negocio:", url }); } catch (e) {} return; }
     try { await navigator.clipboard.writeText(url); toast("Enlace copiado"); } catch (e) { toast(url); }
   });
 })();
@@ -5213,10 +5214,10 @@ const ROMANOS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
   const ol = $("#guiaPasos"); if (!ol) return;
   ol.innerHTML = GUIA.map(([t, p, h], i) => `<li class="reveal in"><span class="num">${ROMANOS[i]}</span><h3>${esc(t)}</h3><p>${esc(p)}</p><p class="hoy"><b>Hágalo hoy</b>${esc(h)}</p></li>`).join("");
   const url = (location.protocol.startsWith("http") ? location.href.split("#")[0] : "") + "#guia";
-  $("#btnGuiaWa").href = "https://wa.me/?text=" + encodeURIComponent(`Mire esta guía gratis: «Del cuaderno al celular en 5 pasos», de Andrés Bolívar. ${url}`);
+  $("#btnGuiaWa").href = "https://wa.me/?text=" + encodeURIComponent(`Mire esta guía gratis: «Del cuaderno al celular en 5 pasos», de Opita Digital. ${url}`);
   $("#btnGuiaPDF").addEventListener("click", () => {
     const html = `<div style="width:700px;font-family:Georgia,'Times New Roman',serif;color:#1A1816;background:#FFF;padding:8px 4px">
-      <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6B645A;margin:0 0 8px">Guía gratis · Andrés Bolívar</p>
+      <p style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6B645A;margin:0 0 8px">Guía gratis · Opita Digital</p>
       <h1 style="font-size:34px;line-height:1.1;font-weight:normal;margin:0 0 6px;text-transform:uppercase">Del cuaderno al celular en 5 pasos</h1>
       <p style="font-family:Arial,sans-serif;font-size:13px;color:#5E5850;margin:0 0 22px">Lo que yo haría en su negocio, aunque no me contrate.</p>
       ${GUIA.map(([t, p, h], i) => `<div style="display:flex;gap:18px;border-top:1px solid #D6CEC0;padding:16px 0;page-break-inside:avoid"><div style="font-size:30px;width:52px;flex:none">${ROMANOS[i]}</div><div><h2 style="font-size:19px;font-weight:normal;text-transform:uppercase;margin:0 0 6px">${esc(t)}</h2><p style="font-family:Arial,sans-serif;font-size:13px;line-height:1.55;color:#3A3631;margin:0 0 8px">${esc(p)}</p><p style="font-family:Arial,sans-serif;font-size:12.5px;margin:0"><b style="letter-spacing:2px;text-transform:uppercase;font-size:10px">Hágalo hoy:</b> ${esc(h)}</p></div></div>`).join("")}
@@ -5368,7 +5369,7 @@ function proyectoParecidoLocal(r, titulo) {
     if (e.target.id === "dgPDF") {
       const li = (a) => a.map((x) => `<li style="margin-bottom:5px">${esc(x)}</li>`).join("");
       pdfDesdeHTML(`<div style="width:700px;font-family:Arial,Helvetica,sans-serif;color:#1A1816;background:#FFF;padding:8px 4px">
-        <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6B645A;margin:0 0 8px">Diagnóstico gratis · Andrés Bolívar</p>
+        <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6B645A;margin:0 0 8px">Diagnóstico gratis · Opita Digital</p>
         <h1 style="font-family:Georgia,serif;font-weight:normal;font-size:30px;margin:0 0 6px">${esc(r.negocio || "Su negocio")}</h1>
         <p style="font-size:13px;color:#5E5850;margin:0 0 18px">${esc(r.sector)} · ${esc(r.personas)} · cuentas ${esc(String(r.comoLleva).toLowerCase())}</p>
         <p style="font-size:14px;line-height:1.55">${esc(d.resumen)}</p>
@@ -5376,7 +5377,7 @@ function proyectoParecidoLocal(r, titulo) {
           <div style="flex:1"><h2 style="font-family:Georgia,serif;font-weight:normal;font-size:18px">Lo que le recomiendo</h2><ul style="font-size:13px;padding-left:18px">${li(d.funciones)}</ul></div></div>
         <div style="border:1px solid #1A1816;padding:14px 16px;margin:10px 0;font-size:14px"><b>${esc(plan)}</b> · Rango de referencia: <b>${esc(fmtCOP(d.precioMinimo))} a ${esc(fmtCOP(d.precioMaximo))}</b><br><span style="font-size:12px;color:#5E5850">El precio exacto se da por escrito y sin costo.</span></div>
         <p style="font-size:13px"><b>Esta semana:</b> ${esc(d.primerPaso)}</p>
-        <div style="border-top:1px solid #D6CEC0;margin-top:18px;padding-top:12px;font-size:13px">Andrés Bolívar · Páginas web y sistemas · Neiva, Huila · WhatsApp +${esc(WHATSAPP)}</div></div>`,
+        <div style="border-top:1px solid #D6CEC0;margin-top:18px;padding-top:12px;font-size:13px">Opita Digital · Andrés Bolívar · Páginas web y sistemas · Neiva, Huila · WhatsApp +${esc(WHATSAPP)}</div></div>`,
         archivoSeguro("Diagnostico " + (r.negocio || "de su negocio")));
     }
   });
@@ -5387,7 +5388,7 @@ function proyectoParecidoLocal(r, titulo) {
   const m = urlSegura(GOOGLE_MAPS), r = urlSegura(GOOGLE_RESENA);
   if (m) { $("#btnMaps").href = m; $("#btnMaps").hidden = false; }
   if (r) { $("#btnResena").href = r; $("#btnResena").hidden = false; }
-  if (m) { const sc = document.createElement("script"); sc.type = "application/ld+json"; sc.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "ProfessionalService", name: "Andrés Bolívar · Páginas web y aplicaciones", hasMap: m, sameAs: [m] }); document.head.appendChild(sc); }
+  if (m) { const sc = document.createElement("script"); sc.type = "application/ld+json"; sc.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "ProfessionalService", name: "Opita Digital · Páginas web y aplicaciones", hasMap: m, sameAs: [m] }); document.head.appendChild(sc); }
 })();
 
 /* Antes y después en los casos */
