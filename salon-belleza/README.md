@@ -1,18 +1,33 @@
-# Bella Rosa — Página de salón de belleza
+# Neiva Belleza: página web y panel de un salón de belleza
 
-Página web estática (HTML + CSS + JavaScript, sin librerías) para un salón de belleza.
+Sitio estático en HTML, CSS y JavaScript, sin librerías ni servidor. Usa un estilo nude/rosa empolvado con letras serif finas.
 
 ## Cómo verla
-Abre `index.html` en el navegador (doble clic).
+- **Página pública:** abre `index.html` en el navegador (doble clic).
+- **Panel del salón:** abre `admin.html`, o haz clic en el ícono de persona del menú.
+
+## Qué tiene
+| Página | Secciones |
+|---|---|
+| `index.html` | Portada · Servicios con precios en COP · Catálogo de diseños de uñas con filtros · **Reserva en 5 pasos** (servicio → profesional → fecha y hora → productos → confirmar por WhatsApp) · Opiniones · Contacto |
+| `admin.html` | Indicadores del día · Citas de hoy · Inventario con alertas · Gráfica de ingresos de la semana · Servicios más pedidos · Reservas que llegan desde la página (confirmar, cancelar o escribir por WhatsApp) |
 
 ## Archivos
-- `index.html` — estructura: menú, portada, servicios, galería, opiniones, reservas y pie de página.
-- `styles.css` — diseño, colores (variables en `:root`), animaciones y versión para celular.
-- `script.js` — menú del celular, validación del formulario, envío de la reserva por WhatsApp y animaciones al hacer scroll.
+- `datos.js`: **lo que más vas a editar**. Contiene servicios, precios, diseños, profesionales, productos, horarios y datos del salón (WhatsApp, dirección). Lo usan las dos páginas.
+- `script.js`: lógica de la página pública: menú del celular, filtros del catálogo y flujo de reserva.
+- `admin.js`: lógica del panel.
+- `styles.css` y `admin.css`: diseño. Los colores están como variables en `:root`.
+- `img/`: fotos de los diseños de uñas, la portada y los productos.
 
 ## Personalizar
-- **Número de WhatsApp:** cambia `WHATSAPP_SALON` en `script.js` y el enlace del botón flotante en `index.html`.
-- **Colores:** edita las variables `--rosa`, `--dorado`, `--ciruela` en `styles.css`.
-- **Fotos reales:** en la galería, reemplaza los degradados `.g1`…`.g5` por `background: url('tu-foto.jpg') center/cover;`.
+- **WhatsApp del salón:** cambia `whatsapp` y `whatsappVisible` en `datos.js`.
+- **Precios y servicios:** edita `CATEGORIAS`, `DISENOS` y `PRODUCTOS` en `datos.js`.
+- **Fotos:** reemplaza los archivos de `img/`, idealmente por fotos reales de tus trabajos, o cambia el campo `foto` en `datos.js`.
 
-Las capturas de cada etapa están en `../capturas/`.
+## Importante
+- Las fotos actuales se recortaron de las imágenes de referencia que se crearon con Meta AI. Para un negocio real conviene usar fotos propias.
+- Las reservas se guardan en el **navegador** (`localStorage`) y se envían por **WhatsApp**. El panel solo ve las reservas hechas en el mismo navegador. Para que el salón reciba reservas desde cualquier celular hace falta un servidor o base de datos (por ejemplo, Supabase o Firebase).
+- En el panel, las citas, los ingresos y los servicios más pedidos son **datos de ejemplo**. Las reservas web son reales.
+- Los horarios marcados como "ocupado" se simulan.
+
+Las capturas de cada etapa están en `../capturas/`. Para regenerarlas: `node capturas/reserva.js` y `node capturas/panel.js`.

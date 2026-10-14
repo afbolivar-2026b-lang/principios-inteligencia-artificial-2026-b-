@@ -85,6 +85,9 @@ const PRODUCTOS = [
   { id: 'esmalte-rose', foto: 'img/p-esmalte-rose.jpg', nombre: 'Esmalte Rosé Ivory', detalle: 'Brillo intenso, secado rápido · 12 ml', precio: 28000, stock: 11 },
 ];
 
+// Clave donde se guardan las reservas web en el navegador (la usan la página y el panel)
+const CLAVE_RESERVAS = 'neivaBelleza.reservas';
+
 const HORARIOS = ['9:00', '10:30', '12:00', '14:00', '15:30', '17:00'];
 
 // Ícono de línea a partir de los trazos de ICONOS
@@ -102,4 +105,27 @@ function buscarServicio(id) {
     if (servicio) return { ...servicio, categoria: categoria.id };
   }
   return null;
+}
+
+// ===== UTILIDADES COMPARTIDAS (página y panel) =====
+// Evita que texto escrito por una persona se interprete como HTML
+function escaparHTML(texto) {
+  return String(texto).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+function primerDiaDelMes(fecha) { return new Date(fecha.getFullYear(), fecha.getMonth(), 1); }
+function aTextoFecha(fecha) {
+  const dos = (n) => String(n).padStart(2, '0');
+  return `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}`;
+}
+function deTextoFecha(texto) {
+  const [a, m, d] = texto.split('-').map(Number);
+  return new Date(a, m - 1, d);
+}
+function fechaLegible(texto, opciones = { weekday: 'short', day: 'numeric', month: 'short' }) {
+  return deTextoFecha(texto).toLocaleDateString('es-CO', opciones);
+}
+function horaEnMinutos(hora) { const [h, m] = hora.split(':').map(Number); return h * 60 + m; }
+function horaLegible(hora) {
+  const [h, m] = hora.split(':').map(Number);
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'a.m.' : 'p.m.'}`;
 }

@@ -72,7 +72,6 @@ pintarDisenos();
 // ===== RESERVA POR PASOS ==============================
 // ======================================================
 const PASOS = ['Servicio', 'Profesional', 'Fecha y hora', 'Productos', 'Confirmar'];
-const CLAVE_RESERVAS = 'neivaBelleza.reservas';
 
 const estado = {
   paso: 0,
@@ -90,27 +89,7 @@ const listaPasos = document.getElementById('pasos');
 const btnAtras = document.getElementById('btn-atras');
 const btnSiguiente = document.getElementById('btn-siguiente');
 
-// --- Utilidades ---
-function escaparHTML(texto) {
-  return String(texto).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-}
-function primerDiaDelMes(fecha) { return new Date(fecha.getFullYear(), fecha.getMonth(), 1); }
-function aTextoFecha(fecha) {
-  const dos = (n) => String(n).padStart(2, '0');
-  return `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}`;
-}
-function deTextoFecha(texto) {
-  const [a, m, d] = texto.split('-').map(Number);
-  return new Date(a, m - 1, d);
-}
-function fechaLegible(texto, opciones = { weekday: 'short', day: 'numeric', month: 'short' }) {
-  return deTextoFecha(texto).toLocaleDateString('es-CO', opciones);
-}
-function horaEnMinutos(hora) { const [h, m] = hora.split(':').map(Number); return h * 60 + m; }
-function horaLegible(hora) {
-  const [h, m] = hora.split(':').map(Number);
-  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'a.m.' : 'p.m.'}`;
-}
+// --- Utilidades propias de la reserva (las generales están en datos.js) ---
 // Simula horarios ocupados de forma estable (siempre los mismos para la misma fecha)
 function estaOcupado(fecha, hora, profesional) {
   const semilla = [...(fecha + hora + profesional)].reduce((suma, c) => suma + c.charCodeAt(0), 0);
