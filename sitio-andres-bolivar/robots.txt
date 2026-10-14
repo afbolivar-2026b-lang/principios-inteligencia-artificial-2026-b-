@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://SU-DOMINIO/sitemap.xml
+Sitemap: https://opita-digital.netlify.app/sitemap.xml
