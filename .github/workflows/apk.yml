@@ -62,6 +62,22 @@ jobs:
           name: andres-bolivar-apk
           path: sitio-andres-bolivar/descargas/andres-bolivar.apk
 
+      # Enlace fijo para descargar la app desde el celular, con el tipo de archivo de Android:
+      # https://github.com/<dueño>/<repo>/releases/download/app/OpitaDigital.apk
+      - name: Publicar la APK como versión descargable
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp sitio-andres-bolivar/descargas/andres-bolivar.apk OpitaDigital.apk
+          NOTAS="App Opita Digital, versión 1.${{ github.run_number }}. Toque OpitaDigital.apk para descargarla y luego Instalar."
+          if gh release view app >/dev/null 2>&1; then
+            gh release upload app OpitaDigital.apk --clobber
+            gh release edit app --title "Opita Digital 1.${{ github.run_number }}" --notes "$NOTAS"
+          else
+            gh release create app OpitaDigital.apk --title "Opita Digital 1.${{ github.run_number }}" --notes "$NOTAS" --target "${GITHUB_SHA}"
+          fi
+
       - name: Subir la APK al repositorio
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
