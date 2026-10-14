@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bella Rosa | Salón de Belleza & Spa</title>
+  <meta name="description" content="Bella Rosa, salón de belleza y spa: cortes, color, manicure, maquillaje y tratamientos faciales.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ===== MENÚ DE NAVEGACIÓN ===== -->
+  <header class="navbar" id="inicio">
+    <div class="contenedor nav-contenido">
+      <a href="#inicio" class="logo">Bella<span>Rosa</span></a>
+      <button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#servicios">Servicios</a></li>
+          <li><a href="#galeria">Galería</a></li>
+          <li><a href="#opiniones">Opiniones</a></li>
+          <li><a href="#contacto" class="btn btn-pequeno">Reservar cita</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== PORTADA (HERO) ===== -->
+  <section class="hero">
+    <div class="contenedor hero-contenido">
+      <div class="hero-texto">
+        <p class="etiqueta">Salón de Belleza &amp; Spa</p>
+        <h1>Resalta tu <em>belleza natural</em> con nosotras</h1>
+        <p class="hero-descripcion">
+          Cortes, color, uñas, maquillaje y tratamientos faciales en un espacio
+          pensado para que te relajes y salgas sintiéndote increíble.
+        </p>
+        <div class="hero-botones">
+          <a href="#contacto" class="btn">Agendar mi cita</a>
+          <a href="#servicios" class="btn btn-borde">Ver servicios</a>
+        </div>
+        <div class="hero-datos">
+          <div><strong>10+</strong><span>años de experiencia</span></div>
+          <div><strong>5.000+</strong><span>clientas felices</span></div>
+          <div><strong>4.9 ★</strong><span>calificación</span></div>
+        </div>
+      </div>
+      <div class="hero-imagen" aria-hidden="true">
+        <div class="circulo-decorativo"></div>
+        <div class="tarjeta-flotante tarjeta-1">💇‍♀️ Peinados</div>
+        <div class="tarjeta-flotante tarjeta-2">💅 Manicure</div>
+        <div class="tarjeta-flotante tarjeta-3">✨ Spa facial</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SERVICIOS ===== -->
+  <section class="seccion" id="servicios">
+    <div class="contenedor">
+      <div class="titulo-seccion">
+        <p class="etiqueta">Lo que hacemos</p>
+        <h2>Nuestros servicios</h2>
+        <p>Profesionales certificadas y productos de alta calidad para cada detalle.</p>
+      </div>
+      <div class="grid-servicios">
+        <article class="tarjeta-servicio">
+          <div class="icono">✂️</div>
+          <h3>Corte y peinado</h3>
+          <p>Cortes modernos, cepillados, ondas y peinados para eventos.</p>
+          <span class="precio">Desde $35.000</span>
+        </article>
+        <article class="tarjeta-servicio">
+          <div class="icono">🎨</div>
+          <h3>Color y mechas</h3>
+          <p>Tintes, balayage, babylights y matizado sin dañar tu cabello.</p>
+          <span class="precio">Desde $90.000</span>
+        </article>
+        <article class="tarjeta-servicio">
+          <div class="icono">💅</div>
+          <h3>Manicure y pedicure</h3>
+          <p>Semipermanente, acrílicas, nail art y spa para pies.</p>
+          <span class="precio">Desde $25.000</span>
+        </article>
+        <article class="tarjeta-servicio">
+          <div class="icono">💄</div>
+          <h3>Maquillaje</h3>
+          <p>Maquillaje social, de novia y para sesiones de fotos.</p>
+          <span class="precio">Desde $70.000</span>
+        </article>
+        <article class="tarjeta-servicio">
+          <div class="icono">🧖‍♀️</div>
+          <h3>Tratamientos faciales</h3>
+          <p>Limpieza profunda, hidratación y rejuvenecimiento de la piel.</p>
+          <span class="precio">Desde $60.000</span>
+        </article>
+        <article class="tarjeta-servicio">
+          <div class="icono">👁️</div>
+          <h3>Cejas y pestañas</h3>
+          <p>Diseño de cejas, laminado y lifting de pestañas.</p>
+          <span class="precio">Desde $30.000</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== GALERÍA ===== -->
+  <section class="seccion seccion-rosa" id="galeria">
+    <div class="contenedor">
+      <div class="titulo-seccion">
+        <p class="etiqueta">Nuestro trabajo</p>
+        <h2>Galería</h2>
+        <p>Algunos de los cambios de look que más nos enorgullecen.</p>
+      </div>
+      <div class="grid-galeria">
+        <figure class="foto foto-grande g1"><span>💇‍♀️</span><figcaption>Balayage miel</figcaption></figure>
+        <figure class="foto g2"><span>💅</span><figcaption>Nail art floral</figcaption></figure>
+        <figure class="foto g3"><span>👰</span><figcaption>Novia clásica</figcaption></figure>
+        <figure class="foto g4"><span>✨</span><figcaption>Spa facial</figcaption></figure>
+        <figure class="foto g5"><span>💋</span><figcaption>Maquillaje de noche</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== OPINIONES ===== -->
+  <section class="seccion" id="opiniones">
+    <div class="contenedor">
+      <div class="titulo-seccion">
+        <p class="etiqueta">Testimonios</p>
+        <h2>Lo que dicen nuestras clientas</h2>
+      </div>
+      <div class="grid-opiniones">
+        <blockquote class="opinion">
+          <div class="estrellas">★★★★★</div>
+          <p>"Me hice un balayage y quedó exactamente como lo quería. ¡El trato es súper cálido!"</p>
+          <footer><span class="avatar">LM</span><div><strong>Laura M.</strong><small>Color y mechas</small></div></footer>
+        </blockquote>
+        <blockquote class="opinion">
+          <div class="estrellas">★★★★★</div>
+          <p>"Me maquillaron para mi boda y me sentí la más bonita. Duró toda la noche intacto."</p>
+          <footer><span class="avatar">CR</span><div><strong>Camila R.</strong><small>Maquillaje de novia</small></div></footer>
+        </blockquote>
+        <blockquote class="opinion">
+          <div class="estrellas">★★★★★</div>
+          <p>"El spa facial es mi momento favorito del mes. Salgo renovada y con la piel radiante."</p>
+          <footer><span class="avatar">VG</span><div><strong>Valentina G.</strong><small>Tratamiento facial</small></div></footer>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESERVAS Y CONTACTO ===== -->
+  <section class="seccion seccion-rosa" id="contacto">
+    <div class="contenedor grid-contacto">
+      <div class="info-contacto">
+        <p class="etiqueta">Reserva tu cita</p>
+        <h2>Te estamos esperando</h2>
+        <p>Llena el formulario y te confirmamos tu cita por WhatsApp en minutos.</p>
+        <ul class="datos-contacto">
+          <li><span>📍</span> Calle 10 # 5-32, Neiva, Huila</li>
+          <li><span>📞</span> +57 300 123 4567</li>
+          <li><span>🕘</span> Lun a Sáb: 8:00 a.m. – 7:00 p.m.</li>
+          <li><span>📸</span> @bellarosa.salon</li>
+        </ul>
+      </div>
+      <form class="formulario" id="form-reserva" novalidate>
+        <div class="campo">
+          <label for="nombre">Nombre completo</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Ej: María Pérez" required>
+          <small class="error"></small>
+        </div>
+        <div class="campo">
+          <label for="telefono">Teléfono / WhatsApp</label>
+          <input type="tel" id="telefono" name="telefono" placeholder="300 123 4567" required>
+          <small class="error"></small>
+        </div>
+        <div class="fila-campos">
+          <div class="campo">
+            <label for="servicio">Servicio</label>
+            <select id="servicio" name="servicio" required>
+              <option value="">Elige uno…</option>
+              <option>Corte y peinado</option>
+              <option>Color y mechas</option>
+              <option>Manicure y pedicure</option>
+              <option>Maquillaje</option>
+              <option>Tratamientos faciales</option>
+              <option>Cejas y pestañas</option>
+            </select>
+            <small class="error"></small>
+          </div>
+          <div class="campo">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required>
+            <small class="error"></small>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="mensaje">Comentarios (opcional)</label>
+          <textarea id="mensaje" name="mensaje" rows="3" placeholder="Cuéntanos qué look te gustaría…"></textarea>
+        </div>
+        <button type="submit" class="btn btn-ancho">Reservar por WhatsApp</button>
+        <p class="mensaje-exito" id="mensaje-exito" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== PIE DE PÁGINA ===== -->
+  <footer class="pie">
+    <div class="contenedor pie-contenido">
+      <a href="#inicio" class="logo">Bella<span>Rosa</span></a>
+      <p>Belleza, cuidado y bienestar desde 2015.</p>
+      <p class="derechos">© <span id="anio"></span> Bella Rosa Salón &amp; Spa. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Botón flotante de WhatsApp -->
+  <a href="https://wa.me/573001234567" class="whatsapp-flotante" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">💬</a>
+
+  <script src="script.js"></script>
+</body>
+</html>
