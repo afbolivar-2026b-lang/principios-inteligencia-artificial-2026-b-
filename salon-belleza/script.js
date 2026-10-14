@@ -90,14 +90,49 @@ const btnAtras = document.getElementById('btn-atras');
 const btnSiguiente = document.getElementById('btn-siguiente');
 
 // --- Utilidades propias de la reserva (las generales están en datos.js) ---
-// Simula horarios ocupados de forma estable (siempre los mismos para la misma fecha)
-function estaOcupado(fecha, hora, profesional) {
-  const semilla = [...(fecha + hora + profesional)].reduce((suma, c) => suma + c.charCodeAt(0), 0);
-  return semilla % 4 === 0;
-}
 function profesionalPorId(id) {
   return id === 'cualquiera' ? { nombre: 'Sin preferencia' } : PROFESIONALES.find((p) => p.id === id);
 }
+function minutosServicio() { return estado.servicio ? estado.servicio.minutos : 60; }
+// Profesionales que pueden atender la reserva actual
+function candidatas() {
+  if (estado.profesional && estado.profesional !== 'cualquiera') return [profesionalPorIdSeguro(estado.profesional)];
+  return estado.servicio ? profesionalesPara(estado.servicio.categoria) : PROFESIONALES;
+}
+// Horas libres del día uniendo la agenda de las candidatas
+function libresDelDia(fecha) {
+  const horas = new Set(candidatas().flatMap((p) => horariosLibres(p, fecha, minutosServicio())));
+  return [...horas].sort((a, b) => horaEnMinutos(a) - horaEnMinutos(b));
+}
+function textoHorario(p) { return `${diasDeTrabajo(p)} · ${horaLegible(p.horario[0])} – ${horaLegible(p.horario[1])}`; }
+function retratoHTML(p, clase = 'retrato') {
+  const iniciales = p.nombre.split(' ').map((x) => x[0]).join('');
+  return `<span class="${clase}" style="background:linear-gradient(145deg, ${p.tono[0]}, ${p.tono[1]})">${iniciales}</span>`;
+}
+
+// Línea de tiempo del día: franjas ocupadas, libres y la cita elegida
+function lineaTiempoHTML(profesional, fecha, minutos, horaElegida) {
+  const [entrada, salida] = profesional.horario.map(horaEnMinutos);
+  const total = salida - entrada;
+  const pos = (m) => ((m - entrada) / total) * 100;
+  const ocupados = bloquesOcupados(profesional, fecha)
+    .map(([a, b]) => `<span class="franja ocupada" style="left:${pos(a)}%;width:${pos(b) - pos(a)}%" title="Ocupado ${horaLegible(minutosAHora(a))} – ${horaLegible(minutosAHora(b))}"></span>`).join('');
+  let elegida = '';
+  if (horaElegida) {
+    const a = horaEnMinutos(horaElegida);
+    elegida = `<span class="franja elegida" style="left:${pos(a)}%;width:${pos(a + minutos) - pos(a)}%"></span>`;
+  }
+  const marcas = [];
+  for (let m = Math.ceil(entrada / 60) * 60; m <= salida; m += 120) {
+    marcas.push(`<span style="left:${pos(m)}%">${horaLegible(minutosAHora(m)).replace(':00', '')}</span>`);
+  }
+  return `<div class="linea-tiempo" aria-hidden="true">
+      <div class="pista-tiempo">${ocupados}${elegida}</div>
+      <div class="marcas-tiempo">${marcas.join('')}</div>
+    </div>
+    <p class="leyenda-tiempo"><span class="muestra libre"></span>Libre <span class="muestra ocupada"></span>Ocupado ${horaElegida ? '<span class="muestra elegida"></span>Tu cita' : ''}</p>`;
+}
+
 function productosElegidos() { return PRODUCTOS.filter((p) => estado.productos.has(p.id)); }
 function totalReserva() {
   return (estado.servicio ? estado.servicio.precio : 0) + productosElegidos().reduce((s, p) => s + p.precio, 0);
@@ -105,7 +140,8 @@ function totalReserva() {
 function pasoValido(paso) {
   return [
     Boolean(estado.servicio),
-    Boolean(estado.profesional),
+    Boolean(estado.profesional) && (estado.profesional === 'cualquiera' || !estado.servicio ||
+      profesionalPorIdSeguro(estado.profesional).categorias.includes(estado.servicio.categoria)),
     Boolean(estado.fecha && estado.hora),
     true,
     true,
@@ -153,35 +189,37 @@ function vistaServicio() {
 // --- Paso 2: profesional ---
 function vistaProfesional() {
   const categoria = estado.servicio ? estado.servicio.categoria : null;
-  const ordenadas = [...PROFESIONALES].sort((a, b) => b.categorias.includes(categoria) - a.categorias.includes(categoria));
+  const lista = categoria ? profesionalesPara(categoria) : PROFESIONALES;
   const tarjeta = (p) => {
-    const recomendada = p.categorias.includes(categoria);
     const elegida = estado.profesional === p.id;
-    const iniciales = p.nombre.split(' ').map((x) => x[0]).join('');
     const estrellas = '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating));
+    const cupo = proximoCupo(p, minutosServicio());
     return `<button type="button" class="tarjeta-profesional" data-profesional="${p.id}" aria-pressed="${elegida}">
-      ${elegida ? '<span class="etiqueta-estado">✓ Seleccionada</span>' : (recomendada ? '<span class="etiqueta-estado">Recomendada</span>' : '')}
-      <span class="retrato" style="background:linear-gradient(145deg, ${p.tono[0]}, ${p.tono[1]})">${iniciales}</span>
+      ${elegida ? '<span class="etiqueta-estado">✓ Tu elección</span>' : ''}
+      ${retratoHTML(p)}
       <span>
         <h4>${p.nombre}</h4>
-        <span class="especialidad">${p.especialidad}</span>
+        <span class="especialidad">${p.rol} · ${p.especialidad}</span>
         <span class="calificacion"><b>${estrellas}</b> ${p.rating} (${p.resenas} reseñas)</span>
+        <span class="horario-pro">🗓 ${textoHorario(p)}</span>
+        <span class="proximo-cupo">${cupo ? `Próximo cupo: <b>${cuandoTexto(cupo.fecha, cupo.enDias)}, ${horaLegible(cupo.hora)}</b>` : 'Sin cupos en 2 semanas'}</span>
       </span>
     </button>`;
   };
   return `
-    <div class="paso-titulo"><h3>2. Elige tu profesional</h3><p>Todas nuestras especialistas están certificadas y muy bien calificadas.</p></div>
+    <div class="paso-titulo"><h3>2. Elige tu profesional</h3>
+      <p>${estado.servicio ? `Especialistas en ${escaparHTML(estado.servicio.nombre)} · duración ${duracionTexto(minutosServicio())}` : 'Todas nuestras especialistas están certificadas.'}</p></div>
     <div class="grid-profesionales">
-      ${ordenadas.map(tarjeta).join('')}
+      ${lista.map(tarjeta).join('')}
       <button type="button" class="tarjeta-profesional" data-profesional="cualquiera" aria-pressed="${estado.profesional === 'cualquiera'}">
-        ${estado.profesional === 'cualquiera' ? '<span class="etiqueta-estado">✓ Seleccionada</span>' : ''}
+        ${estado.profesional === 'cualquiera' ? '<span class="etiqueta-estado">✓ Tu elección</span>' : ''}
         <span class="retrato" style="background:linear-gradient(145deg, #f3e6df, #d9b7ad)">✦</span>
-        <span><h4>Sin preferencia</h4><span class="especialidad">Te asignamos la primera disponible</span></span>
+        <span><h4>Sin preferencia</h4><span class="especialidad">Te asignamos a quien tenga el primer cupo</span></span>
       </button>
     </div>`;
 }
 
-// --- Paso 3: fecha y hora ---
+// --- Paso 3: fecha y hora (según la agenda de la profesional y la duración del servicio) ---
 function vistaFecha() {
   const hoy = new Date();
   const hoyTexto = aTextoFecha(hoy);
@@ -191,29 +229,42 @@ function vistaFecha() {
   const esMesActual = mes.getFullYear() === hoy.getFullYear() && mes.getMonth() === hoy.getMonth();
   const diasEnMes = new Date(mes.getFullYear(), mes.getMonth() + 1, 0).getDate();
   const huecos = (mes.getDay() + 6) % 7; // la semana empieza en lunes
+  const minutos = minutosServicio();
+  const unica = estado.profesional && estado.profesional !== 'cualquiera' ? profesionalPorIdSeguro(estado.profesional) : null;
 
   let dias = '<span></span>'.repeat(huecos);
   for (let d = 1; d <= diasEnMes; d++) {
     const fecha = new Date(mes.getFullYear(), mes.getMonth(), d);
     const texto = aTextoFecha(fecha);
-    const cerrado = fecha.getDay() === 0 || texto < hoyTexto;
-    dias += `<button type="button" class="dia ${texto === hoyTexto ? 'hoy' : ''}" data-fecha="${texto}"
-      aria-pressed="${estado.fecha === texto}" ${cerrado ? 'disabled' : ''}
-      aria-label="${fecha.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}${cerrado ? ' (no disponible)' : ''}">${d}</button>`;
+    let motivo = '';
+    if (texto < hoyTexto) motivo = 'ya pasó';
+    else if (fecha.getDay() === 0) motivo = 'salón cerrado';
+    else if (unica && !trabajaEseDia(unica, texto)) motivo = `${unica.nombre.split(' ')[0]} no trabaja`;
+    else if (!libresDelDia(texto).length) motivo = 'sin cupos';
+    dias += `<button type="button" class="dia ${texto === hoyTexto ? 'hoy' : ''} ${motivo ? '' : 'con-cupos'}" data-fecha="${texto}"
+      aria-pressed="${estado.fecha === texto}" ${motivo ? 'disabled' : ''} title="${motivo || 'Con cupos'}"
+      aria-label="${fecha.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}${motivo ? ' (' + motivo + ')' : ''}">${d}</button>`;
   }
 
-  let horarios = '<p class="sin-fecha">Primero elige un día en el calendario.</p>';
+  let horarios = '<p class="sin-fecha">Elige un día con punto en el calendario: esos tienen cupos.</p>';
   if (estado.fecha) {
-    const ahora = hoy.getHours() * 60 + hoy.getMinutes();
-    horarios = `<div class="grid-horas">${HORARIOS.map((h) => {
-      const pasado = estado.fecha === hoyTexto && horaEnMinutos(h) <= ahora + 30;
-      const ocupado = pasado || estaOcupado(estado.fecha, h, estado.profesional || '');
-      return `<button type="button" class="hora" data-hora="${h}" aria-pressed="${estado.hora === h}" ${ocupado ? 'disabled' : ''}>${horaLegible(h)}</button>`;
-    }).join('')}</div>`;
+    const libres = libresDelDia(estado.fecha);
+    horarios = libres.length
+      ? `<div class="grid-horas">${libres.map((h) => `
+          <button type="button" class="hora" data-hora="${h}" aria-pressed="${estado.hora === h}">
+            ${horaLegible(h)}<small>hasta ${horaLegible(minutosAHora(horaEnMinutos(h) + minutos))}</small>
+          </button>`).join('')}</div>`
+      : '<p class="sin-fecha">No quedan cupos este día. Prueba con otro.</p>';
+    if (unica) horarios = lineaTiempoHTML(unica, estado.fecha, minutos, estado.hora) + horarios;
   }
+
+  const agenda = unica
+    ? `${retratoHTML(unica, 'retrato-mini')}<div><strong>Agenda de ${unica.nombre}</strong><small>${textoHorario(unica)}</small></div>`
+    : `<span class="retrato-mini" style="background:linear-gradient(145deg,#f3e6df,#d9b7ad)">✦</span><div><strong>Agenda de todo el equipo</strong><small>Te asignamos a quien esté libre</small></div>`;
 
   return `
-    <div class="paso-titulo"><h3>3. Fecha y hora</h3><p>Los domingos el salón está cerrado.</p></div>
+    <div class="paso-titulo"><h3>3. Fecha y hora</h3><p>Tu servicio dura <b>${duracionTexto(minutos)}</b>. Solo te mostramos horarios en los que alcanza a terminar.</p></div>
+    <div class="agenda-elegida">${agenda}</div>
     <div class="grid-fecha">
       <div class="calendario">
         <div class="calendario-cabecera">
@@ -228,7 +279,6 @@ function vistaFecha() {
         <h4>Horarios disponibles</h4>
         <p>${estado.fecha ? fechaLegible(estado.fecha, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Sin fecha seleccionada'}</p>
         ${horarios}
-        <p class="nota-sesion">🕘 Duración de la sesión: ${estado.servicio ? estado.servicio.minutos : 60} min · Horario del salón: 9:00 a.m. – 7:00 p.m.</p>
       </div>
     </div>`;
 }
@@ -289,7 +339,9 @@ function vistaExito() {
     <div class="sello">✓</div>
     <h3>¡Reserva enviada, ${escaparHTML(r.nombre.split(' ')[0])}!</h3>
     <p>Te esperamos el <strong>${fechaLegible(r.fecha, { weekday: 'long', day: 'numeric', month: 'long' })}</strong> a las <strong>${horaLegible(r.hora)}</strong>
-      para tu <strong>${r.servicio.nombre}</strong>. Te abrimos WhatsApp para confirmar con el salón.</p>
+      para tu <strong>${r.servicio.nombre}</strong> con <strong>${escaparHTML(r.profesional)}</strong>.
+      Dura ${duracionTexto(r.servicio.minutos)}: terminas hacia las ${horaLegible(minutosAHora(horaEnMinutos(r.hora) + r.servicio.minutos))}.
+      Te abrimos WhatsApp para confirmar con el salón.</p>
     <button type="button" class="btn" data-accion="nueva">Hacer otra reserva</button>
   </div>`;
 }
@@ -335,6 +387,7 @@ panel.addEventListener('click', (evento) => {
 
   if (d.servicio) {
     estado.servicio = buscarServicio(d.servicio);
+    estado.hora = null; // la duración cambió
     if (estado.profesional && estado.profesional !== 'cualquiera' &&
         !profesionalPorId(estado.profesional).categorias.includes(estado.servicio.categoria)) {
       estado.profesional = null;
@@ -384,6 +437,7 @@ gridDisenos.addEventListener('click', (evento) => {
   const boton = evento.target.closest('[data-diseno]');
   if (!boton) return;
   const d = DISENOS.find((x) => x.id === boton.dataset.diseno);
+  estado.hora = null;
   estado.servicio = { id: 'diseno-' + d.id, nombre: 'Manicura ' + d.nombre, precio: d.precio, minutos: 60, categoria: 'unas', foto: d.foto };
   if (estado.profesional && estado.profesional !== 'cualquiera' && !profesionalPorId(estado.profesional).categorias.includes('unas')) {
     estado.profesional = null;
@@ -414,13 +468,23 @@ function confirmarReserva() {
     return;
   }
 
+  // Con "Sin preferencia" se asigna la primera profesional libre a esa hora
+  const atiende = candidatas().find((p) => horariosLibres(p, estado.fecha, minutosServicio()).includes(estado.hora));
+  if (!atiende) {
+    alert('Ese horario se acaba de ocupar. Elige otro, por favor.');
+    estado.hora = null;
+    irAPaso(2);
+    return;
+  }
+
   const productos = productosElegidos();
   const reserva = {
     id: Date.now().toString(36),
     creada: new Date().toISOString(),
     nombre, telefono, nota,
     servicio: { nombre: estado.servicio.nombre, precio: estado.servicio.precio, minutos: estado.servicio.minutos, categoria: estado.servicio.categoria },
-    profesional: profesionalPorId(estado.profesional).nombre,
+    profesional: atiende.nombre,
+    profesionalId: atiende.id,
     fecha: estado.fecha,
     hora: estado.hora,
     productos: productos.map((p) => ({ id: p.id, nombre: p.nombre, precio: p.precio })),
@@ -463,3 +527,162 @@ document.getElementById('pie-contacto').innerHTML = `
   <li><a href="mailto:${SALON.email}">Email: ${SALON.email}</a></li>
   <li>Instagram: ${SALON.instagram}</li>`;
 document.getElementById('whatsapp-flotante').href = `https://wa.me/${SALON.whatsapp}`;
+
+// ======================================================
+// ===== EQUIPO Y AGENDA DE CADA PROFESIONAL ============
+// ======================================================
+const FILTROS_EQUIPO = [{ id: 'todos', nombre: 'Todos' }, ...CATEGORIAS.map((c) => ({ id: c.id, nombre: c.nombre }))];
+let filtroEquipo = 'todos';
+const agenda = { profesional: null, servicioId: null, fecha: null, hora: null };
+const dialogoAgenda = document.getElementById('agenda');
+const contenidoAgenda = document.getElementById('agenda-contenido');
+
+function semanaMiniHTML(p) {
+  return `<span class="semana-mini" aria-label="Trabaja ${diasDeTrabajo(p)}">${[1, 2, 3, 4, 5, 6, 0]
+    .map((d) => `<span class="${p.dias.includes(d) ? 'trabaja' : ''}">${NOMBRES_DIAS[d][0].toUpperCase()}</span>`).join('')}</span>`;
+}
+
+function pintarEquipo() {
+  document.getElementById('filtros-equipo').innerHTML = FILTROS_EQUIPO.map((f) =>
+    `<button class="chip" role="tab" aria-selected="${f.id === filtroEquipo}" data-filtro-equipo="${f.id}">${f.nombre}</button>`).join('');
+
+  const lista = filtroEquipo === 'todos' ? PROFESIONALES : profesionalesPara(filtroEquipo);
+  document.getElementById('grid-equipo').innerHTML = lista.map((p, i) => {
+    const servicios = serviciosDe(p);
+    const masCorto = Math.min(...servicios.map((s) => s.minutos));
+    const cupo = proximoCupo(p, masCorto);
+    return `<article class="tarjeta-equipo" style="animation-delay:${i * 50}ms">
+      ${retratoHTML(p, 'retrato retrato-grande')}
+      <h3>${p.nombre}</h3>
+      <p class="rol">${p.rol} · ${p.especialidad}</p>
+      <span class="calificacion"><b>★</b> ${p.rating} · ${p.resenas} reseñas</span>
+      ${semanaMiniHTML(p)}
+      <p class="horario-pro">${horaLegible(p.horario[0])} – ${horaLegible(p.horario[1])}</p>
+      <p class="proximo-cupo">${cupo ? `Próximo cupo: <b>${cuandoTexto(cupo.fecha, cupo.enDias)}, ${horaLegible(cupo.hora)}</b>` : 'Sin cupos en 2 semanas'}</p>
+      <ul class="duraciones">
+        ${servicios.slice(0, 3).map((s) => `<li><span>${s.nombre}</span><b>${duracionTexto(s.minutos)}</b></li>`).join('')}
+      </ul>
+      <button type="button" class="btn btn-pequeno" data-agenda="${p.id}">Ver agenda y reservar</button>
+    </article>`;
+  }).join('');
+}
+
+function proximosDias(cantidad = 10) {
+  const hoy = new Date();
+  return Array.from({ length: cantidad }, (_, i) => aTextoFecha(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + i)));
+}
+
+function abrirAgenda(id) {
+  const p = profesionalPorIdSeguro(id);
+  agenda.profesional = p;
+  // Si ya eligió un servicio que esta profesional hace, se respeta
+  const servicios = serviciosDe(p);
+  agenda.servicioId = estado.servicio && servicios.some((s) => s.id === estado.servicio.id) ? estado.servicio.id : servicios[0].id;
+  agenda.fecha = proximosDias(14).find((f) => horariosLibres(p, f, buscarServicio(agenda.servicioId).minutos).length) || null;
+  agenda.hora = null;
+  pintarAgenda();
+  dialogoAgenda.showModal();
+}
+
+function pintarAgenda() {
+  const p = agenda.profesional;
+  const servicio = buscarServicio(agenda.servicioId);
+  const hoyTexto = aTextoFecha(new Date());
+
+  const dias = proximosDias().map((f) => {
+    const libres = horariosLibres(p, f, servicio.minutos);
+    const fecha = deTextoFecha(f);
+    const estadoDia = !trabajaEseDia(p, f) ? 'Descansa' : (libres.length ? `${libres.length} cupos` : 'Lleno');
+    return `<button type="button" class="dia-agenda" data-agenda-fecha="${f}" aria-pressed="${agenda.fecha === f}" ${libres.length ? '' : 'disabled'}>
+      <small>${f === hoyTexto ? 'Hoy' : fecha.toLocaleDateString('es-CO', { weekday: 'short' })}</small>
+      <strong>${fecha.getDate()}</strong>
+      <em>${estadoDia}</em>
+    </button>`;
+  }).join('');
+
+  let horas = '<p class="sin-fecha">Elige un día con cupos.</p>';
+  if (agenda.fecha) {
+    const libres = horariosLibres(p, agenda.fecha, servicio.minutos);
+    horas = lineaTiempoHTML(p, agenda.fecha, servicio.minutos, agenda.hora) + `<div class="grid-horas">${libres.map((h) => `
+      <button type="button" class="hora" data-agenda-hora="${h}" aria-pressed="${agenda.hora === h}">
+        ${horaLegible(h)}<small>hasta ${horaLegible(minutosAHora(horaEnMinutos(h) + servicio.minutos))}</small>
+      </button>`).join('')}</div>`;
+  }
+
+  const resumen = agenda.hora
+    ? `<strong>${servicio.nombre} · ${fechaLegible(agenda.fecha, { weekday: 'long', day: 'numeric', month: 'short' })}</strong>
+       <small>${horaLegible(agenda.hora)} – ${horaLegible(minutosAHora(horaEnMinutos(agenda.hora) + servicio.minutos))} · ${duracionTexto(servicio.minutos)} · ${formatoCOP(servicio.precio)} COP</small>`
+    : `<strong>${servicio.nombre}</strong><small>Dura ${duracionTexto(servicio.minutos)} · elige día y hora</small>`;
+
+  contenidoAgenda.innerHTML = `
+    <header class="agenda-cabecera">
+      ${retratoHTML(p)}
+      <div>
+        <h3 id="agenda-titulo">Agenda de ${p.nombre}</h3>
+        <p>${p.rol} · ${p.especialidad}</p>
+        <p class="horario-pro">🗓 ${textoHorario(p)}</p>
+      </div>
+      <button type="button" class="cerrar-agenda" data-cerrar aria-label="Cerrar">✕</button>
+    </header>
+    <div class="agenda-cuerpo">
+      <h4>1. ¿Qué servicio quieres?</h4>
+      <div class="servicios-agenda">
+        ${serviciosDe(p).map((s) => `<button type="button" class="opcion" data-agenda-servicio="${s.id}" aria-pressed="${s.id === agenda.servicioId}">
+          <strong>${s.nombre}</strong><span class="precio">${duracionTexto(s.minutos)}<em>${formatoCOP(s.precio)}</em></span>
+        </button>`).join('')}
+      </div>
+      <h4>2. Elige el día</h4>
+      <div class="dias-agenda">${dias}</div>
+      <h4>3. Elige la hora ${agenda.fecha ? `<small>· ${fechaLegible(agenda.fecha, { weekday: 'long', day: 'numeric', month: 'long' })}</small>` : ''}</h4>
+      ${horas}
+    </div>
+    <footer class="agenda-pie">
+      <div>${resumen}</div>
+      <button type="button" class="btn" data-agenda-reservar ${agenda.hora ? '' : 'disabled'}>Reservar este horario →</button>
+    </footer>`;
+}
+
+document.getElementById('filtros-equipo').addEventListener('click', (e) => {
+  const chip = e.target.closest('[data-filtro-equipo]');
+  if (!chip) return;
+  filtroEquipo = chip.dataset.filtroEquipo;
+  pintarEquipo();
+});
+document.getElementById('grid-equipo').addEventListener('click', (e) => {
+  const boton = e.target.closest('[data-agenda]');
+  if (boton) abrirAgenda(boton.dataset.agenda);
+});
+
+dialogoAgenda.addEventListener('click', (e) => {
+  if (e.target === dialogoAgenda) { dialogoAgenda.close(); return; } // clic fuera de la ventana
+  const b = e.target.closest('button');
+  if (!b) return;
+  const d = b.dataset;
+  if ('cerrar' in d) { dialogoAgenda.close(); return; }
+  if (d.agendaServicio) {
+    agenda.servicioId = d.agendaServicio;
+    agenda.hora = null;
+    const minutos = buscarServicio(agenda.servicioId).minutos;
+    if (agenda.fecha && !horariosLibres(agenda.profesional, agenda.fecha, minutos).length) {
+      agenda.fecha = proximosDias(14).find((f) => horariosLibres(agenda.profesional, f, minutos).length) || null;
+    }
+  } else if (d.agendaFecha) {
+    agenda.fecha = d.agendaFecha; agenda.hora = null;
+  } else if (d.agendaHora) {
+    agenda.hora = d.agendaHora;
+  } else if ('agendaReservar' in d) {
+    // Pasa todo a la reserva y salta a "Productos"
+    Object.assign(estado, {
+      servicio: buscarServicio(agenda.servicioId), profesional: agenda.profesional.id,
+      fecha: agenda.fecha, hora: agenda.hora, enviada: null, mesVista: primerDiaDelMes(deTextoFecha(agenda.fecha)),
+    });
+    dialogoAgenda.close();
+    irAPaso(3);
+    return;
+  } else {
+    return;
+  }
+  pintarAgenda();
+});
+
+pintarEquipo();

@@ -67,13 +67,16 @@ const DISENOS = [
   { id: 'golden-pearl', foto: 'img/golden-pearl.jpg', nombre: 'Golden Pearlescent', categoria: 'Almond', detalle: 'Perlado dorado con brillo delicado', precio: 62000 },
 ];
 
+// Equipo del salón.
+// dias: días que trabaja (0 = domingo, 1 = lunes … 6 = sábado) · horario: entrada y salida
 const PROFESIONALES = [
-  { id: 'sofia', nombre: 'Sofía Martínez', especialidad: 'Uñas en gel & nail art', categorias: ['unas'], rating: 4.9, resenas: 124, tono: ['#e8c3b5', '#c98f88'] },
-  { id: 'camila', nombre: 'Camila Reyes', especialidad: 'Manicura de lujo & diseño', categorias: ['unas'], rating: 4.9, resenas: 210, tono: ['#d9b49a', '#a8735c'] },
-  { id: 'valentina', nombre: 'Valentina Ríos', especialidad: 'Colorimetría & balayage', categorias: ['cabello'], rating: 4.8, resenas: 98, tono: ['#f0d2c4', '#d39a93'] },
-  { id: 'daniela', nombre: 'Daniela Ortiz', especialidad: 'Maquillaje & cejas', categorias: ['maquillaje'], rating: 4.7, resenas: 76, tono: ['#efd9cc', '#b8946a'] },
-  { id: 'laura', nombre: 'Laura Gómez', especialidad: 'Spa facial & masajes', categorias: ['spa'], rating: 4.8, resenas: 88, tono: ['#e9d6d0', '#9d7b84'] },
-  { id: 'mariana', nombre: 'Mariana López', especialidad: 'Cortes & peinados', categorias: ['cabello', 'maquillaje'], rating: 4.8, resenas: 132, tono: ['#f3ddd2', '#c4877c'] },
+  { id: 'sofia', nombre: 'Sofía Martínez', rol: 'Manicurista', especialidad: 'Uñas en gel & nail art', categorias: ['unas'], rating: 4.9, resenas: 124, tono: ['#e8c3b5', '#c98f88'], dias: [2, 3, 4, 5, 6], horario: ['9:00', '18:00'] },
+  { id: 'camila', nombre: 'Camila Reyes', rol: 'Manicurista', especialidad: 'Manicura de lujo & diseño', categorias: ['unas'], rating: 4.9, resenas: 210, tono: ['#d9b49a', '#a8735c'], dias: [1, 2, 3, 4, 5], horario: ['10:00', '19:00'] },
+  { id: 'valentina', nombre: 'Valentina Ríos', rol: 'Estilista', especialidad: 'Colorimetría & balayage', categorias: ['cabello'], rating: 4.8, resenas: 98, tono: ['#f0d2c4', '#d39a93'], dias: [1, 2, 3, 4, 5, 6], horario: ['9:00', '17:00'] },
+  { id: 'andres', nombre: 'Andrés Cárdenas', rol: 'Peluquero', especialidad: 'Cortes, barbería & peinados', categorias: ['cabello'], rating: 4.9, resenas: 156, tono: ['#d8c3b8', '#7d5c52'], dias: [1, 2, 3, 4, 5, 6], horario: ['11:00', '19:00'] },
+  { id: 'mariana', nombre: 'Mariana López', rol: 'Estilista', especialidad: 'Cortes & peinados de evento', categorias: ['cabello', 'maquillaje'], rating: 4.8, resenas: 132, tono: ['#f3ddd2', '#c4877c'], dias: [1, 2, 3, 5, 6], horario: ['9:00', '18:00'] },
+  { id: 'daniela', nombre: 'Daniela Ortiz', rol: 'Maquilladora', especialidad: 'Maquillaje & cejas', categorias: ['maquillaje'], rating: 4.7, resenas: 76, tono: ['#efd9cc', '#b8946a'], dias: [3, 4, 5, 6], horario: ['10:00', '19:00'] },
+  { id: 'laura', nombre: 'Laura Gómez', rol: 'Esteticista', especialidad: 'Spa facial & masajes', categorias: ['spa'], rating: 4.8, resenas: 88, tono: ['#e9d6d0', '#9d7b84'], dias: [1, 2, 4, 5, 6], horario: ['9:00', '18:00'] },
 ];
 
 const PRODUCTOS = [
@@ -87,8 +90,6 @@ const PRODUCTOS = [
 
 // Clave donde se guardan las reservas web en el navegador (la usan la página y el panel)
 const CLAVE_RESERVAS = 'neivaBelleza.reservas';
-
-const HORARIOS = ['9:00', '10:30', '12:00', '14:00', '15:30', '17:00'];
 
 // Ícono de línea a partir de los trazos de ICONOS
 function iconoSVG(nombre, clase = 'icono-linea') {
@@ -128,4 +129,99 @@ function horaEnMinutos(hora) { const [h, m] = hora.split(':').map(Number); retur
 function horaLegible(hora) {
   const [h, m] = hora.split(':').map(Number);
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'a.m.' : 'p.m.'}`;
+}
+
+// ===== DISPONIBILIDAD DEL EQUIPO =====
+const NOMBRES_DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const INTERVALO_CITAS = 30; // cada cuántos minutos puede empezar una cita
+
+function minutosAHora(minutos) { return `${Math.floor(minutos / 60)}:${String(minutos % 60).padStart(2, '0')}`; }
+function profesionalPorIdSeguro(id) { return PROFESIONALES.find((p) => p.id === id); }
+function profesionalesPara(categoria) { return PROFESIONALES.filter((p) => p.categorias.includes(categoria)); }
+function serviciosDe(profesional) {
+  return CATEGORIAS.filter((c) => profesional.categorias.includes(c.id))
+    .flatMap((c) => c.servicios.map((s) => ({ ...s, categoria: c.id })));
+}
+function trabajaEseDia(profesional, fechaTexto) { return profesional.dias.includes(deTextoFecha(fechaTexto).getDay()); }
+
+// "Mar a Sáb" o "Lun, Mar, Jue…"
+function diasDeTrabajo(profesional) {
+  const corto = (d) => NOMBRES_DIAS[d].slice(0, 3).replace(/^./, (c) => c.toUpperCase());
+  const dias = [...profesional.dias].sort();
+  const seguidos = dias.every((d, i) => i === 0 || d === dias[i - 1] + 1);
+  return seguidos && dias.length > 2 ? `${corto(dias[0])} a ${corto(dias[dias.length - 1])}` : dias.map(corto).join(', ');
+}
+
+// Generador pseudoaleatorio con semilla: la misma profesional y fecha siempre da la misma agenda de ejemplo
+function aleatorioConSemilla(texto) {
+  let a = [...texto].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 2654435761), 1779033703) >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function reservasGuardadas() {
+  try { return JSON.parse(localStorage.getItem(CLAVE_RESERVAS) || '[]'); } catch (e) { return []; }
+}
+
+// Bloques ocupados [inicio, fin] en minutos: citas de ejemplo + reservas reales hechas en la página
+function bloquesOcupados(profesional, fechaTexto) {
+  const [entrada, salida] = profesional.horario.map(horaEnMinutos);
+  const azar = aleatorioConSemilla(profesional.id + fechaTexto);
+  const bloques = [];
+  const cantidad = 2 + Math.floor(azar() * 3);
+  for (let i = 0; i < cantidad; i++) {
+    const inicio = entrada + Math.floor(azar() * ((salida - entrada) / INTERVALO_CITAS)) * INTERVALO_CITAS;
+    const duracion = [30, 60, 60, 90][Math.floor(azar() * 4)];
+    bloques.push([inicio, Math.min(inicio + duracion, salida)]);
+  }
+  reservasGuardadas()
+    .filter((r) => r.estado !== 'Cancelada' && r.fecha === fechaTexto &&
+      (r.profesionalId === profesional.id || (!r.profesionalId && r.profesional === profesional.nombre)))
+    .forEach((r) => { const inicio = horaEnMinutos(r.hora); bloques.push([inicio, inicio + (Number(r.servicio?.minutos) || 60)]); });
+  return bloques.sort((a, b) => a[0] - b[0]);
+}
+
+// Horas de inicio libres para un servicio de "minutos" de duración
+function horariosLibres(profesional, fechaTexto, minutos) {
+  if (!trabajaEseDia(profesional, fechaTexto)) return [];
+  const ahora = new Date();
+  const esHoy = fechaTexto === aTextoFecha(ahora);
+  if (fechaTexto < aTextoFecha(ahora)) return [];
+  const limite = esHoy ? ahora.getHours() * 60 + ahora.getMinutes() + 30 : -1;
+  const [entrada, salida] = profesional.horario.map(horaEnMinutos);
+  const ocupados = bloquesOcupados(profesional, fechaTexto);
+  const libres = [];
+  for (let inicio = entrada; inicio + minutos <= salida; inicio += INTERVALO_CITAS) {
+    const fin = inicio + minutos;
+    const choca = ocupados.some(([a, b]) => inicio < b && fin > a);
+    if (!choca && inicio > limite) libres.push(minutosAHora(inicio));
+  }
+  return libres;
+}
+
+// Primer cupo libre en los próximos días
+function proximoCupo(profesional, minutos, dias = 14) {
+  const hoy = new Date();
+  for (let i = 0; i < dias; i++) {
+    const fecha = aTextoFecha(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + i));
+    const libres = horariosLibres(profesional, fecha, minutos);
+    if (libres.length) return { fecha, hora: libres[0], enDias: i };
+  }
+  return null;
+}
+
+function cuandoTexto(fechaTexto, enDias) {
+  if (enDias === 0) return 'Hoy';
+  if (enDias === 1) return 'Mañana';
+  const t = fechaLegible(fechaTexto, { weekday: 'long', day: 'numeric' });
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function duracionTexto(minutos) {
+  const h = Math.floor(minutos / 60), m = minutos % 60;
+  return h ? `${h} h${m ? ' ' + m + ' min' : ''}` : `${m} min`;
 }

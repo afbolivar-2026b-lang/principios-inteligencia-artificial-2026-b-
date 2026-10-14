@@ -9,7 +9,7 @@ Sitio estático en HTML, CSS y JavaScript, sin librerías ni servidor. Usa un es
 ## Qué tiene
 | Página | Secciones |
 |---|---|
-| `index.html` | Portada · Servicios con precios en COP · Catálogo de diseños de uñas con filtros · **Reserva en 5 pasos** (servicio → profesional → fecha y hora → productos → confirmar por WhatsApp) · Opiniones · Contacto |
+| `index.html` | Portada · Servicios con precios en COP · **Nuestro equipo con la agenda de cada profesional** (días que trabaja, próximo cupo, duración de cada servicio, cupos por día y hora de fin) · Catálogo de diseños de uñas con filtros · **Reserva en 5 pasos** (servicio → profesional → fecha y hora → productos → confirmar por WhatsApp) · Opiniones · Contacto |
 | `admin.html` | Indicadores del día · Citas de hoy · Inventario con alertas · Gráfica de ingresos de la semana · Servicios más pedidos · Reservas que llegan desde la página (confirmar, cancelar o escribir por WhatsApp) |
 
 ## Archivos
@@ -21,13 +21,14 @@ Sitio estático en HTML, CSS y JavaScript, sin librerías ni servidor. Usa un es
 
 ## Personalizar
 - **WhatsApp del salón:** cambia `whatsapp` y `whatsappVisible` en `datos.js`.
-- **Precios y servicios:** edita `CATEGORIAS`, `DISENOS` y `PRODUCTOS` en `datos.js`.
+- **Precios, servicios y duración:** edita `CATEGORIAS` (cada servicio tiene `minutos`), `DISENOS` y `PRODUCTOS` en `datos.js`.
+- **Equipo y horarios:** en `PROFESIONALES` cambia `dias` (0 = domingo … 6 = sábado) y `horario` (entrada y salida) de cada persona.
 - **Fotos:** reemplaza los archivos de `img/`, idealmente por fotos reales de tus trabajos, o cambia el campo `foto` en `datos.js`.
 
 ## Importante
 - Las fotos actuales se recortaron de las imágenes de referencia que se crearon con Meta AI. Para un negocio real conviene usar fotos propias.
 - Las reservas se guardan en el **navegador** (`localStorage`) y se envían por **WhatsApp**. El panel solo ve las reservas hechas en el mismo navegador. Para que el salón reciba reservas desde cualquier celular hace falta un servidor o base de datos (por ejemplo, Supabase o Firebase).
 - En el panel, las citas, los ingresos y los servicios más pedidos son **datos de ejemplo**. Las reservas web son reales.
-- Los horarios marcados como "ocupado" se simulan.
+- Las citas ya ocupadas de cada profesional se simulan (siempre las mismas para el mismo día), pero las reservas reales hechas en la página sí bloquean ese horario.
 
-Las capturas de cada etapa están en `../capturas/`. Para regenerarlas: `node capturas/reserva.js` y `node capturas/panel.js`.
+Las capturas de cada etapa están en `../capturas/`. Para regenerarlas: `node capturas/reserva.js`, `node capturas/agenda.js` y `node capturas/panel.js`.
