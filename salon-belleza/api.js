@@ -28,6 +28,11 @@ const MENSAJES_ERROR = {
   NO_EXISTE: 'No encontramos esa cita. Revisa el enlace.',
   CUPON_INVALIDO: 'Ese código de descuento no es válido o ya venció.',
   SALDO_INSUFICIENTE: 'La tarjeta de regalo no tiene saldo suficiente.',
+  SIN_PERMISO: 'Tu cuenta no tiene permiso para hacer esto.',
+  ESTADO_INVALIDO: 'Ese estado no es válido.',
+  'Invalid login credentials': 'Correo o contraseña incorrectos.',
+  'Email not confirmed': 'Primero confirma tu correo con el enlace que te enviamos.',
+  'User already registered': 'Ya existe una cuenta con ese correo. Inicia sesión.',
 };
 
 function mensajeError(error) {
@@ -74,6 +79,60 @@ async function iniciarSesion(email, password) {
   const s = await authPeticion('token?grant_type=password', { email, password });
   guardarSesion(s);
   return s;
+}
+
+async function registrarse(email, password, nombre) {
+  const r = await fetch(`${SUPABASE.url}/auth/v1/signup`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, data: { nombre } }),
+  });
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(datos.msg || datos.error_description || 'AUTH');
+  if (datos.access_token) {
+    datos.expires_at = Math.floor(Date.now() / 1000) + datos.expires_in;
+    guardarSesion(datos);
+  }
+  return datos; // sin access_token = debe confirmar el correo
+}
+
+async function recuperarClave(email) {
+  const r = await fetch(`${SUPABASE.url}/auth/v1/recover`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!r.ok) throw new Error('AUTH');
+}
+
+// Id del usuario de la sesión actual (viene dentro del token)
+function usuarioActual() {
+  const s = leerSesion();
+  if (!s) return null;
+  try { return JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); } catch (e) { return null; }
+}
+
+// Si el enlace del correo trae la sesión (#access_token=...), se guarda
+function sesionDesdeEnlace() {
+  if (!location.hash.includes('access_token=')) return false;
+  const p = new URLSearchParams(location.hash.slice(1));
+  guardarSesion({
+    access_token: p.get('access_token'), refresh_token: p.get('refresh_token'),
+    expires_at: Math.floor(Date.now() / 1000) + Number(p.get('expires_in') || 3600),
+    tipo: p.get('type'),
+  });
+  history.replaceState(null, '', location.pathname);
+  return p.get('type') || true;
+}
+
+async function cambiarClave(password) {
+  const token = await tokenVigente();
+  const r = await fetch(`${SUPABASE.url}/auth/v1/user`, {
+    method: 'PUT',
+    headers: { apikey: SUPABASE.key, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+  if (!r.ok) throw new Error('AUTH');
 }
 
 async function cerrarSesion() {
