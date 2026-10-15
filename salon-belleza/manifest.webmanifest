@@ -1,0 +1,16 @@
+{
+  "name": "Neiva Belleza · Salón & Spa",
+  "short_name": "Neiva Belleza",
+  "description": "Reserva tu cita, mira la agenda de cada profesional y compra productos.",
+  "start_url": "index.html?origen=app",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf5f1",
+  "theme_color": "#a8625c",
+  "lang": "es-CO",
+  "icons": [{ "src": "img/icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }],
+  "shortcuts": [
+    { "name": "Reservar", "url": "index.html?origen=app#reservar" },
+    { "name": "Mis citas", "url": "cita.html" }
+  ]
+}

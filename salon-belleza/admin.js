@@ -409,7 +409,7 @@ function detalleCita(c) {
     nombre: (cl.nombre || '').split(' ')[0], salon: SALON.nombre, fecha: fechaLegible(ini.fecha, { weekday: 'long', day: 'numeric', month: 'long' }),
     hora: horaDe(c.inicio), profesional: nombreProfesional(c.profesional_id), enlace,
   });
-  const gracias = rellenar(PLANTILLAS.agradecimiento, { nombre: (cl.nombre || '').split(' ')[0], salon: SALON.nombre, resena: INTEGRACIONES.googleReviewUrl || urlBase() });
+  const gracias = rellenar(PLANTILLAS.agradecimiento, { nombre: (cl.nombre || '').split(' ')[0], salon: SALON.nombre, resena: `${enlace}#resena` });
   const puedeEditar = esAdmin() || c.profesional_id === sesion.perfil.profesional_id;
   const botonesEstado = puedeEditar && !['cancelada'].includes(c.estado) ? `
     <div class="fila-botones">
@@ -829,6 +829,7 @@ VISTAS.caja = async (vista) => {
           <div class="campo"><label for="v-propina">Propina ($)</label><input id="v-propina" type="number" min="0" step="1000" value="0"></div>
         </div>
         <div class="metodos" role="group" aria-label="Método de pago">${Object.entries(METODOS).map(([k, v]) => `<button class="chip" data-metodo="${k}" aria-pressed="${venta.metodo === k}">${v}</button>`).join('')}</div>
+        <div class="campo" id="campo-bono" ${venta.metodo === 'bono' ? '' : 'hidden'} style="margin-top:.6rem"><label for="v-bono">Código de la tarjeta de regalo</label><input id="v-bono" maxlength="12" style="text-transform:uppercase"></div>
         <div class="totales-venta"><div><span>Subtotal</span><span>${formatoCOP(subtotal)}</span></div><div class="total"><span>Total</span><span id="v-total">${formatoCOP(subtotal)}</span></div></div>
         <div class="fila-botones" style="margin-top:.8rem"><button class="btn" data-registrar ${venta.lineas.length ? '' : 'disabled'}>Registrar venta</button>
           <button class="btn btn-borde" data-limpiar>Limpiar</button></div>
@@ -863,7 +864,11 @@ VISTAS.caja = async (vista) => {
   $('v-pro').onchange = (e) => { venta.profesional = e.target.value; };
   vista.querySelectorAll('[data-cantidad]').forEach((i) => i.onchange = () => { venta.lineas[i.dataset.cantidad].cantidad = Math.max(1, Number(i.value) || 1); refrescar(); });
   vista.querySelectorAll('[data-quitar-linea]').forEach((b) => b.onclick = () => { venta.lineas.splice(Number(b.dataset.quitarLinea), 1); refrescar(); });
-  vista.querySelectorAll('[data-metodo]').forEach((b) => b.onclick = () => { venta.metodo = b.dataset.metodo; vista.querySelectorAll('[data-metodo]').forEach((x) => x.setAttribute('aria-pressed', x === b)); });
+  vista.querySelectorAll('[data-metodo]').forEach((b) => b.onclick = () => {
+    venta.metodo = b.dataset.metodo;
+    vista.querySelectorAll('[data-metodo]').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    $('campo-bono').hidden = venta.metodo !== 'bono';
+  });
   vista.querySelector('[data-limpiar]').onclick = () => { Object.assign(venta, { lineas: [], clienta: null, profesional: '', reserva: null }); refrescar(); };
   vista.querySelector('[data-registrar]').onclick = async () => {
     let clientaId = venta.clienta ? venta.clienta.id : null;
@@ -874,6 +879,14 @@ VISTAS.caja = async (vista) => {
     }
     const descuento = Number($('v-desc').value) || 0;
     const propina = Number($('v-propina').value) || 0;
+    if (venta.metodo === 'bono') {
+      const codigo = $('v-bono').value.trim();
+      if (!codigo) { toast('Escribe el código de la tarjeta de regalo.', true); $('v-bono').focus(); return; }
+      // Primero se descuenta el saldo de la tarjeta; si no alcanza, no se registra la venta
+      const ok = await intentar(() => db.rpc('usar_tarjeta', { p_codigo: codigo, p_valor: Math.max(0, subtotal - descuento) + propina })).catch(() => null);
+      if (!ok) return;
+      toast(`Saldo restante en la tarjeta: ${formatoCOP(ok.saldo)}`);
+    }
     await intentar(() => db.insertar('ventas', {
       turno_id: turno.id, reserva_id: venta.reserva ? venta.reserva.id : null, clienta_id: clientaId,
       profesional_id: $('v-pro').value || null, items: venta.lineas, subtotal, descuento, propina,
@@ -1260,7 +1273,9 @@ VISTAS.catalogo = async (vista) => {
   const [servicios, disenos, productos] = await Promise.all([
     db.leer('servicios', 'select=*&order=categoria_id,orden'), db.leer('disenos', 'select=*&order=orden'), db.leer('productos', 'select=*&order=orden'),
   ]);
-  const fila = (tabla, x, campos) => `<tr data-tabla="${tabla}" data-id="${esc(x.id)}">${campos.map(([c, tipo, extra]) => `<td>${tipo === 'check'
+  const celdaFoto = (x) => `<td><label class="foto-catalogo" title="Cambiar foto"><img src="${esc(x.foto || '')}" alt="">
+    <input type="file" accept="image/jpeg,image/png,image/webp" data-foto-de hidden><span>Cambiar</span></label></td>`;
+  const fila = (tabla, x, campos) => `<tr data-tabla="${tabla}" data-id="${esc(x.id)}">${tabla === 'servicios' ? '' : celdaFoto(x)}${campos.map(([c, tipo, extra]) => `<td>${tipo === 'check'
     ? `<input type="checkbox" data-c="${c}" ${x[c] ? 'checked' : ''} aria-label="${c}">`
     : tipo === 'area' ? `<textarea data-c="${c}" rows="2" aria-label="${c}" style="width:100%;min-width:180px;font:inherit;font-size:.8rem;border:1px solid var(--linea);border-radius:8px;padding:.3rem">${esc(x[c] || '')}</textarea>`
       : `<input ${tipo === 'num' ? 'type="number" min="0"' : ''} data-c="${c}" value="${esc(x[c] ?? '')}" aria-label="${c}" ${extra || ''}>`}</td>`).join('')}
@@ -1271,11 +1286,25 @@ VISTAS.catalogo = async (vista) => {
       <thead><tr><th>Servicio</th><th>Precio</th><th>Precio antes</th><th>Minutos</th><th>Limpieza</th><th>Cuidados después</th><th>Activo</th><th></th></tr></thead>
       <tbody>${servicios.map((s) => fila('servicios', s, [['nombre', 'txt'], ['precio', 'num'], ['precio_antes', 'num'], ['minutos', 'num'], ['limpieza_min', 'num'], ['cuidados', 'area'], ['activo', 'check']])).join('')}</tbody></table></div></section>
     <section class="tarjeta-admin"><div class="tarjeta-cabecera"><div><h2>Diseños de uñas</h2></div></div><div class="tabla-scroll"><table class="tabla">
-      <thead><tr><th>Diseño</th><th>Descripción</th><th>Precio</th><th>Activo</th><th></th></tr></thead>
+      <thead><tr><th>Foto</th><th>Diseño</th><th>Descripción</th><th>Precio</th><th>Activo</th><th></th></tr></thead>
       <tbody>${disenos.map((d) => fila('disenos', d, [['nombre', 'txt'], ['detalle', 'txt'], ['precio', 'num'], ['activo', 'check']])).join('')}</tbody></table></div></section>
     <section class="tarjeta-admin"><div class="tarjeta-cabecera"><div><h2>Productos de la tienda</h2></div></div><div class="tabla-scroll"><table class="tabla">
-      <thead><tr><th>Producto</th><th>Precio</th><th>Stock mínimo</th><th>Modo de uso</th><th>Activo</th><th></th></tr></thead>
+      <thead><tr><th>Foto</th><th>Producto</th><th>Precio</th><th>Stock mínimo</th><th>Modo de uso</th><th>Activo</th><th></th></tr></thead>
       <tbody>${productos.map((p) => fila('productos', p, [['nombre', 'txt'], ['precio', 'num'], ['stock_minimo', 'num'], ['modo_uso', 'area'], ['activo', 'check']])).join('')}</tbody></table></div></section>`;
+  // Fotos reales de productos y diseños: se suben al almacenamiento y se guardan en el catálogo
+  vista.querySelectorAll('[data-foto-de]').forEach((input) => input.onchange = async () => {
+    const archivo = input.files[0];
+    if (!archivo) return;
+    if (archivo.size > 5 * 1024 * 1024) { toast('La foto debe pesar menos de 5 MB.', true); return; }
+    const tr = input.closest('tr');
+    try {
+      const ruta = await intentar(() => subirArchivo('galeria', archivo));
+      const url = `${SUPABASE.url}/storage/v1/object/public/galeria/${ruta}`;
+      await intentar(() => db.actualizar(tr.dataset.tabla, `id=eq.${encodeURIComponent(tr.dataset.id)}`, { foto: url }), 'Foto actualizada en la página.');
+      tr.querySelector('.foto-catalogo img').src = url;
+      await cargarCatalogo().catch(() => {});
+    } catch (e) { /* el aviso ya se mostró */ }
+  });
   vista.querySelectorAll('[data-guardar-fila]').forEach((b) => b.onclick = async () => {
     const tr = b.closest('tr');
     const cambios = {};

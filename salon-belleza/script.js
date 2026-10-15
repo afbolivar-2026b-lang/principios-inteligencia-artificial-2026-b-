@@ -93,6 +93,9 @@ const estado = {
   error: '',
   sinConexion: false,
   espera: { abierta: false, enviada: false, error: '' },
+  cupon: null,          // { codigo, descuento, descripcion } validado por la base de datos
+  cuponError: '',
+  cuponSugerido: (new URLSearchParams(location.search).get('cupon') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20),
 };
 
 const panel = document.getElementById('paso-contenido');
@@ -118,7 +121,8 @@ function libresDelDia(fecha) {
   return [...horas].sort((a, b) => horaEnMinutos(a) - horaEnMinutos(b));
 }
 function productosElegidos() { return PRODUCTOS.filter((p) => estado.productos.has(p.id)); }
-function totalReserva() { return calculo().precio + productosElegidos().reduce((s, p) => s + p.precio, 0); }
+function subtotalReserva() { return calculo().precio + productosElegidos().reduce((s, p) => s + p.precio, 0); }
+function totalReserva() { return Math.max(0, subtotalReserva() - (estado.cupon ? estado.cupon.descuento : 0)); }
 function textoHorario(p) { return `${diasDeTrabajo(p)} · ${horaLegible(p.horario[0])} – ${horaLegible(p.horario[1])}`; }
 function retratoHTML(p, clase = 'retrato') {
   const iniciales = p.nombre.split(' ').map((x) => x[0]).join('');
@@ -387,7 +391,44 @@ function filasResumen() {
     <div class="fila-resumen"><span>Fecha</span><span>${fechaLegible(estado.fecha, { weekday: 'long', day: 'numeric', month: 'long' })}<br>${horaLegible(estado.hora)} – ${finDeCita(estado.hora, c.minutos)} (${duracionTexto(c.minutos)})</span></div>
     <div class="fila-resumen"><span>Lugar</span><span>${escaparHTML(SALON.direccion)}</span></div>
     <div class="fila-resumen"><span>Productos (${productos.length})</span><span>${productos.length ? productos.map((p) => `${escaparHTML(p.nombre)} · ${formatoCOP(p.precio)}`).join('<br>') : '—'}</span></div>
+    ${estado.cupon ? `<div class="fila-resumen descuento"><span>Cupón ${escaparHTML(estado.cupon.codigo)}</span><span>− ${formatoCOP(estado.cupon.descuento)}</span></div>` : ''}
     <div class="fila-resumen total"><span>Total</span><span>${formatoCOP(totalReserva())} COP</span></div>`;
+}
+
+function cuponHTML() {
+  if (estado.cupon) {
+    return `<p class="cupon-ok">✓ ${escaparHTML(estado.cupon.descripcion || 'Cupón aplicado')}
+      <button type="button" class="enlace-boton" data-accion="quitar-cupon">Quitar</button></p>`;
+  }
+  return `<label for="cupon">¿Tienes un código de descuento?</label>
+    <div class="fila-cupon"><input id="cupon" maxlength="20" placeholder="Ej: BIENVENIDA" autocapitalize="characters" value="${escaparHTML(estado.cuponSugerido)}">
+      <button type="button" class="btn btn-pequeno btn-borde" data-accion="cupon">Aplicar</button></div>
+    ${estado.cuponError ? `<small class="error" role="alert">${escaparHTML(estado.cuponError)}</small>` : ''}`;
+}
+function resumenConfirmarHTML() {
+  return `<h4>Resumen de la reserva</h4>
+    ${filasResumen()}
+    <div class="bloque-cupon">${cuponHTML()}</div>
+    <p class="nota-deposito">Pagas en el salón · Cancelación gratuita hasta 24 h antes.</p>`;
+}
+// Repinta solo el resumen (para no borrar lo que la clienta ya escribió en el formulario)
+function repintarResumenConfirmar() {
+  const t = panel.querySelector('.tarjeta-resumen');
+  if (t) t.innerHTML = resumenConfirmarHTML();
+  document.getElementById('resumen-total').textContent = formatoCOP(totalReserva()) + ' COP';
+}
+async function aplicarCupon() {
+  const codigo = (document.getElementById('cupon').value || '').trim().toUpperCase();
+  if (!codigo) return;
+  estado.cuponSugerido = codigo;
+  try {
+    estado.cupon = await db.rpc('validar_cupon', { p_codigo: codigo, p_subtotal: subtotalReserva() });
+    estado.cuponError = '';
+  } catch (e) {
+    estado.cupon = null;
+    estado.cuponError = e instanceof TypeError ? 'Sin conexión: no pudimos revisar el código.' : mensajeError(e);
+  }
+  repintarResumenConfirmar();
 }
 
 function vistaConfirmar() {
@@ -416,11 +457,7 @@ function vistaConfirmar() {
         <label class="check"><input type="checkbox" id="recordar" checked> Recordar mis datos en este celular</label>
         <p class="legal">Al reservar aceptas los <a href="terminos.html" target="_blank">términos de reserva</a> y la <a href="privacidad.html" target="_blank">política de tratamiento de datos</a>.</p>
       </form>
-      <div class="tarjeta-resumen">
-        <h4>Resumen de la reserva</h4>
-        ${filasResumen()}
-        <p class="nota-deposito">Pagas en el salón · Cancelación gratuita hasta 24 h antes.</p>
-      </div>
+      <div class="tarjeta-resumen">${resumenConfirmarHTML()}</div>
     </div>`;
 }
 
@@ -440,7 +477,8 @@ function vistaExito() {
     <p>Te esperamos el <strong>${fechaLegible(ini.fecha, { weekday: 'long', day: 'numeric', month: 'long' })}</strong>
       de <strong>${horaLegible(ini.hora)}</strong> a <strong>${horaLegible(fin.hora)}</strong>
       con <strong>${escaparHTML(r.profesional)}</strong> para tu ${r.servicios.map((s) => escaparHTML(s.nombre)).join(' + ')}.
-      Total: <strong>${formatoCOP(r.total)} COP</strong>, pagas en el salón.</p>
+      Total: <strong>${formatoCOP(r.total)} COP</strong>${r.descuento ? ` (con ${formatoCOP(r.descuento)} de descuento)` : ''}, pagas en el salón.</p>
+    ${r.avisoCupon ? `<p class="error-general">${escaparHTML(r.avisoCupon)}</p>` : ''}
     <div class="acciones-exito">
       <a class="btn" href="${enlaceGoogleCalendar(titulo, r.inicio, r.fin, detalles)}" target="_blank" rel="noopener">Agregar a Google Calendar</a>
       <button type="button" class="btn btn-borde" data-accion="ics">Agregar al calendario del celular</button>
@@ -502,10 +540,6 @@ function pintarReserva() {
   btnSiguiente.textContent = estado.paso === 4 ? (estado.enviando ? 'Guardando…' : 'Confirmar reserva')
     : (estado.paso === 3 && !estado.productos.size ? 'Omitir y continuar →' : 'Continuar →');
 
-  const contador = document.getElementById('contador-bolsa');
-  contador.textContent = estado.productos.size;
-  contador.hidden = estado.productos.size === 0;
-
   // Guardar la reserva a medias por si cierra la página
   if (!estado.enviada) {
     guardarLocal(CLAVE_BORRADOR, {
@@ -553,6 +587,7 @@ panel.addEventListener('click', (evento) => {
   if (!el) return;
   const d = el.dataset;
   estado.error = '';
+  if (d.servicio || d.quitar || d.largo || d.producto) estado.cupon = null; // el precio cambió: se valida de nuevo
 
   if (d.servicio) {
     const i = estado.servicios.indexOf(d.servicio);
@@ -599,6 +634,13 @@ panel.addEventListener('click', (evento) => {
       estado.fecha = null; estado.hora = null;
       estado.paso = estado.profesional ? 2 : 1;
     }
+  } else if (d.accion === 'cupon') {
+    aplicarCupon();
+    return;
+  } else if (d.accion === 'quitar-cupon') {
+    estado.cupon = null;
+    repintarResumenConfirmar();
+    return;
   } else if (d.accion === 'ics') {
     const r = estado.enviada;
     descargarICS(`Cita en ${SALON.nombre}`, r.inicio, r.fin, `Con ${r.profesional}. Código ${r.codigo}.`);
@@ -609,6 +651,10 @@ panel.addEventListener('click', (evento) => {
     return;
   }
   pintarReserva();
+});
+
+panel.addEventListener('keydown', (evento) => {
+  if (evento.key === 'Enter' && evento.target.id === 'cupon') { evento.preventDefault(); aplicarCupon(); }
 });
 
 panel.addEventListener('input', (evento) => {
@@ -706,6 +752,15 @@ async function confirmarReserva() {
     mis.unshift({ codigo: r.codigo, token: r.token, inicio: r.inicio, servicios: r.servicios.map((s) => s.nombre), profesional: r.profesional });
     guardarLocal(CLAVE_MIS_CITAS, mis.slice(0, 20));
     guardarLocal(CLAVE_BORRADOR, null);
+    if (estado.cupon) {
+      try {
+        const c = await db.rpc('aplicar_cupon', { p_token: r.token, p_codigo: estado.cupon.codigo });
+        r.total = c.total; r.descuento = c.descuento;
+      } catch (e) {
+        r.avisoCupon = 'Tu cita quedó reservada, pero el cupón ya no era válido. Pagas el precio normal.';
+      }
+      estado.cupon = null;
+    }
     estado.enviada = { ...r, nombre };
     registrarOcupado(r.profesional_id, r.inicio, r.fin);
     pintarEquipo();

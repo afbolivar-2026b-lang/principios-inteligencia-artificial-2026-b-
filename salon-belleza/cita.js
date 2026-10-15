@@ -3,7 +3,7 @@ const caja = document.getElementById('cita');
 const token = new URLSearchParams(location.search).get('t') || '';
 const TOKEN_VALIDO = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
 
-const vista = { reserva: null, modo: 'ver', fecha: null, hora: null, error: '', aviso: '', ocupado: false };
+const vista = { reserva: null, modo: 'ver', fecha: null, hora: null, error: '', aviso: '', ocupado: false, estrellas: 0, resenaLista: false };
 
 const ETIQUETA_ESTADO = {
   pendiente: ['Pendiente de confirmar', 'estado-pendiente'], confirmada: ['Confirmada', 'estado-confirmada'],
@@ -99,6 +99,8 @@ function pintar() {
       <a class="enlace" href="https://wa.me/${SALON.whatsapp}?text=${encodeURIComponent('Hola, necesito cambiar mi cita. Código ' + r.codigo)}" target="_blank" rel="noopener">escríbenos por WhatsApp</a>.</p>`}`;
   }
 
+  if (r.estado === 'terminada') acciones = resenaHTML();
+
   caja.innerHTML = `
     <p class="sobretitulo">Mi cita · código ${escaparHTML(r.codigo)}</p>
     <h1>Hola, ${escaparHTML(r.nombre)}</h1>
@@ -117,6 +119,38 @@ function pintar() {
     ${acciones}`;
 }
 
+function resenaHTML() {
+  if (vista.resenaLista) {
+    return `<div class="resena-cita" id="resena"><h2>¡Gracias por tu opinión!</h2>
+      <p>La publicamos en la página después de revisarla.</p>
+      ${INTEGRACIONES.googleReviewUrl ? `<p>¿Nos ayudas también en Google? <a class="enlace" href="${escaparHTML(INTEGRACIONES.googleReviewUrl)}" target="_blank" rel="noopener">Dejar reseña en Google</a></p>` : ''}</div>`;
+  }
+  return `<form class="resena-cita" id="resena">
+    <h2>¿Cómo te fue?</h2>
+    <div class="estrellas-elegir" role="radiogroup" aria-label="Calificación">
+      ${[1, 2, 3, 4, 5].map((n) => `<button type="button" role="radio" aria-checked="${vista.estrellas === n}" aria-label="${n} estrella${n > 1 ? 's' : ''}"
+        data-estrellas="${n}" class="${n <= vista.estrellas ? 'llena' : ''}">★</button>`).join('')}
+    </div>
+    <div class="campo"><label for="resena-texto">Cuéntanos (opcional)</label>
+      <textarea id="resena-texto" rows="3" maxlength="600" placeholder="¿Qué te gustó? ¿Qué podemos mejorar?"></textarea></div>
+    <button class="btn" type="submit" ${vista.estrellas ? '' : 'disabled'}>Enviar opinión</button>
+  </form>`;
+}
+
+caja.addEventListener('submit', (e) => {
+  if (e.target.id !== 'resena') return;
+  e.preventDefault();
+  const texto = document.getElementById('resena-texto').value;
+  accion(async () => {
+    try {
+      await db.rpc('dejar_resena', { p_token: token, p_estrellas: vista.estrellas, p_texto: texto });
+    } catch (err) {
+      if (err.message !== 'YA_RESENADA') throw err;
+    }
+    vista.resenaLista = true;
+  });
+});
+
 async function accion(fn) {
   vista.error = ''; vista.aviso = '';
   try { await fn(); } catch (e) { vista.error = e instanceof TypeError ? 'No hay conexión. Inténtalo de nuevo.' : mensajeError(e); }
@@ -129,6 +163,12 @@ caja.addEventListener('click', (e) => {
   const d = b.dataset;
   if (d.fecha) { vista.fecha = d.fecha; vista.hora = null; pintar(); return; }
   if (d.hora) { vista.hora = d.hora; pintar(); return; }
+  if (d.estrellas) {
+    const texto = document.getElementById('resena-texto').value;
+    vista.estrellas = Number(d.estrellas); pintar();
+    document.getElementById('resena-texto').value = texto;
+    return;
+  }
   switch (d.accion) {
     case 'confirmar':
       accion(async () => { vista.reserva = await db.rpc('confirmar_asistencia', { p_token: token }); vista.aviso = '¡Gracias! Tu asistencia quedó confirmada.'; });
@@ -171,4 +211,5 @@ caja.addEventListener('click', (e) => {
     vista.error = e instanceof TypeError ? 'No hay conexión con el sistema de reservas. Inténtalo más tarde.' : mensajeError(e);
   }
   pintar();
+  if (location.hash === '#resena' && document.getElementById('resena')) document.getElementById('resena').scrollIntoView();
 })();

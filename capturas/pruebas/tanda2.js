@@ -6,7 +6,7 @@ const SITIO = 'file://' + path.resolve(__dirname, '../../salon-belleza/');
 const foto = (n) => path.resolve(__dirname, '..', n);
 const errores = [];
 const ok = (cond, texto) => console.log((cond ? '✔ ' : '✘ ') + texto) || (!cond && errores.push(texto));
-const SECCIONES = ['inicio', 'agenda', 'clientas', 'caja', 'inventario', 'espera', 'reportes', 'gastos', 'equipo', 'catalogo', 'config', 'historial'];
+const SECCIONES = ['inicio', 'agenda', 'clientas', 'caja', 'inventario', 'espera', 'pedidos', 'regalos', 'resenas', 'galeria', 'reportes', 'gastos', 'equipo', 'catalogo', 'cupones', 'config', 'historial'];
 
 async function nuevaPagina(browser, opciones = {}, viewport = { width: 1366, height: 900 }) {
   const ctx = await browser.newContext({ viewport, reducedMotion: 'reduce', acceptDownloads: true });
@@ -45,7 +45,7 @@ async function ir(page, id) {
 
   await ingresar(page);
   const menu = await page.$$eval('#menu-admin a', (a) => a.map((x) => x.getAttribute('href').slice(1)));
-  ok(menu.length === 12, 'la dueña ve las 12 secciones: ' + menu.join(', '));
+  ok(menu.length === SECCIONES.length, `la dueña ve las ${SECCIONES.length} secciones: ` + menu.join(', '));
 
   for (const s of SECCIONES) {
     await ir(page, s);
@@ -120,6 +120,53 @@ async function ir(page, id) {
   const v = sim.DB.ventas[sim.DB.ventas.length - 1];
   ok(sim.DB.ventas.length === nVentas + 1 && v.total === 82000 && v.metodo_pago === 'nequi', 'venta registrada por Nequi');
 
+  // Cobrar con tarjeta de regalo
+  await ir(page, 'caja');
+  await page.selectOption('#v-servicio', 'mani-clasica');
+  await page.waitForTimeout(200);
+  await page.click('[data-metodo="bono"]');
+  ok(await page.isVisible('#v-bono'), 'al elegir "Bono" pide el código de la tarjeta');
+  await page.fill('#v-bono', 'a1b2c3d4e5');
+  await page.click('[data-registrar]');
+  await page.waitForTimeout(400);
+  ok(sim.DB.tarjetas_regalo.find((t) => t.codigo === 'A1B2C3D4E5').saldo === 70000, 'la tarjeta de regalo queda con $70.000 de saldo');
+
+  // Etapa 3 en el panel
+  await ir(page, 'pedidos');
+  await page.screenshot({ path: foto('tanda3-panel-pedidos.png') });
+  await page.click('[data-estado-pedido="entregado"]');
+  await page.waitForTimeout(300);
+  ok(sim.DB.pedidos[0].estado === 'entregado', 'pedido marcado como entregado');
+  await ir(page, 'regalos');
+  await page.click('[data-activar="7F3A9C2B1E"]');
+  await page.waitForTimeout(300);
+  ok(sim.DB.tarjetas_regalo[0].estado === 'activa', 'tarjeta de regalo activada al pagarla');
+  await page.screenshot({ path: foto('tanda3-panel-regalos.png') });
+  await ir(page, 'resenas');
+  await page.click('[data-publicar]');
+  await page.waitForTimeout(300);
+  ok(sim.DB.resenas.every((r) => r.aprobada), 'reseña publicada desde el panel');
+  await ir(page, 'resenas');
+  await page.screenshot({ path: foto('tanda3-panel-resenas.png') });
+  await ir(page, 'cupones');
+  await page.fill('#cu-codigo', 'mayo15');
+  await page.fill('#cu-desc', '15% en todos los servicios');
+  await page.fill('#cu-valor', '15');
+  await page.fill('#cu-usos', '50');
+  await page.click('[data-crear-cupon]');
+  await page.waitForTimeout(300);
+  ok(sim.DB.cupones.some((c) => c.codigo === 'MAYO15' && c.usos_max === 50), 'cupón MAYO15 creado');
+  await ir(page, 'cupones');
+  await page.screenshot({ path: foto('tanda3-panel-cupones.png') });
+  await ir(page, 'galeria');
+  await page.setInputFiles('#ga-foto', path.resolve(__dirname, '../../salon-belleza/img/chrome-rosa.jpg'));
+  await page.setInputFiles('#ga-antes', path.resolve(__dirname, '../../salon-belleza/img/minimal-milk.jpg'));
+  await page.fill('#ga-titulo', 'Chrome rosa');
+  await page.click('[data-subir]');
+  await page.waitForFunction(() => document.querySelector('.galeria-panel figure'));
+  ok(sim.DB.galeria.length === 1 && sim.DB.galeria[0].foto_antes && sim.llamadas.filter((l) => l.includes('/storage/v1/object/galeria/')).length === 2, 'foto y foto de antes subidas a la galería');
+  await page.screenshot({ path: foto('tanda3-panel-galeria.png') });
+
   // Tooltip de la gráfica
   await ir(page, 'reportes');
   await page.hover('#grafica-ingresos .barra:nth-of-type(3)').catch(() => {});
@@ -144,7 +191,7 @@ async function ir(page, id) {
   const est = await nuevaPagina(browser, { usuario: 'u-sofia', email: 'sofia@correo.com' });
   await ingresar(est.page);
   const menuEst = await est.page.$$eval('#menu-admin a', (a) => a.map((x) => x.getAttribute('href').slice(1)));
-  ok(menuEst.join() === 'inicio,agenda,equipo', 'la estilista solo ve Inicio, Agenda y su horario: ' + menuEst.join(', '));
+  ok(menuEst.join() === 'inicio,agenda,galeria,equipo', 'la estilista solo ve Inicio, Agenda, Galería y su horario: ' + menuEst.join(', '));
   await est.page.screenshot({ path: foto('tanda2-estilista.png') });
 
   // Cuenta sin aprobar

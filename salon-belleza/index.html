@@ -5,12 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Neiva Belleza | Salón & Spa en Neiva, Huila</title>
   <meta name="description" content="Neiva Belleza: salón de belleza y spa en Neiva, Huila. Uñas, cabello, maquillaje y spa facial. Reserva tu cita online.">
+  <meta name="theme-color" content="#a8625c">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="img/icono.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="img/icono.svg">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Neiva Belleza">
+  <meta property="og:title" content="Neiva Belleza | Salón & Spa en Neiva, Huila">
+  <meta property="og:description" content="Uñas, cabello, maquillaje y spa facial. Mira la agenda de cada profesional y reserva online en 2 minutos.">
+  <meta property="og:image" content="img/portada-mano.jpg">
+  <meta property="og:locale" content="es_CO">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BeautySalon", "name": "Neiva Belleza", "description": "Salón de belleza y spa en Neiva, Huila: uñas, cabello, maquillaje y spa facial. Reserva online.", "image": "img/portada-mano.jpg", "telephone": "+57 300 123 4567", "email": "hola@neivabelleza.co", "priceRange": "$$", "address": {"@type": "PostalAddress", "streetAddress": "Carrera 5 # 12-34", "addressLocality": "Neiva", "addressRegion": "Huila", "addressCountry": "CO"}, "geo": {"@type": "GeoCoordinates", "latitude": 2.9273, "longitude": -75.2819}, "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], "opens": "09:00", "closes": "19:00"}], "currenciesAccepted": "COP", "paymentAccepted": "Efectivo, Nequi, Daviplata, transferencia, tarjeta"}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "¿Cómo reservo y cómo sé que mi cita quedó?", "acceptedAnswer": {"@type": "Answer", "text": "Eliges servicio, profesional, fecha y hora en la sección Reservar. Al confirmar recibes un código y un enlace para ver tu cita. El salón la confirma por WhatsApp."}}, {"@type": "Question", "name": "¿Puedo cambiar o cancelar mi cita?", "acceptedAnswer": {"@type": "Answer", "text": "Sí, gratis hasta 24 horas antes, desde el enlace “Cambiar o cancelar” que recibes al reservar. Con menos de 24 horas escríbenos por WhatsApp."}}, {"@type": "Question", "name": "¿Tengo que pagar por adelantado?", "acceptedAnswer": {"@type": "Answer", "text": "No. Pagas en el salón al terminar tu servicio, en efectivo, Nequi, Daviplata, transferencia o tarjeta."}}, {"@type": "Question", "name": "¿Qué pasa si llego tarde?", "acceptedAnswer": {"@type": "Answer", "text": "Te esperamos hasta 15 minutos. Después de eso puede que debamos acortar el servicio o moverlo para no retrasar a la siguiente clienta."}}, {"@type": "Question", "name": "¿Cuánto dura cada servicio?", "acceptedAnswer": {"@type": "Answer", "text": "Cada servicio muestra su duración. Si combinas varios, la página suma el tiempo total, incluso según el largo de tu cabello."}}, {"@type": "Question", "name": "¿Atienden a domicilio?", "acceptedAnswer": {"@type": "Answer", "text": "Sí, en Neiva, para maquillaje, peinado y uñas. Escríbenos por WhatsApp con la dirección y la hora para cotizar."}}, {"@type": "Question", "name": "Tengo alergias, ¿qué hago?", "acceptedAnswer": {"@type": "Answer", "text": "Escríbelas en la nota al reservar. Quedan en tu ficha y la profesional las ve antes de atenderte."}}, {"@type": "Question", "name": "¿Cómo funcionan los sellos y los códigos de amigas?", "acceptedAnswer": {"@type": "Answer", "text": "Cada cita terminada suma un sello; al completar la tarjeta tienes un servicio gratis. Si una amiga reserva con tu código, ganas puntos cuando ella termine su primera cita."}}]}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <a class="saltar" href="#contenido" data-i18n="saltar">Saltar al contenido</a>
 
   <!-- ===== FRANJA SUPERIOR ===== -->
   <div class="franja-superior">
@@ -39,24 +54,31 @@
       </a>
       <nav aria-label="Principal">
         <ul class="nav-links">
-          <li><a href="#inicio">Inicio</a></li>
-          <li><a href="#servicios">Servicios</a></li>
-          <li><a href="#equipo">Equipo</a></li>
-          <li><a href="#disenos">Diseños</a></li>
-          <li><a href="#reservar">Reservar</a></li>
-          <li><a href="#opiniones">Opiniones</a></li>
-          <li><a href="#contacto">Contacto</a></li>
+          <li><a href="#servicios" data-i18n="nav.servicios">Servicios</a></li>
+          <li><a href="#equipo" data-i18n="nav.equipo">Equipo</a></li>
+          <li><a href="#disenos" data-i18n="nav.disenos">Diseños</a></li>
+          <li><a href="#novias" data-i18n="nav.novias">Novias</a></li>
+          <li><a href="#tienda" data-i18n="nav.tienda">Tienda</a></li>
+          <li><a href="#regalos" data-i18n="nav.regalos">Regalos</a></li>
+          <li><a href="#opiniones" data-i18n="nav.opiniones">Opiniones</a></li>
+          <li><a href="#contacto" data-i18n="nav.contacto">Contacto</a></li>
+          <li class="solo-celular"><a href="cita.html" data-i18n="pie.miscitas">Mis citas</a></li>
+          <li class="solo-celular"><a href="admin.html" data-i18n="pie.equipo">Acceso del equipo</a></li>
         </ul>
       </nav>
       <div class="nav-acciones">
-        <a href="admin.html" class="icono-nav" aria-label="Panel de administración" title="Panel del salón">
+        <a href="admin.html" class="icono-nav solo-escritorio" aria-label="Panel de administración" title="Panel del salón">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
         </a>
-        <a href="#reservar" class="icono-nav" aria-label="Productos agregados a tu reserva" title="Tu bolsa">
+        <button type="button" class="boton-idioma" id="boton-idioma" aria-label="Change language to English" title="English">EN</button>
+        <a href="cita.html" class="icono-nav solo-escritorio" aria-label="Mis citas" title="Mis citas">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+        </a>
+        <button type="button" class="icono-nav" id="abrir-carrito" aria-label="Carrito de la tienda" title="Tu carrito">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>
           <span class="contador-bolsa" id="contador-bolsa" hidden>0</span>
-        </a>
-        <a href="#reservar" class="btn btn-pequeno nav-boton">Reservar ahora</a>
+        </button>
+        <a href="#reservar" class="btn btn-pequeno nav-boton" data-i18n="nav.reservar">Reservar ahora</a>
         <button class="menu-toggle" aria-label="Abrir menú" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
@@ -64,20 +86,17 @@
     </div>
   </header>
 
-  <main>
+  <main id="contenido" tabindex="-1">
     <!-- ===== PORTADA ===== -->
     <section class="hero">
       <div class="contenedor hero-contenido">
         <div class="hero-texto">
-          <p class="sobretitulo">Salón de belleza &amp; spa · Neiva, Huila</p>
-          <h1>Reserva tu <em>momento de calma</em></h1>
-          <p class="hero-descripcion">
-            Cuidado sofisticado y relajante. Reserva tu cita online y disfruta de una
-            experiencia de bienestar diseñada para resaltar tu belleza natural.
-          </p>
+          <p class="sobretitulo" data-i18n="hero.sobre">Salón de belleza &amp; spa · Neiva, Huila</p>
+          <h1 data-i18n-html="hero.titulo">Reserva tu <em>momento de calma</em></h1>
+          <p class="hero-descripcion" data-i18n="hero.texto">Cuidado sofisticado y relajante. Reserva tu cita online y disfruta de una experiencia de bienestar diseñada para resaltar tu belleza natural.</p>
           <div class="hero-botones">
-            <a href="#reservar" class="btn">Reservar cita</a>
-            <a href="#servicios" class="btn btn-borde">Ver servicios</a>
+            <a href="#reservar" class="btn" data-i18n="hero.reservar">Reservar cita</a>
+            <a href="#servicios" class="btn btn-borde" data-i18n="hero.servicios">Ver servicios</a>
           </div>
           <ul class="hero-beneficios">
             <li>
@@ -104,9 +123,9 @@
     <section class="seccion" id="servicios">
       <div class="contenedor">
         <div class="titulo-seccion">
-          <p class="sobretitulo">Lo que hacemos</p>
-          <h2>Nuestros servicios</h2>
-          <p>Precios en pesos colombianos. Elige uno y continúa con tu reserva.</p>
+          <p class="sobretitulo" data-i18n="servicios.sobre">Lo que hacemos</p>
+          <h2 data-i18n="servicios.titulo">Nuestros servicios</h2>
+          <p data-i18n="servicios.texto">Precios en pesos colombianos. Elige uno y continúa con tu reserva.</p>
         </div>
         <div class="grid-servicios" id="grid-servicios"></div>
       </div>
@@ -116,9 +135,9 @@
     <section class="seccion seccion-alterna" id="equipo">
       <div class="contenedor">
         <div class="titulo-seccion">
-          <p class="sobretitulo">Elige a tu estilista</p>
-          <h2>Nuestro equipo</h2>
-          <p>Mira qué días trabaja cada profesional, cuándo tiene su próximo cupo y cuánto dura cada servicio.</p>
+          <p class="sobretitulo" data-i18n="equipo.sobre">Elige a tu estilista</p>
+          <h2 data-i18n="equipo.titulo">Nuestro equipo</h2>
+          <p data-i18n="equipo.texto">Mira qué días trabaja cada profesional, cuándo tiene su próximo cupo y cuánto dura cada servicio.</p>
         </div>
         <div class="filtros" id="filtros-equipo" role="tablist" aria-label="Filtrar equipo"></div>
         <div class="grid-equipo" id="grid-equipo"></div>
@@ -130,8 +149,8 @@
       <div class="contenedor">
         <div class="titulo-seccion">
           <p class="sobretitulo">Nail studio</p>
-          <h2>Catálogo de diseños</h2>
-          <p>Estilos curados para una manicura elegante y moderna · Duración de 20 a 25 días</p>
+          <h2 data-i18n="disenos.titulo">Catálogo de diseños</h2>
+          <p data-i18n="disenos.texto">Estilos curados para una manicura elegante y moderna · Duración de 20 a 25 días</p>
         </div>
         <div class="filtros" id="filtros" role="tablist" aria-label="Filtrar diseños"></div>
         <div class="grid-disenos" id="grid-disenos"></div>
@@ -143,9 +162,9 @@
     <section class="seccion seccion-alterna" id="reservar">
       <div class="contenedor">
         <div class="titulo-seccion">
-          <p class="sobretitulo">Reserva online</p>
-          <h2>Completa tu reserva</h2>
-          <p>Elige tu servicio, tu profesional, la fecha y agrega productos si quieres.</p>
+          <p class="sobretitulo" data-i18n="reservar.sobre">Reserva online</p>
+          <h2 data-i18n="reservar.titulo">Completa tu reserva</h2>
+          <p data-i18n="reservar.texto">Elige tu servicio, tu profesional, la fecha y agrega productos si quieres.</p>
         </div>
 
         <ol class="pasos" id="pasos" aria-label="Pasos de la reserva"></ol>
@@ -169,30 +188,187 @@
       </div>
     </section>
 
+    <!-- ===== TRABAJOS REALES (galería) ===== -->
+    <section class="seccion" id="trabajos">
+      <div class="contenedor">
+        <div class="titulo-seccion">
+          <p class="sobretitulo" data-i18n="trabajos.sobre">Hecho en el salón</p>
+          <h2 data-i18n="trabajos.titulo">Nuestros trabajos</h2>
+          <p data-i18n="trabajos.texto">Fotos reales de clientas. Toca una foto para verla grande; si tiene “antes”, desliza para comparar.</p>
+        </div>
+        <div class="filtros" id="filtros-galeria" role="tablist" aria-label="Filtrar trabajos"></div>
+        <div class="grid-galeria" id="grid-galeria"></div>
+      </div>
+    </section>
+
+    <!-- ===== NOVIAS Y EVENTOS ===== -->
+    <section class="seccion seccion-alterna" id="novias">
+      <div class="contenedor novias">
+        <div class="novias-texto">
+          <p class="sobretitulo" data-i18n="novias.sobre">Bodas, quince años y grados</p>
+          <h2 data-i18n-html="novias.titulo">Tu día especial, <em>sin prisas</em></h2>
+          <p data-i18n="novias.texto">Preparamos a la novia y a su cortejo con tiempo, en el salón o a domicilio en Neiva. Todo empieza con una prueba de maquillaje para elegir juntas el look.</p>
+          <ol class="novias-pasos">
+            <li><b data-i18n="novias.p1">Prueba de maquillaje</b><span data-i18n="novias.p1t">Probamos el look, el peinado y los tonos con fotos de referencia.</span></li>
+            <li><b data-i18n="novias.p2">Plan del día</b><span data-i18n="novias.p2t">Armamos el horario de cada persona del cortejo para que nadie llegue tarde.</span></li>
+            <li><b data-i18n="novias.p3">El gran día</b><span data-i18n="novias.p3t">Maquillaje de larga duración, peinado y kit de retoque para la fiesta.</span></li>
+          </ol>
+          <div class="hero-botones">
+            <button type="button" class="btn" id="reservar-prueba-novia" data-i18n="novias.reservar">Reservar prueba de maquillaje</button>
+            <a class="btn btn-borde" id="cotizar-novia" target="_blank" rel="noopener" data-i18n="novias.cotizar">Cotizar mi boda por WhatsApp</a>
+          </div>
+        </div>
+        <ul class="novias-incluye" id="novias-incluye"></ul>
+      </div>
+    </section>
+
+    <!-- ===== TIENDA ===== -->
+    <section class="seccion" id="tienda">
+      <div class="contenedor">
+        <div class="titulo-seccion">
+          <p class="sobretitulo" data-i18n="tienda.sobre">Para tu rutina en casa</p>
+          <h2 data-i18n="tienda.titulo">Tienda</h2>
+          <p data-i18n="tienda.texto">Aparta tus productos y recógelos en el salón, o pide domicilio en Neiva. Pagas al recibir.</p>
+        </div>
+        <div class="grid-tienda" id="grid-tienda"></div>
+      </div>
+    </section>
+
+    <!-- ===== TARJETAS DE REGALO ===== -->
+    <section class="seccion seccion-alterna" id="regalos">
+      <div class="contenedor regalos">
+        <div class="tarjeta-regalo-muestra" aria-hidden="true">
+          <span class="logo-texto">Neiva <i>·</i> Belleza<small>Tarjeta de regalo</small></span>
+          <strong id="muestra-valor">$100.000</strong>
+          <span id="muestra-para">Para: alguien especial</span>
+        </div>
+        <div>
+          <p class="sobretitulo" data-i18n="regalos.sobre">Regala bienestar</p>
+          <h2 data-i18n="regalos.titulo">Tarjetas de regalo</h2>
+          <p data-i18n="regalos.texto">La persona la usa en cualquier servicio o producto durante un año. La tarjeta se activa cuando la pagas en el salón o por transferencia.</p>
+          <form class="form-regalo" id="form-regalo" novalidate>
+            <div class="chips-valor" role="radiogroup" aria-label="Valor">
+              <button type="button" class="chip" data-valor="50000" aria-pressed="false">$50.000</button>
+              <button type="button" class="chip" data-valor="100000" aria-pressed="true">$100.000</button>
+              <button type="button" class="chip" data-valor="200000" aria-pressed="false">$200.000</button>
+              <button type="button" class="chip" data-valor="300000" aria-pressed="false">$300.000</button>
+            </div>
+            <div class="fila-campos">
+              <div class="campo"><label for="regalo-de" data-i18n="regalos.de">De (tu nombre)</label><input id="regalo-de" maxlength="60" autocomplete="name"><small class="error"></small></div>
+              <div class="campo"><label for="regalo-para" data-i18n="regalos.para">Para</label><input id="regalo-para" maxlength="60"><small class="error"></small></div>
+            </div>
+            <div class="campo"><label for="regalo-tel" data-i18n="regalos.tel">Tu celular / WhatsApp</label><input id="regalo-tel" type="tel" maxlength="20" autocomplete="tel"><small class="error"></small></div>
+            <div class="campo"><label for="regalo-mensaje" data-i18n="regalos.mensaje">Mensaje (opcional)</label><input id="regalo-mensaje" maxlength="200" placeholder="¡Feliz cumpleaños!"></div>
+            <p class="error-general" id="regalo-error" role="alert" hidden></p>
+            <button class="btn" type="submit" data-i18n="regalos.pedir">Pedir tarjeta de regalo</button>
+          </form>
+          <div id="regalo-listo" hidden></div>
+          <details class="consultar-saldo">
+            <summary data-i18n="regalos.saldo">Consultar el saldo de una tarjeta</summary>
+            <form id="form-saldo" class="fila-cupon"><input id="saldo-codigo" maxlength="12" placeholder="Código de la tarjeta" aria-label="Código de la tarjeta"><button class="btn btn-pequeno btn-borde" type="submit">Consultar</button></form>
+            <p id="saldo-resultado" role="status"></p>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <!-- ===== OPINIONES ===== -->
     <section class="seccion" id="opiniones">
       <div class="contenedor">
         <div class="titulo-seccion">
-          <p class="sobretitulo">Testimonios</p>
-          <h2>Lo que dicen nuestras clientas</h2>
+          <p class="sobretitulo" data-i18n="opiniones.sobre">Opiniones verificadas</p>
+          <h2 data-i18n="opiniones.titulo">Lo que dicen nuestras clientas</h2>
+          <p id="resumen-opiniones" data-i18n="opiniones.texto">Solo pueden opinar clientas que ya vinieron al salón: el enlace llega con su cita.</p>
         </div>
-        <div class="grid-opiniones">
-          <blockquote class="opinion">
-            <div class="estrellas" aria-label="5 de 5 estrellas">★★★★★</div>
-            <p>"Me hice el French Perlado para mi grado y duró impecable casi un mes. El lugar es hermoso y muy tranquilo."</p>
-            <footer><span class="avatar">LM</span><div><strong>Laura M.</strong><small>Diseño de uñas</small></div></footer>
-          </blockquote>
-          <blockquote class="opinion">
-            <div class="estrellas" aria-label="5 de 5 estrellas">★★★★★</div>
-            <p>"Reservé desde el celular en dos minutos. Valentina me hizo un balayage precioso, justo lo que quería."</p>
-            <footer><span class="avatar">CR</span><div><strong>Carolina R.</strong><small>Coloración profesional</small></div></footer>
-          </blockquote>
-          <blockquote class="opinion">
-            <div class="estrellas" aria-label="5 de 5 estrellas">★★★★★</div>
-            <p>"El masaje relajante con piedras calientes es mi momento favorito del mes. Salgo renovada."</p>
-            <footer><span class="avatar">VG</span><div><strong>Valeria G.</strong><small>Spa facial</small></div></footer>
-          </blockquote>
+        <div class="grid-opiniones" id="grid-opiniones"></div>
+      </div>
+    </section>
+
+    <!-- ===== CONSEJOS ===== -->
+    <section class="seccion seccion-alterna" id="consejos">
+      <div class="contenedor">
+        <div class="titulo-seccion">
+          <p class="sobretitulo" data-i18n="consejos.sobre">Blog</p>
+          <h2 data-i18n="consejos.titulo">Consejos de belleza</h2>
         </div>
+        <div class="grid-consejos">
+          <article class="consejo">
+            <p class="sobretitulo">Uñas</p>
+            <h3>Cómo hacer que tu semipermanente dure 3 semanas</h3>
+            <p>Lo que haces los primeros dos días define cuánto dura.</p>
+            <details><summary>Leer consejo</summary>
+              <ul>
+                <li>Evita el agua muy caliente y los baños largos las primeras 24 horas.</li>
+                <li>Usa guantes para lavar platos o limpiar con productos fuertes.</li>
+                <li>Pon aceite de cutícula todas las noches: la uña flexible se despega menos.</li>
+                <li>No uses las uñas como herramienta para abrir latas o despegar etiquetas.</li>
+                <li>Si se levanta una esquina, no la arranques: ven y la reparamos.</li>
+              </ul></details>
+          </article>
+          <article class="consejo">
+            <p class="sobretitulo">Cabello</p>
+            <h3>Cuidados después de un color o balayage</h3>
+            <p>El calor de Neiva y el sol aclaran el tono más rápido.</p>
+            <details><summary>Leer consejo</summary>
+              <ul>
+                <li>Espera 48 horas antes del primer lavado.</li>
+                <li>Usa shampoo sin sulfatos y agua tibia o fría.</li>
+                <li>Protector térmico siempre antes de plancha o secador.</li>
+                <li>Gorra o protector solar capilar en piscina y sol fuerte.</li>
+                <li>Un tratamiento hidratante cada 3 o 4 semanas mantiene el brillo.</li>
+              </ul></details>
+          </article>
+          <article class="consejo">
+            <p class="sobretitulo">Piel</p>
+            <h3>Rutina facial básica para clima cálido</h3>
+            <p>Pocos pasos, todos los días, funcionan mejor que muchos productos.</p>
+            <details><summary>Leer consejo</summary>
+              <ul>
+                <li>Mañana: limpieza suave, hidratante ligera y protector solar.</li>
+                <li>Noche: desmaquilla siempre, aunque solo hayas usado protector.</li>
+                <li>Reaplica protector solar cada 3 horas si estás al aire libre.</li>
+                <li>Exfolia máximo dos veces por semana.</li>
+                <li>Una limpieza profunda en el salón cada mes ayuda con los poros.</li>
+              </ul></details>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PREGUNTAS FRECUENTES ===== -->
+    <section class="seccion" id="preguntas">
+      <div class="contenedor contenedor-angosto">
+        <div class="titulo-seccion">
+          <p class="sobretitulo" data-i18n="preguntas.sobre">Antes de venir</p>
+          <h2 data-i18n="preguntas.titulo">Preguntas frecuentes</h2>
+        </div>
+        <div class="faq" id="faq">
+          <details><summary>¿Cómo reservo y cómo sé que mi cita quedó?</summary><p>Eliges servicio, profesional, fecha y hora en la sección Reservar. Al confirmar recibes un código y un enlace para ver tu cita. El salón la confirma por WhatsApp.</p></details>
+          <details><summary>¿Puedo cambiar o cancelar mi cita?</summary><p>Sí, gratis hasta 24 horas antes, desde el enlace “Cambiar o cancelar” que recibes al reservar. Con menos de 24 horas escríbenos por WhatsApp.</p></details>
+          <details><summary>¿Tengo que pagar por adelantado?</summary><p>No. Pagas en el salón al terminar tu servicio, en efectivo, Nequi, Daviplata, transferencia o tarjeta.</p></details>
+          <details><summary>¿Qué pasa si llego tarde?</summary><p>Te esperamos hasta 15 minutos. Después de eso puede que debamos acortar el servicio o moverlo para no retrasar a la siguiente clienta.</p></details>
+          <details><summary>¿Cuánto dura cada servicio?</summary><p>Cada servicio muestra su duración. Si combinas varios, la página suma el tiempo total, incluso según el largo de tu cabello.</p></details>
+          <details><summary>¿Atienden a domicilio?</summary><p>Sí, en Neiva, para maquillaje, peinado y uñas. Escríbenos por WhatsApp con la dirección y la hora para cotizar.</p></details>
+          <details><summary>Tengo alergias, ¿qué hago?</summary><p>Escríbelas en la nota al reservar. Quedan en tu ficha y la profesional las ve antes de atenderte.</p></details>
+          <details><summary>¿Cómo funcionan los sellos y los códigos de amigas?</summary><p>Cada cita terminada suma un sello; al completar la tarjeta tienes un servicio gratis. Si una amiga reserva con tu código, ganas puntos cuando ella termine su primera cita.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== UBICACIÓN ===== -->
+    <section class="seccion seccion-alterna" id="ubicacion">
+      <div class="contenedor ubicacion">
+        <div>
+          <p class="sobretitulo" data-i18n="ubicacion.sobre">Cómo llegar</p>
+          <h2 data-i18n="ubicacion.titulo">Visítanos</h2>
+          <p id="ubicacion-direccion"></p>
+          <p id="ubicacion-horario"></p>
+          <div class="hero-botones">
+            <a class="btn" id="como-llegar" target="_blank" rel="noopener" data-i18n="ubicacion.llegar">Abrir en Google Maps</a>
+            <a class="btn btn-borde" id="ubicacion-wa" target="_blank" rel="noopener">WhatsApp</a>
+          </div>
+        </div>
+        <div class="mapa" id="mapa"><button type="button" class="btn btn-borde" id="cargar-mapa" data-i18n="ubicacion.mapa">Ver mapa</button></div>
       </div>
     </section>
 
@@ -226,22 +402,43 @@
         <ul id="pie-contacto"></ul>
       </div>
       <div>
-        <h4>Horario de atención</h4>
+        <h4 data-i18n="pie.horario">Horario de atención</h4>
         <ul>
-          <li>Lunes a sábado: 9:00 a.m. – 7:00 p.m.</li>
-          <li>Domingo: cerrado</li>
+          <li id="pie-horario">Lunes a sábado: 9:00 a.m. – 7:00 p.m.</li>
+          <li data-i18n="pie.domingo">Domingo y festivos: cerrado</li>
           <li>Neiva, Colombia</li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="pie.enlaces">Enlaces</h4>
+        <ul>
+          <li><a href="cita.html" data-i18n="pie.miscitas">Mis citas</a></li>
+          <li><a href="#preguntas" data-i18n="pie.preguntas">Preguntas frecuentes</a></li>
+          <li><a href="#consejos" data-i18n="pie.consejos">Consejos de belleza</a></li>
+          <li><a href="admin.html" data-i18n="pie.equipo">Acceso del equipo</a></li>
         </ul>
       </div>
     </div>
     <div class="pie-final">
-      © <span id="anio"></span> NEIVA · BELLEZA · Todos los derechos reservados · Política de privacidad · Términos y condiciones
+      © <span id="anio"></span> NEIVA · BELLEZA ·
+      <a href="privacidad.html" data-i18n="pie.privacidad">Política de privacidad</a> ·
+      <a href="terminos.html" data-i18n="pie.terminos">Términos y condiciones</a>
     </div>
   </footer>
 
   <!-- ===== AGENDA DE UNA PROFESIONAL (ventana) ===== -->
   <dialog class="agenda-dialogo" id="agenda" aria-labelledby="agenda-titulo">
     <div id="agenda-contenido"></div>
+  </dialog>
+
+ <!-- ===== CARRITO DE LA TIENDA ===== -->
+  <dialog class="carrito" id="carrito" aria-labelledby="carrito-titulo">
+    <div id="carrito-contenido"></div>
+  </dialog>
+
+  <!-- ===== VISOR DE FOTOS ===== -->
+  <dialog class="visor" id="visor" aria-label="Foto ampliada">
+    <div id="visor-contenido"></div>
   </dialog>
 
   <a class="whatsapp-flotante" id="whatsapp-flotante" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
@@ -251,5 +448,7 @@
   <script src="api.js"></script>
   <script src="datos.js"></script>
   <script src="script.js"></script>
+  <script src="extras.js"></script>
+  <script>if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});</script>
 </body>
 </html>

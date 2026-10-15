@@ -29,6 +29,19 @@ const MENSAJES_ERROR = {
   CUPON_INVALIDO: 'Ese código de descuento no es válido o ya venció.',
   SALDO_INSUFICIENTE: 'La tarjeta de regalo no tiene saldo suficiente.',
   SIN_PERMISO: 'Tu cuenta no tiene permiso para hacer esto.',
+  SIN_STOCK: 'Uno de los productos ya no tiene unidades suficientes. Revisa tu carrito.',
+  CARRITO_VACIO: 'Tu carrito está vacío.',
+  PRODUCTO_INVALIDO: 'Uno de los productos ya no está disponible. Recarga la página.',
+  DIRECCION_INVALIDA: 'Escribe la dirección completa para el domicilio.',
+  LIMITE_PEDIDOS: 'Ya tienes pedidos pendientes. Escríbenos por WhatsApp si necesitas otro.',
+  VALOR_INVALIDO: 'Elige un valor entre $20.000 y $2.000.000.',
+  TARJETA_NO_ACTIVA: 'Esa tarjeta todavía no está activa o ya venció.',
+  AUN_NO_TERMINADA: 'Podrás opinar cuando termine tu cita.',
+  YA_RESENADA: 'Ya dejaste tu opinión de esta cita. ¡Gracias!',
+  ESTRELLAS_INVALIDAS: 'Elige de 1 a 5 estrellas.',
+  FORMATO_INVALIDO: 'La foto debe ser JPG, PNG o WEBP.',
+  ARCHIVO_GRANDE: 'La foto pesa más de 5 MB.',
+  SUBIDA_FALLIDA: 'No se pudo subir la foto. Inténtalo de nuevo.',
   ESTADO_INVALIDO: 'Ese estado no es válido.',
   'Invalid login credentials': 'Correo o contraseña incorrectos.',
   'Email not confirmed': 'Primero confirma tu correo con el enlace que te enviamos.',
@@ -169,6 +182,21 @@ const db = {
   actualizar: (tabla, filtro, cambios) => peticion(`${tabla}?${filtro}`, { method: 'PATCH', body: cambios, headers: { Prefer: 'return=representation' } }),
   borrar: (tabla, filtro) => peticion(`${tabla}?${filtro}`, { method: 'DELETE' }),
 };
+
+// Subir una foto al almacenamiento de Supabase (solo personal del salón). Devuelve la ruta guardada.
+async function subirArchivo(carpeta, archivo) {
+  const token = await tokenVigente();
+  const ext = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' })[archivo.type];
+  if (!ext) throw new Error('FORMATO_INVALIDO');
+  const ruta = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
+  const r = await fetch(`${SUPABASE.url}/storage/v1/object/${carpeta}/${ruta}`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE.key, Authorization: `Bearer ${token}`, 'Content-Type': archivo.type },
+    body: archivo,
+  });
+  if (!r.ok) throw new Error(r.status === 413 ? 'ARCHIVO_GRANDE' : 'SUBIDA_FALLIDA');
+  return ruta;
+}
 
 // Fechas: la base de datos guarda en UTC; Colombia es UTC-5 todo el año (sin horario de verano)
 function aISOColombia(fechaTexto, hora) {

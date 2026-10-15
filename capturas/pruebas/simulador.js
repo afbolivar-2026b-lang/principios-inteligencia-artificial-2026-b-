@@ -69,6 +69,27 @@ function instalarSimulador(page, opciones = {}) {
       return responder(200, verReserva());
     }
     if (ruta === 'rpc/unirse_lista_espera') return responder(200, { ok: true });
+    // ----- Etapa 3 -----
+    if (req.method() === 'GET' && ruta === 'resenas') return responder(200, opciones.resenas || []);
+    if (req.method() === 'GET' && ruta === 'galeria') return responder(200, opciones.galeria || []);
+    if (ruta === 'rpc/validar_cupon') {
+      if (String(cuerpo.p_codigo).toUpperCase() !== 'BIENVENIDA') return error('CUPON_INVALIDO');
+      return responder(200, { codigo: 'BIENVENIDA', descripcion: '10% de descuento en tu primera reserva online', descuento: Math.round(cuerpo.p_subtotal * 0.1) });
+    }
+    if (ruta === 'rpc/aplicar_cupon') {
+      const desc = Math.round(estado.reserva.total * 0.1);
+      estado.reserva.total -= desc;
+      return responder(200, { cupon: 'BIENVENIDA', descuento: desc, total: estado.reserva.total });
+    }
+    if (ruta === 'rpc/crear_pedido') {
+      estado.pedido = cuerpo;
+      const items = cuerpo.p_items.map((i) => { const p = DB.productos.find((x) => x.id === i.id); return { ...i, nombre: p.nombre, precio: p.precio }; });
+      if (items.some((i) => i.cantidad > DB.productos.find((x) => x.id === i.id).stock)) return error('SIN_STOCK');
+      return responder(200, { codigo: 'P4X9KQ', total: items.reduce((t, i) => t + i.precio * i.cantidad, 0), items, entrega: cuerpo.p_entrega });
+    }
+    if (ruta === 'rpc/solicitar_tarjeta_regalo') { estado.tarjeta = cuerpo; return responder(200, { codigo: '7F3A9C2B1E', valor: cuerpo.p_valor, estado: 'pendiente_pago', vence: sumarDias(hoy, 365) }); }
+    if (ruta === 'rpc/saldo_tarjeta') return cuerpo.p_codigo === '7F3A9C2B1E' ? responder(200, { saldo: 100000, estado: 'activa', vence: sumarDias(hoy, 300), para: 'Lucía' }) : error('NO_EXISTE');
+    if (ruta === 'rpc/dejar_resena') { estado.resena = cuerpo; return responder(200, { ok: true }); }
     return responder(404, { message: 'NO_SIMULADO ' + ruta });
   });
   return estado;

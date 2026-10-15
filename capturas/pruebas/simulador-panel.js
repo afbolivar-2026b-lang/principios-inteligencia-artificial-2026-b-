@@ -57,6 +57,14 @@ function datosIniciales() {
       { id: id(), producto_id: 'shampoo', motivo: 'compra', cantidad: 12, nota: 'Pedido mensual', fecha: new Date(Date.now() - 86400e3 * 3).toISOString() }],
     proveedores: [{ id: id(), nombre: 'Distribuidora Belleza Huila', telefono: '3001239876', contacto: 'Marta' }],
     lista_espera: [{ id: id(), nombre: 'Valeria Cruz', telefono: '3167778888', fecha: sumarDias(hoy, 1), profesional_id: 'sofia', servicio_id: 'mani-semi', avisada: false, creada: new Date().toISOString() }],
+    pedidos: [{ id: id(), codigo: 'P4X9KQ', nombre: 'Lucía Ramírez', telefono: '3105551234', items: [{ id: 'shampoo', nombre: 'Shampoo nutritivo', precio: 32000, cantidad: 2 }, { id: 'esmalte-rose', nombre: 'Esmalte Rosé Ivory', precio: 28000, cantidad: 1 }],
+      total: 92000, estado: 'nuevo', entrega: 'domicilio', direccion: 'Calle 10 # 5-20, barrio Altico', notas: '', creada: new Date(Date.now() - 1800e3).toISOString() }],
+    tarjetas_regalo: [{ codigo: '7F3A9C2B1E', valor_inicial: 200000, saldo: 200000, de: 'Andrea', para: 'Mi mamá', telefono: '3001234567', mensaje: 'Feliz día', estado: 'pendiente_pago', vence: sumarDias(hoy, 365), creada: new Date().toISOString() },
+      { codigo: 'A1B2C3D4E5', valor_inicial: 100000, saldo: 100000, de: 'Carlos', para: 'Paola', telefono: '3157778899', mensaje: '', estado: 'activa', vence: sumarDias(hoy, 200), creada: new Date(Date.now() - 86400e3 * 30).toISOString() }],
+    resenas: [{ id: id(), nombre: 'Laura M.', servicio: 'Manicura semipermanente', profesional_id: 'sofia', estrellas: 5, texto: 'Texto de prueba de una reseña por revisar.', aprobada: false, creada: new Date().toISOString() },
+      { id: id(), nombre: 'Andrea G.', servicio: 'Corte & estilizado', profesional_id: 'andres', estrellas: 4, texto: 'Reseña de prueba ya publicada.', aprobada: true, creada: new Date(Date.now() - 86400e3 * 5).toISOString() }],
+    cupones: [{ codigo: 'BIENVENIDA', descripcion: '10% de descuento en tu primera reserva online', tipo: 'porcentaje', valor: 10, minimo: 0, desde: null, hasta: null, usos_max: null, usos: 4, activo: true, creada: new Date().toISOString() }],
+    galeria: [],
     fichas: [{ id: id(), clienta_id: clientas[0].id, fecha: sumarDias(hoy, -20), servicio: 'Coloración', profesional_id: 'valentina', formula: '7.1 + 20 vol, 35 min', notas: 'Le gustó el tono' }],
     auditoria: [
       { id: 1, fecha: new Date(Date.now() - 600e3).toISOString(), usuario: null, tabla: 'reservas', accion: 'crear', detalle: { origen: 'instagram' } },
@@ -126,8 +134,9 @@ function instalarSimuladorPanel(page, { usuario = 'u-duena', email = 'anfeboliva
       }
       return ok({});
     }
+    if (ruta.startsWith('/storage/v1/object/')) return ok({ Key: ruta });
     const tabla = ruta.replace('/rest/v1/', '');
-    if (tabla.startsWith('rpc/')) return ok(rpc(tabla.slice(4), cuerpo || {}, DB));
+    if (tabla.startsWith('rpc/')) { const r = rpc(tabla.slice(4), cuerpo || {}, DB); return r && r.__error ? ok({ message: r.__error }, 400) : ok(r); }
     const filas = DB[tabla];
     if (!filas) { estado.errores.push('tabla ' + tabla); return ok({ message: 'NO_SIMULADO ' + tabla }, 404); }
     const qs = url.search.slice(1);
@@ -163,6 +172,13 @@ function rpc(nombre, p, DB) {
     DB.reservas.push(r); return r;
   }
   if (nombre === 'aprobar_acceso') { const s = DB.solicitudes_acceso.find((x) => x.user_id === p.p_user); s.aprobada = true; DB.perfiles.push({ user_id: s.user_id, nombre: s.nombre, rol: p.p_rol, profesional_id: p.p_profesional }); return null; }
+  if (nombre === 'usar_tarjeta') {
+    const t = DB.tarjetas_regalo.find((x) => x.codigo === String(p.p_codigo).toUpperCase());
+    if (!t || t.estado !== 'activa') return { __error: 'TARJETA_NO_ACTIVA' };
+    if (t.saldo < p.p_valor) return { __error: 'SALDO_INSUFICIENTE' };
+    t.saldo -= p.p_valor; return { saldo: t.saldo };
+  }
+  if (nombre === 'solicitar_tarjeta_regalo') { const t = { codigo: 'NUEVA00001', valor_inicial: p.p_valor, saldo: p.p_valor, de: p.p_de, para: p.p_para, telefono: p.p_telefono, mensaje: p.p_mensaje, estado: 'pendiente_pago', vence: '2027-10-15', creada: new Date().toISOString() }; DB.tarjetas_regalo.push(t); return { codigo: t.codigo, valor: t.valor_inicial }; }
   const enRango = (f) => { const d = fechaCol(new Date(f)); return d >= p.p_desde && d <= p.p_hasta; };
   const ventas = DB.ventas.filter((v) => !v.anulada && enRango(v.fecha));
   if (nombre === 'comisiones') {
