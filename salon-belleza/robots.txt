@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /cita.html
+Sitemap: https://neiva-belleza.netlify.app/sitemap.xml

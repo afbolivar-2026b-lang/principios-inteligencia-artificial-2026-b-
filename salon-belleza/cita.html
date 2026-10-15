@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi cita | Neiva Belleza</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="pagina-simple">
+  <header class="navbar">
+    <div class="contenedor nav-contenido">
+      <a href="index.html" class="logo" aria-label="Neiva Belleza, inicio">
+        <span class="logo-texto">Neiva <i>·</i> Belleza<small>Salón &amp; Spa</small></span>
+      </a>
+      <a href="index.html#reservar" class="btn btn-pequeno">Nueva reserva</a>
+    </div>
+  </header>
+
+  <main class="contenedor contenido-simple">
+    <div id="cita" aria-live="polite"><p class="cargando">Buscando tu cita…</p></div>
+  </main>
+
+  <script src="api.js"></script>
+  <script src="datos.js"></script>
+  <script src="cita.js"></script>
+</body>
+</html>

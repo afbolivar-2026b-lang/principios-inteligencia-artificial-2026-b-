@@ -1,0 +1,14 @@
+{
+  "name": "Panel · Neiva Belleza",
+  "short_name": "Panel salón",
+  "description": "Agenda, caja, clientas y reportes del salón.",
+  "start_url": "admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6ece8",
+  "theme_color": "#4b2f2c",
+  "lang": "es-CO",
+  "icons": [
+    { "src": "img/icono-panel.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

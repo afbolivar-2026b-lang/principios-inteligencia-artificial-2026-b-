@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel del salón | Neiva Belleza</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#4b2f2c">
+  <link rel="manifest" href="panel.webmanifest">
+  <link rel="icon" href="img/icono-panel.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="img/icono-panel.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin">
+
+  <!-- ===== INGRESO ===== -->
+  <section class="pantalla-acceso" id="pantalla-login" hidden>
+    <div class="tarjeta-acceso">
+      <p class="logo-texto">Neiva <i>·</i> Belleza<small>Panel del salón</small></p>
+      <h1 id="titulo-acceso">Ingresar</h1>
+      <form id="form-acceso" novalidate>
+        <div class="campo" id="campo-nombre" hidden><label for="acceso-nombre">Tu nombre</label>
+          <input id="acceso-nombre" autocomplete="name" maxlength="60"></div>
+        <div class="campo"><label for="acceso-email">Correo</label>
+          <input id="acceso-email" type="email" autocomplete="username" required></div>
+        <div class="campo" id="campo-clave"><label for="acceso-clave">Contraseña</label>
+          <input id="acceso-clave" type="password" autocomplete="current-password" minlength="8" required></div>
+        <p class="error-general" id="error-acceso" role="alert" hidden></p>
+        <p class="ok-aviso" id="aviso-acceso" role="status" hidden></p>
+        <button class="btn btn-ancho" id="boton-acceso" type="submit">Entrar</button>
+      </form>
+      <div class="enlaces-acceso">
+        <button type="button" class="enlace-boton" data-modo="registro">Soy nueva en el equipo: crear cuenta</button>
+        <button type="button" class="enlace-boton" data-modo="recuperar">Olvidé mi contraseña</button>
+        <button type="button" class="enlace-boton" data-modo="login" hidden>Ya tengo cuenta: ingresar</button>
+      </div>
+      <a class="enlace volver" href="index.html">← Volver a la página del salón</a>
+    </div>
+  </section>
+
+  <section class="pantalla-acceso" id="pantalla-pendiente" hidden>
+    <div class="tarjeta-acceso">
+      <p class="logo-texto">Neiva <i>·</i> Belleza<small>Panel del salón</small></p>
+      <h1>Tu cuenta espera aprobación</h1>
+      <p>La dueña del salón debe aprobar tu acceso y asignarte un rol. Avísale y vuelve a entrar en unos minutos.</p>
+      <button type="button" class="btn btn-borde" data-salir>Salir</button>
+    </div>
+  </section>
+
+  <!-- ===== PANEL ===== -->
+  <div class="admin-layout" id="app" hidden>
+    <aside class="lateral">
+      <a href="index.html" class="logo-admin" title="Ver la página pública">
+        <span class="logo-texto">Neiva <i>·</i> Belleza<small>Panel del salón</small></span>
+      </a>
+      <nav class="menu-admin" id="menu-admin" aria-label="Panel"></nav>
+      <div class="usuaria">
+        <span class="retrato-mini" id="usuaria-iniciales"></span>
+        <div><strong id="usuaria-nombre"></strong><small id="usuaria-rol"></small></div>
+        <button type="button" class="boton-salir" data-salir title="Cerrar sesión" aria-label="Cerrar sesión">⏻</button>
+      </div>
+    </aside>
+    <main class="admin-main" id="vista" tabindex="-1" aria-live="polite"></main>
+  </div>
+
+  <dialog class="modal" id="modal" aria-labelledby="modal-titulo"><div id="modal-contenido"></div></dialog>
+  <div class="tooltip-grafica" id="tooltip" role="status" hidden></div>
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="api.js"></script>
+  <script src="datos.js"></script>
+  <script src="admin.js"></script>
+  <script src="admin-extras.js"></script>
+</body>
+</html>
