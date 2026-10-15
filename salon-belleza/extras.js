@@ -129,6 +129,7 @@ function carritoHTML() {
       <p class="codigo-reserva">Código <b>${escaparHTML(p.codigo)}</b></p>
       <p>${p.entrega === 'domicilio' ? 'Te escribimos por WhatsApp para confirmar el valor del domicilio y la hora de entrega.'
         : 'Te avisamos por WhatsApp cuando esté listo para recoger en el salón.'} Pagas al recibir: ${formatoCOP(p.total)}.</p>
+      ${botonPagoHTML('pedido', p.codigo)}
       <div class="acciones-exito"><a class="btn" target="_blank" rel="noopener" href="https://wa.me/${SALON.whatsapp}?text=${encodeURIComponent(msg)}">Avisar por WhatsApp</a>
       <button type="button" class="btn btn-borde" data-cerrar>Seguir comprando</button></div></div>`;
   }
@@ -156,7 +157,7 @@ function carritoHTML() {
       <div class="campo"><label for="pedido-notas">Notas (opcional)</label><input id="pedido-notas" maxlength="300"></div>
       ${carrito.error ? `<p class="error-general" role="alert">${escaparHTML(carrito.error)}</p>` : ''}
       <button class="btn btn-ancho" type="submit" ${carrito.enviando ? 'disabled' : ''}>${carrito.enviando ? 'Enviando…' : 'Hacer pedido · pago al recibir'}</button>
-      <p class="nota-enlace"><span class="pendiente-conectar">Pago en línea: pendiente de conectar</span></p>
+      ${SERVIDOR.wompi ? '<p class="nota-enlace">Después de hacer el pedido puedes pagarlo en línea.</p>' : '<p class="nota-enlace"><span class="pendiente-conectar">Pago en línea: pendiente de conectar</span></p>'}
     </form>`;
 }
 
@@ -223,6 +224,7 @@ $id('carrito').addEventListener('submit', async (e) => {
     });
     carrito.items = [];
     guardarCarrito();
+    medir('pedido', { valor: carrito.enviado.total, codigo: carrito.enviado.codigo });
   } catch (err) {
     carrito.error = err instanceof TypeError ? 'Sin conexión. Inténtalo de nuevo o escríbenos por WhatsApp.' : mensajeError(err);
     if (err.message === 'SIN_STOCK') cargarCatalogo().then(() => { pintarTienda(); }).catch(() => {});
@@ -261,13 +263,14 @@ formRegalo.addEventListener('submit', async (e) => {
   try {
     const t = await db.rpc('solicitar_tarjeta_regalo', { p_valor: valorRegalo, p_de: de.value.trim(), p_para: para.value.trim(), p_telefono: tel.value.trim(), p_mensaje: $id('regalo-mensaje').value.trim() });
     const msg = `Hola ${SALON.nombre}, pedí la tarjeta de regalo ${t.codigo} de ${formatoCOP(t.valor)} para ${para.value.trim()}. ¿Cómo la pago?`;
+    medir('tarjeta_regalo', { valor: t.valor, codigo: t.codigo });
     formRegalo.hidden = true;
     $id('regalo-listo').hidden = false;
     $id('regalo-listo').innerHTML = `<div class="regalo-listo">
       <h3>¡Tarjeta reservada!</h3>
       <p class="codigo-reserva">Código <b>${escaparHTML(t.codigo)}</b></p>
       <p>Para activarla, págala en el salón o por transferencia / Nequi y envíanos el comprobante. Cuando la activemos, la persona puede usarla hasta el ${fechaLegible(t.vence, { day: 'numeric', month: 'long', year: 'numeric' })}.</p>
-      <p class="nota-enlace"><span class="pendiente-conectar">Pago en línea con tarjeta o PSE: pendiente de conectar</span></p>
+      ${botonPagoHTML('tarjeta', t.codigo)}
       <a class="btn" target="_blank" rel="noopener" href="https://wa.me/${SALON.whatsapp}?text=${encodeURIComponent(msg)}">Coordinar el pago por WhatsApp</a></div>`;
   } catch (err) {
     aviso.textContent = err instanceof TypeError ? 'Sin conexión. Inténtalo de nuevo.' : mensajeError(err);
@@ -374,6 +377,125 @@ function aplicarIdioma(idioma) {
 }
 $id('boton-idioma').addEventListener('click', () => aplicarIdioma(document.documentElement.lang === 'en' ? 'es' : 'en'));
 
+// ----- PAGO EN LÍNEA (Wompi: Nequi, PSE, tarjeta) -----
+// Solo aparece cuando las llaves de Wompi están guardadas en el servidor.
+const SERVIDOR = { wompi: false, whatsapp: false, asistente: false };
+function botonPagoHTML(tipo, codigo) {
+  if (!SERVIDOR.wompi) return '<p class="nota-enlace"><span class="pendiente-conectar">Pago en línea con Nequi, PSE o tarjeta: pendiente de conectar</span></p>';
+  return `<button type="button" class="btn btn-ancho" data-pagar="${tipo}" data-codigo="${escaparHTML(codigo)}">Pagar en línea · Nequi, PSE o tarjeta</button>
+    <p class="error-general" data-error-pago hidden></p>`;
+}
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-pagar]');
+  if (!b) return;
+  b.disabled = true; b.textContent = 'Abriendo Wompi…';
+  try {
+    const volver = location.href.split(/[?#]/)[0] + '?pago=' + b.dataset.pagar;
+    const r = await funcionServidor('/wompi/firma', { tipo: b.dataset.pagar, codigo: b.dataset.codigo, volver });
+    location.href = r.url;
+  } catch (err) {
+    const aviso = b.parentElement.querySelector('[data-error-pago]');
+    aviso.textContent = err instanceof TypeError ? 'Sin conexión.' : mensajeError(err);
+    aviso.hidden = false;
+    b.disabled = false; b.textContent = 'Pagar en línea · Nequi, PSE o tarjeta';
+  }
+});
+// Al volver de Wompi (trae ?pago=…&id=transacción)
+(() => {
+  const p = new URLSearchParams(location.search);
+  if (!p.get('pago') || !p.get('id')) return;
+  const aviso = document.createElement('div');
+  aviso.className = 'aviso-pago';
+  aviso.setAttribute('role', 'status');
+  aviso.innerHTML = `<strong>Recibimos tu pago.</strong> Wompi lo confirma en unos minutos y te avisamos por WhatsApp. Referencia: ${escaparHTML(p.get('id'))}
+    <button type="button" aria-label="Cerrar">✕</button>`;
+  aviso.querySelector('button').onclick = () => aviso.remove();
+  document.body.prepend(aviso);
+  history.replaceState(null, '', location.pathname + location.hash);
+})();
+
+// ----- MEDICIÓN (Google Analytics y píxel de Meta) -----
+// Se cargan solo si la dueña puso sus códigos en el panel. Sin códigos no se carga nada de terceros.
+let medicionLista = false;
+function activarMedicion() {
+  if (medicionLista) return;
+  medicionLista = true;
+  const ga = /^G-[A-Z0-9]{4,}$/.test(INTEGRACIONES.googleAnalyticsId || '') ? INTEGRACIONES.googleAnalyticsId : '';
+  const pixel = /^\d{6,20}$/.test(INTEGRACIONES.metaPixelId || '') ? INTEGRACIONES.metaPixelId : '';
+  if (ga) {
+    const s = document.createElement('script');
+    s.async = true; s.src = `https://www.googletagmanager.com/gtag/js?id=${ga}`;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function gtag() { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', ga);
+  }
+  if (pixel) {
+    /* eslint-disable */
+    !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    /* eslint-enable */
+    window.fbq('init', pixel);
+    window.fbq('track', 'PageView');
+  }
+}
+function medir(evento, datos = {}) {
+  if (window.gtag) window.gtag('event', evento, { value: datos.valor, currency: 'COP', transaction_id: datos.codigo });
+  if (window.fbq) {
+    const meta = { reserva: 'Schedule', pedido: 'Purchase', tarjeta_regalo: 'Purchase' }[evento];
+    if (meta) window.fbq('track', meta, { value: datos.valor, currency: 'COP' });
+  }
+}
+window.addEventListener('neiva:reserva', (e) => medir('reserva', e.detail));
+
+// ----- ASISTENTE VIRTUAL -----
+const chat = { mensajes: [], enviando: false };
+function montarAsistente() {
+  if ($id('asistente-boton') || !(INTEGRACIONES.asistenteActivo && SERVIDOR.asistente)) return;
+  const boton = document.createElement('button');
+  boton.id = 'asistente-boton'; boton.type = 'button'; boton.className = 'asistente-boton';
+  boton.setAttribute('aria-label', 'Preguntarle a la asistente virtual');
+  boton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8M8 13h5"/></svg>';
+  const panelChat = document.createElement('section');
+  panelChat.id = 'asistente'; panelChat.className = 'asistente'; panelChat.hidden = true;
+  panelChat.setAttribute('aria-label', 'Asistente virtual');
+  panelChat.innerHTML = `<header><strong>Asistente de ${escaparHTML(SALON.nombre)}</strong><small>Responde con los precios y horarios reales · puede equivocarse</small>
+      <button type="button" data-cerrar-chat aria-label="Cerrar">✕</button></header>
+    <div class="asistente-mensajes" id="asistente-mensajes" aria-live="polite"><p class="msj asistente-msj">¡Hola! ¿En qué te ayudo? Pregúntame por precios, duración de servicios o quién trabaja qué día.</p></div>
+    <form id="asistente-form"><input id="asistente-texto" maxlength="500" placeholder="Escribe tu pregunta" aria-label="Tu pregunta" autocomplete="off"><button class="btn btn-pequeno" type="submit">Enviar</button></form>`;
+  document.body.append(boton, panelChat);
+  boton.onclick = () => { panelChat.hidden = !panelChat.hidden; if (!panelChat.hidden) $id('asistente-texto').focus(); };
+  panelChat.querySelector('[data-cerrar-chat]').onclick = () => { panelChat.hidden = true; boton.focus(); };
+  $id('asistente-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const entrada = $id('asistente-texto');
+    const texto = entrada.value.trim();
+    if (!texto || chat.enviando) return;
+    chat.mensajes.push({ role: 'user', content: texto });
+    entrada.value = '';
+    pintarChat(true);
+    chat.enviando = true;
+    try {
+      // Al servidor solo va la conversación, sin los avisos de error
+      const r = await funcionServidor('/asistente', { mensajes: chat.mensajes.filter((m) => !m.error).map(({ role, content }) => ({ role, content })) });
+      chat.mensajes.push({ role: 'assistant', content: r.respuesta });
+    } catch (err) {
+      chat.mensajes.push({ role: 'assistant', content: err instanceof TypeError ? 'No hay conexión. Escríbenos por WhatsApp.' : mensajeError(err), error: true });
+    }
+    chat.enviando = false;
+    pintarChat(false);
+  });
+}
+function pintarChat(escribiendo) {
+  const caja = $id('asistente-mensajes');
+  caja.innerHTML = '<p class="msj asistente-msj">¡Hola! ¿En qué te ayudo? Pregúntame por precios, duración de servicios o quién trabaja qué día.</p>'
+    + chat.mensajes.map((m) => `<p class="msj ${m.role === 'user' ? 'usuaria-msj' : 'asistente-msj'}">${escaparHTML(m.content)}</p>`).join('')
+    + (escribiendo ? '<p class="msj asistente-msj escribiendo">Escribiendo…</p>' : '');
+  caja.scrollTop = caja.scrollHeight;
+}
+
 // ----- ARRANQUE -----
 function pintarExtras() {
   pintarNovias();
@@ -391,6 +513,11 @@ if (leerLocal(CLAVE_IDIOMA, 'es') === 'en') aplicarIdioma('en');
   // Espera a que script.js termine de cargar el catálogo
   for (let i = 0; i < 100 && !ESTADO_CONEXION.cargado; i++) await new Promise((r) => setTimeout(r, 50));
   pintarExtras();
+  activarMedicion();
+  try {
+    Object.assign(SERVIDOR, await funcionServidor('/estado', null, 'GET'));
+    montarAsistente();
+  } catch (e) { /* sin servidor: todo queda "pendiente de conectar" */ }
   try {
     const [fotos, resenas] = await Promise.all([
       db.leer('galeria', 'select=*&visible=eq.true&order=orden,creada.desc&limit=24'),

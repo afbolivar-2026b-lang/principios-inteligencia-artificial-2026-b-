@@ -326,7 +326,8 @@ VISTAS.inicio = async (vista) => {
         <p>${fechaLarga(hoy)}</p></div>
       <div class="acciones-vista">
         ${esAdmin() ? `<input class="buscador" id="buscar-global" type="search" placeholder="Buscar clienta, celular o código de reserva" aria-label="Buscar">
-        <button class="btn btn-pequeno" data-nueva-cita>+ Nueva cita</button>` : ''}
+        <button class="btn btn-pequeno" data-nueva-cita>+ Nueva cita</button>
+        <button class="btn btn-pequeno btn-borde" data-recordatorios title="Envía por WhatsApp el recordatorio de las citas de mañana">Recordatorios de mañana</button>` : ''}
       </div>
     </header>
     <section class="kpis">
@@ -369,6 +370,18 @@ VISTAS.inicio = async (vista) => {
 
   vista.querySelectorAll('[data-cita]').forEach((b) => b.addEventListener('click', () => detalleCita(citas.find((c) => c.id === b.dataset.cita))));
   vista.querySelector('[data-nueva-cita]')?.addEventListener('click', () => nuevaCita({ fecha: hoy }));
+  vista.querySelector('[data-recordatorios]')?.addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    try {
+      const r = await funcionServidor('/whatsapp/recordatorios', {});
+      toast(r.total ? `Recordatorios enviados: ${r.enviados} de ${r.total}.${r.fallidos.length ? ' Revisar: ' + r.fallidos.join(', ') : ''}` : 'No hay citas mañana sin recordatorio.', r.fallidos.length > 0);
+    } catch (err) {
+      toast(err.message === 'PENDIENTE_DE_CONECTAR'
+        ? 'Recordatorios automáticos pendientes de conectar (falta WhatsApp Business API). Usa el botón de WhatsApp de cada cita.'
+        : err instanceof TypeError ? 'Sin conexión.' : mensajeError(err), true);
+    }
+    e.target.disabled = false;
+  });
   vista.querySelector('[data-bloquear]')?.addEventListener('click', () => bloquearHorario({ fecha: hoy }));
   activarSolicitudes(vista);
   const buscador = $('buscar-global');
@@ -833,7 +846,6 @@ VISTAS.caja = async (vista) => {
         <div class="totales-venta"><div><span>Subtotal</span><span>${formatoCOP(subtotal)}</span></div><div class="total"><span>Total</span><span id="v-total">${formatoCOP(subtotal)}</span></div></div>
         <div class="fila-botones" style="margin-top:.8rem"><button class="btn" data-registrar ${venta.lineas.length ? '' : 'disabled'}>Registrar venta</button>
           <button class="btn btn-borde" data-limpiar>Limpiar</button></div>
-        ${INTEGRACIONES.wompiPublicKey ? '' : '<p class="nota-enlace"><span class="pendiente-conectar">Cobro con tarjeta en línea: pendiente de conectar</span> · se activa al poner la llave de Wompi en Configuración.</p>'}
       </section>
       <section class="tarjeta-admin">
         <div class="tarjeta-cabecera"><div><h2>Ventas de hoy</h2><small>${validas.length} ventas · ${formatoCOP(validas.reduce((t, v) => t + v.total, 0))}</small></div></div>
@@ -1326,6 +1338,8 @@ VISTAS.config = async (vista) => {
   const plantillas = { ...PLANTILLAS_BASE, ...valor('plantillas', {}) };
   const fidelidad = valor('fidelidad', { sellosParaPremio: 10 });
   const festivos = await db.leer('festivos', `select=*&fecha=gte.${hoyCol()}&order=fecha`);
+  const servidor = await funcionServidor('/estado', null, 'GET').catch(() => null); // llaves secretas guardadas en Supabase
+  const estadoServidor = (k) => (servidor ? estadoInteg(servidor[k]) : '<span class="pendiente-conectar">Sin conexión para revisar</span>');
   const estadoInteg = (v) => v ? '<span class="conectado">Conectado</span>' : '<span class="pendiente-conectar">Pendiente de conectar</span>';
   const campo = (id, etiqueta, v, extra = '') => `<div class="campo"><label for="${id}">${etiqueta}</label><input id="${id}" value="${esc(v ?? '')}" ${extra}></div>`;
   vista.innerHTML = `
@@ -1338,14 +1352,25 @@ VISTAS.config = async (vista) => {
         ${campo('s-horario', 'Horario (texto)', salon.horario)}${campo('s-lat', 'Ubicación: latitud,longitud', `${salon.lat ?? ''},${salon.lng ?? ''}`)}
       </div><button class="btn btn-pequeno" data-guardar-salon>Guardar datos</button></section>
     <section class="tarjeta-admin"><h2 style="font-size:1.4rem;margin-bottom:.3rem">Conexiones</h2>
-      <p class="nota-enlace">Pega aquí las llaves cuando abras cada cuenta. Mientras estén vacías, la función queda "pendiente de conectar" y la página no la muestra.</p>
+      <p class="nota-enlace">Mientras una conexión esté "pendiente", la página funciona igual pero no muestra esa función. Nada se simula.</p>
+      <h3 class="subtitulo-config">Medición y reseñas (pega el código aquí)</h3>
       <div class="form-grid">
-        <div class="campo"><label for="i-wompi">Wompi · llave pública (pagos con Nequi, PSE y tarjeta) ${estadoInteg(integ.wompiPublicKey)}</label><input id="i-wompi" value="${esc(integ.wompiPublicKey)}" placeholder="pub_prod_..."></div>
         <div class="campo"><label for="i-ga">Google Analytics · ID de medición ${estadoInteg(integ.googleAnalyticsId)}</label><input id="i-ga" value="${esc(integ.googleAnalyticsId)}" placeholder="G-XXXXXXX"></div>
         <div class="campo"><label for="i-meta">Píxel de Meta (Facebook/Instagram) ${estadoInteg(integ.metaPixelId)}</label><input id="i-meta" value="${esc(integ.metaPixelId)}" placeholder="1234567890"></div>
         <div class="campo"><label for="i-resena">Enlace para dejar reseña en Google ${estadoInteg(integ.googleReviewUrl)}</label><input id="i-resena" value="${esc(integ.googleReviewUrl)}" placeholder="https://g.page/r/..."></div>
-        <label class="check ancho"><input type="checkbox" id="i-wa" ${integ.whatsappApiActiva ? 'checked' : ''}> Tengo WhatsApp Business API para recordatorios automáticos ${estadoInteg(integ.whatsappApiActiva)}</label>
-      </div><button class="btn btn-pequeno" data-guardar-integ>Guardar conexiones</button></section>
+        <label class="check ancho"><input type="checkbox" id="i-asistente" ${integ.asistenteActivo ? 'checked' : ''}> Mostrar el asistente virtual en la página (necesita la llave de Claude abajo)</label>
+      </div><button class="btn btn-pequeno" data-guardar-integ>Guardar</button>
+      <h3 class="subtitulo-config">Servicios con llave secreta (se guardan en Supabase, nunca en la página)</h3>
+      <p class="nota-enlace">En Supabase: Project Settings → Edge Functions → Secrets. Agrega los nombres exactos de la derecha y recarga esta página.</p>
+      <div class="tabla-scroll"><table class="tabla"><tbody>
+        <tr><td><strong>Wompi</strong><small>Pagos en línea con Nequi, PSE y tarjeta para tarjetas de regalo y pedidos. Cuenta en comercios.wompi.co</small></td><td>${estadoServidor('wompi')}</td>
+          <td><small>WOMPI_PUBLIC_KEY · WOMPI_INTEGRITY_SECRET · WOMPI_EVENTS_SECRET</small><small>URL de eventos en Wompi: <code>${esc(SUPABASE.url)}/functions/v1/integraciones/wompi/evento</code></small></td></tr>
+        <tr><td><strong>WhatsApp Business API</strong><small>Recordatorios automáticos un día antes (plantilla aprobada por Meta con 4 variables: nombre, hora, profesional, enlace)</small></td><td>${estadoServidor('whatsapp')}</td>
+          <td><small>WHATSAPP_TOKEN · WHATSAPP_PHONE_ID · (opcional) WHATSAPP_PLANTILLA</small></td></tr>
+        <tr><td><strong>Asistente virtual (Claude)</strong><small>Responde dudas de clientas con los precios y horarios reales del salón</small></td><td>${estadoServidor('asistente')}</td>
+          <td><small>ANTHROPIC_API_KEY · llave en console.anthropic.com</small></td></tr>
+        <tr><td><strong>Facturación electrónica DIAN</strong><small>Requiere un proveedor autorizado (por ejemplo Alegra, Siigo o Facture). Cuando lo elijas se conecta a la caja.</small></td><td><span class="pendiente-conectar">Pendiente de conectar</span></td><td><small>Falta elegir proveedor</small></td></tr>
+      </tbody></table></div></section>
     <div class="grid-2">
       <section class="tarjeta-admin"><h2 style="font-size:1.4rem;margin-bottom:.6rem">Mensajes de WhatsApp</h2>
         <p class="nota-enlace">Palabras entre llaves se reemplazan solas: {nombre}, {fecha}, {hora}, {profesional}, {salon}, {enlace}.</p>
@@ -1373,8 +1398,8 @@ VISTAS.config = async (vista) => {
   };
   vista.querySelector('[data-guardar-integ]').onclick = async () => {
     await intentar(() => db.actualizar('config', 'clave=eq.integraciones', { valor: {
-      wompiPublicKey: $('i-wompi').value.trim(), googleAnalyticsId: $('i-ga').value.trim(), metaPixelId: $('i-meta').value.trim(),
-      googleReviewUrl: $('i-resena').value.trim(), whatsappApiActiva: $('i-wa').checked } }), 'Conexiones guardadas.');
+      ...integ, googleAnalyticsId: $('i-ga').value.trim(), metaPixelId: $('i-meta').value.trim(),
+      googleReviewUrl: $('i-resena').value.trim(), asistenteActivo: $('i-asistente').checked } }), 'Conexiones guardadas.');
     await cargarCatalogo().catch(() => {}); refrescar();
   };
   vista.querySelector('[data-guardar-plantillas]').onclick = async () => {

@@ -762,6 +762,7 @@ async function confirmarReserva() {
       estado.cupon = null;
     }
     estado.enviada = { ...r, nombre };
+    window.dispatchEvent(new CustomEvent('neiva:reserva', { detail: { valor: r.total, codigo: r.codigo } }));
     registrarOcupado(r.profesional_id, r.inicio, r.fin);
     pintarEquipo();
   } catch (e) {

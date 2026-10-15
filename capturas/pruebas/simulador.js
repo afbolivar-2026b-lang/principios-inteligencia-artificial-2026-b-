@@ -69,6 +69,7 @@ function instalarSimulador(page, opciones = {}) {
       return responder(200, verReserva());
     }
     if (ruta === 'rpc/unirse_lista_espera') return responder(200, { ok: true });
+    if (url.pathname.endsWith('/functions/v1/integraciones/estado')) return responder(200, { wompi: false, whatsapp: false, asistente: false });
     // ----- Etapa 3 -----
     if (req.method() === 'GET' && ruta === 'resenas') return responder(200, opciones.resenas || []);
     if (req.method() === 'GET' && ruta === 'galeria') return responder(200, opciones.galeria || []);

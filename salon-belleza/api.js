@@ -42,6 +42,9 @@ const MENSAJES_ERROR = {
   FORMATO_INVALIDO: 'La foto debe ser JPG, PNG o WEBP.',
   ARCHIVO_GRANDE: 'La foto pesa más de 5 MB.',
   SUBIDA_FALLIDA: 'No se pudo subir la foto. Inténtalo de nuevo.',
+  PENDIENTE_DE_CONECTAR: 'Esta función está pendiente de conectar: falta la llave del servicio en Supabase.',
+  NO_SE_PUEDE_PAGAR: 'Este pedido o tarjeta ya no se puede pagar en línea.',
+  ASISTENTE_NO_DISPONIBLE: 'El asistente no está disponible ahora. Escríbenos por WhatsApp.',
   ESTADO_INVALIDO: 'Ese estado no es válido.',
   'Invalid login credentials': 'Correo o contraseña incorrectos.',
   'Email not confirmed': 'Primero confirma tu correo con el enlace que te enviamos.',
@@ -88,6 +91,9 @@ async function authPeticion(ruta, cuerpo) {
   return datos;
 }
 
+// Los enlaces de los correos (confirmar cuenta, nueva contraseña) vuelven al panel
+const urlRegreso = () => location.origin + location.pathname;
+
 async function iniciarSesion(email, password) {
   const s = await authPeticion('token?grant_type=password', { email, password });
   guardarSesion(s);
@@ -95,7 +101,7 @@ async function iniciarSesion(email, password) {
 }
 
 async function registrarse(email, password, nombre) {
-  const r = await fetch(`${SUPABASE.url}/auth/v1/signup`, {
+  const r = await fetch(`${SUPABASE.url}/auth/v1/signup?redirect_to=${encodeURIComponent(urlRegreso())}`, {
     method: 'POST',
     headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, data: { nombre } }),
@@ -110,7 +116,7 @@ async function registrarse(email, password, nombre) {
 }
 
 async function recuperarClave(email) {
-  const r = await fetch(`${SUPABASE.url}/auth/v1/recover`, {
+  const r = await fetch(`${SUPABASE.url}/auth/v1/recover?redirect_to=${encodeURIComponent(urlRegreso())}`, {
     method: 'POST',
     headers: { apikey: SUPABASE.key, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
@@ -182,6 +188,19 @@ const db = {
   actualizar: (tabla, filtro, cambios) => peticion(`${tabla}?${filtro}`, { method: 'PATCH', body: cambios, headers: { Prefer: 'return=representation' } }),
   borrar: (tabla, filtro) => peticion(`${tabla}?${filtro}`, { method: 'DELETE' }),
 };
+
+// Llamar a la función del servidor que conecta con Wompi, WhatsApp y el asistente
+async function funcionServidor(ruta, cuerpo, metodo = 'POST') {
+  const token = await tokenVigente();
+  const r = await fetch(`${SUPABASE.url}/functions/v1/integraciones${ruta}`, {
+    method: metodo,
+    headers: { apikey: SUPABASE.key, Authorization: `Bearer ${token || SUPABASE.key}`, 'Content-Type': 'application/json' },
+    body: cuerpo == null ? undefined : JSON.stringify(cuerpo),
+  });
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(datos.error || `HTTP_${r.status}`);
+  return datos;
+}
 
 // Subir una foto al almacenamiento de Supabase (solo personal del salón). Devuelve la ruta guardada.
 async function subirArchivo(carpeta, archivo) {

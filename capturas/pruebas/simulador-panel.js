@@ -135,6 +135,8 @@ function instalarSimuladorPanel(page, { usuario = 'u-duena', email = 'anfeboliva
       return ok({});
     }
     if (ruta.startsWith('/storage/v1/object/')) return ok({ Key: ruta });
+    if (ruta.endsWith('/functions/v1/integraciones/estado')) return ok({ wompi: false, whatsapp: false, asistente: false });
+    if (ruta.startsWith('/functions/v1/integraciones/')) return ok({ error: 'PENDIENTE_DE_CONECTAR' }, 503);
     const tabla = ruta.replace('/rest/v1/', '');
     if (tabla.startsWith('rpc/')) { const r = rpc(tabla.slice(4), cuerpo || {}, DB); return r && r.__error ? ok({ message: r.__error }, 400) : ok(r); }
     const filas = DB[tabla];

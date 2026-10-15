@@ -245,7 +245,7 @@ async function cargarCatalogo() {
 }
 
 // Llaves de servicios externos (se configuran en el panel). Vacías = "pendiente de conectar".
-const INTEGRACIONES = { wompiPublicKey: '', googleAnalyticsId: '', metaPixelId: '', whatsappApiActiva: false, googleReviewUrl: '' };
+const INTEGRACIONES = { googleAnalyticsId: '', metaPixelId: '', googleReviewUrl: '', asistenteActivo: false };
 
 // Duración y precio de una combinación de servicios (igual que calcula la base de datos)
 function calcularServicios(items, largo) {
