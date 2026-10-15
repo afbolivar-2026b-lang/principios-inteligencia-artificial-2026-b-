@@ -1,34 +1,75 @@
-# Neiva Belleza: página web y panel de un salón de belleza
+# Neiva Belleza: página web y panel del salón
 
-Sitio estático en HTML, CSS y JavaScript, sin librerías ni servidor. Usa un estilo nude/rosa empolvado con letras serif finas.
+Página para clientas (reservas, tienda, regalos) y panel interno para el equipo del salón.
+Usa HTML, CSS y JavaScript sin librerías. La base de datos real está en **Supabase**.
 
-## Cómo verla
-- **Página pública:** abre `index.html` en el navegador (doble clic).
-- **Panel del salón:** abre `admin.html`, o haz clic en el ícono de persona del menú.
+## 1. Publicar la página
 
-## Qué tiene
-| Página | Secciones |
+### Opción A: Netlify Drop (sin instalar nada)
+1. Entra a <https://app.netlify.com/drop> con tu cuenta.
+2. Arrastra esta carpeta `salon-belleza` completa.
+3. Netlify te da el enlace en segundos. El proyecto `neiva-belleza` ya está creado; para usarlo, sube la carpeta desde su pestaña **Deploys**.
+4. En **Project configuration → Visitor access**, quita la opción que pide iniciar sesión, porque los proyectos nuevos quedan privados.
+
+### Opción B: Netlify o Vercel conectado a GitHub
+- Importa este repositorio y pon como carpeta base `salon-belleza`. No necesita comando de compilación.
+- Cada cambio que se suba a GitHub se publica solo.
+- Los archivos `netlify.toml` y `vercel.json` ya traen los encabezados de seguridad.
+
+### Después de publicar
+- En Supabase → **Authentication → URL Configuration**:
+  - pon la dirección de la página en **Site URL**;
+  - agrega `https://TU-DOMINIO/admin.html` en **Redirect URLs**.
+  - Así funcionan los correos de confirmar cuenta y recuperar contraseña.
+- Si el dominio no es `neiva-belleza.netlify.app`, cámbialo en `sitemap.xml`, `robots.txt` y en las etiquetas `og:` y `canonical` de `index.html`.
+
+## 2. Primer ingreso al panel
+1. Abre `admin.html` y elige **"Soy nueva en el equipo: crear cuenta"** con el correo **anfebolivar@gmail.com**. Ese correo queda como **dueña** automáticamente.
+2. Las demás personas crean su cuenta igual. Les aparece "espera aprobación" hasta que la dueña, en **Inicio** o en **Equipo**, les asigne un rol:
+   - **Recepción**: agenda, clientas, caja, inventario, pedidos, regalos y reseñas.
+   - **Estilista**: solo su agenda, sus comisiones y la galería.
+
+## 3. Conexiones (se activan cuando pongas las llaves)
+Mientras falte una llave, esa función aparece como **"Pendiente de conectar"** y la página sigue funcionando sin ella. No se simula nada.
+
+| Servicio | Para qué | Dónde se pone |
+|---|---|---|
+| Google Analytics | Contar visitas y reservas | Panel → Configuración (ID `G-…`) |
+| Píxel de Meta | Anuncios de Facebook/Instagram | Panel → Configuración |
+| Reseñas de Google | Enlace "déjanos tu reseña" | Panel → Configuración |
+| **Wompi** | Pagos en línea (Nequi, PSE, tarjeta) de tarjetas de regalo y pedidos | Supabase → Edge Functions → Secrets: `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`. En Wompi, URL de eventos: `https://zhnwkyjoyixriasoxirf.supabase.co/functions/v1/integraciones/wompi/evento` |
+| **WhatsApp Business API** | Recordatorios automáticos el día antes | Secrets: `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID` y, si quieres, `WHATSAPP_PLANTILLA` (por defecto `recordatorio_cita`, con 4 variables: nombre, hora, profesional, enlace) |
+| **Asistente virtual** | Chat que responde con precios y horarios reales | Secret `ANTHROPIC_API_KEY`. Luego, en el panel, marca "Mostrar el asistente" |
+| Facturación DIAN | Factura electrónica | Pendiente: hay que elegir un proveedor autorizado (Alegra, Siigo, etc.) |
+
+Panel → Configuración muestra el estado de cada conexión.
+
+## 4. Archivos
+| Archivo | Qué es |
 |---|---|
-| `index.html` | Portada · Servicios con precios en COP · **Nuestro equipo con la agenda de cada profesional** (días que trabaja, próximo cupo, duración de cada servicio, cupos por día y hora de fin) · Catálogo de diseños de uñas con filtros · **Reserva en 5 pasos** (servicio → profesional → fecha y hora → productos → confirmar por WhatsApp) · Opiniones · Contacto |
-| `admin.html` | Indicadores del día · Citas de hoy · Inventario con alertas · Gráfica de ingresos de la semana · Servicios más pedidos · Reservas que llegan desde la página (confirmar, cancelar o escribir por WhatsApp) |
+| `index.html`, `script.js`, `extras.js`, `styles.css` | Página pública: reserva, tienda, regalos, opiniones, galería, novias, preguntas, mapa, inglés |
+| `cita.html`, `cita.js` | "Mi cita": confirmar, cambiar, cancelar y dejar opinión |
+| `admin.html`, `admin.js`, `admin-extras.js`, `admin.css` | Panel del salón |
+| `api.js` | Conexión con Supabase (base de datos, cuentas, fotos y funciones) |
+| `datos.js` | Datos de respaldo si no hay internet y cálculos compartidos (horarios, duraciones) |
+| `supabase/functions/integraciones/` | Función del servidor para Wompi, WhatsApp y el asistente. Ya está publicada en Supabase |
+| `manifest.webmanifest`, `sw.js` | Para instalar la página en el celular y abrirla sin señal |
+| `terminos.html`, `privacidad.html` | Términos y política de datos (Ley 1581) |
 
-## Archivos
-- `datos.js`: **lo que más vas a editar**. Contiene servicios, precios, diseños, profesionales, productos, horarios y datos del salón (WhatsApp, dirección). Lo usan las dos páginas.
-- `script.js`: lógica de la página pública: menú del celular, filtros del catálogo y flujo de reserva.
-- `admin.js`: lógica del panel.
-- `styles.css` y `admin.css`: diseño. Los colores están como variables en `:root`.
-- `img/`: fotos de los diseños de uñas, la portada y los productos.
+Los precios, servicios, equipo, horarios, festivos y fotos se cambian desde el panel, sin tocar código.
 
-## Personalizar
-- **WhatsApp del salón:** cambia `whatsapp` y `whatsappVisible` en `datos.js`.
-- **Precios, servicios y duración:** edita `CATEGORIAS` (cada servicio tiene `minutos`), `DISENOS` y `PRODUCTOS` en `datos.js`.
-- **Equipo y horarios:** en `PROFESIONALES` cambia `dias` (0 = domingo … 6 = sábado) y `horario` (entrada y salida) de cada persona.
-- **Fotos:** reemplaza los archivos de `img/`, idealmente por fotos reales de tus trabajos, o cambia el campo `foto` en `datos.js`.
+## 5. Pruebas
+```bash
+node capturas/pruebas/tanda1.js   # reservas
+node capturas/pruebas/tanda2.js   # panel completo y roles
+node capturas/pruebas/tanda3.js   # tienda, regalos, cupón, reseñas, galería, inglés, celular
+```
+Usan Playwright con un simulador de Supabase, así que no tocan la base real. Las capturas quedan en `capturas/`.
 
-## Importante
-- Las fotos actuales se recortaron de las imágenes de referencia que se crearon con Meta AI. Para un negocio real conviene usar fotos propias.
-- Las reservas se guardan en el **navegador** (`localStorage`) y se envían por **WhatsApp**. El panel solo ve las reservas hechas en el mismo navegador. Para que el salón reciba reservas desde cualquier celular hace falta un servidor o base de datos (por ejemplo, Supabase o Firebase).
-- En el panel, las citas, los ingresos y los servicios más pedidos son **datos de ejemplo**. Las reservas web son reales.
-- Las citas ya ocupadas de cada profesional se simulan (siempre las mismas para el mismo día), pero las reservas reales hechas en la página sí bloquean ese horario.
-
-Las capturas de cada etapa están en `../capturas/`. Para regenerarlas: `node capturas/reserva.js`, `node capturas/agenda.js` y `node capturas/panel.js`.
+## 6. Limpieza pendiente
+Quedaron 3 clientas de prueba ("Prueba Uno", "Prueba Cinco", "Prueba Siete"). Para borrarlas, en Supabase → SQL Editor:
+```sql
+delete from public.auditoria where registro_id in (select r.id::text from public.reservas r join public.clientas c on c.id = r.clienta_id where c.nombre like 'Prueba %');
+delete from public.reservas where clienta_id in (select id from public.clientas where nombre like 'Prueba %');
+delete from public.clientas where nombre like 'Prueba %';
+```
