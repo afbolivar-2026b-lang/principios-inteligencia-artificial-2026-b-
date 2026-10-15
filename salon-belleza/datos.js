@@ -1,6 +1,7 @@
 // ===== DATOS DEL SALÓN =====
-// Edita este archivo para cambiar servicios, precios, profesionales y productos.
-// Lo usan la página pública (index.html) y el panel (admin.html).
+// Los datos reales viven en la base de datos (Supabase) y se editan desde el panel.
+// Lo que hay aquí es el RESPALDO: se muestra si la base de datos no responde.
+// La página y el panel cargan los datos reales con cargarCatalogo().
 
 const SALON = {
   nombre: 'Neiva Belleza',
@@ -10,6 +11,8 @@ const SALON = {
   email: 'hola@neivabelleza.co',
   instagram: '@neivabelleza',
   horario: 'Lunes a sábado: 9:00 a.m. – 7:00 p.m.',
+  lat: 2.9273,
+  lng: -75.2819,
 };
 
 // Íconos de línea (trazos SVG) para cada categoría
@@ -24,9 +27,9 @@ const CATEGORIAS = [
   {
     id: 'cabello', nombre: 'Cabello', duracion: '60 – 120 min',
     servicios: [
-      { id: 'corte', nombre: 'Corte & estilizado', detalle: 'Corte personalizado, brushing y acabado', precio: 45000, minutos: 60 },
-      { id: 'color', nombre: 'Coloración profesional', detalle: 'Balayage, mechas o color global', precio: 160000, minutos: 120 },
-      { id: 'hidratante', nombre: 'Tratamiento hidratante', detalle: 'Nutrición profunda, brillo y suavidad', precio: 90000, minutos: 60 },
+      { id: 'corte', nombre: 'Corte & estilizado', detalle: 'Corte personalizado, brushing y acabado', precio: 45000, minutos: 60, ajustesLargo: { medio: { precio: 5000, minutos: 0 }, largo: { precio: 10000, minutos: 15 } } },
+      { id: 'color', nombre: 'Coloración profesional', detalle: 'Balayage, mechas o color global', precio: 160000, minutos: 120, limpieza: 15, ajustesLargo: { medio: { precio: 30000, minutos: 30 }, largo: { precio: 60000, minutos: 60 } } },
+      { id: 'hidratante', nombre: 'Tratamiento hidratante', detalle: 'Nutrición profunda, brillo y suavidad', precio: 90000, minutos: 60, ajustesLargo: { medio: { precio: 10000, minutos: 0 }, largo: { precio: 20000, minutos: 15 } } },
     ],
   },
   {
@@ -48,9 +51,9 @@ const CATEGORIAS = [
   {
     id: 'spa', nombre: 'Spa facial', duracion: '60 – 90 min',
     servicios: [
-      { id: 'limpieza', nombre: 'Limpieza profunda', detalle: 'Extracción, exfoliación y mascarilla', precio: 90000, minutos: 60 },
-      { id: 'hidra-facial', nombre: 'Hidratación facial', detalle: 'Ácido hialurónico y luminosidad', precio: 110000, minutos: 60 },
-      { id: 'masaje', nombre: 'Masaje relajante', detalle: 'Aromaterapia y piedras calientes', precio: 120000, minutos: 90 },
+      { id: 'limpieza', nombre: 'Limpieza profunda', detalle: 'Extracción, exfoliación y mascarilla', precio: 90000, minutos: 60, limpieza: 10 },
+      { id: 'hidra-facial', nombre: 'Hidratación facial', detalle: 'Ácido hialurónico y luminosidad', precio: 110000, minutos: 60, limpieza: 10 },
+      { id: 'masaje', nombre: 'Masaje relajante', detalle: 'Aromaterapia y piedras calientes', precio: 120000, minutos: 90, limpieza: 10 },
     ],
   },
 ];
@@ -88,8 +91,13 @@ const PRODUCTOS = [
   { id: 'esmalte-rose', foto: 'img/p-esmalte-rose.jpg', nombre: 'Esmalte Rosé Ivory', detalle: 'Brillo intenso, secado rápido · 12 ml', precio: 28000, stock: 11 },
 ];
 
-// Clave donde se guardan las reservas web en el navegador (la usan la página y el panel)
-const CLAVE_RESERVAS = 'neivaBelleza.reservas';
+// Claves de lo que se recuerda en el navegador de la clienta
+const CLAVE_MIS_DATOS = 'neivaBelleza.misDatos';
+const CLAVE_BORRADOR = 'neivaBelleza.borrador';
+const CLAVE_ULTIMA = 'neivaBelleza.ultimaReserva';
+const CLAVE_MIS_CITAS = 'neivaBelleza.misCitas';
+function leerLocal(clave, porDefecto) { try { const v = localStorage.getItem(clave); return v ? JSON.parse(v) : porDefecto; } catch (e) { return porDefecto; } }
+function guardarLocal(clave, valor) { try { valor === null ? localStorage.removeItem(clave) : localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) { /* sin almacenamiento */ } }
 
 // Ícono de línea a partir de los trazos de ICONOS
 function iconoSVG(nombre, clase = 'icono-linea') {
@@ -125,6 +133,7 @@ function deTextoFecha(texto) {
 function fechaLegible(texto, opciones = { weekday: 'short', day: 'numeric', month: 'short' }) {
   return deTextoFecha(texto).toLocaleDateString('es-CO', opciones);
 }
+const capitalizar = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 function horaEnMinutos(hora) { const [h, m] = hora.split(':').map(Number); return h * 60 + m; }
 function horaLegible(hora) {
   const [h, m] = hora.split(':').map(Number);
@@ -143,6 +152,7 @@ function serviciosDe(profesional) {
     .flatMap((c) => c.servicios.map((s) => ({ ...s, categoria: c.id })));
 }
 function trabajaEseDia(profesional, fechaTexto) { return profesional.dias.includes(deTextoFecha(fechaTexto).getDay()); }
+function profesionalesParaTodas(categorias) { return PROFESIONALES.filter((p) => categorias.every((c) => p.categorias.includes(c))); }
 
 // "Mar a Sáb" o "Lun, Mar, Jue…"
 function diasDeTrabajo(profesional) {
@@ -152,48 +162,152 @@ function diasDeTrabajo(profesional) {
   return seguidos && dias.length > 2 ? `${corto(dias[0])} a ${corto(dias[dias.length - 1])}` : dias.map(corto).join(', ');
 }
 
-// Generador pseudoaleatorio con semilla: la misma profesional y fecha siempre da la misma agenda de ejemplo
-function aleatorioConSemilla(texto) {
-  let a = [...texto].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 2654435761), 1779033703) >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+// ===== DISPONIBILIDAD REAL =====
+// OCUPADOS["profesional|AAAA-MM-DD"] = [[inicioMin, finMin], ...]  ("*" = todo el salón)
+const OCUPADOS = {};
+const FESTIVOS = new Set(['2026-01-01','2026-01-12','2026-03-23','2026-04-02','2026-04-03','2026-05-01','2026-05-18',
+  '2026-06-08','2026-06-15','2026-06-29','2026-07-20','2026-08-07','2026-08-17','2026-10-12','2026-11-02','2026-11-16',
+  '2026-12-08','2026-12-25','2027-01-01','2027-01-11','2027-03-22','2027-03-25','2027-03-26','2027-05-01','2027-05-10',
+  '2027-05-31','2027-06-07','2027-07-05','2027-07-20','2027-08-07','2027-08-16','2027-10-18','2027-11-01','2027-11-15',
+  '2027-12-08','2027-12-25']);
+const ESTADO_CONEXION = { conectado: false, cargado: false };
+
+// "Ahora" en Colombia, sin importar la zona horaria del celular
+function ahoraColombia() {
+  const c = fechaHoraColombia(new Date().toISOString());
+  return { fecha: c.fecha, minutos: c.minutos };
 }
 
-function reservasGuardadas() {
-  try { return JSON.parse(localStorage.getItem(CLAVE_RESERVAS) || '[]'); } catch (e) { return []; }
-}
-
-// Bloques ocupados [inicio, fin] en minutos: citas de ejemplo + reservas reales hechas en la página
 function bloquesOcupados(profesional, fechaTexto) {
-  const [entrada, salida] = profesional.horario.map(horaEnMinutos);
-  const azar = aleatorioConSemilla(profesional.id + fechaTexto);
-  const bloques = [];
-  const cantidad = 2 + Math.floor(azar() * 3);
-  for (let i = 0; i < cantidad; i++) {
-    const inicio = entrada + Math.floor(azar() * ((salida - entrada) / INTERVALO_CITAS)) * INTERVALO_CITAS;
-    const duracion = [30, 60, 60, 90][Math.floor(azar() * 4)];
-    bloques.push([inicio, Math.min(inicio + duracion, salida)]);
+  return [...(OCUPADOS[profesional.id + '|' + fechaTexto] || []), ...(OCUPADOS['*|' + fechaTexto] || [])]
+    .sort((a, b) => a[0] - b[0]);
+}
+
+function registrarOcupado(profesionalId, inicioISO, finISO) {
+  const a = fechaHoraColombia(inicioISO);
+  const b = fechaHoraColombia(finISO);
+  // Un bloqueo de varios días (vacaciones) se reparte día por día
+  let fecha = a.fecha;
+  while (fecha <= b.fecha) {
+    const desde = fecha === a.fecha ? a.minutos : 0;
+    const hasta = fecha === b.fecha ? b.minutos : 24 * 60;
+    const clave = (profesionalId || '*') + '|' + fecha;
+    if (hasta > desde) (OCUPADOS[clave] = OCUPADOS[clave] || []).push([desde, hasta]);
+    const d = deTextoFecha(fecha); d.setDate(d.getDate() + 1); fecha = aTextoFecha(d);
   }
-  reservasGuardadas()
-    .filter((r) => r.estado !== 'Cancelada' && r.fecha === fechaTexto &&
-      (r.profesionalId === profesional.id || (!r.profesionalId && r.profesional === profesional.nombre)))
-    .forEach((r) => { const inicio = horaEnMinutos(r.hora); bloques.push([inicio, inicio + (Number(r.servicio?.minutos) || 60)]); });
-  return bloques.sort((a, b) => a[0] - b[0]);
+}
+
+async function cargarOcupados() {
+  const hoy = ahoraColombia().fecha;
+  const hasta = aTextoFecha(new Date(deTextoFecha(hoy).getTime() + 92 * 864e5));
+  const filas = await db.rpc('horarios_ocupados', { p_desde: hoy, p_hasta: hasta });
+  Object.keys(OCUPADOS).forEach((k) => delete OCUPADOS[k]);
+  filas.forEach((f) => registrarOcupado(f.profesional_id, f.inicio, f.fin));
+}
+
+const horaCorta = (t) => { const [h, m] = String(t).split(':'); return `${Number(h)}:${m}`; };
+
+// Trae servicios, equipo, productos, festivos y datos del salón desde la base de datos
+async function cargarCatalogo() {
+  const [cats, servs, disenos, profs, prods, fest, config] = await Promise.all([
+    db.leer('categorias', 'select=*&order=orden'),
+    db.leer('servicios', 'select=*&activo=eq.true&order=orden'),
+    db.leer('disenos', 'select=*&activo=eq.true&order=orden'),
+    db.leer('profesionales', 'select=*&activo=eq.true&order=orden'),
+    db.leer('productos', 'select=*&activo=eq.true&order=orden'),
+    db.leer('festivos', 'select=fecha'),
+    db.leer('config', 'select=clave,valor&publica=eq.true'),
+  ]);
+  CATEGORIAS.splice(0, CATEGORIAS.length, ...cats.map((c) => ({
+    id: c.id, nombre: c.nombre, duracion: c.duracion_texto,
+    servicios: servs.filter((s) => s.categoria_id === c.id).map((s) => ({
+      id: s.id, nombre: s.nombre, detalle: s.detalle, precio: s.precio, minutos: s.minutos,
+      limpieza: s.limpieza_min, ajustesLargo: s.ajustes_largo, precioAntes: s.precio_antes, cuidados: s.cuidados,
+    })),
+  })));
+  DISENOS.splice(0, DISENOS.length, ...disenos.map((d) => ({ id: d.id, foto: d.foto, nombre: d.nombre, categoria: d.categoria, detalle: d.detalle, precio: d.precio })));
+  PROFESIONALES.splice(0, PROFESIONALES.length, ...profs.map((p) => ({
+    id: p.id, nombre: p.nombre, rol: p.rol, especialidad: p.especialidad, categorias: p.categorias,
+    rating: Number(p.rating), resenas: p.resenas, tono: p.tono, dias: p.dias,
+    horario: [horaCorta(p.hora_inicio), horaCorta(p.hora_fin)], nivel: p.nivel, bio: p.bio,
+    certificados: p.certificados, portafolio: p.portafolio,
+  })));
+  PRODUCTOS.splice(0, PRODUCTOS.length, ...prods.map((p) => ({
+    id: p.id, foto: p.foto, nombre: p.nombre, detalle: p.detalle, precio: p.precio, stock: p.stock,
+    stockMinimo: p.stock_minimo, ingredientes: p.ingredientes, modoUso: p.modo_uso, categoria: p.categoria,
+  })));
+  FESTIVOS.clear(); fest.forEach((f) => FESTIVOS.add(f.fecha));
+  const salon = config.find((c) => c.clave === 'salon');
+  if (salon) Object.assign(SALON, salon.valor);
+  const integ = config.find((c) => c.clave === 'integraciones');
+  if (integ) Object.assign(INTEGRACIONES, integ.valor);
+  ESTADO_CONEXION.conectado = true;
+}
+
+// Llaves de servicios externos (se configuran en el panel). Vacías = "pendiente de conectar".
+const INTEGRACIONES = { wompiPublicKey: '', googleAnalyticsId: '', metaPixelId: '', whatsappApiActiva: false, googleReviewUrl: '' };
+
+// Duración y precio de una combinación de servicios (igual que calcula la base de datos)
+function calcularServicios(items, largo) {
+  let minutos = 0, precio = 0;
+  const categorias = new Set();
+  items.forEach((s) => {
+    let p = s.precio, m = s.minutos;
+    if (largo && s.ajustesLargo && s.ajustesLargo[largo]) {
+      p += s.ajustesLargo[largo].precio || 0;
+      m += s.ajustesLargo[largo].minutos || 0;
+    }
+    minutos += m + (s.limpieza || 0);
+    precio += p;
+    categorias.add(s.categoria);
+  });
+  return { minutos, precio, categorias: [...categorias] };
+}
+function precioConLargo(s, largo) {
+  return s.precio + (largo && s.ajustesLargo && s.ajustesLargo[largo] ? s.ajustesLargo[largo].precio || 0 : 0);
+}
+
+// Servicio a partir de su id ("corte" o "diseno:chrome-rosa")
+function servicioPorId(id) {
+  if (id.startsWith('diseno:')) {
+    const d = DISENOS.find((x) => x.id === id.slice(7));
+    return d ? { id, nombre: 'Manicura ' + d.nombre, precio: d.precio, minutos: 60, categoria: 'unas', foto: d.foto, limpieza: 0 } : null;
+  }
+  return buscarServicio(id);
+}
+
+// ===== AGREGAR LA CITA AL CALENDARIO =====
+const formatoICS = (iso) => new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+function enlaceGoogleCalendar(titulo, inicioISO, finISO, detalles) {
+  const p = new URLSearchParams({
+    action: 'TEMPLATE', text: titulo, dates: `${formatoICS(inicioISO)}/${formatoICS(finISO)}`,
+    details: detalles, location: SALON.direccion, ctz: 'America/Bogota',
+  });
+  return `https://calendar.google.com/calendar/render?${p}`;
+}
+function descargarICS(titulo, inicioISO, finISO, detalles) {
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Neiva Belleza//Reservas//ES', 'BEGIN:VEVENT',
+    `UID:${formatoICS(inicioISO)}-${Math.random().toString(36).slice(2)}@neivabelleza`,
+    `DTSTAMP:${formatoICS(new Date().toISOString())}`, `DTSTART:${formatoICS(inicioISO)}`, `DTEND:${formatoICS(finISO)}`,
+    `SUMMARY:${titulo}`, `DESCRIPTION:${detalles.replace(/\n/g, '\\n')}`, `LOCATION:${SALON.direccion}`,
+    'BEGIN:VALARM', 'TRIGGER:-PT2H', 'ACTION:DISPLAY', 'DESCRIPTION:Recordatorio de tu cita', 'END:VALARM',
+    'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: 'cita-neiva-belleza.ics' });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // Horas de inicio libres para un servicio de "minutos" de duración
-function horariosLibres(profesional, fechaTexto, minutos) {
-  if (!trabajaEseDia(profesional, fechaTexto)) return [];
-  const ahora = new Date();
-  const esHoy = fechaTexto === aTextoFecha(ahora);
-  if (fechaTexto < aTextoFecha(ahora)) return [];
-  const limite = esHoy ? ahora.getHours() * 60 + ahora.getMinutes() + 30 : -1;
+function horariosLibres(profesional, fechaTexto, minutos, ignorar = null) {
+  if (!trabajaEseDia(profesional, fechaTexto) || FESTIVOS.has(fechaTexto)) return [];
+  const ahora = ahoraColombia();
+  if (fechaTexto < ahora.fecha) return [];
+  const limite = fechaTexto === ahora.fecha ? ahora.minutos + 30 : -1;
   const [entrada, salida] = profesional.horario.map(horaEnMinutos);
-  const ocupados = bloquesOcupados(profesional, fechaTexto);
+  // "ignorar" permite reprogramar sin chocar con la propia cita
+  const ocupados = bloquesOcupados(profesional, fechaTexto)
+    .filter(([a, b]) => !(ignorar && a === ignorar[0] && b === ignorar[1]));
   const libres = [];
   for (let inicio = entrada; inicio + minutos <= salida; inicio += INTERVALO_CITAS) {
     const fin = inicio + minutos;
@@ -205,7 +319,7 @@ function horariosLibres(profesional, fechaTexto, minutos) {
 
 // Primer cupo libre en los próximos días
 function proximoCupo(profesional, minutos, dias = 14) {
-  const hoy = new Date();
+  const hoy = deTextoFecha(ahoraColombia().fecha);
   for (let i = 0; i < dias; i++) {
     const fecha = aTextoFecha(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + i));
     const libres = horariosLibres(profesional, fecha, minutos);
