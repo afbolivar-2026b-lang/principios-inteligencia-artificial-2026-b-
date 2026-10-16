@@ -1,0 +1,7 @@
+{
+  "appId": "co.andresbolivar.app",
+  "appName": "Opita Digital",
+  "webDir": "www",
+  "android": { "backgroundColor": "#F4EFE7" },
+  "server": { "androidScheme": "https" }
+}
