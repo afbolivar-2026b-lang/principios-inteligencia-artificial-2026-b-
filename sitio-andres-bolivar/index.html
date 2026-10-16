@@ -1705,7 +1705,7 @@ const DIAGNOSTICO_URL = "";
 /* 4. Planes de soporte que salen en la página (valor por mes, de referencia).
    Cámbielos a sus precios y a lo que de verdad ofrece. */
 const PLANES_SOPORTE = [
-  { n: "Básico", para: "Para que nada se pierda", v: 80000, items: ["Copias de seguridad cada semana", "Arreglo de errores", "Respuesta en 2 días hábiles"] },
+  { n: "Básico", para: "Para que nada se pierda", v: 110000, items: ["Copias de seguridad cada semana", "Arreglo de errores", "Respuesta en 2 días hábiles"] },
   { n: "Plus", para: "Para el día a día", v: 150000, destacado: true, items: ["Todo lo del plan Básico", "Copias de seguridad cada día", "2 horas de ajustes al mes", "Respuesta en 1 día hábil"] },
   { n: "Premium", para: "Para negocios que crecen", v: 250000, items: ["Todo lo del plan Plus", "6 horas de ajustes al mes", "Informe mensual de uso", "Atención el mismo día"] },
 ];
@@ -2935,7 +2935,7 @@ function vTablero() {
   }).join("");
   const etapas = ETAPAS_CLIENTE.map((e) => [e, S.clientes.filter((c) => etapaDe(c) === e).length]), maxE = Math.max(1, ...etapas.map((x) => x[1]));
   const top = S.clientes.map((c) => [c, P.filter((p) => p.clienteId === c.id && p.estado === "Aprobada").reduce((a, p) => a + totalInversion(p), 0)]).filter((x) => x[1]).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const soporte = P.filter((p) => p.estado === "Aprobada").length * Math.max(80000, r10((2500000 * tarifas().soporte) / 100));
+  const soporte = P.filter((p) => p.estado === "Aprobada").length * Math.max(110000, r10((2500000 * tarifas().soporte) / 100));
   const porCobrar = P.filter((p) => p.estado === "Aprobada").reduce((a, p) => a + saldoDe(p), 0), enviadas = P.filter((p) => p.estado === "Enviada").reduce((a, p) => a + totalInversion(p), 0);
   return `<h2 class="o-h2">Tablero de los últimos 6 meses</h2>
     <div class="tablero">
@@ -3516,7 +3516,7 @@ function calcular(c) {
   const lineas = [[t.tipos[c.tipo].n, r50(t.tipos[c.tipo].v * f)]].concat(c.mods.filter((m) => t.modulos[m]).map((m) => [t.modulos[m].n, r50(t.modulos[m].v * f)]));
   const rec = lineas.reduce((a, l) => a + l[1], 0);
   const sem = Math.max(1, Math.ceil((t.tipos[c.tipo].sem + c.mods.length * 0.6) * COMPLEJIDAD[c.complejidad][1] / (c.urgente ? 1.35 : 1)));
-  return { lineas, rec, min: r50(rec * 0.85), max: r50(rec * 1.2), sem, soporte: Math.max(80000, r10((rec * t.soporte) / 100)) };
+  return { lineas, rec, min: r50(rec * 0.85), max: r50(rec * 1.2), sem, soporte: Math.max(110000, r10((rec * t.soporte) / 100)) };
 }
 function calcState() {
   if (!S.calc) S.calc = { tipo: "sistema", complejidad: "normal", urgente: false, mods: ["inventario", "ventas", "reportes"] };
