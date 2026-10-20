@@ -1,4 +1,15 @@
 {
+  "permissions": {
+    "allow": [
+      "Edit(.claude/settings.json)",
+      "Bash(claude plugin marketplace add:*)",
+      "Bash(claude plugin install:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "codegraph",
+    "playwright"
+  ],
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
     "superpowers@superpowers-dev": true,
@@ -33,101 +44,21 @@
     "headroom-snip@headroom-marketplace": true
   },
   "extraKnownMarketplaces": {
-    "thedotmack": {
-      "source": {
-        "source": "github",
-        "repo": "thedotmack/claude-mem"
-      }
-    },
-    "superpowers-dev": {
-      "source": {
-        "source": "github",
-        "repo": "obra/superpowers"
-      }
-    },
-    "impeccable": {
-      "source": {
-        "source": "github",
-        "repo": "pbakaus/impeccable"
-      }
-    },
-    "taste-skill": {
-      "source": {
-        "source": "github",
-        "repo": "Leonxlnx/taste-skill"
-      }
-    },
-    "claude-plugins-official": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/claude-plugins-official"
-      }
-    },
-    "ui-ux-pro-max-skill": {
-      "source": {
-        "source": "github",
-        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
-      }
-    },
-    "anthropic-agent-skills": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/skills"
-      }
-    },
-    "accesslint": {
-      "source": {
-        "source": "github",
-        "repo": "AccessLint/skills"
-      }
-    },
-    "anthropic-cybersecurity-skills": {
-      "source": {
-        "source": "github",
-        "repo": "mukul975/Anthropic-Cybersecurity-Skills"
-      }
-    },
-    "one-skill-to-rule-them-all": {
-      "source": {
-        "source": "github",
-        "repo": "rebelytics/one-skill-to-rule-them-all"
-      }
-    },
-    "karpathy-skills": {
-      "source": {
-        "source": "github",
-        "repo": "multica-ai/andrej-karpathy-skills"
-      }
-    },
-    "caveman": {
-      "source": {
-        "source": "github",
-        "repo": "JuliusBrussee/caveman"
-      }
-    },
-    "ponytail": {
-      "source": {
-        "source": "github",
-        "repo": "DietrichGebert/ponytail"
-      }
-    },
-    "obsidian-skills": {
-      "source": {
-        "source": "github",
-        "repo": "kepano/obsidian-skills"
-      }
-    },
-    "claude-code-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/claude-code"
-      }
-    },
-    "headroom-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "headroomlabs-ai/headroom"
-      }
-    }
+    "thedotmack": { "source": { "source": "github", "repo": "thedotmack/claude-mem" } },
+    "superpowers-dev": { "source": { "source": "github", "repo": "obra/superpowers" } },
+    "impeccable": { "source": { "source": "github", "repo": "pbakaus/impeccable" } },
+    "taste-skill": { "source": { "source": "github", "repo": "Leonxlnx/taste-skill" } },
+    "claude-plugins-official": { "source": { "source": "github", "repo": "anthropics/claude-plugins-official" } },
+    "ui-ux-pro-max-skill": { "source": { "source": "github", "repo": "nextlevelbuilder/ui-ux-pro-max-skill" } },
+    "anthropic-agent-skills": { "source": { "source": "github", "repo": "anthropics/skills" } },
+    "accesslint": { "source": { "source": "github", "repo": "AccessLint/skills" } },
+    "anthropic-cybersecurity-skills": { "source": { "source": "github", "repo": "mukul975/Anthropic-Cybersecurity-Skills" } },
+    "one-skill-to-rule-them-all": { "source": { "source": "github", "repo": "rebelytics/one-skill-to-rule-them-all" } },
+    "karpathy-skills": { "source": { "source": "github", "repo": "multica-ai/andrej-karpathy-skills" } },
+    "caveman": { "source": { "source": "github", "repo": "JuliusBrussee/caveman" } },
+    "ponytail": { "source": { "source": "github", "repo": "DietrichGebert/ponytail" } },
+    "obsidian-skills": { "source": { "source": "github", "repo": "kepano/obsidian-skills" } },
+    "claude-code-plugins": { "source": { "source": "github", "repo": "anthropics/claude-code" } },
+    "headroom-marketplace": { "source": { "source": "github", "repo": "headroomlabs-ai/headroom" } }
   }
 }
