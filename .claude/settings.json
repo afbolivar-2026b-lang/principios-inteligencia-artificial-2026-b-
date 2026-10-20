@@ -3,7 +3,8 @@
     "allow": [
       "Edit(.claude/settings.json)",
       "Bash(claude plugin marketplace add:*)",
-      "Bash(claude plugin install:*)"
+      "Bash(claude plugin install:*)",
+      "Bash(npm install -g omniroute:*)"
     ]
   },
   "enabledMcpjsonServers": [
