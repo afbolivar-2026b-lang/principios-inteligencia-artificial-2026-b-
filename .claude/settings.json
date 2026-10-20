@@ -11,10 +11,17 @@
         "source": "github",
         "repo": "obra/superpowers"
       }
+    },
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
+      }
     }
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
-    "superpowers@superpowers-dev": true
+    "superpowers@superpowers-dev": true,
+    "impeccable@impeccable": true
   }
 }
