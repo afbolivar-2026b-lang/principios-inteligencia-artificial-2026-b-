@@ -12,7 +12,8 @@
     "accesslint@accesslint": true,
     "academy-guide@anthropic-agent-skills": true,
     "discernment-nudge@anthropic-agent-skills": true,
-    "cybersecurity-skills@anthropic-cybersecurity-skills": true
+    "cybersecurity-skills@anthropic-cybersecurity-skills": true,
+    "task-observer@one-skill-to-rule-them-all": true
   },
   "extraKnownMarketplaces": {
     "thedotmack": {
@@ -67,6 +68,12 @@
       "source": {
         "source": "github",
         "repo": "mukul975/Anthropic-Cybersecurity-Skills"
+      }
+    },
+    "one-skill-to-rule-them-all": {
+      "source": {
+        "source": "github",
+        "repo": "rebelytics/one-skill-to-rule-them-all"
       }
     }
   }
