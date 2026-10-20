@@ -9,7 +9,9 @@
     "document-skills@anthropic-agent-skills": true,
     "example-skills@anthropic-agent-skills": true,
     "claude-api@anthropic-agent-skills": true,
-    "accesslint@accesslint": true
+    "accesslint@accesslint": true,
+    "academy-guide@anthropic-agent-skills": true,
+    "discernment-nudge@anthropic-agent-skills": true
   },
   "extraKnownMarketplaces": {
     "thedotmack": {
