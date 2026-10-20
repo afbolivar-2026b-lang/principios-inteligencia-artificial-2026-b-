@@ -11,7 +11,8 @@
     "claude-api@anthropic-agent-skills": true,
     "accesslint@accesslint": true,
     "academy-guide@anthropic-agent-skills": true,
-    "discernment-nudge@anthropic-agent-skills": true
+    "discernment-nudge@anthropic-agent-skills": true,
+    "cybersecurity-skills@anthropic-cybersecurity-skills": true
   },
   "extraKnownMarketplaces": {
     "thedotmack": {
@@ -60,6 +61,12 @@
       "source": {
         "source": "github",
         "repo": "AccessLint/skills"
+      }
+    },
+    "anthropic-cybersecurity-skills": {
+      "source": {
+        "source": "github",
+        "repo": "mukul975/Anthropic-Cybersecurity-Skills"
       }
     }
   }
