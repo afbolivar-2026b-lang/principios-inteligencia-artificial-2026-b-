@@ -4,7 +4,8 @@
     "superpowers@superpowers-dev": true,
     "impeccable@impeccable": true,
     "taste-skill@taste-skill": true,
-    "figma@claude-plugins-official": true
+    "figma@claude-plugins-official": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true
   },
   "extraKnownMarketplaces": {
     "thedotmack": {
@@ -35,6 +36,12 @@
       "source": {
         "source": "github",
         "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "ui-ux-pro-max-skill": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
       }
     }
   }
