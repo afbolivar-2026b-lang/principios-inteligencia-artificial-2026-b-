@@ -1,4 +1,11 @@
 {
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true,
+    "superpowers@superpowers-dev": true,
+    "impeccable@impeccable": true,
+    "taste-skill@taste-skill": true,
+    "figma@claude-plugins-official": true
+  },
   "extraKnownMarketplaces": {
     "thedotmack": {
       "source": {
@@ -23,12 +30,12 @@
         "source": "github",
         "repo": "Leonxlnx/taste-skill"
       }
+    },
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
     }
-  },
-  "enabledPlugins": {
-    "claude-mem@thedotmack": true,
-    "superpowers@superpowers-dev": true,
-    "impeccable@impeccable": true,
-    "taste-skill@taste-skill": true
   }
 }
