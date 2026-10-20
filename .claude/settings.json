@@ -17,11 +17,18 @@
         "source": "github",
         "repo": "pbakaus/impeccable"
       }
+    },
+    "taste-skill": {
+      "source": {
+        "source": "github",
+        "repo": "Leonxlnx/taste-skill"
+      }
     }
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
     "superpowers@superpowers-dev": true,
-    "impeccable@impeccable": true
+    "impeccable@impeccable": true,
+    "taste-skill@taste-skill": true
   }
 }
