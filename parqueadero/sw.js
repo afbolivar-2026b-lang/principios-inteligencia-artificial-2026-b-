@@ -1,6 +1,6 @@
 // Guarda la app en el equipo para que abra y funcione sin internet.
 // Los datos (Firestore) no pasan por aquí: Firebase los guarda en su propio caché.
-const VERSION = 'parqueadero-v6';
+const VERSION = 'parqueadero-v7';
 const APP = ['./', './index.html', './manifest.webmanifest', './icono.svg', './icono-192.png', './icono-512.png'];
 const LIBRERIAS = [
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',

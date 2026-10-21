@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https: wss://*.firebaseio.com; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https: wss://*.firebaseio.com; frame-src https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Control de Parqueadero</title>
 <meta name="theme-color" content="#1c1b17">
@@ -18,44 +18,47 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* Modo "solo este equipo": reemplaza Firebase por una base de datos guardada en el mismo equipo (IndexedDB).
-   Sirve para parqueaderos que nunca tienen internet. Imita solo lo que la app usa de Firebase. */
+   Sirve para parqueaderos que nunca tienen internet. Imita solo lo que la app usa de Firebase.
+   Cada cambio queda anotado (con el número del equipo) para poder juntarlo con otros equipos por wifi. */
 (function(){
   var local = false;
   try{ local = localStorage.getItem('modoLocal')==='1'; }catch(e){}
   if(!local) return;
-  var store = {}, listeners = [], authCbs = [], cola = {}, colaTimer = 0, idb = null;
+  var store = {}, listeners = [], authCbs = [], cola = {}, colaOps = [], colaTimer = 0, idb = null;
+  var vector = {}, alOp = [];
   var UID = 'local-admin';
+  var EQUIPO = null;
+  try{ EQUIPO = localStorage.getItem('equipoId'); if(!EQUIPO){ EQUIPO = Math.random().toString(36).slice(2,10); localStorage.setItem('equipoId', EQUIPO); } }catch(e){ EQUIPO = Math.random().toString(36).slice(2,10); }
   function clon(x){ return x===undefined ? undefined : JSON.parse(JSON.stringify(x)); }
+  function claveOp(d, n){ return d+'|'+String(n).padStart(10,'0'); }
   function abrirIDB(){
     return new Promise(function(res){
       try{
-        var r = indexedDB.open('parqueadero-local', 1);
-        r.onupgradeneeded = function(){ r.result.createObjectStore('docs'); };
-        r.onsuccess = function(){ idb = r.result; var tx = idb.transaction('docs'), os = tx.objectStore('docs'), ks = os.getAllKeys(), vs = os.getAll();
-          tx.oncomplete = function(){ ks.result.forEach(function(k,i){ store[k] = vs.result[i]; }); res(); }; tx.onerror = function(){ res(); }; };
+        var r = indexedDB.open('parqueadero-local', 2);
+        r.onupgradeneeded = function(){ var db = r.result; if(!db.objectStoreNames.contains('docs')) db.createObjectStore('docs'); if(!db.objectStoreNames.contains('ops')) db.createObjectStore('ops'); if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta'); };
+        r.onsuccess = function(){ idb = r.result; var tx = idb.transaction(['docs','meta']), os = tx.objectStore('docs'), ks = os.getAllKeys(), vs = os.getAll(), vec = tx.objectStore('meta').get('vector');
+          tx.oncomplete = function(){ ks.result.forEach(function(k,i){ store[k] = vs.result[i]; }); vector = vec.result || {}; res(); }; tx.onerror = function(){ res(); }; };
         r.onerror = function(){ res(); };
       }catch(e){ res(); }
     });
   }
-  function guardar(path){
-    cola[path] = store[path]===undefined ? null : store[path];
+  function guardar(path, op){
+    if(path) cola[path] = store[path]===undefined ? null : store[path];
+    if(op) colaOps.push(op);
     if(colaTimer) return;
     colaTimer = setTimeout(function(){
       colaTimer = 0; if(!idb) return;
-      var c = cola; cola = {};
-      var os = idb.transaction('docs','readwrite').objectStore('docs');
+      var c = cola, o = colaOps; cola = {}; colaOps = [];
+      var tx = idb.transaction(['docs','ops','meta'],'readwrite'), os = tx.objectStore('docs'), ops = tx.objectStore('ops');
       Object.keys(c).forEach(function(k){ if(c[k]===null) os.delete(k); else os.put(c[k], k); });
+      o.forEach(function(x){ ops.put(x, claveOp(x.d, x.n)); });
+      tx.objectStore('meta').put(vector, 'vector');
     }, 40);
   }
-  var listo = abrirIDB().then(function(){
-    if(!store['usuarios/'+UID]){
-      var nombre = 'Administrador'; try{ nombre = localStorage.getItem('modoLocalNombre') || nombre; }catch(e){}
-      store['usuarios/'+UID] = { nombre:nombre, correo:'', rol:'admin', activo:true, creado:new Date().toISOString() }; guardar('usuarios/'+UID);
-      store['sistema/setup'] = { creado:new Date().toISOString(), local:true }; guardar('sistema/setup');
-    }
-  });
   // valores especiales (increment, borrar campo…)
   function FVal(op, v){ this.__op = op; this.v = v; }
+  function aJSON(x){ if(x instanceof FVal) return { __fv:x.__op, v:x.v }; if(Array.isArray(x)) return x.map(aJSON); if(x && typeof x==='object'){ var o = {}; Object.keys(x).forEach(function(k){ o[k] = aJSON(x[k]); }); return o; } return x; }
+  function deJSON(x){ if(x && typeof x==='object' && !Array.isArray(x) && x.__fv) return new FVal(x.__fv, x.v); if(Array.isArray(x)) return x.map(deJSON); if(x && typeof x==='object'){ var o = {}; Object.keys(x).forEach(function(k){ o[k] = deJSON(x[k]); }); return o; } return x; }
   function aplicar(viejo, v){
     if(v instanceof FVal){
       if(v.__op==='inc') return (typeof viejo==='number' ? viejo : 0) + v.v;
@@ -86,23 +89,45 @@
       listeners.slice().forEach(function(l){ if(c[l.clave]) l.correr(); });
     }, 0);
   }
+  // los tres cambios posibles; 'op' es el registro que se guarda y se comparte con los otros equipos
+  function hacer(op){
+    var path = op.p, v = op.v===undefined ? undefined : deJSON(op.v);
+    if(op.k==='set') store[path] = (op.m && store[path]) ? mezclar(store[path], v, true) : limpiar(v);
+    else if(op.k==='update'){
+      if(store[path]===undefined) return false;
+      var out = clon(store[path]);
+      Object.keys(v).forEach(function(k){ var partes = k.split('.'), o = out; for(var i=0;i<partes.length-1;i++){ if(!esObj(o[partes[i]])) o[partes[i]] = {}; o = o[partes[i]]; }
+        var u = partes[partes.length-1], res = aplicar(o[u], v[k]); if(res===undefined) delete o[u]; else o[u] = res; });
+      store[path] = out;
+    }
+    else if(op.k==='delete') delete store[path];
+    return true;
+  }
+  function registrar(k, path, v, m){
+    var n = (vector[EQUIPO]||0) + 1; vector[EQUIPO] = n;
+    var op = { d:EQUIPO, n:n, t:Date.now(), k:k, p:path, v: v===undefined ? undefined : aJSON(v), m: !!m };
+    if(!hacer(op)){ vector[EQUIPO] = n-1; var e = new Error('No existe el documento'); e.code = 'not-found'; throw e; }
+    guardar(path, op); avisar(path);
+    alOp.forEach(function(f){ try{ f([op]); }catch(e){} });
+  }
+  var listo = abrirIDB().then(function(){
+    if(!store['usuarios/'+UID]){
+      var nombre = 'Administrador'; try{ nombre = localStorage.getItem('modoLocalNombre') || nombre; }catch(e){}
+      store['usuarios/'+UID] = { nombre:nombre, correo:'', rol:'admin', activo:true, creado:new Date().toISOString() }; guardar('usuarios/'+UID);
+      store['sistema/setup'] = { creado:new Date().toISOString(), local:true }; guardar('sistema/setup');
+    }
+  });
   function snapDoc(path){ var d = store[path]; return { id:path.split('/').pop(), exists:d!==undefined, data:function(){ return clon(d); }, ref:docRef(path), metadata:{ hasPendingWrites:false, fromCache:true } }; }
   function docRef(path){
-    var r = {
+    return {
       id: path.split('/').pop(), path: path,
       get: function(){ return listo.then(function(){ return snapDoc(path); }); },
-      set: function(v, o){ return listo.then(function(){ store[path] = (o && o.merge && store[path]) ? mezclar(store[path], v, true) : limpiar(v); guardar(path); avisar(path); }); },
-      update: function(v){ return listo.then(function(){
-        if(store[path]===undefined){ var e = new Error('No existe el documento'); e.code = 'not-found'; throw e; }
-        var out = clon(store[path]);
-        Object.keys(v).forEach(function(k){ var partes = k.split('.'), o = out; for(var i=0;i<partes.length-1;i++){ if(!esObj(o[partes[i]])) o[partes[i]] = {}; o = o[partes[i]]; }
-          var u = partes[partes.length-1], res = aplicar(o[u], v[k]); if(res===undefined) delete o[u]; else o[u] = res; });
-        store[path] = out; guardar(path); avisar(path); }); },
-      delete: function(){ return listo.then(function(){ delete store[path]; guardar(path); avisar(path); }); },
+      set: function(v, o){ return listo.then(function(){ registrar('set', path, v, o && o.merge); }); },
+      update: function(v){ return listo.then(function(){ registrar('update', path, v); }); },
+      delete: function(){ return listo.then(function(){ registrar('delete', path); }); },
       onSnapshot: function(cb, err){ var l = { clave:path, correr:function(){ try{ cb(snapDoc(path)); }catch(e){ console.error(e); } } }; listeners.push(l); listo.then(function(){ setTimeout(l.correr); }); return function(){ var i = listeners.indexOf(l); if(i>=0) listeners.splice(i,1); }; },
       collection: function(c){ return colRef(path+'/'+c); }
     };
-    return r;
   }
   function cumple(d, f){ var x = d[f[0]], v = f[2];
     switch(f[1]){ case '==': return x===v; case '>=': return x>=v; case '>': return x>v; case '<': return x<v; case '<=': return x<=v; case '!=': return x!==v;
@@ -139,6 +164,44 @@
     runTransaction: function(fn){ return listo.then(function(){ return fn({ get:function(r){ return r.get(); }, set:function(r,v,o){ r.set(v,o); }, update:function(r,v){ r.update(v); }, delete:function(r){ r.delete(); } }); }); },
     waitForPendingWrites: function(){ return Promise.resolve(); }
   };
+  // ---- para juntar varios equipos por wifi (la app pone el transporte) ----
+  var sync = {
+    equipo: EQUIPO,
+    listo: listo,
+    vector: function(){ return clon(vector); },
+    // cambios que el otro equipo no tiene, según su vector
+    opsDesde: function(suyo){
+      return listo.then(function(){ return new Promise(function(res){
+        var out = [], tx = idb.transaction('ops'), os = tx.objectStore('ops');
+        Object.keys(vector).forEach(function(d){ var desde = (suyo[d]||0); if(desde >= vector[d]) return;
+          var rq = os.getAll(IDBKeyRange.bound(claveOp(d, desde+1), claveOp(d, 9999999999))); rq.onsuccess = function(){ out = out.concat(rq.result); }; });
+        tx.oncomplete = function(){ out.sort(function(a,b){ return a.t-b.t; }); res(out); }; tx.onerror = function(){ res(out); };
+      }); });
+    },
+    // aplica cambios de otro equipo (se ignoran los que ya se tienen)
+    aplicar: function(ops){
+      var nuevos = [];
+      ops.slice().sort(function(a,b){ return a.t-b.t; }).forEach(function(op){
+        if(op.d===EQUIPO || op.n <= (vector[op.d]||0)) return;
+        hacer(op); vector[op.d] = Math.max(vector[op.d]||0, op.n);
+        guardar(op.p, op); avisar(op.p); nuevos.push(op);
+      });
+      if(nuevos.length) alOp.forEach(function(f){ try{ f(nuevos, true); }catch(e){} });
+      return nuevos.length;
+    },
+    alCambiar: function(f){ alOp.push(f); },
+    foto: function(){ return { store:clon(store), vector:clon(vector) }; },
+    // un equipo nuevo copia todo de otro (y sigue anotando sus propios cambios)
+    cargarFoto: function(f){
+      return listo.then(function(){
+        var propios = vector[EQUIPO]||0;
+        Object.keys(store).forEach(function(k){ if(!(k in f.store)){ delete store[k]; guardar(k); } });
+        Object.keys(f.store).forEach(function(k){ store[k] = f.store[k]; guardar(k); });
+        vector = Object.assign({}, f.vector); vector[EQUIPO] = Math.max(propios, vector[EQUIPO]||0);
+        guardar(); Object.keys(f.store).forEach(function(k){ avisar(k); });
+      });
+    }
+  };
   var fuera = false; try{ fuera = sessionStorage.getItem('localFuera')==='1'; }catch(e){}
   var usuario = { uid:UID, email:'', isAnonymous:false };
   var auth = {
@@ -154,7 +217,7 @@
   firestoreFn.FieldValue = { increment:function(n){ return new FVal('inc', n); }, delete:function(){ return new FVal('del'); }, arrayUnion:function(){ return new FVal('union', [].slice.call(arguments)); },
     arrayRemove:function(){ return new FVal('remove', [].slice.call(arguments)); }, serverTimestamp:function(){ return new FVal('ts'); } };
   var apps = [];
-  window.firebase = { apps:apps, local:true,
+  window.firebase = { apps:apps, local:true, sync:sync,
     initializeApp:function(c, n){ var a = { name:n||'[DEFAULT]', auth:function(){ return auth; }, firestore:function(){ return db; }, delete:function(){ return Promise.resolve(); } }; apps.push(a); return a; },
     auth:function(){ return auth; }, firestore:firestoreFn };
 })();
@@ -1315,6 +1378,50 @@
           </div>
 
           <div class="card span2">
+            <h2 class="card-title">Equipos conectados por wifi (sin internet)<span class="sp"></span><span class="chip chip-gray" id="wifiEstadoChip">Sin conectar</span></h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;" id="wifiNota">Junta en vivo los datos de dos o más equipos que están en el mismo wifi, aunque no haya internet. Se emparejan una vez escaneando un QR de un equipo al otro.</p>
+            <div class="actions"><button class="btn btn-primary" id="btnWifiInvitar">Este equipo invita</button><button class="btn" id="btnWifiUnirse">Este equipo se une</button></div>
+            <div id="wifiLista" style="margin-top:8px;"></div>
+          </div>
+
+          <div class="card span2">
+            <h2 class="card-title">Cámara de la entrada</h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;">Toma la foto sola al registrar la entrada (y si quiere, a la salida), y sirve para leer la placa. Se configura en el equipo que tiene la cámara.</p>
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="field"><label for="camFuente">Cámara</label><select class="select" id="camFuente"><option value="">Ninguna</option><option value="webcam">Cámara USB, del equipo o virtual</option><option value="url">Cámara IP (foto por https)</option></select></div>
+              <div class="field" id="camDispRow" hidden><label for="camDisp">¿Cuál?</label><select class="select" id="camDisp"></select></div>
+              <div class="field grow" id="camUrlRow" hidden><label for="camUrl">Dirección de la foto</label><input class="input mono" id="camUrl" maxlength="300" placeholder="https://192.168.1.50/snapshot.jpg"></div>
+              <button class="btn btn-ghost" id="btnCamProbar">Probar</button>
+            </div>
+            <label class="switch" style="margin-top:8px;"><input type="checkbox" id="camAutoEntrada"> Foto sola al registrar la entrada</label>
+            <label class="switch" style="margin-left:16px;"><input type="checkbox" id="camAutoSalida"> Foto sola al dar la salida</label>
+            <div style="display:flex;gap:12px;align-items:flex-start;margin-top:10px;"><img id="camPrev" alt="" hidden style="width:220px;border-radius:8px;border:1px solid var(--line);"><div class="hint" id="camEstado"></div></div>
+            <details style="margin-top:8px;font-size:13px;"><summary>¿Tengo una cámara IP (Hikvision, Dahua, Ezviz…)?</summary>
+              <p>El navegador no puede abrir el video de una cámara IP directamente (RTSP). Hay dos formas:</p>
+              <ol><li><strong>Como cámara virtual (recomendado):</strong> instale en el computador el programa de la cámara o OBS Studio, agregue la cámara IP y active "Iniciar cámara virtual". Luego elija aquí "Cámara USB, del equipo o virtual".</li>
+              <li><strong>Foto por https:</strong> si su cámara entrega una foto por https y permite que otras páginas la lean (CORS), pegue esa dirección.</li></ol></details>
+          </div>
+
+          <div class="card span2">
+            <h2 class="card-title">Google Sheets y respaldo en Drive<span class="sp"></span><span class="chip chip-gray" id="gEstado">Sin conectar</span></h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;">Manda los reportes a una hoja de Google Sheets y guarda una copia de seguridad diaria en su Google Drive. La app solo ve los archivos que ella misma crea.</p>
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="field grow"><label for="gClientId">ID de cliente de Google (OAuth)</label><input class="input mono" id="gClientId" maxlength="120" placeholder="123456-abc.apps.googleusercontent.com"></div>
+              <button class="btn btn-primary" id="btnGConectar">Conectar con Google</button>
+            </div>
+            <div class="actions" style="margin-top:10px;"><button class="btn" id="btnGSheets">Enviar reportes a Google Sheets</button><button class="btn" id="btnGDrive">Subir respaldo a Drive ahora</button></div>
+            <label class="switch" style="margin-top:8px;"><input type="checkbox" id="gAutoDrive"> Respaldo automático en Drive una vez al día</label>
+            <label class="switch" style="margin-left:16px;"><input type="checkbox" id="gAutoSheets"> Actualizar la hoja al cerrar cada turno</label>
+            <div class="hint" id="gInfo"></div>
+            <details style="margin-top:8px;font-size:13px;"><summary>Cómo sacar el ID de cliente (una sola vez, gratis)</summary>
+              <ol><li>Entre a <span class="mono">console.cloud.google.com</span> con su cuenta de Google y cree un proyecto.</li>
+              <li>En "APIs y servicios › Biblioteca" active <strong>Google Drive API</strong> y <strong>Google Sheets API</strong>.</li>
+              <li>En "Pantalla de consentimiento de OAuth" elija Externo, ponga el nombre del parqueadero y agregue su correo como usuario de prueba.</li>
+              <li>En "Credenciales › Crear credenciales › ID de cliente de OAuth" elija <strong>Aplicación web</strong> y en "Orígenes de JavaScript autorizados" ponga la dirección de la app (por ejemplo <span class="mono">https://parqueadero-tizon.web.app</span>).</li>
+              <li>Copie el ID de cliente y péguelo aquí.</li></ol></details>
+          </div>
+
+          <div class="card span2">
             <h2 class="card-title">Página pública: cupos y consulta del ticket</h2>
             <p class="muted" style="margin:0 0 10px;font-size:13px;">Con esto los clientes ven los cupos libres en vivo y, escaneando el QR del ticket, cuánto llevan para pagar. Solo se publica la placa a medias, la hora de entrada y las tarifas.</p>
             <label class="switch"><input type="checkbox" id="pubActivo"> Publicar cupos y permitir la consulta desde el ticket</label>
@@ -1675,6 +1782,27 @@
 </div>
 
 <!-- ===== MODAL DAÑOS ===== -->
+<div class="modal" id="wifiModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="wifiTitulo">Conectar equipos</h3><button class="modal-close" data-close="wifiModal">✕</button></div>
+    <div id="wifiPaso1">
+      <p class="hint" style="margin-top:0;" id="wifiInstr1"></p>
+      <div class="pasar-qr" id="wifiQR"></div>
+      <textarea class="input mono" id="wifiCodigo" rows="3" readonly style="margin-top:8px;font-size:11px;"></textarea>
+      <button class="btn btn-sm" id="btnWifiCopiar" style="margin-top:6px;">Copiar código</button>
+    </div>
+    <div id="wifiPaso2" style="margin-top:14px;">
+      <p class="hint" style="margin-top:0;" id="wifiInstr2"></p>
+      <div class="ocr-cam" id="wifiCam" hidden><video id="wifiVideo" playsinline muted></video></div>
+      <div class="row" style="gap:8px;margin-top:8px;"><button class="btn" id="btnWifiEscanear">Escanear con la cámara</button></div>
+      <textarea class="input mono" id="wifiPegar" rows="3" placeholder="…o pegue aquí el código" style="margin-top:8px;font-size:11px;"></textarea>
+      <label class="switch" id="wifiCopiarRow" hidden style="margin-top:6px;"><input type="checkbox" id="wifiCopiarTodo"> Este equipo es nuevo: copiar todo lo que tiene el otro</label>
+      <button class="btn btn-primary w100" id="btnWifiSeguir" style="margin-top:8px;">Seguir</button>
+    </div>
+    <div class="hint" id="wifiEstado" style="margin-top:10px;"></div>
+  </div>
+</div>
+
 <div class="modal" id="pasarModal">
   <div class="modal-box">
     <div class="modal-head"><h3>Pasar a otro equipo</h3><button class="modal-close" data-close="pasarModal">✕</button></div>
@@ -2474,6 +2602,7 @@
     setTimeout(()=>{ if(perfil && !esAdmin()) ofrecerTutorial(); }, 1500);
     setTimeout(()=>{ if(perfil) revisarWaPendientes(); }, 2000);
     setTimeout(()=>{ if(perfil) ofrecerAsistente(); }, 5000);
+    setTimeout(()=>{ if(perfil) revisarRespaldoDrive(); }, 8000);
   }
 
   function salirDeApp(){
@@ -2595,8 +2724,7 @@
 
   /* ---------- respaldo en el equipo ---------- */
   $('btnRespaldo').addEventListener('click', ()=>{
-    const datos = { app:'parqueadero', version:1, creado:new Date().toISOString(), negocio:cfg.brand,
-      config:cfg, contadores, activos, historial, ventas, productos, mensualidades, clientes, turnos };
+    const datos = datosRespaldo();
     const blob = new Blob([JSON.stringify(datos, null, 1)], { type:'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -2618,7 +2746,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderPermisos, renderQrPago, renderCanales, renderWebhook, renderPublico, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderPermisos, renderQrPago, renderCanales, renderWebhook, renderPublico, pintarG, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -2671,7 +2799,7 @@
   function renderTodo(){
     programar(renderBrand, renderNav, renderTipos, renderTipoSelect, renderActivos, renderKpis, renderTurnoBar, renderPOS, renderCarrito,
       renderVentasHoy, renderInventario, renderCaja, renderHistorial, renderSubs, renderClientes, renderTurnos, renderAlertas,
-      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago, renderCanales, renderPromos, renderDupClientes, renderWebhook, renderPublico);
+      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago, renderCanales, renderPromos, renderDupClientes, renderWebhook, renderPublico, pintarG);
   }
 
   function renderBrand(){
@@ -2807,13 +2935,14 @@
     const resv = reservaDe(placa);
     ingresando = true; $('btnIngresar').disabled = true;
     try{
+      const fotoCam = (!fotoPendiente && camEntrada.cfg.auto) ? await fotoCamara() : null;
       const n = await siguienteNumero('ticket');
       const v = {
         id: nuevoId(), placa, tipo,
         modo: (sub && !vencida && !motivoSinMensualidad(sub)) ? sub.periodicidad : 'tiempo',
         entrada: new Date().toISOString(),
         operador: perfil.nombre, operadorId: perfil.uid,
-        foto: fotoPendiente || null,
+        foto: fotoPendiente || fotoCam || null,
         fotos: fotosExtra.length ? fotosExtra.slice() : null,
         danos: danosPendientes.length ? danosPendientes.slice() : null,
         servicioPendiente: $('servicioPendiente') && $('servicioPendiente').value ? $('servicioPendiente').value : null,
@@ -3212,6 +3341,7 @@
     try{
       const n = await siguienteNumero('factura');
       const k = c.cobro;
+      const fotoSalida = camEntrada.cfg.salida ? await fotoCamara() : null;
       const emp = c.v.empresaId ? cfg.empresas.find(e=>e.id===c.v.empresaId) : null;
       const r = {
         id: c.v.id, placa: c.v.placa, tipo: c.v.tipo, modo: c.v.modo, codigoIngreso: c.v.codigoIngreso||null,
@@ -3233,6 +3363,7 @@
         efectivoRecibido: pago.efectivoRecibido, vuelto: pago.vuelto
       };
       r.monederoPlaca = pago.monederoPlaca || null;
+      if(fotoSalida) r.fotoSalida = fotoSalida;
       if(emp && (emp.retefuentePct || emp.reteicaMil) && r.subtotal>0){
         r.retefuente = Math.round(r.subtotal*(emp.retefuentePct||0)/100); r.reteica = Math.round(r.subtotal*(emp.reteicaMil||0)/1000);
         r.netoEmpresa = r.total - r.retefuente - r.reteica;
@@ -3521,6 +3652,7 @@
     cerrarModal('arqueoModal');
     mostrarBalance(Object.assign({}, t, cierre));
     showToast('Turno cerrado.');
+    if(gTok() && (cfg.google||{}).autoSheets) setTimeout(()=>enviarSheets(true), 3000);
   });
   let balanceActual = null;
   $('btnBalanceImprimir').addEventListener('click', ()=>{
@@ -4331,6 +4463,7 @@
     if(dup.length) html += '<div class="alert alert-red"><strong>Placa registrada dos veces:</strong> '+dup.map(pl=>esc(pl)+' <button class="btn btn-sm" data-conflicto="'+esc(pl)+'">Revisar</button>').join(' · ')+'</div>';
     const waP = waPendientes();
     if(waP.length && navigator.onLine) html += '<div class="alert alert-amber"><strong>Volvió el internet:</strong> hay '+waP.length+' WhatsApp sin enviar. <button class="btn btn-sm" id="btnWaPend">Enviar ahora</button></div>';
+    if(respaldoPendiente() && !gTok()) html += '<div class="alert alert-amber"><strong>Falta el respaldo de hoy en Google Drive.</strong> <button class="btn btn-sm" id="btnRespaldoDrive">Subirlo ahora</button></div>';
     const rHoy = reservas.filter(r=>r.estado==='pendiente' && r.fecha===hoyISO());
     if(rHoy.length) html += '<div class="alert alert-amber"><strong>Reservas para hoy:</strong> '+rHoy.map(r=>esc(r.placa)+(r.hora?' ('+esc(r.hora)+')':'')+(r.abono?' abonó '+money(r.abono):'')).join(' · ')+'</div>';
     if(problemasDatos.length && esStaff()) html += '<div class="alert alert-amber"><strong>La revisión de datos encontró '+problemasDatos.length+' cosa(s) por corregir.</strong> <button class="btn btn-sm" data-abrir-integridad>Ver</button></div>';
@@ -6290,6 +6423,265 @@
   document.addEventListener('click', e=>{ const b = e.target.closest('[data-ir]'); if(b) irA(b.dataset.ir); });
   setInterval(()=>{ if(perfil && vistaActual==='panel') renderPanel(); }, 60000);
 
+  /* ================= EQUIPOS CONECTADOS POR WIFI (WebRTC, sin internet) ================= */
+  // Los equipos se hablan directo por la red del local. El emparejamiento se hace pasando un código
+  // (QR o texto) de ida y otro de vuelta. No hace falta internet ni servidor.
+  const wifi = { conexiones:[], pc:null, rol:null, scanStop:null };
+  async function comprimir(txt){
+    if(!('CompressionStream' in window)) return 'PW0:'+btoa(unescape(encodeURIComponent(txt)));
+    const buf = await new Response(new Blob([txt]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+    let bin = ''; new Uint8Array(buf).forEach(b=>bin += String.fromCharCode(b));
+    return 'PW1:'+btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  async function descomprimir(cod){
+    cod = String(cod||'').trim();
+    if(cod.startsWith('PW0:')) return decodeURIComponent(escape(atob(cod.slice(4))));
+    if(!cod.startsWith('PW1:')) throw new Error('código');
+    const b = atob(cod.slice(4).replace(/-/g,'+').replace(/_/g,'/')), u = Uint8Array.from(b, c=>c.charCodeAt(0));
+    return await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+  }
+  function esperarICE(pc){ return new Promise(res=>{ if(pc.iceGatheringState==='complete') return res(); const t = setTimeout(res, 4000); pc.addEventListener('icegatheringstatechange', ()=>{ if(pc.iceGatheringState==='complete'){ clearTimeout(t); res(); } }); }); }
+  function nuevaPC(){ return new RTCPeerConnection({ iceServers:[] }); }
+  function enviarWifi(con, obj){
+    if(!con.dc || con.dc.readyState!=='open') return;
+    const txt = JSON.stringify(obj), T = 60000;
+    if(txt.length<=T){ con.dc.send(txt); return; }
+    const id = Math.random().toString(36).slice(2,8), n = Math.ceil(txt.length/T);
+    for(let i=0;i<n;i++) con.dc.send(JSON.stringify({ tipo:'trozo', id, i, n, d:txt.slice(i*T,(i+1)*T) }));
+  }
+  function prepararCanal(con, dc){
+    con.dc = dc; con.trozos = {};
+    dc.onopen = ()=>{
+      wifi.conexiones.push(con); pintarWifi();
+      enviarWifi(con, { tipo:'hola', vector:firebase.sync.vector(), quiereFoto:!!con.quiereFoto, nombre:(perfil&&perfil.nombre)||'' });
+      showToast('Equipo conectado por wifi.'); cerrarModal('wifiModal'); pararScanWifi();
+    };
+    dc.onclose = ()=>{ wifi.conexiones = wifi.conexiones.filter(x=>x!==con); pintarWifi(); showToast('Se desconectó un equipo del wifi.'); };
+    dc.onmessage = async e=>{
+      let m; try{ m = JSON.parse(e.data); }catch(err){ return; }
+      if(m.tipo==='trozo'){ const t = con.trozos[m.id] = con.trozos[m.id]||[]; t[m.i] = m.d; if(t.filter(Boolean).length<m.n) return; delete con.trozos[m.id]; try{ m = JSON.parse(t.join('')); }catch(err){ return; } }
+      if(m.tipo==='hola'){
+        con.nombre = m.nombre; pintarWifi();
+        if(m.quiereFoto) enviarWifi(con, { tipo:'foto', foto:firebase.sync.foto() });
+        else enviarWifi(con, { tipo:'ops', ops: await firebase.sync.opsDesde(m.vector||{}) });
+      }else if(m.tipo==='foto'){
+        await firebase.sync.cargarFoto(m.foto); con.quiereFoto = false;
+        showToast('Se copió todo del otro equipo.');
+        enviarWifi(con, { tipo:'hola', vector:firebase.sync.vector(), quiereFoto:false, nombre:(perfil&&perfil.nombre)||'' });
+      }else if(m.tipo==='ops'){
+        const n = firebase.sync.aplicar(m.ops||[]); if(n) programar(renderRed);
+      }
+    };
+  }
+  if(firebase.local) firebase.sync.alCambiar(ops=>{ wifi.conexiones.forEach(c=>enviarWifi(c, { tipo:'ops', ops })); });
+  function pintarWifi(){
+    const n = wifi.conexiones.length;
+    $('wifiEstadoChip').textContent = n ? 'Conectado con '+n : 'Sin conectar'; $('wifiEstadoChip').className = 'chip '+(n?'chip-green':'chip-gray');
+    $('wifiLista').innerHTML = wifi.conexiones.map(c=>'<div class="list-row"><div><strong>'+esc(c.nombre||'Otro equipo')+'</strong><div class="meta">Conectado por wifi</div></div></div>').join('');
+    if(firebase.local) $('syncInfo').textContent = 'Solo este equipo'+(n ? ' · wifi con '+n : '');
+  }
+  function pararScanWifi(){ if(wifi.scanStop){ wifi.scanStop(); wifi.scanStop = null; } $('wifiCam').hidden = true; }
+  async function camQR(video, alLeer){
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+    video.srcObject = stream; await video.play();
+    const det = 'BarcodeDetector' in window ? new BarcodeDetector({ formats:['qr_code'] }) : null;
+    if(!det) await cargarScript(URL_JSQR);
+    const c = document.createElement('canvas'), x = c.getContext('2d', { willReadFrequently:true });
+    let vivo = true, loop = 0;
+    const leer = async ()=>{
+      if(!vivo) return;
+      try{ let t = null;
+        if(det){ const r = await det.detect(video); if(r.length) t = r[0].rawValue; }
+        else if(video.videoWidth){ c.width = video.videoWidth; c.height = video.videoHeight; x.drawImage(video,0,0); const r = jsQR(x.getImageData(0,0,c.width,c.height).data, c.width, c.height); if(r) t = r.data; }
+        if(t && alLeer(t)===true) return;
+      }catch(e){}
+      loop = requestAnimationFrame(leer);
+    };
+    leer();
+    return ()=>{ vivo = false; cancelAnimationFrame(loop); stream.getTracks().forEach(t=>t.stop()); };
+  }
+  function abrirWifi(rol){
+    if(!firebase.local){ showToast('Esto es para el modo "solo este equipo". Con la cuenta en la nube los equipos se juntan solos por internet.'); return; }
+    if(!('RTCPeerConnection' in window)){ showToast('Este navegador no puede conectar equipos por wifi. Use Chrome o Edge.'); return; }
+    wifi.rol = rol; wifi.pc = null;
+    $('wifiTitulo').textContent = rol==='invita' ? 'Invitar otro equipo' : 'Unirse a otro equipo';
+    $('wifiQR').innerHTML = ''; $('wifiCodigo').value = ''; $('wifiPegar').value = ''; $('wifiEstado').textContent = '';
+    $('wifiCopiarRow').hidden = rol!=='une'; $('wifiCopiarTodo').checked = rol==='une' && !historial.length && !activos.length;
+    $('wifiPaso1').hidden = rol!=='invita';
+    $('wifiInstr2').textContent = rol==='invita' ? 'Cuando el otro equipo le muestre su código de respuesta, escanéelo o péguelo aquí.' : 'Escanee o pegue el código que muestra el equipo que invita.';
+    abrirModal('wifiModal');
+    if(rol==='invita') crearInvitacion();
+  }
+  async function crearInvitacion(){
+    $('wifiInstr1').textContent = 'Preparando…';
+    const pc = wifi.pc = nuevaPC(), con = { pc };
+    prepararCanal(con, pc.createDataChannel('sync'));
+    await pc.setLocalDescription(await pc.createOffer()); await esperarICE(pc);
+    const cod = await comprimir(JSON.stringify({ t:'o', s:pc.localDescription.sdp }));
+    $('wifiQR').innerHTML = qrSVG(cod, ''); $('wifiCodigo').value = cod;
+    $('wifiInstr1').textContent = 'Paso 1: en el otro equipo vaya a Ajustes › Equipos por wifi › "Este equipo se une" y escanee este código.';
+  }
+  async function usarCodigo(cod){
+    let d; try{ d = JSON.parse(await descomprimir(cod)); }catch(e){ $('wifiEstado').textContent = 'Ese código no sirve. Revise que lo copió completo.'; return; }
+    try{
+      if(wifi.rol==='invita'){
+        if(d.t!=='a'){ $('wifiEstado').textContent = 'Ese es un código de invitación; aquí va el de respuesta del otro equipo.'; return; }
+        await wifi.pc.setRemoteDescription({ type:'answer', sdp:d.s }); $('wifiEstado').textContent = 'Conectando…';
+      }else{
+        if(d.t!=='o'){ $('wifiEstado').textContent = 'Ese es un código de respuesta; aquí va el de invitación.'; return; }
+        const pc = wifi.pc = nuevaPC(), con = { pc, quiereFoto:$('wifiCopiarTodo').checked };
+        pc.ondatachannel = e=> prepararCanal(con, e.channel);
+        await pc.setRemoteDescription({ type:'offer', sdp:d.s }); await pc.setLocalDescription(await pc.createAnswer()); await esperarICE(pc);
+        const resp = await comprimir(JSON.stringify({ t:'a', s:pc.localDescription.sdp }));
+        $('wifiPaso1').hidden = false; $('wifiQR').innerHTML = qrSVG(resp, ''); $('wifiCodigo').value = resp;
+        $('wifiInstr1').textContent = 'Paso 2: muéstrele este código de respuesta al equipo que invitó (que lo escanee o lo pegue). Se conectan solos.';
+        $('wifiEstado').textContent = 'Esperando que el otro equipo lea la respuesta…';
+      }
+    }catch(e){ console.error(e); $('wifiEstado').textContent = 'No se pudo conectar. Revise que los dos equipos estén en el mismo wifi.'; }
+  }
+  $('btnWifiInvitar').addEventListener('click', ()=>abrirWifi('invita'));
+  $('btnWifiUnirse').addEventListener('click', ()=>abrirWifi('une'));
+  $('btnWifiSeguir').addEventListener('click', ()=>{ const c = $('wifiPegar').value.trim(); if(c) usarCodigo(c); else showToast('Escanee o pegue el código.'); });
+  $('btnWifiCopiar').addEventListener('click', ()=>{ navigator.clipboard && navigator.clipboard.writeText($('wifiCodigo').value).then(()=>showToast('Código copiado.')).catch(()=>{ $('wifiCodigo').select(); }); });
+  $('btnWifiEscanear').addEventListener('click', async ()=>{
+    pararScanWifi(); $('wifiCam').hidden = false;
+    try{ wifi.scanStop = await camQR($('wifiVideo'), t=>{ if(!/^PW[01]:/.test(t)) return false; pararScanWifi(); usarCodigo(t); return true; }); }
+    catch(e){ $('wifiCam').hidden = true; showToast('No se pudo abrir la cámara. Pegue el código.'); }
+  });
+  document.addEventListener('click', e=>{ if(e.target.closest('[data-close="wifiModal"]')) pararScanWifi(); });
+  if(!firebase.local){ $('wifiNota').textContent = 'Con la cuenta en la nube los equipos ya se juntan solos por internet (y si se cae, cada uno sigue y se juntan al volver). Para trabajar entre equipos sin internet nunca, use el modo "solo este equipo" en todos y conéctelos aquí.'; $('btnWifiInvitar').disabled = $('btnWifiUnirse').disabled = true; }
+
+  /* ================= CÁMARA DE LA ENTRADA ================= */
+  const camEntrada = { cfg:{ fuente:'', disp:'', url:'', auto:false, salida:false }, stream:null, video:null };
+  try{ Object.assign(camEntrada.cfg, JSON.parse(localStorage.getItem('camEntrada')||'{}')); }catch(e){}
+  function guardarCam(){ try{ localStorage.setItem('camEntrada', JSON.stringify(camEntrada.cfg)); }catch(e){} }
+  async function abrirStreamCam(){
+    if(camEntrada.stream) return camEntrada.video;
+    camEntrada.stream = await navigator.mediaDevices.getUserMedia({ video: camEntrada.cfg.disp ? { deviceId:{ exact:camEntrada.cfg.disp }, width:{ ideal:1280 } } : { width:{ ideal:1280 } } });
+    const v = camEntrada.video = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = camEntrada.stream; await v.play();
+    await new Promise(r=>setTimeout(r, 300));
+    return v;
+  }
+  function cerrarStreamCam(){ if(camEntrada.stream){ camEntrada.stream.getTracks().forEach(t=>t.stop()); camEntrada.stream = null; camEntrada.video = null; } }
+  // devuelve la foto (jpg pequeño) o, con comoImagen, un <img>/<canvas> para leer la placa
+  async function fotoCamara(comoImagen){
+    const f = camEntrada.cfg.fuente; if(!f) return null;
+    try{
+      let fuente, w, h;
+      if(f==='webcam'){ fuente = await abrirStreamCam(); w = fuente.videoWidth; h = fuente.videoHeight; }
+      else{
+        if(!/^https:\/\//.test(camEntrada.cfg.url)) throw new Error('La dirección debe empezar por https://');
+        const r = await fetch(camEntrada.cfg.url, { mode:'cors', cache:'no-store' }); if(!r.ok) throw new Error('La cámara respondió '+r.status);
+        fuente = await createImageBitmap(await r.blob()); w = fuente.width; h = fuente.height;
+      }
+      const c = document.createElement('canvas'), k = comoImagen ? Math.min(1, 1600/w) : Math.min(1, 480/w);
+      c.width = Math.round(w*k); c.height = Math.round(h*k); c.getContext('2d').drawImage(fuente, 0, 0, c.width, c.height);
+      return comoImagen ? c : c.toDataURL('image/jpeg', 0.6);
+    }catch(e){ console.warn(e); if(!camEntrada.avisado){ camEntrada.avisado = true; showToast('No se pudo tomar la foto con la cámara de la entrada: '+(e.message||'revise la conexión')); } return null; }
+  }
+  async function pintarCam(){
+    const c = camEntrada.cfg;
+    $('camFuente').value = c.fuente; $('camUrl').value = c.url||''; $('camAutoEntrada').checked = !!c.auto; $('camAutoSalida').checked = !!c.salida;
+    $('camDispRow').hidden = c.fuente!=='webcam'; $('camUrlRow').hidden = c.fuente!=='url';
+    if(c.fuente==='webcam' && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices){
+      const l = (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+      $('camDisp').innerHTML = l.map((d,i)=>'<option value="'+esc(d.deviceId)+'"'+(d.deviceId===c.disp?' selected':'')+'>'+esc(d.label||('Cámara '+(i+1)))+'</option>').join('') || '<option value="">(Toque Probar para ver las cámaras)</option>';
+    }
+  }
+  function leerCamForm(){ Object.assign(camEntrada.cfg, { fuente:$('camFuente').value, disp:$('camDisp').value||camEntrada.cfg.disp, url:$('camUrl').value.trim(), auto:$('camAutoEntrada').checked, salida:$('camAutoSalida').checked }); camEntrada.avisado = false; cerrarStreamCam(); guardarCam(); pintarCam(); }
+  ['camFuente','camDisp','camUrl','camAutoEntrada','camAutoSalida'].forEach(id=>$(id).addEventListener('change', leerCamForm));
+  $('btnCamProbar').addEventListener('click', async ()=>{
+    camEntrada.avisado = false; $('camEstado').textContent = 'Tomando foto…';
+    const f = await fotoCamara();
+    if(f){ $('camPrev').src = f; $('camPrev').hidden = false; $('camEstado').textContent = 'La cámara funciona.'; pintarCam(); }
+    else $('camEstado').textContent = camEntrada.cfg.fuente ? 'No se pudo tomar la foto. Revise la cámara o la dirección.' : 'Elija primero una cámara.';
+  });
+  pintarCam();
+
+  /* ================= GOOGLE SHEETS Y DRIVE ================= */
+  const G = { token:null, vence:0, cliente:null };
+  try{ const t = JSON.parse(sessionStorage.getItem('gTok')||'null'); if(t && t.vence>Date.now()){ G.token = t.token; G.vence = t.vence; } }catch(e){}
+  function gTok(){ return G.token && G.vence>Date.now()+60000 ? G.token : null; }
+  function pintarG(){
+    const g = cfg.google||{};
+    if(!enfocadoDentro('gClientId')) $('gClientId').value = g.clientId||'';
+    $('gAutoDrive').checked = !!g.autoDrive; $('gAutoSheets').checked = !!g.autoSheets;
+    $('gEstado').textContent = gTok() ? 'Conectado' : 'Sin conectar'; $('gEstado').className = 'chip '+(gTok()?'chip-green':'chip-gray');
+    $('gInfo').innerHTML = [g.hojaId ? '<a href="https://docs.google.com/spreadsheets/d/'+esc(g.hojaId)+'" target="_blank" rel="noopener">Abrir la hoja de reportes</a>' : '', g.ultimoDrive ? 'Último respaldo en Drive: '+fmtFechaHora(g.ultimoDrive) : ''].filter(Boolean).join(' · ');
+  }
+  function conectarGoogle(){
+    return new Promise(async (res, rej)=>{
+      const id = ((cfg.google||{}).clientId||'').trim();
+      if(!id){ showToast('Primero pegue el ID de cliente de Google (vea los pasos abajo).'); return rej(new Error('sin id')); }
+      try{ await cargarScript('https://accounts.google.com/gsi/client'); }catch(e){ showToast('No se pudo cargar el inicio de sesión de Google. Revise el internet.'); return rej(e); }
+      G.cliente = google.accounts.oauth2.initTokenClient({ client_id:id, scope:'https://www.googleapis.com/auth/drive.file',
+        callback:(r)=>{ if(r.error){ showToast('Google no dio permiso: '+r.error); return rej(new Error(r.error)); }
+          G.token = r.access_token; G.vence = Date.now()+(r.expires_in||3600)*1000;
+          try{ sessionStorage.setItem('gTok', JSON.stringify({ token:G.token, vence:G.vence })); }catch(e){}
+          pintarG(); res(G.token); } });
+      G.cliente.requestAccessToken({ prompt: G.token ? '' : 'consent' });
+    });
+  }
+  async function gFetch(url, opt){
+    const tok = gTok() || await conectarGoogle();
+    const r = await fetch(url, Object.assign({}, opt, { headers:Object.assign({ Authorization:'Bearer '+tok }, (opt||{}).headers||{}) }));
+    if(!r.ok){ const t = await r.text().catch(()=>''); const e = new Error('Google respondió '+r.status); e.status = r.status; e.detalle = t; throw e; }
+    return r.status===204 ? null : r.json();
+  }
+  function datosRespaldo(){
+    return { app:'parqueadero', version:1, creado:new Date().toISOString(), negocio:cfg.brand, config:cfg, contadores, activos, historial, ventas, productos, mensualidades, clientes, turnos };
+  }
+  async function subirDrive(silencioso){
+    try{
+      const g = cfg.google||{}; let carpeta = g.carpetaId;
+      if(carpeta){ try{ await gFetch('https://www.googleapis.com/drive/v3/files/'+carpeta+'?fields=id,trashed'); }catch(e){ if(e.status===404) carpeta = null; else throw e; } }
+      if(!carpeta){ carpeta = (await gFetch('https://www.googleapis.com/drive/v3/files', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ name:'Respaldos '+cfg.brand, mimeType:'application/vnd.google-apps.folder' }) })).id; }
+      const nombre = 'respaldo-parqueadero-'+hoyISO()+'.json';
+      const ex = await gFetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent("name='"+nombre+"' and '"+carpeta+"' in parents and trashed=false")+'&fields=files(id)');
+      const meta = ex.files && ex.files[0] ? {} : { name:nombre, parents:[carpeta], mimeType:'application/json' };
+      const limite = 'parq'+Math.random().toString(36).slice(2), cuerpo = '--'+limite+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+limite+'\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(datosRespaldo())+'\r\n--'+limite+'--';
+      const url = ex.files && ex.files[0] ? 'https://www.googleapis.com/upload/drive/v3/files/'+ex.files[0].id+'?uploadType=multipart' : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+      await gFetch(url, { method: ex.files && ex.files[0] ? 'PATCH' : 'POST', headers:{ 'Content-Type':'multipart/related; boundary='+limite }, body:cuerpo });
+      guardarConfig({ google:Object.assign({}, cfg.google, { carpetaId:carpeta, ultimoDrive:new Date().toISOString() }) }, silencioso ? null : 'Respaldo guardado en Google Drive.');
+      return true;
+    }catch(e){ console.error(e); if(!silencioso) showToast('No se pudo subir a Drive: '+e.message); return false; }
+  }
+  async function enviarSheets(silencioso){
+    try{
+      const d = datosReporte(), g = cfg.google||{}; let hoja = g.hojaId;
+      const f = x=> new Date(x).toLocaleString('es-CO');
+      const porDia = {};
+      d.his.forEach(h=>{ const k = hoyISO(new Date(h.salida)); (porDia[k] = porDia[k]||[0,0,0])[0] += h.total||0; porDia[k][2]++; });
+      d.vts.forEach(v=>{ const k = hoyISO(new Date(v.fecha)); (porDia[k] = porDia[k]||[0,0,0])[1] += v.total||0; });
+      const hojas = {
+        Resumen: [[cfg.brand], ['Periodo', d.r.ini.toLocaleDateString('es-CO')+' a '+new Date(d.r.fin-1).toLocaleDateString('es-CO')], ['Actualizado', new Date().toLocaleString('es-CO')], [],
+          ['Concepto','Valor'], ['Parqueo', d.his.reduce((s,h)=>s+(h.total||0),0)], ['Mensualidades', d.pms.reduce((s,x)=>s+(x.valor||0),0)], ['Tienda', d.vts.reduce((s,v)=>s+(v.total||0),0)], ['Gastos', -d.gas.reduce((s,x)=>s+(x.valor||0),0)]],
+        Diario: [['Día','Parqueo','Tienda','Vehículos cobrados']].concat(Object.keys(porDia).sort().map(k=>[k, porDia[k][0], porDia[k][1], porDia[k][2]])),
+        Parqueo: [['Comprobante','Salida','Placa','Vehículo','Minutos','Total','Pago','Atendió']].concat(d.his.map(h=>[h.numeroFactura||'', f(h.salida), h.placa, nombreFor(h.tipo), h.minutos||0, h.total||0, pagoLabel(h), h.operador||''])),
+        Tienda: [['Venta','Fecha','Productos','Total','Pago','Atendió']].concat(d.vts.map(v=>[v.numero, f(v.fecha), (v.items||[]).map(i=>i.cantidad+' '+i.nombre).join(', '), v.total||0, pagoLabel(v), v.operador||'']))
+      };
+      if(hoja){ try{ await gFetch('https://sheets.googleapis.com/v4/spreadsheets/'+hoja+'?fields=spreadsheetId'); }catch(e){ if(e.status===404) hoja = null; else throw e; } }
+      if(!hoja) hoja = (await gFetch('https://sheets.googleapis.com/v4/spreadsheets', { method:'POST', headers:{ 'Content-Type':'application/json' },
+        body:JSON.stringify({ properties:{ title:'Reportes '+cfg.brand }, sheets:Object.keys(hojas).map(t=>({ properties:{ title:t } })) }) })).spreadsheetId;
+      await gFetch('https://sheets.googleapis.com/v4/spreadsheets/'+hoja+'/values:batchClear', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ ranges:Object.keys(hojas).map(t=>t+'!A:Z') }) });
+      await gFetch('https://sheets.googleapis.com/v4/spreadsheets/'+hoja+'/values:batchUpdate', { method:'POST', headers:{ 'Content-Type':'application/json' },
+        body:JSON.stringify({ valueInputOption:'RAW', data:Object.entries(hojas).map(([t,v])=>({ range:t+'!A1', values:v })) }) });
+      guardarConfig({ google:Object.assign({}, cfg.google, { hojaId:hoja, ultimoSheets:new Date().toISOString() }) }, silencioso ? null : 'Reportes enviados a Google Sheets.');
+      return true;
+    }catch(e){ console.error(e); if(!silencioso) showToast('No se pudo enviar a Google Sheets: '+e.message); return false; }
+  }
+  $('gClientId').addEventListener('change', ()=> guardarConfig({ google:Object.assign({}, cfg.google, { clientId:$('gClientId').value.trim() }) }, 'ID de cliente guardado.'));
+  $('gAutoDrive').addEventListener('change', ()=> guardarConfig({ google:Object.assign({}, cfg.google, { autoDrive:$('gAutoDrive').checked }) }, 'Guardado.'));
+  $('gAutoSheets').addEventListener('change', ()=> guardarConfig({ google:Object.assign({}, cfg.google, { autoSheets:$('gAutoSheets').checked }) }, 'Guardado.'));
+  $('btnGConectar').addEventListener('click', ()=>{ conectarGoogle().then(()=>showToast('Conectado con Google.')).catch(()=>{}); });
+  $('btnGDrive').addEventListener('click', ()=>subirDrive(false));
+  $('btnGSheets').addEventListener('click', ()=>enviarSheets(false));
+  // respaldo diario: si ya hay permiso de Google se sube solo; si no, queda un aviso para subirlo con un toque
+  function respaldoPendiente(){ const g = cfg.google||{}; return esAdmin() && g.autoDrive && g.clientId && (!g.ultimoDrive || Date.now()-new Date(g.ultimoDrive) > 20*3600e3); }
+  function revisarRespaldoDrive(){ if(!respaldoPendiente()) return; if(gTok()) subirDrive(true); else programar(renderAlertas); }
+  setInterval(()=>{ if(perfil) revisarRespaldoDrive(); }, 30*60000);
+  document.addEventListener('click', e=>{ if(e.target.closest('#btnRespaldoDrive')) subirDrive(false).then(()=>programar(renderAlertas)); });
+
   /* ================= MODO SOLO ESTE EQUIPO ================= */
   document.addEventListener('click', e=>{
     if(!e.target.closest('.js-modo-local')) return;
@@ -6549,14 +6941,17 @@
       else $('ocrEstado').textContent = 'No se entendió la placa ("'+(data.text||'').trim().slice(0,20)+'"). Acérquese, evite reflejos e intente otra vez, o escríbala.';
     }catch(e){ console.error(e); $('ocrEstado').textContent = 'No se pudo cargar el lector de placas. La primera vez necesita internet.'; }
   }
-  function cerrarOCR(){ cerrarModal('ocrModal'); if(ocrStream){ ocrStream.getTracks().forEach(t=>t.stop()); ocrStream = null; } }
+  function cerrarOCR(){ ocrImagen = null; cerrarModal('ocrModal'); if(ocrStream){ ocrStream.getTracks().forEach(t=>t.stop()); ocrStream = null; } }
   $('btnLeerPlaca').addEventListener('click', async ()=>{
     abrirModal('ocrModal'); $('ocrEstado').textContent = 'Ponga la placa dentro del recuadro y toque Leer.';
     workerOCR().catch(()=>{});
-    try{ ocrStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment', width:{ ideal:1280 } } }); $('ocrVideo').srcObject = ocrStream; await $('ocrVideo').play(); }
+    if(camEntrada.cfg.fuente==='url'){ const img = await fotoCamara(true); if(img){ ocrImagen = img; $('ocrEstado').textContent = 'Foto tomada de la cámara de la entrada. Toque Leer.'; } else $('ocrEstado').textContent = 'No se pudo tomar la foto de la cámara IP. Use "Usar una foto".'; return; }
+    const vid = camEntrada.cfg.fuente==='webcam' && camEntrada.cfg.disp ? { deviceId:{ exact:camEntrada.cfg.disp }, width:{ ideal:1280 } } : { facingMode:'environment', width:{ ideal:1280 } };
+    try{ ocrStream = await navigator.mediaDevices.getUserMedia({ video:vid }); $('ocrVideo').srcObject = ocrStream; await $('ocrVideo').play(); }
     catch(e){ $('ocrEstado').textContent = 'No hay cámara disponible. Use "Usar una foto".'; }
   });
-  $('btnOcrLeer').addEventListener('click', ()=>{ if(ocrStream) leerImagenOCR($('ocrVideo')); else $('ocrFoto').click(); });
+  let ocrImagen = null;
+  $('btnOcrLeer').addEventListener('click', ()=>{ if(ocrStream) leerImagenOCR($('ocrVideo')); else if(ocrImagen){ leerImagenOCR(ocrImagen); } else $('ocrFoto').click(); });
   $('btnOcrFoto').addEventListener('click', ()=> $('ocrFoto').click());
   $('ocrFoto').addEventListener('change', e=>{ const f = e.target.files[0]; if(!f) return; const img = new Image(); img.onload = ()=>{ leerImagenOCR(img); URL.revokeObjectURL(img.src); }; img.src = URL.createObjectURL(f); e.target.value = ''; });
   document.addEventListener('click', e=>{ if(e.target.closest('[data-close="ocrModal"]')) cerrarOCR(); });

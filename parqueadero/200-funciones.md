@@ -32,7 +32,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 14. ✅ 📴 **Cola de fotos**: las fotos de los vehículos se guardan en IndexedDB y se suben cuando vuelve la conexión.
 15. ✅ 📴 ⚡ **Alerta sonora** cuando se va o vuelve el internet.
 16. ✅ 📴 **Modo "solo este equipo"**: todo funciona en local con IndexedDB, para parqueaderos que nunca tienen internet.
-17. 📴 **Sincronizar entre dos equipos por la red wifi local**, sin internet (WebRTC o código QR).
+17. ✅ 📴 **Sincronizar entre dos equipos por la red wifi local**, sin internet (WebRTC o código QR).
 18. ✅ 📴 **Pasar datos con código QR** de un celular a otro, por ejemplo la lista de vehículos dentro.
 19. ✅ 📴 **Guardar los WhatsApp pendientes**: se arma el mensaje y se envía cuando hay conexión.
 20. ✅ 📴 ⚡ **Hora local confiable**: avisar si la hora del equipo está mal, porque eso cambia los cobros.
@@ -222,13 +222,13 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 183. ✅ 📴 Abrir la talanquera (barrera) con un relé USB o wifi.
 184. ✅ 📴 Lector de tarjetas RFID o TAG para abonados.
 185. ✅ 📴 Pantalla secundaria para el cliente con el valor a pagar.
-186. 🌐 Cámara IP en la entrada que toma la foto sola.
+186. ✅ 🌐 Cámara IP en la entrada que toma la foto sola.
 187. ✅ 📴 Balanza para vender productos por peso.
 188. 🌐 Integración con datáfono (Bold, Wompi, SumUp).
 189. ✅ 🌐 Exportar a Siigo o Alegra para la contabilidad.
-190. 🌐 Integración con Google Sheets para reportes.
+190. ✅ 🌐 Integración con Google Sheets para reportes.
 191. ✅ 🌐 API o webhook para otros sistemas.
-192. 🌐 Respaldo automático en Google Drive.
+192. ✅ 🌐 Respaldo automático en Google Drive.
 
 ## J. Ajustes y comodidad (193–200)
 193. ✅ 📴 Asistente de configuración inicial paso a paso.
