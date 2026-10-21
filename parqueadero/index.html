@@ -789,6 +789,26 @@
         </div>
       </section>
 
+      <!-- ===== NOVEDADES ===== -->
+      <section class="view" id="view-novedades">
+        <div class="card">
+          <h2 class="card-title">Reportar una novedad</h2>
+          <div class="row">
+            <div class="field" style="width:200px;"><label for="novTipo">Tipo</label><select class="select" id="novTipo">
+              <option value="incidente">Choque o daño</option><option value="objeto">Objeto perdido o encontrado</option><option value="queja">Queja de un cliente</option><option value="mantenimiento">Arreglo pendiente</option><option value="nota">Nota para el equipo</option></select></div>
+            <div class="field" style="width:120px;"><label for="novPlaca">Placa</label><input class="input mono upper" id="novPlaca" maxlength="10" placeholder="Opcional"></div>
+            <div class="field grow"><label for="novTexto">¿Qué pasó?</label><input class="input" id="novTexto" maxlength="300" placeholder="Ej. el carro rayó la columna 3 al parquear · se encontró una billetera negra"></div>
+            <label class="btn foto-btn" title="Foto"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>Foto<input type="file" id="novFoto" accept="image/*" capture="environment"></label>
+            <img id="novFotoPrev" class="foto-preview" alt="" hidden>
+            <button class="btn btn-primary" id="btnAddNov">Guardar</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Novedades<span class="sp"></span><div class="seg" id="novFiltro" style="text-transform:none;letter-spacing:0;"><button class="active" data-f="abiertas">Pendientes</button><button data-f="todas">Todas</button></div></h2>
+          <div id="novLista"></div>
+        </div>
+      </section>
+
       <!-- ===== HISTORIAL ===== -->
       <section class="view" id="view-historial">
         <div class="card">
@@ -841,6 +861,11 @@
           </div>
           <div id="clientesLista"></div>
           <div class="hint">Ordenados de más a menos visitas (últimos dos meses). Se llenan solos cuando guardas el nombre o WhatsApp en el comprobante de salida.</div>
+        </div>
+        <div class="card" id="deudasCard">
+          <h2 class="card-title">Fiados (cuentas por cobrar)<span class="sp"></span><span class="money" id="deudasTotal"></span></h2>
+          <div id="deudasLista"></div>
+          <datalist id="deudoresList"></datalist>
         </div>
       </section>
 
@@ -912,8 +937,28 @@
           </div>
 
           <div class="card">
+            <h2 class="card-title">Tareas al cerrar el turno</h2>
+            <div class="field"><label for="cfgChecklist">Una tarea por línea</label><textarea class="input" id="cfgChecklist" rows="5" placeholder="Barrer la entrada&#10;Revisar que no queden carros sin ticket&#10;Apagar las luces de la tienda"></textarea></div>
+            <div class="hint">Al cerrar el turno el trabajador las marca. En el balance queda cuántas hizo.</div>
+            <h2 class="card-title" style="margin-top:20px;">Fidelidad y cupones</h2>
+            <label class="switch"><input type="checkbox" id="cfgFidelidad"> Tarjeta de sellos: cada salida cobrada da un sello</label>
+            <div class="field" style="max-width:240px;margin-top:6px;"><label for="cfgFidVisitas">La visita número … es gratis</label><input class="input mono" id="cfgFidVisitas" type="number" min="2" max="50" step="1"></div>
+            <div class="lbl" style="margin:14px 0 4px;">Cupones de descuento</div>
+            <div class="row" style="margin-bottom:8px;">
+              <input class="input mono upper" id="cupCodigo" placeholder="Código" maxlength="16" style="width:120px;">
+              <input class="input mono" id="cupPct" type="number" min="0" max="100" placeholder="% desc." style="width:90px;">
+              <input class="input mono" id="cupValor" type="number" min="0" step="500" placeholder="o $ desc." style="width:110px;">
+              <input class="input" id="cupVence" type="date" style="width:150px;" title="Vence">
+              <button class="btn btn-primary" id="btnAddCupon">Agregar</button>
+            </div>
+            <div id="cupLista"></div>
+          </div>
+
+          <div class="card">
             <h2 class="card-title">Caja</h2>
             <div class="field" style="max-width:260px;"><label for="cfgFaltante">Avisar si al cerrar turno falta más de</label><input class="input mono" id="cfgFaltante" type="number" min="0" step="1000"></div>
+            <label class="switch" style="margin-top:12px;"><input type="checkbox" id="cfgFiado"> Permitir fiar (cuentas por cobrar)</label>
+            <label class="switch"><input type="checkbox" id="cfgFiadoTrab"> Los trabajadores también pueden fiar</label>
             <div class="field" style="max-width:260px;margin-top:12px;"><label for="cfgMeta">Meta de venta por día (parqueo + tienda)</label><input class="input mono" id="cfgMeta" type="number" min="0" step="10000"></div>
             <div class="field" style="max-width:260px;margin-top:12px;"><label for="cfgWaDueno">WhatsApp del dueño (para el resumen del día)</label><input class="input mono" id="cfgWaDueno" placeholder="3001234567"></div>
             <div class="hint">Al cerrar el turno el trabajador cuenta la caja. Si falta más de este valor, sale un aviso rojo para usted y queda en la bitácora.</div>
@@ -1080,6 +1125,7 @@
     <p style="font-size:13px;margin:0 0 10px;" class="muted">Cuente los billetes y monedas que hay en la caja ahora.</p>
     <div class="form-grid" id="arqueoBilletes"></div>
     <div class="breakdown" id="arqueoResumen"></div>
+    <div id="arqueoCheck" style="margin-bottom:10px;"></div>
     <div class="field" style="margin-bottom:12px;"><label for="arqueoNota">Nota para el siguiente turno (opcional)</label><input class="input" id="arqueoNota" maxlength="160" placeholder="Ej. el de la placa KLM482 pagó adelantado · falta cambio de $2.000"></div>
     <button class="btn btn-danger btn-lg w100" id="btnConfirmarArqueo">Cerrar turno</button>
   </div>
@@ -1165,6 +1211,17 @@
     <div class="modal-head"><h3 id="invModalTitulo">Inventario</h3><button class="modal-close" data-close="invModal">✕</button></div>
     <div id="invModalBody"></div>
     <div class="modal-actions" id="invModalAcciones"></div>
+  </div>
+</div>
+
+<!-- ===== MODAL ABONO ===== -->
+<div class="modal" id="abonoModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="abonoTitulo">Abono</h3><button class="modal-close" data-close="abonoModal">✕</button></div>
+    <div class="breakdown" id="abonoDetalle"></div>
+    <div class="field"><label for="abonoValor">Valor que abona</label><input class="input mono" id="abonoValor" type="number" min="0" step="1000"></div>
+    <div id="abonoPago"></div>
+    <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnConfirmarAbono">Registrar abono</button>
   </div>
 </div>
 
@@ -1289,6 +1346,7 @@
 
   const ICONOS = {
     whatsapp:'<svg viewBox="0 0 24 24"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8c-1-.4-1.9-1.3-2.3-2.3l.8-1-1-2z"/></svg>',
+    novedades:'<svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/><path d="M12 8v3M12 13.5h.01"/></svg>',
     reportes:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
     panel:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="2"/><rect x="13" y="3" width="8" height="6" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="15" width="8" height="6" rx="2"/></svg>',
     dinero:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg>',
@@ -1321,6 +1379,7 @@
     { id:'mensualidades', nombre:'Mensualidades', roles:STAFF },
     { id:'clientes', nombre:'Clientes', roles:STAFF },
     { id:'turnos', nombre:'Turnos', roles:STAFF },
+    { id:'novedades', nombre:'Novedades', roles:TODOS },
     { id:'ajustes', nombre:'Ajustes', roles:['admin'] }
   ];
 
@@ -1362,7 +1421,8 @@
       facturacion: { nit:'', direccion:'', telefono:'', prefijo:'FE', ivaPct:0 },
       cobro: { fraccionMin:30, graciaMin:0, ticketPerdido:5000, pernocta:0, redondeo:0 },
       seguridad: { cierreMin:60 },
-      ticket: { pie:'', legal:'' }, logo:null, proveedores:[],
+      ticket: { pie:'', legal:'' }, logo:null, proveedores:[], checklist:[], cupones:[],
+      fidelidad: { activo:false, visitas:10 }, fiado: { activo:false, trabajador:false },
       avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] },
       caja: { alertaFaltante:5000, whatsappDueno:'', metaDia:0 },
       parqueo: { horasAlerta:12, pedirConductor:false },
@@ -1382,6 +1442,10 @@
     out.caja = Object.assign(defaultConfig().caja, d.caja||{});
     out.ticket = Object.assign(defaultConfig().ticket, d.ticket||{});
     out.proveedores = Array.isArray(d.proveedores) ? d.proveedores : [];
+    out.checklist = Array.isArray(d.checklist) ? d.checklist : [];
+    out.cupones = Array.isArray(d.cupones) ? d.cupones : [];
+    out.fidelidad = Object.assign(defaultConfig().fidelidad, d.fidelidad||{});
+    out.fiado = Object.assign(defaultConfig().fiado, d.fiado||{});
     out.parqueo = Object.assign(defaultConfig().parqueo, d.parqueo||{});
     out.placasAlerta = Array.isArray(d.placasAlerta) ? d.placasAlerta : [];
     out.servicios = Array.isArray(d.servicios) ? d.servicios : [];
@@ -1428,7 +1492,7 @@
   function esStaff(){ return perfil && (perfil.rol==='admin' || perfil.rol==='secretaria'); }
   function rolLabel(rol){ return rol==='admin' ? 'Administrador' : rol==='secretaria' ? 'Secretaria' : 'Trabajador'; }
   function medioLabel(v){ return { nequi:'Nequi', daviplata:'Daviplata', bbva:'BBVA', bancolombia:'Bancolombia', transferencia:'Transferencia' }[v] || v || ''; }
-  function pagoLabel(r){ return r.metodoPago==='transferencia' ? 'Transferencia · '+medioLabel(r.medioTransferencia) : 'Efectivo'; }
+  function pagoLabel(r){ return r.metodoPago==='transferencia' ? 'Transferencia · '+medioLabel(r.medioTransferencia) : r.metodoPago==='fiado' ? 'Fiado · '+(r.deudor||'') : 'Efectivo'; }
   function hoy0(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
   function isSameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
   function isSameMonth(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth(); }
@@ -1651,7 +1715,8 @@
     const bajos = productos.filter(p=> (p.stock||0) <= minDe(p)).length;
     $('nav').innerHTML = vistasPermitidas().map((v,i)=>
       '<button class="nav-btn'+(v.id===vistaActual?' active':'')+'" data-vista="'+v.id+'">'+ICONOS[v.id]+'<span>'+v.nombre+'</span>'+
-      (v.id==='inventario' && bajos ? '<span class="dot">'+bajos+'</span>' : '')+(i<10 ? '<kbd title="Alt + '+((i+1)%10)+'">'+((i+1)%10)+'</kbd>' : '')+'</button>'
+      (v.id==='inventario' && bajos ? '<span class="dot">'+bajos+'</span>' : '')+
+      (v.id==='novedades' && novedades.some(n=>n.estado!=='resuelta') ? '<span class="dot">'+novedades.filter(n=>n.estado!=='resuelta').length+'</span>' : '')+(i<10 ? '<kbd title="Alt + '+((i+1)%10)+'">'+((i+1)%10)+'</kbd>' : '')+'</button>'
     ).join('');
   }
   function irA(vista){
@@ -1806,7 +1871,7 @@
     detenerEscuchas();
     perfil = null;
     activos=[]; historial=[]; mensualidades=[]; clientes=[]; turnos=[]; productos=[]; ventas=[]; usuarios=[];
-    anuladosH=[]; anuladasV=[]; bitacoraLista=[]; gastos=[]; pagosMens=[];
+    anuladosH=[]; anuladasV=[]; bitacoraLista=[]; gastos=[]; pagosMens=[]; fiados=[]; novedades=[];
     carrito = {};
     fotoPendiente = null;
     histMesExtra = null;
@@ -1942,7 +2007,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -1972,14 +2037,16 @@
       programar(renderInventario);
       programar(renderVentasHoy, renderHistorial, renderCaja, renderKpis, renderTurnos, renderTurnoBar, renderPanel, renderReportes);
     }, errEscucha));
+    escuchas.push(db.collection('novedades').where('fecha','>=',desde).onSnapshot(q=>{ novedades = docs(q); programar(renderNovedades, renderNav); }, errEscucha));
     escuchas.push(db.collection('turnos').where('inicio','>=',desde).onSnapshot(q=>{
       turnos = docs(q);
       programar(renderTurnoBar, renderTurnos, renderAlertas);
     }, errEscucha));
     if(esStaff()){
+      escuchas.push(db.collection('fiados').onSnapshot(q=>{ fiados = docs(q); programar(renderDeudas, renderCaja, renderTurnos); }, errEscucha));
       escuchas.push(db.collection('pagosMensualidad').where('fecha','>=',desde).onSnapshot(q=>{ pagosMens = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderCaja, renderPanel, renderTurnos); }, errEscucha));
       escuchas.push(db.collection('gastos').where('fecha','>=',desde.slice(0,10)).onSnapshot(q=>{ gastos = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderCaja, renderPanel); }, errEscucha));
-      escuchas.push(db.collection('clientes').onSnapshot(q=>{ clientes = docs(q); programar(renderClientes); }, errEscucha));
+      escuchas.push(db.collection('clientes').onSnapshot(q=>{ clientes = docs(q); programar(renderClientes, renderDeudas); }, errEscucha));
     }
     if(esAdmin()){
       escuchas.push(db.collection('usuarios').onSnapshot(q=>{ usuarios = docs(q); programar(renderUsuarios); }, errEscucha));
@@ -2252,11 +2319,12 @@
   }
 
   /* ---------- medios de pago (salida y tienda) ---------- */
-  function controlPago(contenedorId, getTotal){
+  function controlPago(contenedorId, getTotal, conFiado){
     const p = contenedorId;
     $(contenedorId).innerHTML =
       '<div class="pago-box">'+
-        '<div class="seg full"><button type="button" data-m="efectivo" class="active">Efectivo</button><button type="button" data-m="transferencia">Transferencia</button></div>'+
+        '<div class="seg full"><button type="button" data-m="efectivo" class="active">Efectivo</button><button type="button" data-m="transferencia">Transferencia</button>'+(conFiado?'<button type="button" data-m="fiado" class="js-fiado" hidden>Fiado</button>':'')+'</div>'+
+        (conFiado ? '<div class="field" id="'+p+'Fia" hidden><label for="'+p+'Deudor">¿A quién se le fía?</label><input class="input" id="'+p+'Deudor" list="deudoresList" maxlength="60" placeholder="Nombre o placa"></div>' : '')+
         '<div class="field" id="'+p+'Efe"><label for="'+p+'Recibido">¿Con cuánto paga?</label><input class="input mono" type="number" min="0" step="500" id="'+p+'Recibido" placeholder="Ej. 10000">'+
           '<div class="billetes" id="'+p+'Bil"></div><div class="devuelta" id="'+p+'Dev"></div></div>'+
         '<div class="field" id="'+p+'Tra" hidden><label for="'+p+'Medio">¿A cuál cuenta?</label><select class="select" id="'+p+'Medio">'+
@@ -2268,6 +2336,7 @@
       box.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('active', b.dataset.m===metodo));
       $(p+'Efe').hidden = metodo!=='efectivo';
       $(p+'Tra').hidden = metodo!=='transferencia';
+      if(conFiado){ $(p+'Fia').hidden = metodo!=='fiado'; box.querySelectorAll('.js-fiado').forEach(b=>{ b.hidden = !puedeFiar(); }); if(metodo==='fiado' && !puedeFiar()){ metodo='efectivo'; pintar(); return; } }
       devuelta();
     }
     function billetes(total){
@@ -2292,15 +2361,18 @@
     });
     $(p+'Recibido').addEventListener('input', devuelta);
     return {
-      reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; pintar(); },
+      reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; if(conFiado) $(p+'Deudor').value=''; pintar(); },
       exacto(){ metodo='efectivo'; $(p+'Recibido').value = getTotal(); pintar(); },
+      actualizarFiado(){ if(conFiado) box.querySelectorAll('.js-fiado').forEach(b=>{ b.hidden = !puedeFiar(); }); },
       refrescar: devuelta,
       mostrar(si){ box.hidden = !si; },
       datos(total){
         const rec = parseFloat($(p+'Recibido').value);
         const recibido = (metodo==='efectivo' && !isNaN(rec)) ? rec : null;
+        const deudor = metodo==='fiado' ? $(p+'Deudor').value.trim().slice(0,60) : null;
         return {
-          metodoPago: metodo,
+          metodoPago: metodo, deudor,
+          sinDeudor: metodo==='fiado' && !deudor,
           medioTransferencia: metodo==='transferencia' ? $(p+'Medio').value : null,
           efectivoRecibido: recibido,
           vuelto: recibido!=null ? Math.max(0, recibido-total) : null,
@@ -2312,7 +2384,7 @@
 
   /* ---------- salida ---------- */
   let salidaId = null;
-  const pagoSalida = controlPago('salidaPago', ()=> calcularSalida().total);
+  const pagoSalida = controlPago('salidaPago', ()=> calcularSalida().total, true);
 
   function calcularSalida(){
     const v = activos.find(a=>a.id===salidaId);
@@ -2327,10 +2399,14 @@
     const perdido = (!esSub && $('salidaPerdido') && $('salidaPerdido').checked) ? (cfg.cobro.ticketPerdido||0) : 0;
     const noches = esSub ? 0 : nochesEntre(new Date(v.entrada), new Date());
     const pernocta = noches * (cfg.cobro.pernocta||0);
-    const subtotal = base + servTotal + perdido + pernocta;
+    const gratis = !esSub && !!($('salidaGratis') && $('salidaGratis').checked);
+    const descFid = gratis ? base : 0;
+    const cupon = (!esSub && $('salidaCupon')) ? cuponValido($('salidaCupon').value) : null;
+    const descCupon = cupon && !gratis ? Math.min(base, cupon.pct ? Math.round(base*cupon.pct/100) : (cupon.valor||0)) : 0;
+    const subtotal = base - descFid - descCupon + servTotal + perdido + pernocta;
     const ivaPct = cfg.facturacion.ivaPct || 0;
     const iva = Math.round(subtotal*ivaPct/100);
-    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, subtotal, ivaPct, iva, total: subtotal + iva };
+    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, gratis, descFid, cupon, descCupon, subtotal, ivaPct, iva, total: subtotal + iva };
   }
 
   function abrirSalida(id){
@@ -2344,6 +2420,15 @@
       ? '<div class="lbl" style="margin-bottom:4px;">Servicios adicionales</div>'+cfg.servicios.map(s=>
           '<label class="serv-check"><input type="checkbox" class="salida-serv" data-id="'+esc(s.id)+'"> '+esc(s.nombre)+' <span class="p">'+money(s.precio)+'</span></label>').join('')
       : '';
+    const cli = clientes.find(x=>x.placa===v.placa);
+    if(!esSubModo(v.modo) && cfg.fidelidad.activo && cli){
+      const sellos = cli.sellos||0, meta = cfg.fidelidad.visitas||10;
+      $('salidaServicios').innerHTML += sellos >= meta-1
+        ? '<label class="serv-check"><input type="checkbox" id="salidaGratis" checked> Visita gratis por fidelidad <span class="p">'+sellos+' sellos</span></label>'
+        : '<div class="serv-check" style="cursor:default;">Tarjeta de sellos <span class="p">'+sellos+' de '+(meta-1)+'</span></div>';
+    }
+    if(!esSubModo(v.modo) && (cfg.cupones||[]).length)
+      $('salidaServicios').innerHTML += '<div class="field" style="margin:8px 0;"><label for="salidaCupon">Cupón de descuento</label><input class="input mono upper" id="salidaCupon" maxlength="16" placeholder="Opcional" autocomplete="off"></div>';
     if(!esSubModo(v.modo) && cfg.cobro.ticketPerdido>0)
       $('salidaServicios').innerHTML += '<label class="serv-check"><input type="checkbox" id="salidaPerdido"> Perdió el ticket <span class="p">'+money(cfg.cobro.ticketPerdido)+'</span></label>';
     pagoSalida.reset();
@@ -2351,6 +2436,7 @@
     abrirModal('salidaModal');
   }
   $('salidaServicios').addEventListener('change', actualizarSalida);
+  $('salidaServicios').addEventListener('input', e=>{ if(e.target.id==='salidaCupon') actualizarSalida(); });
 
   function actualizarSalida(){
     const c = calcularSalida(); if(!c.v) return;
@@ -2367,6 +2453,9 @@
       if(k.descuentoPct) html += '<div class="brow"><span>Convenio −'+k.descuentoPct+'%</span><span class="v">−'+money(k.bruto-k.valor)+'</span></div>';
       if(c.perdido) html += '<div class="brow"><span>Ticket perdido</span><span class="v">'+money(c.perdido)+'</span></div>';
       if(c.pernocta) html += '<div class="brow"><span>Pasó '+c.noches+' noche(s)</span><span class="v">'+money(c.pernocta)+'</span></div>';
+      if(c.descFid) html += '<div class="brow"><span>Visita gratis (fidelidad)</span><span class="v">−'+money(c.descFid)+'</span></div>';
+      if(c.descCupon) html += '<div class="brow"><span>Cupón '+esc(c.cupon.codigo)+'</span><span class="v">−'+money(c.descCupon)+'</span></div>';
+      else if($('salidaCupon') && $('salidaCupon').value.trim()) html += '<div class="brow"><span style="color:var(--red);">Cupón no válido o vencido</span><span class="v"></span></div>';
       if(c.servTotal) html += '<div class="brow"><span>Servicios</span><span class="v">'+money(c.servTotal)+'</span></div>';
       if(c.ivaPct) html += '<div class="brow"><span>IVA '+c.ivaPct+'%</span><span class="v">'+money(c.iva)+'</span></div>';
       html += '<div class="brow total"><span>Total a cobrar</span><span class="v">'+money(c.total)+'</span></div>';
@@ -2387,6 +2476,7 @@
     }
     const pago = c.total>0 ? pagoSalida.datos(c.total) : { metodoPago:null, medioTransferencia:null, efectivoRecibido:null, vuelto:null, falta:false };
     if(pago.falta){ showToast('El dinero recibido no alcanza para el total.'); return; }
+    if(pago.sinDeudor){ showToast('Escriba a quién se le fía.'); return; }
     $('btnConfirmarSalida').disabled = true;
     try{
       const n = await siguienteNumero('factura');
@@ -2401,6 +2491,7 @@
         operador: perfil.nombre, operadorId: perfil.uid,
         operadorEntrada: c.v.operador || '', operadorEntradaId: c.v.operadorId || null,
         puesto: c.v.puesto || null, conductor: c.v.conductor || null, cedula: c.v.cedula || null, pernocta: c.pernocta || 0,
+        fidelidad: !!c.gratis, descuentoFidelidad: c.descFid || 0, cupon: c.descCupon ? c.cupon.codigo : null, descuentoCupon: c.descCupon || 0, deudor: pago.deudor || null,
         empresaNombre: emp ? emp.nombre : null, descuentoPct: k ? k.descuentoPct : 0,
         numeroFactura: (cfg.facturacion.prefijo||'FE') + '-' + pad(n),
         metodoPago: pago.metodoPago, medioTransferencia: pago.medioTransferencia,
@@ -2409,6 +2500,10 @@
       const batch = db.batch();
       batch.set(db.collection('historial').doc(r.id), r);
       batch.delete(db.collection('activos').doc(r.id));
+      // tarjeta de sellos: suma uno por salida cobrada y vuelve a cero cuando se usa la visita gratis
+      if(cfg.fidelidad.activo && !c.esSub && clientes.some(x=>x.placa===r.placa) && (c.gratis || r.total>0))
+        batch.set(db.collection('clientes').doc(r.placa), { sellos: c.gratis ? 0 : FV.increment(1) }, { merge:true });
+      if(pago.metodoPago==='fiado') cargoFiado(batch, pago.deudor, r.total, r.numeroFactura, 'Parqueo '+r.placa);
       batch.commit().catch(errGuardar);
       salidaId = null;
       cerrarModal('salidaModal');
@@ -2479,6 +2574,8 @@
     (r.serviciosNombres||[]).forEach(n=>l.push('Servicio: '+n));
     if(r.ticketPerdido) l.push('Ticket perdido: '+money(r.ticketPerdido));
     if(r.pernocta) l.push('Recargo por noche: '+money(r.pernocta));
+    if(r.descuentoFidelidad) l.push('Visita gratis: -'+money(r.descuentoFidelidad));
+    if(r.descuentoCupon) l.push('Cupón '+r.cupon+': -'+money(r.descuentoCupon));
     l.push('');
     if(esSub && !r.total) l.push('Incluido en '+(r.modo==='mensual'?'mensualidad':'quincena'));
     else{
@@ -2499,6 +2596,8 @@
     (r.serviciosNombres||[]).forEach(n=>{ html += fila('Servicio', n); });
     if(r.ticketPerdido) html += fila('Ticket perdido', money(r.ticketPerdido));
     if(r.pernocta) html += fila('Recargo por noche', money(r.pernocta));
+    if(r.descuentoFidelidad) html += fila('Visita gratis', '−'+money(r.descuentoFidelidad));
+    if(r.descuentoCupon) html += fila('Cupón '+r.cupon, '−'+money(r.descuentoCupon));
     html += '<hr>';
     if(esSub && !r.total){
       html += '<div class="t-big" style="font-size:15px;">INCLUIDO EN<br>'+(r.modo==='mensual'?'MENSUALIDAD':'QUINCENA')+'</div>';
@@ -2561,7 +2660,8 @@
     const tienda = vts.reduce((s,v)=>s+(v.total||0),0);
     const pms = pagosMens.filter(x=> delOp(x) && x.fecha>=ini && x.fecha<=fin);
     const mensT = pms.reduce((s,x)=>s+(x.valor||0),0);
-    const efectivo = salidas.concat(vts, pms).filter(x=>x.metodoPago==='efectivo').reduce((s,x)=>s+(x.total||0),0);
+    const abT = fiados.filter(x=> x.tipo==='abono' && x.metodoPago==='efectivo' && x.uid===t.perfilId && x.fecha>=ini && x.fecha<=fin).reduce((s,x)=>s+(x.valor||0),0);
+    const efectivo = salidas.concat(vts, pms).filter(x=>x.metodoPago==='efectivo').reduce((s,x)=>s+(x.total||0),0) + abT;
     const base = t.base||0, retiros = (t.retiros||[]).reduce((s,r)=>s+(r.valor||0),0);
     return { ingresos, salidas: salidas.length, ventas: vts.length, parqueo, tienda, mensualidades: mensT, total: parqueo+tienda+mensT, efectivo, base, retiros, esperado: base+efectivo-retiros };
   }
@@ -2624,6 +2724,8 @@
     $('arqueoBilletes').innerHTML = DENOMINACIONES.map(d=>'<div class="field"><label for="den'+d+'">Billetes de '+money(d)+'</label><input class="input mono" id="den'+d+'" type="number" min="0" step="1" placeholder="0"></div>').join('')+
       '<div class="field"><label for="denMonedas">Monedas (total en pesos)</label><input class="input mono" id="denMonedas" type="number" min="0" step="50" placeholder="0"></div>';
     $('arqueoNota').value = '';
+    const ck = cfg.checklist||[];
+    $('arqueoCheck').innerHTML = ck.length ? '<div class="lbl" style="margin-bottom:4px;">Antes de cerrar</div>'+ck.map((c,i)=>'<label class="switch"><input type="checkbox" data-check="'+i+'"> '+esc(c)+'</label>').join('') : '';
     renderArqueo();
     abrirModal('arqueoModal');
   });
@@ -2632,7 +2734,10 @@
     const t = turnoAbiertoDe(perfil.uid); if(!t) return;
     const fin = new Date().toISOString(), st = statsTurno(t, fin), contado = totalArqueo(), diferencia = contado - st.esperado;
     const billetes = {}; DENOMINACIONES.forEach(d=>{ const n = parseInt($('den'+d).value,10)||0; if(n) billetes[d] = n; });
-    const cierre = { fin, contado, esperado:st.esperado, diferencia, billetes, monedas: parseInt($('denMonedas').value,10)||0, nota: $('arqueoNota').value.trim().slice(0,160) || null };
+    const ck = cfg.checklist||[], hechos = [...document.querySelectorAll('[data-check]')].filter(x=>x.checked).map(x=>ck[+x.dataset.check]);
+    if(ck.length && hechos.length<ck.length && !confirm('Faltan '+(ck.length-hechos.length)+' tarea(s) de la lista. ¿Cerrar el turno igual?')) return;
+    const cierre = { fin, contado, esperado:st.esperado, diferencia, billetes, monedas: parseInt($('denMonedas').value,10)||0, nota: $('arqueoNota').value.trim().slice(0,160) || null,
+      checklist: ck.length ? { hechas:hechos, total:ck.length } : null };
     db.collection('turnos').doc(t.id).update(cierre).catch(errGuardar);
     if(diferencia) bitacora('Cierre de caja con diferencia', (diferencia<0?'Faltaron ':'Sobraron ')+money(Math.abs(diferencia))+' · '+t.perfilNombre);
     cerrarModal('arqueoModal');
@@ -2667,6 +2772,7 @@
       '<div class="brow"><span>Debería haber</span><span class="v">'+money(st.esperado)+'</span></div>'+
       (t.contado!=null ? '<div class="brow"><span>Contado</span><span class="v">'+money(t.contado)+'</span></div>'+
         '<div class="brow"><span>'+(t.diferencia===0?'Cuadra':t.diferencia>0?'Sobró':'Faltó')+'</span><span class="v" style="color:'+(t.diferencia<0?'var(--red)':'inherit')+'">'+money(Math.abs(t.diferencia||0))+'</span></div>' : '')+
+      (t.checklist ? '<div class="brow"><span>Tareas del turno</span><span class="v">'+t.checklist.hechas.length+' de '+t.checklist.total+'</span></div>' : '')+
       '<div class="brow total"><span>Total cobrado</span><span class="v">'+money(st.total)+'</span></div>';
     balanceActual = { t, st };
     abrirModal('balanceModal');
@@ -2761,7 +2867,7 @@
     carrito = v.carrito; renderCarrito(); renderPOS(); renderEspera();
   });
   $('btnVaciar').addEventListener('click', ()=>{ carrito = {}; renderCarrito(); renderPOS(); });
-  const pagoPOS = controlPago('posPago', totalCarrito);
+  const pagoPOS = controlPago('posPago', totalCarrito, true);
 
   $('btnCobrarVenta').addEventListener('click', async ()=>{
     const items = Object.entries(carrito).map(([id,c])=>{ const p = productos.find(x=>x.id===id); return p ? { productoId:id, nombre:p.nombre, cantidad:c, precio:p.precio, costo:p.costo||0 } : null; }).filter(Boolean);
@@ -2773,17 +2879,19 @@
     const total = items.reduce((s,i)=>s+i.precio*i.cantidad,0);
     const pago = pagoPOS.datos(total);
     if(pago.falta){ showToast('El dinero recibido no alcanza para el total.'); return; }
+    if(pago.sinDeudor){ showToast('Escriba a quién se le fía.'); return; }
     $('btnCobrarVenta').disabled = true;
     try{
       const n = await siguienteNumero('venta');
       const venta = {
         id: nuevoId(), numero: 'V-'+pad(n), fecha: new Date().toISOString(), items, total,
         metodoPago: pago.metodoPago, medioTransferencia: pago.medioTransferencia,
-        efectivoRecibido: pago.efectivoRecibido, vuelto: pago.vuelto,
+        efectivoRecibido: pago.efectivoRecibido, vuelto: pago.vuelto, deudor: pago.deudor || null,
         operador: perfil.nombre, operadorId: perfil.uid
       };
       const batch = db.batch();
       batch.set(db.collection('ventas').doc(venta.id), venta);
+      if(pago.metodoPago==='fiado') cargoFiado(batch, pago.deudor, total, venta.numero, 'Tienda: '+items.map(i=>i.cantidad+'× '+i.nombre).join(', '));
       items.forEach(it=>{ const pr = productos.find(x=>x.id===it.productoId); if(!pr || !pr.servicio) batch.update(db.collection('productos').doc(it.productoId), { stock: FV.increment(-it.cantidad) }); });
       batch.commit().catch(errGuardar);
       carrito = {};
@@ -2989,12 +3097,12 @@
       if(!h.total) return;
       const f = new Date(h.salida);
       for(const k in periodos) if(periodos[k](f)){ parqueo[k] += h.total; if(porTipo[h.tipo]) porTipo[h.tipo][k] += h.total; }
-      if(isSameDay(f,hoy)){ if(h.metodoPago==='transferencia'){ const m = medioLabel(h.medioTransferencia); medios[m]=(medios[m]||0)+h.total; } else pagos.efectivo += h.total; }
+      if(isSameDay(f,hoy)){ if(h.metodoPago==='transferencia'){ const m = medioLabel(h.medioTransferencia); medios[m]=(medios[m]||0)+h.total; } else if(h.metodoPago==='fiado') pagos.fiado = (pagos.fiado||0)+h.total; else pagos.efectivo += h.total; }
     });
     ventas.forEach(v=>{
       const f = new Date(v.fecha);
       for(const k in periodos) if(periodos[k](f)) tienda[k] += v.total;
-      if(isSameDay(f,hoy)){ if(v.metodoPago==='transferencia'){ const m = medioLabel(v.medioTransferencia); medios[m]=(medios[m]||0)+v.total; } else pagos.efectivo += v.total; }
+      if(isSameDay(f,hoy)){ if(v.metodoPago==='transferencia'){ const m = medioLabel(v.medioTransferencia); medios[m]=(medios[m]||0)+v.total; } else if(v.metodoPago==='fiado') pagos.fiado = (pagos.fiado||0)+v.total; else pagos.efectivo += v.total; }
       if(isSameMonth(f,hoy)){ vendidoMes += v.total; ganancia += v.items.reduce((s,i)=>s+(i.precio-(i.costo||0))*i.cantidad,0); }
     });
     pagosMens.forEach(pm=>{
@@ -3014,7 +3122,11 @@
       '<tr><td><strong>Tienda</strong></td>'+celdas(tienda)+'</tr>'+
       '<tr><td><strong>Mensualidades</strong></td>'+celdas(mens)+'</tr>'+
       '<tr class="tot"><td>Total</td>'+celdas(total)+'</tr>';
+    const abonosHoy = fiados.filter(x=>x.tipo==='abono' && isSameDay(new Date(x.fecha), hoy));
+    abonosHoy.forEach(a=>{ if(a.metodoPago==='transferencia'){ const m = medioLabel(a.medioTransferencia); medios[m]=(medios[m]||0)+a.valor; } else pagos.efectivo += a.valor; });
     let ph = '<div class="list-row"><span>Efectivo</span><span class="money">'+money(pagos.efectivo)+'</span></div>';
+    if(pagos.fiado) ph += '<div class="list-row"><span>Fiado (por cobrar)</span><span class="money" style="color:var(--red);">'+money(pagos.fiado)+'</span></div>';
+    if(abonosHoy.length) ph += '<div class="list-row"><span class="muted">Incluye abonos de fiado</span><span class="money muted">'+money(abonosHoy.reduce((s,a)=>s+a.valor,0))+'</span></div>';
     const totalTrans = Object.values(medios).reduce((s,x)=>s+x,0);
     ph += '<div class="list-row"><span>Transferencias</span><span class="money">'+money(totalTrans)+'</span></div>';
     Object.entries(medios).forEach(([m,v])=>{ ph += '<div class="list-row" style="padding-left:14px;"><span class="muted">'+esc(m)+'</span><span class="money muted">'+money(v)+'</span></div>'; });
@@ -3345,7 +3457,7 @@
       .sort((a,b)=>(visitas[b.placa]||0)-(visitas[a.placa]||0));
     $('clientesLista').innerHTML = lista.length ? lista.map(c=>
       '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(c.placa)+'</span>'+
-      (c.autorizaDatos?' <span class="chip chip-green">Autorizó datos</span>':'')+
+      (c.autorizaDatos?' <span class="chip chip-green">Autorizó datos</span>':'')+(cfg.fidelidad.activo && c.sellos?' <span class="chip chip-amber">'+c.sellos+' sellos</span>':'')+
       '<div class="meta">'+esc(c.nombre||'Sin nombre')+(c.telefono?' · '+esc(c.telefono):'')+' · '+(visitas[c.placa]||0)+' visita(s)'+(ultima[c.placa]?' · última '+fmtCorto(new Date(ultima[c.placa])):'')+'</div></div>'+
       '<div class="r"><button class="btn btn-ghost btn-sm" data-ficha="'+esc(c.placa)+'">Ficha</button>'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
     ).join('') : '<div class="empty">Todavía no hay clientes registrados.</div>';
@@ -3443,6 +3555,10 @@
     $('cfgFaltante').value = cfg.caja.alertaFaltante;
     $('cfgWaDueno').value = cfg.caja.whatsappDueno||'';
     $('cfgMeta').value = cfg.caja.metaDia||0;
+    $('cfgFiado').checked = !!cfg.fiado.activo; $('cfgFiadoTrab').checked = !!cfg.fiado.trabajador;
+    $('cfgChecklist').value = (cfg.checklist||[]).join('\n');
+    $('cfgFidelidad').checked = !!cfg.fidelidad.activo; $('cfgFidVisitas').value = cfg.fidelidad.visitas||10;
+    renderCupones();
     $('cfgHorasAlerta').value = cfg.parqueo.horasAlerta;
     renderPlacasAlerta();
     document.querySelectorAll('[data-rol-aviso]').forEach(c=>{ c.checked = cfg.avisosStock.roles.includes(c.dataset.rolAviso); });
@@ -3490,6 +3606,11 @@
   $('cfgGracia').addEventListener('change', ()=> guardarConfig({ cobro:{ graciaMin: Math.max(0, Math.min(30, parseInt($('cfgGracia').value,10)||0)) } }, 'Tolerancia actualizada.'));
   $('cfgCierre').addEventListener('change', ()=> guardarConfig({ seguridad:{ cierreMin: parseInt($('cfgCierre').value,10)||0 } }, 'Guardado.'));
   $('cfgHorasAlerta').addEventListener('change', ()=> guardarConfig({ parqueo:{ horasAlerta: Math.max(1, Math.min(720, parseInt($('cfgHorasAlerta').value,10)||12)) } }, 'Guardado.'));
+  $('cfgFiado').addEventListener('change', ()=> guardarConfig({ fiado:{ activo:$('cfgFiado').checked } }, 'Guardado.'));
+  $('cfgFiadoTrab').addEventListener('change', ()=> guardarConfig({ fiado:{ trabajador:$('cfgFiadoTrab').checked } }, 'Guardado.'));
+  $('cfgChecklist').addEventListener('change', ()=> guardarConfig({ checklist: $('cfgChecklist').value.split('\n').map(x=>x.trim().slice(0,80)).filter(Boolean).slice(0,15) }, 'Tareas guardadas.'));
+  $('cfgFidelidad').addEventListener('change', ()=> guardarConfig({ fidelidad:{ activo:$('cfgFidelidad').checked } }, 'Guardado.'));
+  $('cfgFidVisitas').addEventListener('change', ()=> guardarConfig({ fidelidad:{ visitas: Math.max(2, Math.min(50, parseInt($('cfgFidVisitas').value,10)||10)) } }, 'Guardado.'));
   $('cfgMeta').addEventListener('change', ()=> guardarConfig({ caja:{ metaDia: Math.max(0, parseInt($('cfgMeta').value,10)||0) } }, 'Meta guardada.'));
   $('cfgWaDueno').addEventListener('change', ()=> guardarConfig({ caja:{ whatsappDueno: $('cfgWaDueno').value.replace(/\D/g,'').slice(0,15) } }, 'Guardado.'));
   $('cfgFaltante').addEventListener('change', ()=> guardarConfig({ caja:{ alertaFaltante: Math.max(0, parseInt($('cfgFaltante').value,10)||0) } }, 'Guardado.'));
@@ -3828,7 +3949,9 @@
     const l = ['*'+cfg.brand+'* · resumen del '+hoy.toLocaleDateString('es-CO',{weekday:'long', day:'numeric', month:'long'}), '',
       'Vehículos que entraron: '+ing, 'Salidas cobradas: '+sal.length, 'Dentro ahora: '+activos.length, '',
       'Parqueo: '+money(parq), 'Tienda: '+money(tienda)+' ('+vts.length+' ventas)'].concat(mensH ? ['Mensualidades: '+money(mensH)+' ('+pms.length+')'] : [],
-      ['*Total: '+money(parq+tienda+mensH)+'*', 'Efectivo: '+money(efe)+' · Transferencias: '+money(parq+tienda+mensH-efe)]);
+      ['*Total: '+money(parq+tienda+mensH)+'*', 'Efectivo: '+money(efe)+' · Transferencias: '+money(sal.concat(vts, pms).filter(x=>x.metodoPago==='transferencia').reduce((s,x)=>s+(x.total||0),0))]);
+    const fiadoHoy = sal.concat(vts).filter(x=>x.metodoPago==='fiado').reduce((s,x)=>s+(x.total||0),0);
+    if(fiadoHoy) l.push('Fiado hoy: '+money(fiadoHoy));
     if(gHoy) l.push('Gastos de hoy: '+money(gHoy));
     if(faltas.length) l.push('', 'Faltantes de caja: '+faltas.map(t=>t.perfilNombre+' '+money(-t.diferencia)).join(', '));
     if(bajos.length) l.push('', 'Por acabarse: '+bajos.slice(0,8).map(p=>p.nombre+' ('+(p.stock||0)+')').join(', '));
@@ -3920,6 +4043,130 @@
   }
   setInterval(()=>{ if(perfil) revisarEquipo(); }, 30*60000);
 
+  /* ================= FIADO ================= */
+  let fiados = [];
+  function puedeFiar(){ return !!(cfg.fiado && cfg.fiado.activo && perfil && (esStaff() || cfg.fiado.trabajador)); }
+  function cargoFiado(batch, deudor, valor, ref, concepto){
+    const id = nuevoId();
+    batch.set(db.collection('fiados').doc(id), { id, fecha:new Date().toISOString(), deudor, clave:claveDeudor(deudor), tipo:'cargo', valor, ref, concepto:String(concepto).slice(0,160), uid:perfil.uid, nombre:perfil.nombre });
+  }
+  function claveDeudor(n){ return String(n||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+  function saldos(){
+    const m = {};
+    fiados.forEach(x=>{ const k = x.clave || claveDeudor(x.deudor); const o = m[k] = m[k] || { deudor:x.deudor, saldo:0, ultimo:'', movs:[] };
+      o.saldo += x.tipo==='cargo' ? x.valor : -x.valor; o.movs.push(x); if(x.fecha>o.ultimo) o.ultimo = x.fecha; });
+    return Object.entries(m).map(([k,o])=>Object.assign({ clave:k }, o));
+  }
+  function telefonoDe(nombre){
+    const k = claveDeudor(nombre), c = clientes.find(x=> claveDeudor(x.nombre)===k || claveDeudor(x.placa)===k);
+    return c && c.telefono;
+  }
+  function renderDeudas(){
+    pagoSalida.actualizarFiado(); pagoPOS.actualizarFiado();
+    $('deudoresList').innerHTML = [...new Set(saldos().map(x=>x.deudor).concat(clientes.map(c=>c.nombre).filter(Boolean)))].map(n=>'<option value="'+esc(n)+'">').join('');
+    if(!esStaff()) return;
+    $('deudasCard').hidden = !(cfg.fiado && cfg.fiado.activo) && !fiados.length;
+    const lista = saldos().filter(x=>x.saldo>0).sort((a,b)=>b.saldo-a.saldo);
+    $('deudasTotal').textContent = money(lista.reduce((s,x)=>s+x.saldo,0));
+    $('deudasLista').innerHTML = lista.length ? lista.map(x=>{
+      const dias = Math.floor((Date.now()-new Date(x.movs.filter(m=>m.tipo==='cargo').map(m=>m.fecha).sort()[0]||x.ultimo))/864e5);
+      return '<div class="list-row"><div><strong>'+esc(x.deudor)+'</strong> '+(dias>30?'<span class="chip chip-red">'+dias+' días</span>':'')+'<div class="meta">'+x.movs.length+' movimiento(s) · último '+fmtCorto(new Date(x.ultimo))+'</div></div>'+
+        '<div class="r"><span class="money" style="color:var(--red);">'+money(x.saldo)+'</span>'+(telefonoDe(x.deudor)?'<button class="btn btn-sm" data-cobrar-wa="'+esc(x.clave)+'" title="Cobrar por WhatsApp">'+ICONOS.whatsapp+'</button>':'')+
+        '<button class="btn btn-sm btn-primary" data-abonar="'+esc(x.clave)+'">Abonar</button></div></div>';
+    }).join('') : '<div class="empty">Nadie debe. '+(cfg.fiado && cfg.fiado.activo ? 'Para fiar, elija "Fiado" al cobrar.' : 'Active el fiado en Ajustes › Caja.')+'</div>';
+  }
+  let abonoActual = null;
+  const pagoAbono = controlPago('abonoPago', ()=> parseInt($('abonoValor').value,10)||0);
+  $('deudasLista').addEventListener('click', e=>{
+    const a = e.target.closest('[data-abonar]'), w = e.target.closest('[data-cobrar-wa]');
+    const x = saldos().find(o=>o.clave===(a||w||{}).dataset?.[a?'abonar':'cobrarWa']);
+    if(!x) return;
+    if(w){ abrirWhatsapp(telefonoDe(x.deudor), 'Hola '+x.deudor+', le saludamos de '+cfg.brand+'. Le recordamos que tiene un saldo pendiente de '+money(x.saldo)+'. Puede pagar en el parqueadero o por transferencia. ¡Gracias!'); return; }
+    abonoActual = x;
+    $('abonoTitulo').textContent = 'Abono · '+x.deudor;
+    $('abonoDetalle').innerHTML = x.movs.sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,8).map(m=>'<div class="brow"><span>'+fmtCorto(new Date(m.fecha))+' · '+esc(m.tipo==='cargo'?m.concepto:'Abono')+'</span><span class="v">'+(m.tipo==='cargo'?'':'−')+money(m.valor)+'</span></div>').join('')+
+      '<div class="brow total"><span>Debe</span><span class="v">'+money(x.saldo)+'</span></div>';
+    $('abonoValor').value = x.saldo;
+    pagoAbono.reset();
+    abrirModal('abonoModal');
+  });
+  $('abonoValor').addEventListener('input', ()=> pagoAbono.refrescar());
+  $('btnConfirmarAbono').addEventListener('click', ()=>{
+    const x = abonoActual; if(!x) return;
+    const valor = Math.max(0, parseInt($('abonoValor').value,10)||0);
+    if(!valor){ showToast('Escriba el valor del abono.'); return; }
+    if(valor > x.saldo && !confirm('El abono es mayor que la deuda ('+money(x.saldo)+'). ¿Registrar igual?')) return;
+    const pago = pagoAbono.datos(valor);
+    if(pago.falta){ showToast('El dinero recibido no alcanza.'); return; }
+    const id = nuevoId();
+    db.collection('fiados').doc(id).set({ id, fecha:new Date().toISOString(), deudor:x.deudor, clave:x.clave, tipo:'abono', valor, metodoPago:pago.metodoPago, medioTransferencia:pago.medioTransferencia, uid:perfil.uid, nombre:perfil.nombre }).catch(errGuardar);
+    cerrarModal('abonoModal');
+    showToast('Abono de '+money(valor)+' registrado. Debe '+money(Math.max(0, x.saldo-valor))+'.');
+  });
+
+  /* ================= FIDELIDAD Y CUPONES ================= */
+  function cuponValido(codigo){
+    const c = (cfg.cupones||[]).find(x=>x.codigo===String(codigo||'').trim().toUpperCase());
+    if(!c) return null;
+    if(c.vence && diasHasta(c.vence) < 0) return null;
+    return c;
+  }
+  function renderCupones(){
+    if(!esAdmin()) return;
+    $('cupLista').innerHTML = (cfg.cupones||[]).length ? cfg.cupones.map(c=>{
+      const usos = historial.filter(h=>h.cupon===c.codigo).length, vencido = c.vence && diasHasta(c.vence)<0;
+      return '<div class="list-row"><div><strong class="mono">'+esc(c.codigo)+'</strong> '+(vencido?'<span class="chip chip-red">Vencido</span>':'<span class="chip chip-green">Activo</span>')+
+        '<div class="meta">'+(c.pct?c.pct+'% de descuento':money(c.valor)+' de descuento')+(c.vence?' · vence '+fmtCorto(new Date(c.vence+'T12:00:00')):'')+' · usado '+usos+' vez(ces)</div></div><button class="btn-icon" data-borrar-cupon="'+esc(c.codigo)+'">✕</button></div>';
+    }).join('') : '<div class="empty">No hay cupones.</div>';
+  }
+  $('btnAddCupon').addEventListener('click', ()=>{
+    const codigo = $('cupCodigo').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,16), pct = Math.min(100, Math.max(0, parseInt($('cupPct').value,10)||0)), valor = Math.max(0, parseInt($('cupValor').value,10)||0);
+    if(!codigo || (!pct && !valor)){ showToast('Escriba el código y el descuento (% o $).'); return; }
+    guardarConfig({ cupones:(cfg.cupones||[]).filter(c=>c.codigo!==codigo).concat([{ codigo, pct, valor: pct?0:valor, vence:$('cupVence').value||null }]) }, 'Cupón '+codigo+' guardado.');
+    ['cupCodigo','cupPct','cupValor','cupVence'].forEach(k=>$(k).value='');
+  });
+  $('cupLista').addEventListener('click', e=>{ const b = e.target.closest('[data-borrar-cupon]'); if(b) guardarConfig({ cupones:(cfg.cupones||[]).filter(c=>c.codigo!==b.dataset.borrarCupon) }, 'Cupón quitado.'); });
+
+  /* ================= NOVEDADES ================= */
+  let novedades = [], novFoto = null, novFiltro = 'abiertas';
+  const NOV_TIPOS = { incidente:['Choque o daño','ic-rojo'], objeto:['Objeto perdido o encontrado','ic-amarillo'], queja:['Queja de cliente','ic-rojo'], mantenimiento:['Arreglo pendiente','ic-azul'], nota:['Nota para el equipo','ic-tinta'] };
+  function fotoPequena(file, max, cb){
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = ()=>{ const k = Math.min(1, max/Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width*k); c.height = Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url); cb(c.toDataURL('image/jpeg', 0.6)); };
+    img.src = url;
+  }
+  $('novFoto').addEventListener('change', e=>{ const f = e.target.files[0]; if(!f){ novFoto = null; $('novFotoPrev').hidden = true; return; } fotoPequena(f, 480, d=>{ novFoto = d; $('novFotoPrev').src = d; $('novFotoPrev').hidden = false; }); });
+  $('btnAddNov').addEventListener('click', ()=>{
+    const texto = $('novTexto').value.trim().slice(0,300);
+    if(texto.length<4){ showToast('Cuente qué pasó.'); return; }
+    const id = nuevoId();
+    db.collection('novedades').doc(id).set({ id, fecha:new Date().toISOString(), tipo:$('novTipo').value, placa: limpiarPlaca($('novPlaca').value)||null, texto, foto:novFoto,
+      estado:'abierta', uid:perfil.uid, nombre:perfil.nombre }).catch(errGuardar);
+    $('novTexto').value=''; $('novPlaca').value=''; $('novFoto').value=''; novFoto = null; $('novFotoPrev').hidden = true;
+    showToast('Novedad guardada.');
+  });
+  function renderNovedades(){
+    if(!perfil) return;
+    const lista = novedades.filter(n=> novFiltro==='todas' || n.estado!=='resuelta').sort((a,b)=>b.fecha.localeCompare(a.fecha));
+    $('novLista').innerHTML = lista.length ? lista.slice(0,150).map(n=>{
+      const t = NOV_TIPOS[n.tipo] || ['Novedad','ic-azul'];
+      return '<div class="mini-row" style="align-items:flex-start;"><span class="ic sm '+t[1]+'">'+ICONOS.novedades+'</span><div class="t"><strong>'+t[0]+'</strong>'+(n.placa?' <span class="placa-txt" style="font-size:12px;">'+esc(n.placa)+'</span>':'')+
+        (n.estado==='resuelta'?' <span class="chip chip-green">Resuelta</span>':' <span class="chip chip-amber">Pendiente</span>')+
+        '<div style="margin:4px 0;">'+esc(n.texto)+'</div><div class="meta">'+esc(n.nombre||'')+' · '+fmtFechaHora(n.fecha)+(n.resueltaPor?' · resolvió '+esc(n.resueltaPor)+(n.solucion?': '+esc(n.solucion):''):'')+'</div>'+
+        (n.foto?'<img src="'+esc(n.foto)+'" alt="" style="margin-top:6px;max-width:220px;border-radius:8px;border:1px solid var(--line);">':'')+'</div>'+
+        (esStaff() && n.estado!=='resuelta' ? '<button class="btn btn-sm" data-resolver="'+esc(n.id)+'">Resolver</button>' : '')+'</div>';
+    }).join('') : '<div class="empty">'+(novFiltro==='todas'?'No hay novedades.':'No hay novedades pendientes.')+'</div>';
+  }
+  $('novFiltro').addEventListener('click', e=>{ const b = e.target.closest('[data-f]'); if(!b) return; novFiltro = b.dataset.f; $('novFiltro').querySelectorAll('button').forEach(x=>x.classList.toggle('active', x===b)); renderNovedades(); });
+  $('novLista').addEventListener('click', e=>{
+    const b = e.target.closest('[data-resolver]'); if(!b) return;
+    const sol = prompt('¿Cómo se resolvió? (opcional)', '');
+    if(sol===null) return;
+    db.collection('novedades').doc(b.dataset.resolver).update({ estado:'resuelta', resueltaPor:perfil.nombre, resueltaEn:new Date().toISOString(), solucion:sol.trim().slice(0,200) }).catch(errGuardar);
+  });
+
   /* ================= REPORTES ================= */
   let repPeriodo = 'mes';
   function rangoReporte(){
@@ -3964,7 +4211,7 @@
 
     // medios de pago
     const medios = {};
-    d.his.concat(d.vts, d.pms).forEach(x=>{ if(!(x.total||x.valor)) return; const k = x.metodoPago==='transferencia' ? medioLabel(x.medioTransferencia) : 'Efectivo'; medios[k] = (medios[k]||0) + (x.total||x.valor||0); });
+    d.his.concat(d.vts, d.pms).forEach(x=>{ if(!(x.total||x.valor)) return; const k = x.metodoPago==='transferencia' ? medioLabel(x.medioTransferencia) : x.metodoPago==='fiado' ? 'Fiado' : 'Efectivo'; medios[k] = (medios[k]||0) + (x.total||x.valor||0); });
     const ms = Object.entries(medios).sort((a,b)=>b[1]-a[1]), maxM = Math.max(1, ...ms.map(x=>x[1])), totM = ms.reduce((s,x)=>s+x[1],0);
     $('repMedios').innerHTML = ms.length ? ms.map(([k,v])=>filaBarra(esc(k), v, maxM, money(v)+' · '+Math.round(v*100/totM)+'%')).join('') : '<div class="empty">Sin pagos en '+r.nombre+'.</div>';
 

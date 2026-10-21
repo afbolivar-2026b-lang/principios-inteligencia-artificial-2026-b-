@@ -68,14 +68,14 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 46. ✅ 📴 Tarifa plana por día (24 horas) con tope máximo.
 47. 📴 Tarifa por evento, por ejemplo un concierto con un valor fijo.
 48. 📴 Primeros X minutos gratis con compra en la tienda.
-49. 📴 Cupones de descuento con código.
+49. ✅ 📴 Cupones de descuento con código.
 50. 📴 Sellos de comercios aliados ("validación" de un almacén vecino).
 51. 📴 Pago dividido: parte en efectivo y parte con tarjeta.
 52. 🌐 Pago con QR de Nequi o Daviplata con el monto exacto.
 53. 🌐 Confirmación automática de pagos por transferencia (Bre-B).
 54. ✅ 📴 Calculadora de billetes: el cajero pone los billetes recibidos y la app saca la devuelta.
-55. 📴 Fiado o crédito a clientes conocidos, con saldo pendiente.
-56. 📴 Abonos parciales a la deuda de un cliente.
+55. ✅ 📴 Fiado o crédito a clientes conocidos, con saldo pendiente.
+56. ✅ 📴 Abonos parciales a la deuda de un cliente.
 57. 📴 Tarjeta prepago o monedero por placa (recargas).
 58. ✅ 📴 ⚡ Redondeo automático a $100 o $50.
 59. 📴 Propina para el valet, registrada aparte.
@@ -102,8 +102,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 78. 📴 Puesto fijo reservado para el abonado.
 79. 📴 Carné digital del abonado con QR.
 80. 📴 Contrato firmado en pantalla con el dedo.
-81. 📴 Puntos de fidelidad por visita.
-82. 📴 "La visita 10 es gratis".
+81. ✅ 📴 Puntos de fidelidad por visita.
+82. ✅ 📴 "La visita 10 es gratis".
 83. 📴 Cumpleaños del cliente con descuento.
 84. 📴 Etiquetas de cliente (taxi, domiciliario, vecino, empresa).
 85. ✅ 📴 Ficha del cliente con todas sus visitas y gastos.
@@ -162,9 +162,9 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 132. 📴 Comisión por ventas de la tienda para los trabajadores.
 133. ✅ 📴 Metas diarias con barra de progreso.
 134. ✅ 📴 Notas entre turnos ("llamar al de la placa XYZ").
-135. 📴 Tareas de aseo y revisión por turno, con lista de chequeo.
-136. 📴 Reporte de incidentes (choques, robos) con foto.
-137. 📴 Libro de objetos perdidos.
+135. ✅ 📴 Tareas de aseo y revisión por turno, con lista de chequeo.
+136. ✅ 📴 Reporte de incidentes (choques, robos) con foto.
+137. ✅ 📴 Libro de objetos perdidos.
 138. 📴 Permisos más finos: por ejemplo, la secretaria puede anular, pero no borrar.
 139. 🌐 Verificación en dos pasos para el administrador.
 140. ✅ 📴 Bloquear la pantalla con PIN sin cerrar la sesión.

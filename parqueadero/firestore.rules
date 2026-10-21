@@ -96,6 +96,22 @@ service cloud.firestore {
       allow delete: if esAdmin();
     }
 
+    // Fiados: cada cargo (cuando se fía) y cada abono. No se editan.
+    match /fiados/{id} {
+      allow read: if esStaff();
+      allow create: if activo() && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if esAdmin();
+    }
+
+    // Novedades: choques, objetos perdidos, quejas y notas del equipo.
+    match /novedades/{id} {
+      allow read: if activo();
+      allow create: if activo() && request.resource.data.uid == request.auth.uid;
+      allow update: if esStaff();
+      allow delete: if esAdmin();
+    }
+
     // Quién hizo cada cambio delicado. Nadie la puede editar ni borrar.
     match /bitacora/{id} {
       allow read: if esAdmin();
