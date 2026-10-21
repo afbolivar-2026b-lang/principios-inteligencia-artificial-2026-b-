@@ -194,6 +194,7 @@
   .seg button.active{background:var(--ink);color:var(--ink-text);}
   .seg.full{display:flex;width:100%;}
   .seg.full button{flex:1;}
+  .pago-box .seg.full button{padding:7px 3px;min-width:0;white-space:nowrap;font-size:12px;letter-spacing:-.01em;}
   .chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:1px 6px;border-radius:3px;border:1px solid currentColor;line-height:1.5;}
   .chip-green{color:var(--green);background:var(--green-soft);}
   .chip-red{color:var(--red);background:var(--red-soft);}
@@ -456,6 +457,8 @@
   .pantalla.tv .tv-mov b{background:#f2c200;color:#141413;padding:0 8px;border-radius:4px;font-family:var(--mono);}
   .pantalla.tv .tv-barra{display:flex;align-items:center;gap:12px;font-size:22px;margin:10px 0;} .pantalla.tv .tv-barra .b{flex:1;height:16px;background:#2c2b27;border-radius:8px;overflow:hidden;} .pantalla.tv .tv-barra .b i{display:block;height:100%;background:#f2c200;}
   @media (max-width:900px){ .pantalla.tv .tv-stats{grid-template-columns:1fr 1fr;} .pantalla.tv .tv-bajo{grid-template-columns:1fr;} .pantalla.tv .tv-stat .n{font-size:44px;} }
+  .qr-pago{display:flex;gap:12px;align-items:center;margin-top:8px;} .qr-pago img{width:120px;height:120px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px;}
+  .qr-pago .qr-monto{font:700 30px/1.1 var(--display);}
   .rep-cols{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 12px;font-size:13.5px;}
   .tabla-mini{width:100%;border-collapse:collapse;font-size:13px;} .tabla-mini th,.tabla-mini td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;} .tabla-mini th{font-weight:600;color:var(--muted);}
   .tabla-wrap{overflow-x:auto;max-height:420px;}
@@ -824,6 +827,7 @@
         <div class="filters">
           <div class="seg" id="repPeriodo"><button data-r="hoy">Hoy</button><button data-r="7">7 días</button><button class="active" data-r="mes">Este mes</button><button data-r="pasado">Mes pasado</button></div>
           <span class="sp" style="flex:1;"></span>
+          <button class="btn btn-sm" id="btnContable" title="Plantilla de comprobante contable para importar en Siigo o Alegra">Para Siigo / Alegra</button>
           <button class="btn btn-primary btn-sm" id="btnContador">Excel para el contador</button>
         </div>
         <div class="stats" id="repStats"></div>
@@ -1125,6 +1129,17 @@
               <button class="btn btn-primary" id="btnAddEmp">Agregar</button>
             </div>
             <div id="empLista"></div>
+          </div>
+
+          <div class="card span2">
+            <h2 class="card-title">Cobro con QR (Nequi, Daviplata, Bre-B)</h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;">Suba la imagen del QR de su cuenta. Cuando el pago es por transferencia, la app lo muestra con el valor exacto para que el cliente lo escanee y escriba ese monto.</p>
+            <div class="row" style="gap:10px;align-items:flex-end;flex-wrap:wrap;">
+              <div class="field"><label for="qrPagoImg">Imagen del QR</label><input class="input" type="file" id="qrPagoImg" accept="image/*"></div>
+              <div class="field grow"><label for="qrPagoLlave">Llave Bre-B o número (opcional)</label><input class="input mono" id="qrPagoLlave" maxlength="40" placeholder="@miparqueadero o 3001234567"></div>
+              <button class="btn btn-ghost btn-sm" id="btnQrPagoQuitar">Quitar QR</button>
+            </div>
+            <div class="qr-pago" id="qrPagoPrev" style="margin-top:10px;"></div>
           </div>
 
           <div class="card span2">
@@ -1430,6 +1445,27 @@
 </div>
 
 <!-- ===== MODAL DAÑOS ===== -->
+<div class="modal" id="devolverModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Devolución</h3><button class="modal-close" data-close="devolverModal">✕</button></div>
+    <p class="hint" style="margin-top:0;">Escriba cuántas unidades devuelve el cliente. Vuelven al inventario y se le regresa la plata en efectivo.</p>
+    <div id="devolverLista"></div>
+    <div class="field" style="margin-top:8px;"><label for="devolverMotivo">Motivo</label><input class="input" id="devolverMotivo" maxlength="100" placeholder="Ej. Producto vencido"></div>
+    <div class="devuelta" id="devolverTotal"></div>
+    <button class="btn btn-primary btn-lg w100" id="btnConfirmarDevolver" style="margin-top:12px;">Hacer la devolución</button>
+  </div>
+</div>
+
+<div class="modal" id="pesoModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="pesoTitulo">Peso</h3><button class="modal-close" data-close="pesoModal">✕</button></div>
+    <div class="field"><label for="pesoGramos">Peso en gramos</label><input class="input mono" id="pesoGramos" type="number" min="1" step="1" style="font-size:28px;"></div>
+    <div class="devuelta" id="pesoValor"></div>
+    <div class="row" style="gap:8px;margin-top:12px;"><button class="btn" id="btnLeerBalanza">Leer de la balanza</button><span style="flex:1;"></span><button class="btn btn-primary" id="btnPesoOk">Agregar</button></div>
+    <p class="hint" id="balanzaEstado">La balanza se conecta por cable USB (Chrome o Edge en computador).</p>
+  </div>
+</div>
+
 <div class="modal" id="waPendModal">
   <div class="modal-box">
     <div class="modal-head"><h3>WhatsApp pendientes</h3><button class="modal-close" data-close="waPendModal">✕</button></div>
@@ -1743,13 +1779,14 @@
   function esStaff(){ return perfil && (perfil.rol==='admin' || perfil.rol==='secretaria'); }
   function rolLabel(rol){ return rol==='admin' ? 'Administrador' : rol==='secretaria' ? 'Secretaria' : 'Trabajador'; }
   function medioLabel(v){ return { nequi:'Nequi', daviplata:'Daviplata', bbva:'BBVA', bancolombia:'Bancolombia', tarjeta:'Tarjeta', transferencia:'Transferencia' }[v] || v || ''; }
-  function pagoLabel(r){ return r.metodoPago==='transferencia' ? 'Transferencia · '+medioLabel(r.medioTransferencia) : r.metodoPago==='fiado' ? 'Fiado · '+(r.deudor||'') :
+  function pagoLabel(r){ return r.metodoPago==='monedero' ? 'Monedero '+(r.monederoPlaca||'') : r.metodoPago==='transferencia' ? 'Transferencia · '+medioLabel(r.medioTransferencia) : r.metodoPago==='fiado' ? 'Fiado · '+(r.deudor||'') :
     r.metodoPago==='mixto' ? 'Efectivo '+money(r.efectivoParte||0)+' + '+medioLabel(r.medioTransferencia) : 'Efectivo'; }
   // cuánto de un cobro fue en efectivo, por transferencia o fiado (sirve para el pago dividido)
   function partes(x){
     const t = x.total!=null ? x.total : (x.valor||0);
     if(x.metodoPago==='transferencia') return { efectivo:0, transferencia:t, medio:medioLabel(x.medioTransferencia), fiado:0 };
     if(x.metodoPago==='fiado') return { efectivo:0, transferencia:0, medio:null, fiado:t };
+    if(x.metodoPago==='monedero') return { efectivo:0, transferencia:0, medio:null, fiado:0, monedero:t };
     if(x.metodoPago==='mixto'){ const e = Math.min(t, x.efectivoParte||0); return { efectivo:e, transferencia:t-e, medio:medioLabel(x.medioTransferencia), fiado:0 }; }
     return { efectivo:t, transferencia:0, medio:null, fiado:0 };
   }
@@ -2290,7 +2327,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderPermisos, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderPermisos, renderQrPago, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -2340,7 +2377,7 @@
   function renderTodo(){
     programar(renderBrand, renderNav, renderTipos, renderTipoSelect, renderActivos, renderKpis, renderTurnoBar, renderPOS, renderCarrito,
       renderVentasHoy, renderInventario, renderCaja, renderHistorial, renderSubs, renderClientes, renderTurnos, renderAlertas,
-      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols);
+      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago);
   }
 
   function renderBrand(){
@@ -2652,7 +2689,8 @@
     const p = contenedorId;
     $(contenedorId).innerHTML =
       '<div class="pago-box">'+
-        '<div class="seg full"><button type="button" data-m="efectivo" class="active">Efectivo</button><button type="button" data-m="transferencia">Transferencia</button>'+'<button type="button" data-m="mixto">Dividido</button>'+(conFiado?'<button type="button" data-m="fiado" class="js-fiado" hidden>Fiado</button>':'')+'</div>'+
+        '<div class="seg full"><button type="button" data-m="efectivo" class="active">Efectivo</button><button type="button" data-m="transferencia">Transferencia</button>'+'<button type="button" data-m="mixto">Dividido</button>'+(conFiado?'<button type="button" data-m="fiado" class="js-fiado" hidden>Fiado</button><button type="button" data-m="monedero">Monedero</button>':'')+'</div>'+
+        (conFiado ? '<div class="field" id="'+p+'Mon" hidden><label for="'+p+'MonPlaca">Placa del monedero</label><input class="input mono upper" id="'+p+'MonPlaca" maxlength="10" placeholder="ABC123"><div class="devuelta" id="'+p+'MonSaldo"></div></div>' : '')+
         '<div class="field" id="'+p+'Mix" hidden><label for="'+p+'MixEfe">¿Cuánto paga en efectivo?</label><input class="input mono" type="number" min="0" step="500" id="'+p+'MixEfe">'+
           '<label for="'+p+'MixMedio" style="margin-top:6px;">El resto por</label><select class="select" id="'+p+'MixMedio"><option value="nequi">Nequi</option><option value="daviplata">Daviplata</option><option value="bancolombia">Bancolombia</option><option value="bbva">BBVA</option><option value="tarjeta">Tarjeta (datáfono)</option><option value="transferencia">Otro banco</option></select>'+
           '<div class="devuelta" id="'+p+'MixRes"></div></div>'+
@@ -2660,7 +2698,7 @@
         '<div class="field" id="'+p+'Efe"><label for="'+p+'Recibido">¿Con cuánto paga?</label><input class="input mono" type="number" min="0" step="500" id="'+p+'Recibido" placeholder="Ej. 10000">'+
           '<div class="billetes" id="'+p+'Bil"></div><div class="devuelta" id="'+p+'Dev"></div></div>'+
         '<div class="field" id="'+p+'Tra" hidden><label for="'+p+'Medio">¿A cuál cuenta?</label><select class="select" id="'+p+'Medio">'+
-          '<option value="nequi">Nequi</option><option value="daviplata">Daviplata</option><option value="bancolombia">Bancolombia</option><option value="bbva">BBVA</option><option value="transferencia">Otro banco</option></select></div>'+
+          '<option value="nequi">Nequi</option><option value="daviplata">Daviplata</option><option value="bancolombia">Bancolombia</option><option value="bbva">BBVA</option><option value="transferencia">Otro banco</option></select><div class="qr-pago" id="'+p+'QR"></div></div>'+
       '</div>';
     let metodo = 'efectivo';
     const box = $(contenedorId);
@@ -2669,6 +2707,7 @@
       $(p+'Efe').hidden = metodo!=='efectivo';
       $(p+'Tra').hidden = metodo!=='transferencia';
       $(p+'Mix').hidden = metodo!=='mixto';
+      if(conFiado) $(p+'Mon').hidden = metodo!=='monedero';
       if(conFiado){ $(p+'Fia').hidden = metodo!=='fiado'; box.querySelectorAll('.js-fiado').forEach(b=>{ b.hidden = !puedeFiar(); }); if(metodo==='fiado' && !puedeFiar()){ metodo='efectivo'; pintar(); return; } }
       devuelta();
     }
@@ -2680,6 +2719,9 @@
     }
     function devuelta(){
       const total = getTotal(), el = $(p+'Dev');
+      const qp = cfg.qrPago||{};
+      $(p+'QR').innerHTML = metodo==='transferencia' && (qp.img || qp.llave) && total>0 ? (qp.img ? '<img src="'+esc(qp.img)+'" alt="QR para pagar">' : '')+'<div><div class="lbl">Muéstrele este QR al cliente</div><div class="qr-monto">'+money(total)+'</div>'+(qp.llave?'<div class="meta">Llave: <span class="mono">'+esc(qp.llave)+'</span></div>':'')+'</div>' : '';
+      if(conFiado && metodo==='monedero'){ const c = clientes.find(x=>x.placa===limpiarPlaca($(p+'MonPlaca').value)); $(p+'MonSaldo').innerHTML = c ? '<span>Saldo</span><span class="mono" style="color:'+((c.saldo||0)>=total?'var(--green)':'var(--red)')+';">'+money(c.saldo||0)+'</span>' : '<span class="muted">Escriba una placa con monedero</span><span></span>'; }
       billetes(total);
       if(metodo==='mixto'){ const e = Math.max(0, parseInt($(p+'MixEfe').value,10)||0); $(p+'MixRes').innerHTML = '<span>Por '+esc(medioLabel($(p+'MixMedio').value))+'</span><span class="mono">'+money(Math.max(0,total-e))+'</span>'; }
       const val = $(p+'Recibido').value;
@@ -2695,8 +2737,10 @@
     });
     $(p+'Recibido').addEventListener('input', devuelta);
     $(p+'MixEfe').addEventListener('input', devuelta); $(p+'MixMedio').addEventListener('change', devuelta);
+    if(conFiado) $(p+'MonPlaca').addEventListener('input', devuelta);
     return {
-      reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; $(p+'MixEfe').value=''; if(conFiado) $(p+'Deudor').value=''; pintar(); },
+      reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; $(p+'MixEfe').value=''; if(conFiado){ $(p+'Deudor').value=''; $(p+'MonPlaca').value=''; } pintar(); },
+      setPlaca(pl){ if(conFiado){ $(p+'MonPlaca').value = pl||''; const c = clientes.find(x=>x.placa===pl); if(c && (c.saldo||0)>0){ metodo='monedero'; pintar(); } } },
       exacto(){ metodo='efectivo'; $(p+'Recibido').value = getTotal(); pintar(); },
       actualizarFiado(){ if(conFiado) box.querySelectorAll('.js-fiado').forEach(b=>{ b.hidden = !puedeFiar(); }); },
       refrescar: devuelta,
@@ -2706,7 +2750,9 @@
         const recibido = (metodo==='efectivo' && !isNaN(rec)) ? rec : null;
         const deudor = metodo==='fiado' ? $(p+'Deudor').value.trim().slice(0,60) : null;
         const efePart = metodo==='mixto' ? Math.max(0, parseInt($(p+'MixEfe').value,10)||0) : null;
+        const monPlaca = metodo==='monedero' ? limpiarPlaca($(p+'MonPlaca').value) : null, monCli = monPlaca ? clientes.find(x=>x.placa===monPlaca) : null;
         return {
+          monederoPlaca: monPlaca, sinSaldo: metodo==='monedero' && (!monCli || (monCli.saldo||0) < total),
           metodoPago: metodo, deudor,
           sinDeudor: metodo==='fiado' && !deudor,
           mixtoMal: metodo==='mixto' && (!efePart || efePart>=total),
@@ -2790,6 +2836,7 @@
         vendibles.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.nombre)+' · '+money(p.precio)+'</option>').join('')+'</select><button class="btn btn-sm" type="button" id="btnSalidaProd">Agregar</button></div><div id="salidaProdLista"></div></div>' : '')+
       '<div class="field" style="margin:8px 0;"><label for="salidaPropina">Propina (opcional, no suma a la caja)</label><input class="input mono" id="salidaPropina" type="number" min="0" step="500" placeholder="0"></div>';
     pagoSalida.reset();
+    pagoSalida.setPlaca(v.placa);
     actualizarSalida();
     abrirModal('salidaModal');
     actualizarPantallaCliente();
@@ -2857,6 +2904,7 @@
     if(pago.falta){ showToast('El dinero recibido no alcanza para el total.'); return; }
     if(pago.mixtoMal){ showToast('En pago dividido escriba cuánto paga en efectivo (menos que el total).'); return; }
     if(pago.sinDeudor){ showToast('Escriba a quién se le fía.'); return; }
+    if(pago.sinSaldo){ showToast('El monedero de esa placa no tiene saldo suficiente.'); return; }
     $('btnConfirmarSalida').disabled = true;
     try{
       const n = await siguienteNumero('factura');
@@ -2881,9 +2929,15 @@
         metodoPago: pago.metodoPago, medioTransferencia: pago.medioTransferencia,
         efectivoRecibido: pago.efectivoRecibido, vuelto: pago.vuelto
       };
+      r.monederoPlaca = pago.monederoPlaca || null;
+      if(emp && (emp.retefuentePct || emp.reteicaMil) && r.subtotal>0){
+        r.retefuente = Math.round(r.subtotal*(emp.retefuentePct||0)/100); r.reteica = Math.round(r.subtotal*(emp.reteicaMil||0)/1000);
+        r.netoEmpresa = r.total - r.retefuente - r.reteica;
+      }
       const batch = db.batch();
       batch.set(db.collection('historial').doc(r.id), r);
       batch.delete(db.collection('activos').doc(r.id));
+      if(pago.metodoPago==='monedero') batch.set(db.collection('clientes').doc(pago.monederoPlaca), { saldo: FV.increment(-c.totalCobrar) }, { merge:true });
       // tarjeta de sellos: suma uno por salida cobrada y vuelve a cero cuando se usa la visita gratis
       if(cfg.fidelidad.activo && !c.esSub && clientes.some(x=>x.placa===r.placa) && (c.gratis || r.total>0))
         batch.set(db.collection('clientes').doc(r.placa), { sellos: c.gratis ? 0 : FV.increment(1) }, { merge:true });
@@ -2893,7 +2947,7 @@
         const nv = await siguienteNumero('venta');
         const venta = { id:nuevoId(), numero:'V-'+pad(nv), fecha:r.salida, items:c.tiendaItems, total:c.tiendaTotal, placa:r.placa, comprobante:r.numeroFactura,
           metodoPago:pago.metodoPago, medioTransferencia:pago.medioTransferencia, efectivoRecibido:null, vuelto:null, deudor:pago.deudor||null,
-          efectivoParte: pago.metodoPago==='mixto' ? Math.max(0, (pago.efectivoParte||0) - (r.efectivoParte||0)) : null, operador:perfil.nombre, operadorId:perfil.uid };
+          efectivoParte: pago.metodoPago==='mixto' ? Math.max(0, (pago.efectivoParte||0) - (r.efectivoParte||0)) : null, monederoPlaca: pago.monederoPlaca||null, operador:perfil.nombre, operadorId:perfil.uid };
         batch.set(db.collection('ventas').doc(venta.id), venta);
         c.tiendaItems.forEach(it=> descontarStock(batch, it));
         if(pago.metodoPago==='fiado') cargoFiado(batch, pago.deudor, venta.total, venta.numero, 'Tienda con la salida de '+r.placa);
@@ -3008,6 +3062,9 @@
       html += fila('Subtotal', money(r.subtotal));
       if(r.ivaPct) html += fila('IVA ('+r.ivaPct+'%)', money(r.iva||0));
       html += '<div class="t-big">'+money(r.total + (r.tiendaTotal||0))+'</div>'+fila('Pago', pagoLabel(r));
+      if(r.retefuente) html += fila('Retención en la fuente', '−'+money(r.retefuente));
+      if(r.reteica) html += fila('Retención de ICA', '−'+money(r.reteica));
+      if(r.netoEmpresa!=null) html += fila('Neto que paga la empresa', money(r.netoEmpresa));
       if(r.efectivoRecibido!=null) html += fila('Recibido', money(r.efectivoRecibido))+fila('Devuelta', money(r.vuelto||0));
     }
     if(r.operador) html += fila('Atendió', r.operador);
@@ -3202,7 +3259,7 @@
         (p.foto ? '<img src="'+esc(p.foto)+'" alt="" style="width:100%;height:70px;object-fit:cover;border-radius:6px;margin-bottom:4px;">' : '')+
         '<span class="pn">'+esc(p.nombre)+'</span><span class="pc">'+esc(p.categoria||'Otros')+((p.componentes||[]).length?' · combo':'')+'</span>'+
         '<span class="pp">'+money(p.precio)+'</span>'+(p.promoCant>1 && p.promoPrecio ? '<span class="chip chip-amber" style="align-self:flex-start;">'+p.promoCant+' por '+money(p.promoPrecio)+'</span>' : '')+
-        '<span class="ps'+(bajo?' bajo':'')+'">'+(p.servicio ? 'Servicio' : st<=0 ? 'Agotado' : 'Quedan '+st)+'</span></button>';
+        '<span class="ps'+(bajo?' bajo':'')+'">'+(p.servicio ? 'Servicio' : st<=0 ? 'Agotado' : 'Quedan '+(p.porPeso ? fmtKg(st) : st))+'</span></button>';
     }).join('');
   }
   $('posCategorias').addEventListener('click', e=>{ const b = e.target.closest('[data-cat]'); if(b){ categoriaPOS = b.dataset.cat; renderPOS(); } });
@@ -3221,7 +3278,7 @@
     const primero = $('posProductos').querySelector('.prod:not(:disabled)');
     if(primero){ agregarAlCarrito(primero.dataset.prod); $('posBuscar').value=''; renderPOS(); }
   });
-  $('posProductos').addEventListener('click', e=>{ const b = e.target.closest('[data-prod]'); if(b && !b.disabled) agregarAlCarrito(b.dataset.prod); });
+  $('posProductos').addEventListener('click', e=>{ const b = e.target.closest('[data-prod]'); if(!b || b.disabled) return; const p = productos.find(x=>x.id===b.dataset.prod); if(p && p.porPeso) pedirPeso(p); else agregarAlCarrito(b.dataset.prod); });
 
   function agregarAlCarrito(id, delta){
     delta = delta || 1;
@@ -3233,6 +3290,7 @@
   }
   // "3 por $5.000": cada grupo completo va al precio de la promoción y lo que sobra a precio normal
   function subtotalItem(p, c){
+    if(p.porPeso) return Math.round((p.precio||0)*c/1000);
     if(p.promoCant>1 && p.promoPrecio>0){ const g = Math.floor(c/p.promoCant); return g*p.promoPrecio + (c - g*p.promoCant)*p.precio; }
     return p.precio*c;
   }
@@ -3243,7 +3301,7 @@
   function descontarStock(batch, it){
     const pr = productos.find(x=>x.id===it.productoId); if(!pr) return;
     if((pr.componentes||[]).length) pr.componentes.forEach(k=> batch.update(db.collection('productos').doc(k.id), { stock: FV.increment(-k.cant*it.cantidad) }));
-    else if(!pr.servicio) batch.update(db.collection('productos').doc(it.productoId), { stock: FV.increment(-it.cantidad) });
+    else if(!pr.servicio) batch.update(db.collection('productos').doc(it.productoId), { stock: FV.increment(-(it.gramos||it.cantidad)) });
   }
   function renderCarrito(){
     for(const id in carrito){ if(!productos.find(p=>p.id===id)) delete carrito[id]; }
@@ -3251,7 +3309,8 @@
     $('cartItems').innerHTML = items.length ? items.map(([id,c])=>{
       const p = productos.find(x=>x.id===id);
       return '<div class="cart-item"><div class="ci-n">'+esc(p.nombre)+'<small>'+money(p.precio)+'</small></div>'+
-        '<div class="qty"><button data-q="-1" data-id="'+esc(id)+'" aria-label="Quitar uno">−</button><span>'+c+'</span><button data-q="1" data-id="'+esc(id)+'" aria-label="Agregar uno">+</button></div>'+
+        (p.porPeso ? '<div class="qty"><button data-peso="'+esc(id)+'" style="width:auto;padding:0 10px;">'+fmtKg(c)+'</button><button data-quitar="'+esc(id)+'" aria-label="Quitar">✕</button></div>' :
+        '<div class="qty"><button data-q="-1" data-id="'+esc(id)+'" aria-label="Quitar uno">−</button><span>'+c+'</span><button data-q="1" data-id="'+esc(id)+'" aria-label="Agregar uno">+</button></div>')+
         '<span class="ci-t">'+money(subtotalItem(p,c))+'</span></div>';
     }).join('') : '<div class="empty">Toca un producto para agregarlo a la venta.</div>';
     $('cartTotal').textContent = money(totalCarrito());
@@ -3259,7 +3318,9 @@
     pagoPOS.refrescar();
     actualizarPantallaCliente();
   }
-  $('cartItems').addEventListener('click', e=>{ const b = e.target.closest('[data-q]'); if(b) agregarAlCarrito(b.dataset.id, parseInt(b.dataset.q,10)); });
+  $('cartItems').addEventListener('click', e=>{ const b = e.target.closest('[data-q]'); if(b) agregarAlCarrito(b.dataset.id, parseInt(b.dataset.q,10));
+    const pe = e.target.closest('[data-peso]'); if(pe){ const p = productos.find(x=>x.id===pe.dataset.peso); if(p) pedirPeso(p); }
+    const qu = e.target.closest('[data-quitar]'); if(qu){ delete carrito[qu.dataset.quitar]; renderCarrito(); renderPOS(); } });
   let ventasEspera = [];
   try{ ventasEspera = JSON.parse(localStorage.getItem('ventasEspera')||'[]'); }catch(e){}
   function renderEspera(){
@@ -3290,17 +3351,18 @@
   $('btnCobrarVenta').addEventListener('click', async ()=>{
     const items = Object.entries(carrito).map(([id,c])=>{ const p = productos.find(x=>x.id===id); if(!p) return null;
       const sub = subtotalItem(p,c), costo = (p.componentes||[]).length ? p.componentes.reduce((s,k)=>{ const q = productos.find(x=>x.id===k.id); return s + (q ? (q.costo||0)*k.cant : 0); },0) : (p.costo||0);
-      return { productoId:id, nombre:p.nombre, cantidad:c, precio: sub/c, subtotal:sub, costo }; }).filter(Boolean);
+      return { productoId:id, nombre: p.porPeso ? p.nombre+' ('+fmtKg(c)+')' : p.nombre, cantidad: p.porPeso ? 1 : c, gramos: p.porPeso ? c : null, precio: p.porPeso ? sub : sub/c, subtotal:sub, costo: p.porPeso ? Math.round((p.costo||0)*c/1000) : costo, impuesto: p.impuesto||null }; }).filter(Boolean);
     if(!items.length) return;
     for(const it of items){
       const p = productos.find(x=>x.id===it.productoId);
-      if(stockDe(p) < it.cantidad){ showToast('No hay suficiente '+p.nombre+'. Revisa la venta.'); return; }
+      if(stockDe(p) < (it.gramos||it.cantidad)){ showToast('No hay suficiente '+p.nombre+'. Revisa la venta.'); return; }
     }
     const total = items.reduce((s,i)=>s+i.precio*i.cantidad,0);
     const pago = pagoPOS.datos(total);
     if(pago.falta){ showToast('El dinero recibido no alcanza para el total.'); return; }
     if(pago.mixtoMal){ showToast('En pago dividido escriba cuánto paga en efectivo (menos que el total).'); return; }
     if(pago.sinDeudor){ showToast('Escriba a quién se le fía.'); return; }
+    if(pago.sinSaldo){ showToast('El monedero de esa placa no tiene saldo suficiente.'); return; }
     $('btnCobrarVenta').disabled = true;
     try{
       const n = await siguienteNumero('venta');
@@ -3308,11 +3370,13 @@
         id: nuevoId(), numero: 'V-'+pad(n), fecha: new Date().toISOString(), items, total,
         metodoPago: pago.metodoPago, medioTransferencia: pago.medioTransferencia,
         efectivoRecibido: pago.efectivoRecibido, vuelto: pago.vuelto, deudor: pago.deudor || null, efectivoParte: pago.efectivoParte,
+        monederoPlaca: pago.monederoPlaca || null, impuestos: impuestosDe(items),
         operador: perfil.nombre, operadorId: perfil.uid
       };
       const batch = db.batch();
       batch.set(db.collection('ventas').doc(venta.id), venta);
       if(pago.metodoPago==='fiado') cargoFiado(batch, pago.deudor, total, venta.numero, 'Tienda: '+items.map(i=>i.cantidad+'× '+i.nombre).join(', '));
+      if(pago.metodoPago==='monedero') batch.set(db.collection('clientes').doc(pago.monederoPlaca), { saldo: FV.increment(-total) }, { merge:true });
       items.forEach(it=> descontarStock(batch, it));
       batch.commit().catch(errGuardar);
       carrito = {};
@@ -3327,6 +3391,7 @@
     const l = ['Venta No.: '+v.numero, 'Fecha: '+fmtFechaHora(v.fecha), ''];
     v.items.forEach(i=>l.push(i.cantidad+' x '+i.nombre+'  '+money(i.precio*i.cantidad)));
     l.push('', 'TOTAL: '+money(v.total), 'Pago: '+pagoLabel(v));
+    Object.entries(v.impuestos||{}).forEach(([k,x])=>l.push('Incluye '+k+': '+money(x)));
     if(v.efectivoRecibido!=null) l.push('Recibido: '+money(v.efectivoRecibido), 'Devuelta: '+money(v.vuelto||0));
     if(v.operador) l.push('Atendió: '+v.operador);
     return l;
@@ -3335,6 +3400,8 @@
     let html = '<div class="ticket">'+ticketCabecera()+'<div class="t-title">VENTA TIENDA</div>'+fila('No.', v.numero)+fila('Fecha', fmtFechaHora(v.fecha))+'<hr>';
     v.items.forEach(i=>{ html += fila(i.cantidad+' × '+i.nombre, money(i.precio*i.cantidad)); });
     html += '<hr><div class="t-big">'+money(v.total)+'</div>'+fila('Pago', pagoLabel(v));
+    Object.entries(v.impuestos||{}).forEach(([k,x])=>{ html += fila('Incluye '+k, money(x)); });
+    if(v.devolucionDe) html += fila('Devolución de', v.devolucionDe);
     if(v.efectivoRecibido!=null) html += fila('Recibido', money(v.efectivoRecibido))+fila('Devuelta', money(v.vuelto||0));
     if(v.operador) html += fila('Atendió', v.operador);
     html += '<hr>'+barcodeSVG(v.numero)+'<div class="t-foot">¡Gracias por su compra!</div>'+pieTicket()+'</div>';
@@ -3380,8 +3447,9 @@
       return '<tr><td><strong>'+esc(p.nombre)+'</strong>'+((p.codigo||p.proveedor)?'<div class="meta">'+(p.codigo?'<span class="mono">'+esc(p.codigo)+'</span>':'')+(p.codigo&&p.proveedor?' · ':'')+esc(p.proveedor||'')+'</div>':'')+'</td><td class="muted">'+esc(p.categoria||'Otros')+'</td>'+
         '<td class="num muted">'+money(p.costo||0)+'</td><td class="num">'+money(p.precio)+'</td>'+
         '<td class="num">'+gananciaHTML(p.costo||0, p.precio||0)+'</td>'+
-        '<td class="num">'+(p.servicio ? '<span class="chip chip-blue">Servicio</span>' : '<strong>'+st+'</strong> '+chip)+'</td>'+
+        '<td class="num">'+(p.servicio ? '<span class="chip chip-blue">Servicio</span>' : '<strong>'+(p.porPeso ? fmtKg(st) : st)+'</strong> '+chip)+(p.impuesto && IMPUESTOS[p.impuesto] ? '<div class="meta">'+IMPUESTOS[p.impuesto].n+'</div>' : '')+'</td>'+
         '<td style="text-align:right;white-space:nowrap;">'+(p.servicio ? '' : '<button class="btn btn-sm" data-entrada="'+esc(p.id)+'">+ Entrada</button> <button class="btn btn-ghost btn-sm" data-merma="'+esc(p.id)+'">Merma</button> ')+
+        ((p.bodega||0)>0 ? '<button class="btn btn-sm" data-traslado="'+esc(p.id)+'" title="Pasar de la bodega a la tienda">Bodega ('+p.bodega+')</button> ' : '')+
         '<button class="btn btn-ghost btn-sm" data-editar="'+esc(p.id)+'">Editar</button> '+
         '<button class="btn-icon" data-borrar-prod="'+esc(p.id)+'" title="Eliminar">✕</button></td></tr>';
     }).join('') : '<tr><td colspan="7"><div class="empty">'+(productos.length?'Ningún producto coincide.':'Agrega tu primer producto arriba (gaseosas, agua, paquetes...).')+'</div></td></tr>';
@@ -3423,7 +3491,8 @@
       $('productoBody').innerHTML = '<p style="margin:0 0 12px;"><strong>'+esc(p.nombre)+'</strong> · stock actual <strong class="mono">'+(p.stock||0)+'</strong></p>'+
         '<div class="form-grid"><div class="field"><label for="peCant">Unidades que llegaron</label><input class="input mono" id="peCant" type="number" min="1" step="1"></div>'+
         '<div class="field"><label for="peVence2">Se vence (lote nuevo)</label><input class="input" id="peVence2" type="date" value="'+esc(p.vence||'')+'"></div>'+
-        '<div class="field"><label for="peCosto">¿Cuánto le costó cada una?</label><input class="input mono" id="peCosto" type="number" min="0" step="100" value="'+(p.costo||0)+'"></div></div>';
+        '<div class="field"><label for="peCosto">¿Cuánto le costó cada una?</label><input class="input mono" id="peCosto" type="number" min="0" step="100" value="'+(p.costo||0)+'"></div>'+
+        '<div class="field"><label for="peDestino">¿Dónde la guarda?</label><select class="select" id="peDestino"><option value="stock">En la tienda / nevera</option><option value="bodega">En la bodega</option></select></div></div>';
       abrirModal('productoModal'); setTimeout(()=>$('peCant').focus(), 50);
     }else if(ed){
       const p = productos.find(x=>x.id===ed.dataset.editar); if(!p) return;
@@ -3432,6 +3501,9 @@
       $('productoBody').innerHTML = '<div class="form-grid">'+
         '<div class="field full"><label for="peNombre">Nombre</label><input class="input" id="peNombre" value="'+esc(p.nombre)+'"></div>'+
         '<div class="field full"><label class="switch"><input type="checkbox" id="peServ"'+(p.servicio?' checked':'')+'> Es un servicio o recarga (no lleva inventario)</label></div>'+
+        '<div class="field"><label for="peImp">Impuesto incluido en el precio</label><select class="select" id="peImp"><option value="">Ninguno</option>'+Object.entries(IMPUESTOS).map(([k,x])=>'<option value="'+k+'"'+(p.impuesto===k?' selected':'')+'>'+x.n+'</option>').join('')+'</select></div>'+
+        '<div class="field"><label for="peBodega">En bodega (aparte de la tienda)</label><input class="input mono" id="peBodega" type="number" min="0" value="'+(p.bodega||0)+'"></div>'+
+        '<div class="field full"><label class="switch"><input type="checkbox" id="pePeso"'+(p.porPeso?' checked':'')+'> Se vende por peso: el precio es por kilo y el stock va en gramos (sirve con balanza)</label></div>'+
         '<div class="field"><label for="pePromoCant">Promoción: lleve</label><input class="input mono" id="pePromoCant" type="number" min="0" value="'+(p.promoCant||'')+'" placeholder="3"></div>'+
         '<div class="field"><label for="pePromoPrecio">por (precio total)</label><input class="input mono" id="pePromoPrecio" type="number" min="0" step="100" value="'+(p.promoPrecio||'')+'" placeholder="5000"></div>'+
         '<div class="field full"><label for="peFoto">Foto del producto</label><input class="input" id="peFoto" type="file" accept="image/*">'+(p.foto?'<img src="'+esc(p.foto)+'" alt="" style="width:70px;height:70px;object-fit:cover;border-radius:6px;margin-top:6px;">':'')+'</div>'+
@@ -3468,7 +3540,7 @@
       const cant = parseInt($('peCant').value,10)||0;
       if(cant<=0){ showToast('Escribe cuántas unidades llegaron.'); return; }
       const costo = Math.max(0, parseInt($('peCosto').value,10)||0);
-      ref.update({ stock: FV.increment(cant), costo, vence: $('peVence2').value || null, ultimaEntrada:new Date().toISOString() }).catch(errGuardar);
+      ref.update({ [$('peDestino').value==='bodega'?'bodega':'stock']: FV.increment(cant), costo, vence: $('peVence2').value || null, ultimaEntrada:new Date().toISOString() }).catch(errGuardar);
       const pE = productos.find(x=>x.id===productoAccion.id) || {};
       if(costo !== (pE.costo||0)) bitacora('Costo cambiado', (pE.nombre||'')+': de '+money(pE.costo||0)+' a '+money(costo)+' (entrada de '+cant+')');
       showToast('+'+cant+' unidades agregadas.');
@@ -3488,6 +3560,7 @@
         vence: $('peVence').value || null,
         proveedor: $('peProv').value.trim().slice(0,60) || null,
         servicio: $('peServ').checked,
+        impuesto: $('peImp').value || null, porPeso: $('pePeso').checked, bodega: Math.max(0, parseInt($('peBodega').value,10)||0),
         promoCant: Math.max(0, parseInt($('pePromoCant').value,10)||0), promoPrecio: Math.max(0, parseInt($('pePromoPrecio').value,10)||0),
         componentes: [...document.querySelectorAll('[data-comp]')].map(i=>({ id:i.dataset.comp, cant:Math.max(0, parseInt(i.value,10)||0) })).filter(k=>k.cant>0),
         precio: Math.max(0, parseInt($('pePrecio').value,10)||0),
@@ -3663,7 +3736,7 @@
       '<div class="list-row" style="opacity:.7;"><div style="min-width:0;"><strong class="mono" style="text-decoration:line-through;">'+esc(x.numeroFactura||x.numero||'')+'</strong> '+(x.placa?'<span class="placa-txt">'+esc(x.placa)+'</span>':'')+
       '<div class="meta">'+esc(x.motivoAnulacion||'')+' · anuló '+esc(x.anuladoPor||'')+' · '+fmtFechaHora(x.anuladoEn||x.salida||x.fecha)+'</div></div><span class="money" style="text-decoration:line-through;">'+money(x.total)+'</span></div>').join('') : '';
     if(rows.length===0){ $('histLista').innerHTML = '<div class="empty">No hay registros en ese periodo.</div>'+anulHTML; return; }
-    if(histModo==='tienda'){ $('histLista').innerHTML = rows.slice(0,200).map(v=>ventaFilaHTML(v).replace('<button class="btn btn-ghost btn-sm" data-venta=', (esAdmin()?'<button class="btn btn-ghost btn-sm" data-anular-venta="'+esc(v.id)+'">Anular</button>':'')+'<button class="btn btn-ghost btn-sm" data-venta=')).join('')+anulHTML; return; }
+    if(histModo==='tienda'){ $('histLista').innerHTML = rows.slice(0,200).map(v=>ventaFilaHTML(v).replace('<button class="btn btn-ghost btn-sm" data-venta=', (esAdmin()?'<button class="btn btn-ghost btn-sm" data-anular-venta="'+esc(v.id)+'">Anular</button>':'')+(esStaff() && v.total>0 && !v.devuelta && (v.items||[]).some(i=>i.productoId)?'<button class="btn btn-ghost btn-sm" data-devolver="'+esc(v.id)+'">Devolver</button>':'')+'<button class="btn btn-ghost btn-sm" data-venta=')).join('')+anulHTML; return; }
     $('histLista').innerHTML = rows.slice(0,200).map(h=>{
       const totalHtml = (esSubModo(h.modo) && !h.total) ? '<span class="chip chip-green">INCLUIDO</span>' : '<span class="money accent">'+money(h.total)+'</span>';
       return '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(h.placa)+'</span>'+
@@ -3994,9 +4067,9 @@
     $('clientesLista').innerHTML = lista.length ? lista.map(c=>
       '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(c.placa)+'</span>'+
       (c.autorizaDatos?' <span class="chip chip-green">Autorizó datos</span>':'')+(esCumpleHoy(c)?' <span class="chip chip-amber">Cumple hoy</span>':'')+
-      (c.etiquetas||[]).map(t=>' <span class="chip chip-gray">'+esc(t)+'</span>').join('')+(cfg.fidelidad.activo && c.sellos?' <span class="chip chip-amber">'+c.sellos+' sellos</span>':'')+
+      (c.etiquetas||[]).map(t=>' <span class="chip chip-gray">'+esc(t)+'</span>').join('')+(cfg.fidelidad.activo && c.sellos?' <span class="chip chip-amber">'+c.sellos+' sellos</span>':'')+(c.saldo?' <span class="chip chip-blue">Monedero '+money(c.saldo)+'</span>':'')+
       '<div class="meta">'+esc(c.nombre||'Sin nombre')+(c.telefono?' · '+esc(c.telefono):'')+' · '+(visitas[c.placa]||0)+' visita(s)'+(ultima[c.placa]?' · última '+fmtCorto(new Date(ultima[c.placa])):'')+'</div></div>'+
-      '<div class="r">'+(esCumpleHoy(c) && c.telefono ? '<button class="btn btn-sm" data-felicitar="'+esc(c.placa)+'">Felicitar</button>' : '')+'<button class="btn btn-ghost btn-sm" data-ficha="'+esc(c.placa)+'">Ficha</button>'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
+      '<div class="r">'+(esCumpleHoy(c) && c.telefono ? '<button class="btn btn-sm" data-felicitar="'+esc(c.placa)+'">Felicitar</button>' : '')+'<button class="btn btn-ghost btn-sm" data-recargar="'+esc(c.placa)+'">Recargar</button><button class="btn btn-ghost btn-sm" data-ficha="'+esc(c.placa)+'">Ficha</button>'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
     ).join('') : '<div class="empty">Todavía no hay clientes registrados.</div>';
   }
   $('clientesLista').addEventListener('click', e=>{
@@ -4243,7 +4316,7 @@
     if(!esAdmin() || enfocadoDentro('empLista')) return;
     $('empLista').innerHTML = cfg.empresas.length ? cfg.empresas.map(e=>
       '<div class="list-row" style="border-bottom:none;padding-bottom:2px;"><strong>'+esc(e.nombre)+' <span class="chip chip-blue">−'+esc(e.descuentoPct)+'%</span></strong>'+
-        '<span class="row" style="flex-wrap:nowrap;align-items:center;gap:6px;"><span class="meta">Tope h/mes</span><input class="input mono" style="width:70px;padding:5px 7px;" type="number" min="0" data-tope-emp="'+esc(e.id)+'" value="'+(e.topeHoras||0)+'" title="0 = sin tope"><span class="meta">usó '+horasConvenioMes(e.nombre).toFixed(1)+' h</span><button class="btn-icon" data-borrar-emp="'+esc(e.id)+'">✕</button></span></div>'+
+        '<span class="row" style="flex-wrap:nowrap;align-items:center;gap:6px;"><span class="meta">Tope h/mes</span><input class="input mono" style="width:70px;padding:5px 7px;" type="number" min="0" data-tope-emp="'+esc(e.id)+'" value="'+(e.topeHoras||0)+'" title="0 = sin tope"><span class="meta">usó '+horasConvenioMes(e.nombre).toFixed(1)+' h</span><span class="meta">Retefuente %</span><input class="input mono" style="width:58px;padding:5px 7px;" type="number" min="0" step="0.5" data-rete-emp="'+esc(e.id)+'" value="'+(e.retefuentePct||0)+'"><span class="meta">ICA ‰</span><input class="input mono" style="width:58px;padding:5px 7px;" type="number" min="0" step="0.1" data-ica-emp="'+esc(e.id)+'" value="'+(e.reteicaMil||0)+'"><button class="btn-icon" data-borrar-emp="'+esc(e.id)+'">✕</button></span></div>'+
       '<div class="plates" style="border-bottom:1px solid var(--line);padding-bottom:10px;">'+(e.placas||[]).map(p=>'<span class="plate-chip">'+esc(p)+'<button class="btn-icon" style="font-size:11px;" data-quitar-placa="'+esc(p)+'" data-emp="'+esc(e.id)+'">✕</button></span>').join('')+
       '<div class="row" style="margin-top:6px;"><input class="input mono upper" style="width:110px;padding:6px 8px;" placeholder="Placa" data-placa-emp="'+esc(e.id)+'" maxlength="10"><button class="btn btn-sm" data-add-placa="'+esc(e.id)+'">Añadir placa</button></div></div>'
     ).join('') : '<div class="empty">No hay convenios todavía.</div>';
@@ -4263,6 +4336,9 @@
     }
   });
   $('empLista').addEventListener('change', e=>{
+    const rt = e.target.closest('[data-rete-emp],[data-ica-emp]');
+    if(rt){ const id = rt.dataset.reteEmp || rt.dataset.icaEmp, campo = rt.dataset.reteEmp ? 'retefuentePct' : 'reteicaMil';
+      guardarConfig({ empresas: cfg.empresas.map(x=> x.id===id ? Object.assign({}, x, { [campo]: Math.max(0, parseFloat(rt.value)||0) }) : x) }, 'Retención guardada.'); return; }
     const t = e.target.closest('[data-tope-emp]'); if(!t) return;
     guardarConfig({ empresas: cfg.empresas.map(x=> x.id===t.dataset.topeEmp ? Object.assign({}, x, { topeHoras: Math.max(0, parseInt(t.value,10)||0) }) : x) }, 'Tope de horas guardado.');
   });
@@ -5884,6 +5960,150 @@
   $('panelMapa').addEventListener('click', e=>{ const b = e.target.closest('[data-spot]'); if(b) abrirSalida(b.dataset.spot); });
   document.addEventListener('click', e=>{ const b = e.target.closest('[data-ir]'); if(b) irA(b.dataset.ir); });
   setInterval(()=>{ if(perfil && vistaActual==='panel') renderPanel(); }, 60000);
+
+  /* ================= IMPUESTOS POR PRODUCTO ================= */
+  const IMPUESTOS = { iva19:{ n:'IVA 19%', pct:19 }, iva5:{ n:'IVA 5%', pct:5 }, inc8:{ n:'Impoconsumo 8%', pct:8 } };
+  // el precio ya trae el impuesto: se calcula cuánto de ese precio es impuesto
+  function impuestosDe(items){
+    const out = {};
+    items.forEach(i=>{ const t = IMPUESTOS[i.impuesto]; if(!t) return; const sub = i.subtotal!=null ? i.subtotal : i.precio*i.cantidad;
+      out[t.n] = (out[t.n]||0) + Math.round(sub - sub/(1+t.pct/100)); });
+    return out;
+  }
+  function fmtKg(g){ return (g/1000).toLocaleString('es-CO',{ minimumFractionDigits:3, maximumFractionDigits:3 })+' kg'; }
+
+  /* ================= BALANZA (por peso) ================= */
+  let pesoProd = null, balanzaPuerto = null;
+  function pedirPeso(p){
+    pesoProd = p; $('pesoTitulo').textContent = p.nombre+' · '+money(p.precio)+'/kg';
+    $('pesoGramos').value = carrito[p.id] || ''; mostrarValorPeso();
+    abrirModal('pesoModal'); setTimeout(()=>$('pesoGramos').focus(), 50);
+  }
+  function mostrarValorPeso(){ const g = parseInt($('pesoGramos').value,10)||0; $('pesoValor').innerHTML = g>0 && pesoProd ? '<span>'+fmtKg(g)+'</span><span class="mono">'+money(subtotalItem(pesoProd, g))+'</span>' : ''; }
+  $('pesoGramos').addEventListener('input', mostrarValorPeso);
+  $('pesoGramos').addEventListener('keydown', e=>{ if(e.key==='Enter') $('btnPesoOk').click(); });
+  $('btnPesoOk').addEventListener('click', ()=>{
+    const g = parseInt($('pesoGramos').value,10)||0; if(!pesoProd || g<=0){ showToast('Escriba el peso.'); return; }
+    if(g > (pesoProd.stock||0)){ showToast('Solo quedan '+fmtKg(pesoProd.stock||0)+' de '+pesoProd.nombre+'.'); return; }
+    carrito[pesoProd.id] = g; cerrarModal('pesoModal'); renderCarrito(); renderPOS();
+  });
+  // balanzas con salida serial: mandan líneas como "ST,GS,+  1.250kg"
+  $('btnLeerBalanza').addEventListener('click', async ()=>{
+    if(!('serial' in navigator)){ $('balanzaEstado').textContent = 'Este navegador no puede leer balanzas por USB. Use Chrome o Edge en un computador, o escriba el peso.'; return; }
+    try{
+      if(!balanzaPuerto){ balanzaPuerto = await navigator.serial.requestPort(); await balanzaPuerto.open({ baudRate: 9600 }); }
+      $('balanzaEstado').textContent = 'Leyendo la balanza…';
+      const lector = balanzaPuerto.readable.getReader(), dec = new TextDecoder(); let buf = '', fin = Date.now()+3000;
+      try{
+        while(Date.now()<fin){
+          const { value, done } = await lector.read(); if(done) break;
+          buf += dec.decode(value);
+          const m = buf.match(/([0-9]+[.,][0-9]+|[0-9]+)\s*(kg|g)\b/i);
+          if(m){ const n = parseFloat(m[1].replace(',','.')); $('pesoGramos').value = Math.round(m[2].toLowerCase()==='kg' ? n*1000 : n); mostrarValorPeso(); $('balanzaEstado').textContent = 'Peso leído de la balanza.'; break; }
+        }
+      }finally{ lector.releaseLock(); }
+    }catch(e){ console.error(e); balanzaPuerto = null; $('balanzaEstado').textContent = 'No se pudo leer la balanza. Revise el cable o escriba el peso.'; }
+  });
+
+  /* ================= TRASLADO DE BODEGA ================= */
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-traslado]'); if(!b) return;
+    const p = productos.find(x=>x.id===b.dataset.traslado); if(!p) return;
+    const n = parseInt(prompt('¿Cuántas unidades de '+p.nombre+' pasa de la bodega a la tienda? (hay '+(p.bodega||0)+')', String(p.bodega||0)),10)||0;
+    if(n<=0) return;
+    if(n>(p.bodega||0)){ showToast('En la bodega solo hay '+(p.bodega||0)+'.'); return; }
+    db.collection('productos').doc(p.id).update({ stock: FV.increment(n), bodega: FV.increment(-n) }).catch(errGuardar);
+    showToast(n+' de '+p.nombre+' pasaron a la tienda.');
+  });
+
+  /* ================= MONEDERO (recargas por placa) ================= */
+  async function recargarMonedero(placa){
+    const c = clientes.find(x=>x.placa===placa);
+    const v = parseInt(prompt('¿Cuánto recarga al monedero de '+placa+'? (saldo actual '+money((c&&c.saldo)||0)+')', '20000'),10)||0;
+    if(v<=0) return;
+    const n = await siguienteNumero('venta');
+    const venta = { id:nuevoId(), numero:'V-'+pad(n), fecha:new Date().toISOString(), tipo:'recarga', placa,
+      items:[{ nombre:'Recarga monedero '+placa, cantidad:1, precio:v, costo:0 }], total:v, metodoPago:'efectivo', medioTransferencia:null,
+      efectivoRecibido:null, vuelto:null, deudor:null, efectivoParte:null, operador:perfil.nombre, operadorId:perfil.uid };
+    const batch = db.batch();
+    batch.set(db.collection('ventas').doc(venta.id), venta);
+    batch.set(db.collection('clientes').doc(placa), { saldo: FV.increment(v) }, { merge:true });
+    batch.commit().catch(errGuardar);
+    bitacora('Recarga de monedero', placa+' · '+money(v));
+    imprimirAlAbrir = true; mostrarReciboVenta(venta);
+  }
+  document.addEventListener('click', e=>{ const b = e.target.closest('[data-recargar]'); if(b) recargarMonedero(b.dataset.recargar); });
+
+  /* ================= DEVOLUCIONES DE LA TIENDA ================= */
+  let devolverVenta = null;
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-devolver]'); if(!b) return;
+    const v = ventas.find(x=>x.id===b.dataset.devolver) || (histMesExtra && histMesExtra.ventas.find(x=>x.id===b.dataset.devolver)); if(!v) return;
+    devolverVenta = v;
+    $('devolverLista').innerHTML = v.items.map((i,k)=> i.productoId ? '<div class="list-row"><div>'+esc(i.nombre)+'<div class="meta">Vendió '+i.cantidad+' a '+money(i.precio)+'</div></div><div class="r"><input class="input mono" style="width:80px;" type="number" min="0" max="'+i.cantidad+'" value="0" data-dev="'+k+'"></div></div>' : '').join('');
+    $('devolverMotivo').value = ''; $('devolverTotal').innerHTML = '';
+    abrirModal('devolverModal');
+  });
+  function itemsDevolucion(){
+    return [...document.querySelectorAll('[data-dev]')].map(inp=>{ const i = devolverVenta.items[+inp.dataset.dev], q = Math.min(i.cantidad, Math.max(0, parseInt(inp.value,10)||0));
+      return q ? { productoId:i.productoId, nombre:i.nombre, cantidad:-q, precio:i.precio, costo:i.costo||0, gramos: i.gramos ? -Math.round(i.gramos*q/i.cantidad) : null } : null; }).filter(Boolean);
+  }
+  $('devolverLista').addEventListener('input', ()=>{ const t = itemsDevolucion().reduce((s,i)=>s-i.precio*i.cantidad,0); $('devolverTotal').innerHTML = t ? '<span>Se le devuelve</span><span class="mono">'+money(t)+'</span>' : ''; });
+  $('btnConfirmarDevolver').addEventListener('click', async ()=>{
+    const items = itemsDevolucion(); if(!devolverVenta || !items.length){ showToast('Escriba cuántas unidades devuelve.'); return; }
+    const motivo = $('devolverMotivo').value.trim().slice(0,100); if(motivo.length<3){ showToast('Escriba el motivo.'); return; }
+    const total = items.reduce((s,i)=>s+i.precio*i.cantidad,0), n = await siguienteNumero('venta');
+    const dv = { id:nuevoId(), numero:'V-'+pad(n), fecha:new Date().toISOString(), tipo:'devolucion', devolucionDe:devolverVenta.numero, motivo, items, total,
+      metodoPago:'efectivo', medioTransferencia:null, efectivoRecibido:null, vuelto:null, deudor:null, efectivoParte:null, operador:perfil.nombre, operadorId:perfil.uid };
+    const batch = db.batch();
+    batch.set(db.collection('ventas').doc(dv.id), dv);
+    items.forEach(i=>{ const pr = productos.find(x=>x.id===i.productoId); if(!pr || pr.servicio) return;
+      if((pr.componentes||[]).length) pr.componentes.forEach(k=>batch.update(db.collection('productos').doc(k.id), { stock: FV.increment(k.cant*-i.cantidad) }));
+      else batch.update(db.collection('productos').doc(pr.id), { stock: FV.increment(-(i.gramos||i.cantidad)) }); });
+    if(items.reduce((s,i)=>s-i.cantidad,0) >= devolverVenta.items.reduce((s,i)=>s+(i.productoId?i.cantidad:0),0)) batch.update(db.collection('ventas').doc(devolverVenta.id), { devuelta:true });
+    batch.commit().catch(errGuardar);
+    bitacora('Devolución en la tienda', devolverVenta.numero+' · '+money(-total)+' · '+motivo);
+    cerrarModal('devolverModal'); showToast('Devolución hecha: entregue '+money(-total)+' al cliente.');
+    mostrarReciboVenta(dv);
+  });
+
+  /* ================= QR DE PAGO ================= */
+  function renderQrPago(){
+    if(!esAdmin()) return;
+    const q = cfg.qrPago||{};
+    if(!enfocadoDentro('qrPagoLlave')) $('qrPagoLlave').value = q.llave||'';
+    $('qrPagoPrev').innerHTML = q.img ? '<img src="'+esc(q.img)+'" alt="QR de pago"><div class="meta">Así lo verá el cliente al pagar por transferencia.</div>' : '<div class="meta">Todavía no ha subido el QR.</div>';
+  }
+  $('qrPagoImg').addEventListener('change', e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = ()=>{ const k = Math.min(1, 480/Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+      guardarConfig({ qrPago:{ img:c.toDataURL('image/png'), llave:(cfg.qrPago||{}).llave||'' } }, 'QR de pago guardado.'); };
+    img.src = url; e.target.value = '';
+  });
+  $('qrPagoLlave').addEventListener('change', ()=> guardarConfig({ qrPago:Object.assign({}, cfg.qrPago, { llave:$('qrPagoLlave').value.trim().slice(0,40) }) }, 'Llave guardada.'));
+  $('btnQrPagoQuitar').addEventListener('click', ()=> guardarConfig({ qrPago:Object.assign({}, cfg.qrPago, { img:null }) }, 'QR quitado.'));
+
+  /* ================= COMPROBANTE CONTABLE (Siigo / Alegra) ================= */
+  const CUENTAS = { caja:['110505','Caja general'], bancos:['111005','Bancos'], clientes:['130505','Clientes'], parqueo:['415595','Ingresos parqueadero'], tienda:['413595','Ingresos tienda'], iva:['240801','IVA generado'], mens:['415595','Ingresos mensualidades'] };
+  $('btnContable').addEventListener('click', ()=>{
+    const d = datosReporte(), filas = [], f = x=> new Date(x).toLocaleDateString('es-CO');
+    const asiento = (x, fecha, doc, desc, cuentaIng, base, iva)=>{
+      const pt = partes(x);
+      if(pt.efectivo) filas.push([f(fecha), 'RC', doc, CUENTAS.caja[0], CUENTAS.caja[1], '', desc, pt.efectivo, 0]);
+      if(pt.transferencia) filas.push([f(fecha), 'RC', doc, CUENTAS.bancos[0], CUENTAS.bancos[1]+(pt.medio?' ('+pt.medio+')':''), '', desc, pt.transferencia, 0]);
+      if(pt.fiado || pt.monedero) filas.push([f(fecha), 'RC', doc, CUENTAS.clientes[0], CUENTAS.clientes[1], x.deudor||x.monederoPlaca||'', desc, (pt.fiado||0)+(pt.monedero||0), 0]);
+      filas.push([f(fecha), 'RC', doc, cuentaIng[0], cuentaIng[1], '', desc, 0, base]);
+      if(iva) filas.push([f(fecha), 'RC', doc, CUENTAS.iva[0], CUENTAS.iva[1], '', desc, 0, iva]);
+    };
+    d.his.forEach(h=>{ if(h.total) asiento(h, h.salida, h.numeroFactura||'', 'Parqueo '+h.placa, CUENTAS.parqueo, (h.total||0)-(h.iva||0), h.iva||0); });
+    d.vts.filter(v=>v.tipo!=='recarga').forEach(v=>{ const imp = Object.values(v.impuestos||{}).reduce((s,x)=>s+x,0); asiento(v, v.fecha, v.numero, v.tipo==='devolucion'?'Devolución '+(v.devolucionDe||''):'Venta tienda', CUENTAS.tienda, v.total-imp, imp); });
+    d.pms.forEach(x=>{ if(x.valor) asiento(Object.assign({ total:x.valor }, x), x.fecha, x.numeroFactura||'', 'Mensualidad '+x.placa, CUENTAS.mens, x.valor, 0); });
+    descargarExcel(['Fecha','Tipo comprobante','Documento','Cuenta','Nombre de la cuenta','Tercero','Descripción','Débito','Crédito'], filas,
+      'comprobante-contable-'+aLocal(d.r.ini).slice(0,7)+'.xlsx', 'Movimientos');
+    showToast('Listo. Revise las cuentas con su contador antes de importarlo en Siigo o Alegra.');
+  });
 
   /* ================= WHATSAPP PENDIENTES (sin internet) ================= */
   function waPendientes(){ try{ const l = JSON.parse(localStorage.getItem('waPendientes')||'[]'); return Array.isArray(l) ? l : []; }catch(e){ return []; } }

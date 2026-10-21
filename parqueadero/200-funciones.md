@@ -71,12 +71,12 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 49. ✅ 📴 Cupones de descuento con código.
 50. ✅ 📴 Sellos de comercios aliados ("validación" de un almacén vecino).
 51. ✅ 📴 Pago dividido: parte en efectivo y parte con tarjeta.
-52. 🌐 Pago con QR de Nequi o Daviplata con el monto exacto.
+52. ✅ 🌐 Pago con QR de Nequi o Daviplata con el monto exacto.
 53. 🌐 Confirmación automática de pagos por transferencia (Bre-B).
 54. ✅ 📴 Calculadora de billetes: el cajero pone los billetes recibidos y la app saca la devuelta.
 55. ✅ 📴 Fiado o crédito a clientes conocidos, con saldo pendiente.
 56. ✅ 📴 Abonos parciales a la deuda de un cliente.
-57. 📴 Tarjeta prepago o monedero por placa (recargas).
+57. ✅ 📴 Tarjeta prepago o monedero por placa (recargas).
 58. ✅ 📴 ⚡ Redondeo automático a $100 o $50.
 59. ✅ 📴 Propina para el valet, registrada aparte.
 60. ✅ 📴 Cobro de multa por ticket perdido.
@@ -86,9 +86,9 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 64. ✅ 📴 Simulador de tarifa: "¿cuánto paga alguien que entra a las 7 pm y sale a las 2 am?".
 65. ✅ 📴 Historial de cambios de tarifa con fecha.
 66. ✅ 📴 Anular un cobro con motivo y permiso del administrador.
-67. 📴 Devoluciones de la tienda que regresan el stock.
+67. ✅ 📴 Devoluciones de la tienda que regresan el stock.
 68. 🌐 Factura electrónica conectada a Alegra, Siigo o Factus.
-69. 📴 Retención y autorretención en los comprobantes para empresas.
+69. ✅ 📴 Retención y autorretención en los comprobantes para empresas.
 70. ✅ 📴 Cotización para empresas (cuántos cupos al mes y cuánto valen).
 
 ## D. Mensualidades y clientes (71–95)
@@ -137,12 +137,12 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 109. ✅ 📴 Vender servicios de la tienda (recargas, minutos) sin stock.
 110. ✅ 📴 Agregar productos de la tienda a la cuenta del parqueo y cobrar todo junto.
 111. ✅ 📴 Venta en espera (dejar una venta abierta y atender a otro cliente).
-112. 📴 Varias bodegas o neveras.
+112. ✅ 📴 Varias bodegas o neveras.
 113. ✅ 📴 Historial de cambios de costo.
 114. ✅ 📴 Alerta de producto sin moverse en 30 días.
 115. ✅ 📴 Etiquetas de precio para imprimir.
 116. ✅ 📴 Importar productos desde Excel.
-117. 📴 Impuesto al consumo o IVA por producto.
+117. ✅ 📴 Impuesto al consumo o IVA por producto.
 118. ✅ 📴 Ventas por hora del día.
 119. ✅ 📴 Gastos menores del negocio (aseo, papelería, servicios públicos).
 120. ✅ 📴 Ganancia neta: ingresos menos costos y gastos.
@@ -223,9 +223,9 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 184. 📴 Lector de tarjetas RFID o TAG para abonados.
 185. ✅ 📴 Pantalla secundaria para el cliente con el valor a pagar.
 186. 🌐 Cámara IP en la entrada que toma la foto sola.
-187. 📴 Balanza para vender productos por peso.
+187. ✅ 📴 Balanza para vender productos por peso.
 188. 🌐 Integración con datáfono (Bold, Wompi, SumUp).
-189. 🌐 Exportar a Siigo o Alegra para la contabilidad.
+189. ✅ 🌐 Exportar a Siigo o Alegra para la contabilidad.
 190. 🌐 Integración con Google Sheets para reportes.
 191. 🌐 API o webhook para otros sistemas.
 192. 🌐 Respaldo automático en Google Drive.
