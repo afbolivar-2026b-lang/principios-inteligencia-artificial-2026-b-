@@ -112,6 +112,14 @@ service cloud.firestore {
       allow delete: if esAdmin();
     }
 
+    // Lecturas del celular que hace de lector por WiFi. Se borran al recibirlas.
+    match /lecturas/{id} {
+      allow read: if activo();
+      allow create: if activo() && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if activo();
+    }
+
     // Quién hizo cada cambio delicado. Nadie la puede editar ni borrar.
     match /bitacora/{id} {
       allow read: if esAdmin();

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://www.gstatic.com; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://www.gstatic.com; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Control de Parqueadero</title>
 <meta name="theme-color" content="#1c1b17">
@@ -451,6 +451,20 @@
   .rep-row{display:grid;grid-template-columns:120px 1fr auto;gap:10px;align-items:center;padding:6px 0;font-size:13px;}
   .rep-row .barra{margin-top:0;height:10px;}
 
+  .qr-ticket{width:110px;height:110px;display:block;margin:8px auto 2px;}
+  .lector-modo{position:fixed;inset:0;z-index:950;background:#000;color:#fff;display:flex;flex-direction:column;}
+  .lector-modo video{flex:1;width:100%;object-fit:cover;min-height:0;}
+  .lector-modo .barra-l{padding:14px 16px;background:#141413;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .lector-modo .ult{font:600 15px var(--mono);color:#ffc800;}
+  .lecturas{font:500 12.5px var(--mono);max-height:140px;overflow:auto;}
+  .lecturas div{padding:4px 0;border-bottom:1px dashed var(--line);}
+  .carne{width:340px;max-width:100%;margin:0 auto;border-radius:14px;overflow:hidden;border:2px solid #111;background:#fffef9;color:#111;font-family:Arial,sans-serif;}
+  .carne .top{background:#1c1b17;color:#efebe2;padding:10px 14px;display:flex;align-items:center;gap:10px;font-weight:bold;text-transform:uppercase;}
+  .carne .top .p{width:30px;height:30px;border:2px solid #fff;border-radius:5px;background:#2c5d8f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .carne .cuerpo{display:flex;gap:12px;padding:14px;align-items:center;}
+  .carne .cuerpo .d{flex:1;font-size:13px;line-height:1.6;}
+  .carne .cinta{height:8px;background:repeating-linear-gradient(-45deg,#ffc800 0 8px,#1c1b17 8px 16px);}
+
   /* ---------- campana y avisos ---------- */
   .icon-btn{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
   .icon-btn:hover{border-color:var(--ink);}
@@ -552,6 +566,7 @@
       <button class="btn btn-sm menu-btn" id="btnMenu" type="button" aria-label="Abrir menú"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <h1 id="viewTitle">Parqueo</h1>
       <span class="sync" id="syncInfo"></span>
+      <button class="icon-btn" id="btnLector" type="button" title="Lector de códigos (QR y barras)" aria-label="Lector de códigos"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><path d="M13 13h4v4"/></svg></button>
       <button class="icon-btn" id="btnImpresora" type="button" title="Impresora" aria-label="Impresora"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg></button>
       <button class="icon-btn" id="btnCampana" type="button" title="Avisos" aria-label="Avisos"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 20a1.9 1.9 0 0 0 3.4 0"/></svg><span class="cnt" id="campanaCnt" hidden>0</span></button>
       <span class="net" id="netStatus" hidden>Sin conexión</span>
@@ -1169,6 +1184,45 @@
   </div>
 </div>
 
+<!-- ===== MODAL LECTOR DE CÓDIGOS ===== -->
+<div class="modal" id="lectorModal">
+  <div class="modal-box wide">
+    <div class="modal-head"><h3>Lector de códigos</h3><button class="modal-close" data-close="lectorModal">✕</button></div>
+    <div class="estado-imp"><div class="ic ic-verde"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="4" height="4"/><rect x="13" y="7" width="4" height="4"/><rect x="7" y="13" width="4" height="4"/><path d="M13 13h4v4"/></svg></div><div><strong>Listo para leer</strong><div class="meta">Pase cualquier ticket, carné o producto por el lector. No hace falta hacer clic en ninguna casilla.</div></div></div>
+    <h4 style="font:600 17px var(--display);text-transform:uppercase;margin:6px 0;">1. Por cable USB o Bluetooth</h4>
+    <p class="hint" style="margin-top:0;">Conecte el lector por cable, o empárejelo en el Bluetooth del computador o del celular (modo teclado). Los lectores inalámbricos que traen una antena USB también funcionan así. No hay que configurar nada más.</p>
+    <h4 style="font:600 17px var(--display);text-transform:uppercase;margin:14px 0 6px;">2. Bluetooth directo (lectores BLE)</h4>
+    <div class="row"><button class="btn" id="btnLectorBLE">Buscar lector Bluetooth</button><span class="meta" id="lectorBLEestado">Sin lector BLE conectado.</span></div>
+    <h4 style="font:600 17px var(--display);text-transform:uppercase;margin:14px 0 6px;">3. Por WiFi: usar un celular como lector</h4>
+    <div class="row" style="align-items:center;">
+      <div id="lectorQRpar" style="width:120px;height:120px;background:#fff;border-radius:8px;padding:6px;"></div>
+      <div style="flex:1;min-width:200px;">
+        <p style="margin:0 0 6px;font-size:13.5px;">Con el celular conectado al WiFi, escanee este código con la cámara (o abra la app y toque <strong>Usar este celular como lector</strong> con el código <strong class="mono" id="lectorCanal"></strong>). Lo que el celular escanee aparece aquí.</p>
+        <button class="btn btn-sm" id="btnSerLector">Usar este celular como lector</button>
+      </div>
+    </div>
+    <div class="lbl" style="margin:14px 0 4px;">Últimas lecturas</div>
+    <div class="lecturas" id="lectorUltimas"><div class="muted">Todavía no se ha leído nada.</div></div>
+  </div>
+</div>
+
+<!-- ===== MODO LECTOR (celular) ===== -->
+<div class="lector-modo" id="lectorModo" hidden>
+  <div class="barra-l"><strong>Celular como lector · <span class="mono" id="lmCanal"></span></strong><button class="btn btn-sm" id="btnSalirLector" style="background:#fff;">Salir</button></div>
+  <video id="lmVideo" playsinline muted></video>
+  <div class="barra-l"><span>Última lectura enviada:</span><span class="ult" id="lmUltima">—</span></div>
+</div>
+
+<!-- ===== MODAL CARNÉ ===== -->
+<div class="modal" id="carneModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Carné del abonado</h3><button class="modal-close" data-close="carneModal">✕</button></div>
+    <div id="carneBody"></div>
+    <div class="modal-actions"><button class="btn" id="btnCarneImprimir">Imprimir</button></div>
+    <div class="hint">Al pasar el carné por el lector, el abonado entra (o sale) sin escribir la placa.</div>
+  </div>
+</div>
+
 <!-- ===== MODAL ESCANEAR ===== -->
 <div class="modal" id="scanModal">
   <div class="modal-box">
@@ -1278,6 +1332,7 @@
     <div class="form-grid" style="margin-top:12px;">
       <div class="field"><label for="impAncho">Ancho del papel</label><select class="select" id="impAncho"><option value="58">58 mm</option><option value="80">80 mm</option></select></div>
       <div class="field"><label>&nbsp;</label><label class="switch" style="padding:8px 0;"><input type="checkbox" id="impAuto"> Imprimir solo, sin tocar el botón</label></div>
+      <div class="field full"><label class="switch"><input type="checkbox" id="impQR"> Imprimir también un código QR en el ticket</label></div>
       <div class="field full"><label class="switch"><input type="checkbox" id="impCajon"> Abrir el cajón de dinero al cobrar en efectivo (cajón conectado a la impresora)</label></div>
     </div>
     <div class="modal-actions">
@@ -1548,6 +1603,8 @@
   }
   const URL_XLSX = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
   const URL_JSPDF = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  const URL_QR = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+  const URL_JSQR = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
 
   /* ---------- código de barras Code 128 (se dibuja aquí mismo, sin servicios externos) ---------- */
   const C128 = ['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
@@ -1869,6 +1926,9 @@
     irA(vistaActual);
     setTimeout(reservarBloques, 4000);
     setTimeout(revisarEquipo, 2500);
+    cargarScript(URL_QR).catch(()=>{});
+    escucharLecturas();
+    revisarModoLector();
     renderEspera();
     renderTodo();
     if(esAdmin()) migrarDatosAntiguos();
@@ -1888,6 +1948,7 @@
     $('placaInfo').innerHTML = '';
     $('fotoPreview').hidden = true;
     $('lockScreen').hidden = true;
+    salirModoLector();
   }
   $('btnSalir').addEventListener('click', ()=> auth.signOut());
 
@@ -2567,7 +2628,7 @@
       html += fila('Se cobra por', (cfg.cobro.fraccionMin==60?'hora':'fracción de '+cfg.cobro.fraccionMin+' min'));
     }
     if(v.operador) html += fila('Recibió', v.operador);
-    html += '<hr>'+barcodeSVG(v.codigoIngreso)+'<div class="t-foot">Conserve este ticket<br>para reclamar su vehículo</div>'+pieTicket()+'</div>';
+    html += '<hr>'+barcodeSVG(v.codigoIngreso)+qrSVG(v.codigoIngreso,'qr-ticket')+'<div class="t-foot">Conserve este ticket<br>para reclamar su vehículo</div>'+pieTicket()+'</div>';
     const lineas = ['TICKET DE INGRESO', 'Código: '+v.codigoIngreso, '', 'Placa: '+v.placa, 'Vehículo: '+nombreFor(v.tipo), 'Entrada: '+fmtFechaHora(v.entrada)].concat(
       v.puesto ? ['Puesto: '+v.puesto] : [], v.conductor ? ['Conductor: '+v.conductor+(v.cedula?' CC '+v.cedula:'')] : [], [
       'Modalidad: '+(esSub ? (v.modo==='mensual'?'Mensualidad':'Quincena') : 'Por tiempo')]);
@@ -3312,7 +3373,7 @@
       const st = s.congeladaDesde ? { txt:'Congelada desde '+fmtCorto(new Date(s.congeladaDesde+'T12:00:00')), cls:'chip-blue' } : statusVencimiento(s.vencimiento);
       return '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(s.placa)+'</span> <span class="chip '+st.cls+'">'+st.txt+'</span>'+
         '<div class="meta">'+nombreFor(s.tipo)+' · '+esc(s.periodicidad)+(s.cliente?' · '+esc(s.cliente):'')+(s.vencimiento?' · vence '+fmtCorto(new Date(s.vencimiento+'T00:00:00')):'')+'</div></div>'+
-        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-ghost btn-sm" data-congelar="'+esc(s.id)+'">'+(s.congeladaDesde?'Reactivar':'Congelar')+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
+        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-ghost btn-sm" data-congelar="'+esc(s.id)+'">'+(s.congeladaDesde?'Reactivar':'Congelar')+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-carne="'+esc(s.id)+'">Carné</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
     }).join('') : '<div class="empty">No hay abonados con mensualidad o quincena.</div>';
   }
   $('subLista').addEventListener('click', e=>{
@@ -4161,6 +4222,196 @@
   });
   $('cupLista').addEventListener('click', e=>{ const b = e.target.closest('[data-borrar-cupon]'); if(b) guardarConfig({ cupones:(cfg.cupones||[]).filter(c=>c.codigo!==b.dataset.borrarCupon) }, 'Cupón quitado.'); });
 
+  /* ================= CÓDIGOS QR ================= */
+  // dibuja un QR como SVG (si la librería todavía no cargó, no dibuja nada)
+  function qrSVG(texto, clase){
+    if(!window.qrcode || !texto) return '';
+    try{
+      const q = qrcode(0, 'M'); q.addData(String(texto)); q.make();
+      const n = q.getModuleCount(); let r = '';
+      for(let y=0;y<n;y++) for(let x=0;x<n;x++) if(q.isDark(y,x)) r += 'M'+x+' '+y+'h1v1h-1z';
+      return '<svg class="'+(clase||'')+'" viewBox="-2 -2 '+(n+4)+' '+(n+4)+'" shape-rendering="crispEdges" aria-label="QR '+esc(texto)+'"><rect x="-2" y="-2" width="'+(n+4)+'" height="'+(n+4)+'" fill="#fff"/><path d="'+r+'" fill="#000"/></svg>';
+    }catch(e){ return ''; }
+  }
+
+  /* ================= LECTOR DE CÓDIGOS: USB, BLUETOOTH Y CELULAR POR WIFI ================= */
+  const ultimasLecturas = [];
+  function anotarLectura(codigo, via, resultado){
+    ultimasLecturas.unshift({ codigo, via, resultado, hora:new Date() });
+    ultimasLecturas.length = Math.min(ultimasLecturas.length, 8);
+    $('lectorUltimas').innerHTML = ultimasLecturas.map(l=>'<div>'+l.hora.toLocaleTimeString('es-CO')+' · '+esc(l.via)+' · <strong>'+esc(l.codigo)+'</strong> → '+esc(l.resultado)+'</div>').join('');
+  }
+  // qué hacer con un código leído, venga de donde venga
+  function procesarLectura(bruto, via){
+    const codigo = String(bruto||'').trim();
+    if(!codigo || !perfil) return;
+    const sinGuion = limpiarPlaca(codigo);
+    // carné de abonado: AB:PLACA
+    if(/^AB:/i.test(codigo)){
+      const placa = limpiarPlaca(codigo.slice(3));
+      const dentro = activos.find(a=>a.placa===placa);
+      if(dentro){ irA('parqueo'); abrirSalida(dentro.id); anotarLectura(codigo, via, 'salida de '+placa); return; }
+      irA('parqueo'); $('placaInput').value = placa; checkPlaca(); registrarIngreso(); anotarLectura(codigo, via, 'entrada de '+placa); return;
+    }
+    // en la tienda manda el producto
+    if(vistaActual==='tienda' && venderPorCodigo(codigo)){ renderPOS(); anotarLectura(codigo, via, 'producto a la venta'); return; }
+    const v = activos.find(a=> (a.codigoIngreso||'').replace('-','')===sinGuion || a.placa===sinGuion);
+    if(v){ if(vistaActual!=='parqueo') irA('parqueo'); abrirSalida(v.id); anotarLectura(codigo, via, 'salida de '+v.placa); return; }
+    const p = productos.find(x=>x.codigo && x.codigo===codigo);
+    if(p){ irA('tienda'); venderPorCodigo(codigo); renderPOS(); anotarLectura(codigo, via, 'producto a la venta'); return; }
+    const h = historial.find(x=>(x.codigoIngreso||'').replace('-','')===sinGuion || (x.numeroFactura||'').replace('-','')===sinGuion);
+    if(h){ mostrarRecibo(h); anotarLectura(codigo, via, 'comprobante (ya salió)'); return; }
+    showToast('El código '+codigo+' no corresponde a ningún ticket ni producto.');
+    anotarLectura(codigo, via, 'no encontrado');
+  }
+  // Lectores por cable USB o Bluetooth en modo teclado: escriben muy rápido y terminan en Enter
+  let lecBuf = '', lecIni = 0, lecPrev = 0;
+  document.addEventListener('keydown', e=>{
+    if(!perfil || !$('lockScreen').hidden) return;
+    const ahora = performance.now();
+    if(e.key==='Enter'){
+      const rapido = lecBuf.length>=4 && (ahora - lecIni)/lecBuf.length < 35;
+      const cod = lecBuf; lecBuf = '';
+      if(!rapido) return;
+      const el = document.activeElement, id = el && el.id;
+      // estas casillas ya entienden el lector por su cuenta
+      if(id==='buscarActivo' || id==='posBuscar') return;
+      if(id==='placaInput' && !/^(AB:|E-?\d)/i.test(cod) && !activos.some(a=>a.placa===limpiarPlaca(cod))) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      // quita lo que el lector alcanzó a escribir en la casilla
+      if(el && typeof el.value==='string'){
+        const escrito = id==='placaInput' ? limpiarPlaca(cod) : cod;
+        if(escrito && el.value.endsWith(escrito)){ el.value = el.value.slice(0, el.value.length - escrito.length); if(id==='placaInput') checkPlaca(); }
+      }
+      procesarLectura(cod, 'lector');
+      return;
+    }
+    if(e.key.length===1 && !e.ctrlKey && !e.metaKey && !e.altKey){
+      if(ahora - lecPrev > 60){ lecBuf = ''; lecIni = ahora; }
+      lecBuf += e.key; lecPrev = ahora;
+    }
+  }, true);
+
+  // Lector Bluetooth BLE (los que no se emparejan como teclado)
+  const BLE_LECTOR = ['6e400001-b5a3-f393-e0a9-e50e24dcca9e','0000ffe0-0000-1000-8000-00805f9b34fb','0000fff0-0000-1000-8000-00805f9b34fb','0000feea-0000-1000-8000-00805f9b34fb','0000ff00-0000-1000-8000-00805f9b34fb'];
+  $('btnLectorBLE').addEventListener('click', async ()=>{
+    if(!navigator.bluetooth){ showToast('Este navegador no tiene Bluetooth. Use Chrome o Edge.'); return; }
+    try{
+      const dev = await navigator.bluetooth.requestDevice({ acceptAllDevices:true, optionalServices:BLE_LECTOR });
+      const srv = await dev.gatt.connect();
+      let car = null;
+      for(const u of BLE_LECTOR){ try{ const sv = await srv.getPrimaryService(u); car = (await sv.getCharacteristics()).find(c=>c.properties.notify); if(car) break; }catch(e){} }
+      if(!car){ showToast('Ese lector no envía datos por Bluetooth directo. Empárejelo como teclado.'); return; }
+      let buf = '', t = 0;
+      const dec = new TextDecoder();
+      car.addEventListener('characteristicvaluechanged', ev=>{
+        buf += dec.decode(ev.target.value);
+        clearTimeout(t);
+        const fin = /[\r\n]/.test(buf);
+        const listo = ()=>{ const c = buf.replace(/[\r\n]+/g,'').trim(); buf = ''; if(c) procesarLectura(c, 'Bluetooth'); };
+        if(fin) listo(); else t = setTimeout(listo, 150);
+      });
+      await car.startNotifications();
+      dev.addEventListener('gattserverdisconnected', ()=>{ $('lectorBLEestado').textContent = 'El lector '+(dev.name||'')+' se desconectó.'; });
+      $('lectorBLEestado').textContent = 'Conectado: '+(dev.name||'lector Bluetooth');
+      showToast('Lector Bluetooth conectado.');
+    }catch(e){ if(e && e.name!=='NotFoundError'){ console.error(e); showToast('No se pudo conectar el lector.'); } }
+  });
+
+  // Celular como lector por WiFi: el celular escanea y la lectura llega a este equipo por Firebase
+  function canalLector(){
+    let c = null;
+    try{ c = localStorage.getItem('canalLector'); }catch(e){}
+    if(!c){ c = Math.random().toString(36).slice(2,8).toUpperCase(); try{ localStorage.setItem('canalLector', c); }catch(e){} }
+    return c;
+  }
+  let escuchaLector = null;
+  function escucharLecturas(){
+    if(escuchaLector || !perfil) return;
+    const canal = canalLector(), desdeL = new Date().toISOString();
+    escuchaLector = db.collection('lecturas').where('canal','==',canal).onSnapshot(q=>{
+      q.docs.forEach(d=>{ const x = d.data(); if(x.fecha>=desdeL && !x.leida){ procesarLectura(x.valor, 'celular '+(x.nombre||'')); d.ref.delete().catch(()=>{}); } });
+    }, ()=>{});
+    escuchas.push(()=>{ escuchaLector && escuchaLector(); escuchaLector = null; });
+  }
+  $('btnLector').addEventListener('click', async ()=>{
+    const canal = canalLector();
+    $('lectorCanal').textContent = canal;
+    try{ await cargarScript(URL_QR); }catch(e){}
+    const url = location.href.split('#')[0]+'#lector='+canal;
+    $('lectorQRpar').innerHTML = qrSVG(url) || '<span class="meta">Sin internet para dibujar el código. Use el código '+esc(canal)+'.</span>';
+    escucharLecturas();
+    abrirModal('lectorModal');
+  });
+  let lmStream = null, lmLoop = 0, lmUltimo = '', lmHora = 0;
+  async function modoLector(canal){
+    canal = String(canal||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+    if(!canal) return;
+    $('lmCanal').textContent = canal;
+    $('lectorModo').hidden = false;
+    try{
+      lmStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+      const vid = $('lmVideo'); vid.srcObject = lmStream; await vid.play();
+      const det = ('BarcodeDetector' in window) ? new BarcodeDetector({ formats:['qr_code','code_128','code_39','ean_13','ean_8','upc_a'] }) : null;
+      if(!det) await cargarScript(URL_JSQR);
+      const lienzo = document.createElement('canvas'), ctx = lienzo.getContext('2d', { willReadFrequently:true });
+      const leer = async ()=>{
+        if(!lmStream) return;
+        let valor = null;
+        try{
+          if(det){ const r = await det.detect(vid); if(r.length) valor = r[0].rawValue; }
+          else if(window.jsQR && vid.videoWidth){
+            lienzo.width = vid.videoWidth; lienzo.height = vid.videoHeight; ctx.drawImage(vid, 0, 0);
+            const r = jsQR(ctx.getImageData(0,0,lienzo.width,lienzo.height).data, lienzo.width, lienzo.height); if(r) valor = r.data;
+          }
+        }catch(e){}
+        // el mismo código no se manda dos veces seguidas en 3 segundos
+        if(valor && (valor!==lmUltimo || Date.now()-lmHora>3000)){
+          lmUltimo = valor; lmHora = Date.now();
+          const id = nuevoId();
+          db.collection('lecturas').doc(id).set({ id, canal, valor:String(valor).slice(0,200), fecha:new Date().toISOString(), uid:perfil.uid, nombre:perfil.nombre }).catch(errGuardar);
+          $('lmUltima').textContent = valor; pitar(true);
+          if(navigator.vibrate) navigator.vibrate(80);
+        }
+        lmLoop = setTimeout(leer, 250);
+      };
+      leer();
+    }catch(e){ console.error(e); showToast('No se pudo abrir la cámara del celular.'); salirModoLector(); }
+  }
+  function salirModoLector(){ clearTimeout(lmLoop); if(lmStream){ lmStream.getTracks().forEach(t=>t.stop()); lmStream = null; } $('lectorModo').hidden = true; }
+  $('btnSalirLector').addEventListener('click', salirModoLector);
+  $('btnSerLector').addEventListener('click', ()=>{
+    const c = prompt('Escriba el código que aparece en el computador:', '');
+    if(c){ cerrarModal('lectorModal'); modoLector(c); }
+  });
+  function revisarModoLector(){
+    const m = /#lector=([A-Za-z0-9]+)/.exec(location.hash);
+    if(m){ history.replaceState(null, '', location.pathname+location.search); modoLector(m[1]); }
+  }
+
+  /* ---------- carné del abonado con QR ---------- */
+  let carneActual = null;
+  document.addEventListener('click', async e=>{
+    const b = e.target.closest('[data-carne]'); if(!b) return;
+    const s = mensualidades.find(x=>x.id===b.dataset.carne); if(!s) return;
+    try{ await cargarScript(URL_QR); }catch(err){}
+    carneActual = s;
+    const logo = typeof cfg.logo==='string' && cfg.logo.startsWith('data:image/') ? '<img src="'+cfg.logo+'" alt="" style="width:30px;height:30px;object-fit:contain;background:#fff;border-radius:5px;">' : '<span class="p">P</span>';
+    $('carneBody').innerHTML = '<div class="carne" id="carneTarjeta"><div class="top">'+logo+esc(cfg.brand)+'</div><div class="cuerpo">'+
+      (qrSVG('AB:'+s.placa) || '<div style="width:110px;height:110px;border:1px dashed #999;display:flex;align-items:center;justify-content:center;font-size:11px;">Sin internet</div>').replace('<svg ','<svg style="width:110px;height:110px;" ')+
+      '<div class="d"><div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.08em;">Abonado '+esc(s.periodicidad)+'</div>'+
+      '<div style="font:bold 26px/1.2 Arial;letter-spacing:.08em;background:#f7c600;border:2px solid #111;border-radius:5px;display:inline-block;padding:2px 8px;margin:4px 0;">'+esc(s.placa)+'</div>'+
+      '<div>'+esc(s.cliente||'')+'</div><div>'+nombreFor(s.tipo)+(s.puesto?' · Puesto '+esc(s.puesto):'')+'</div><div>Vence: <strong>'+esc(s.vencimiento||'—')+'</strong></div></div></div><div class="cinta"></div></div>';
+    abrirModal('carneModal');
+  });
+  $('btnCarneImprimir').addEventListener('click', ()=>{
+    const html = '<!doctype html><html><head><meta charset="utf-8"><title>Carné</title><style>body{margin:20px;font-family:Arial}'+
+      '.carne{width:340px;border-radius:14px;overflow:hidden;border:2px solid #111;-webkit-print-color-adjust:exact;print-color-adjust:exact}.top{background:#1c1b17;color:#efebe2;padding:10px 14px;display:flex;align-items:center;gap:10px;font-weight:bold;text-transform:uppercase}.top .p{width:30px;height:30px;border:2px solid #fff;border-radius:5px;background:#2c5d8f;color:#fff;display:flex;align-items:center;justify-content:center}.cuerpo{display:flex;gap:12px;padding:14px;align-items:center}.d{font-size:13px;line-height:1.6}.cinta{height:8px;background:repeating-linear-gradient(-45deg,#ffc800 0 8px,#1c1b17 8px 16px)}'+
+      '</style></head><body>'+$('carneBody').innerHTML+'</body></html>';
+    const w = window.open('', '_blank'); if(!w){ showToast('Permita las ventanas emergentes.'); return; }
+    w.document.write(html); w.document.close(); setTimeout(()=>w.print(), 300);
+  });
+
   /* ================= RESTAURAR RESPALDO ================= */
   $('btnRestaurar').addEventListener('click', ()=> $('restaurarArchivo').click());
   $('restaurarArchivo').addEventListener('change', async e=>{
@@ -4743,7 +4994,7 @@
 
   /* ================= IMPRESORA (navegador o Bluetooth) ================= */
   // Va guardada por equipo: cada computador o celular tiene su propia impresora.
-  const IMP = { dev:null, car:null, cfg:{ modo:'navegador', ancho:58, auto:false, nombre:'' } };
+  const IMP = { dev:null, car:null, cfg:{ modo:'navegador', ancho:58, auto:false, nombre:'', qr:true } };
   try{ Object.assign(IMP.cfg, JSON.parse(localStorage.getItem('impresora')||'{}')); }catch(e){}
   function guardarImp(){ try{ localStorage.setItem('impresora', JSON.stringify(IMP.cfg)); }catch(e){} renderImpresora(); }
   // servicios BLE que usan las impresoras térmicas chinas más comunes
@@ -4828,6 +5079,12 @@
     if(t.codigo){
       const d = bytes(t.codigo);
       b.push(ESC,0x61,1, LF, GS,0x68,60, GS,0x77,2, GS,0x48,2, GS,0x6B,73, d.length+2, 0x7B,0x42, ...d, LF);
+      if(IMP.cfg.qr!==false){
+        // QR nativo de la impresora (GS ( k): modelo 2, tamaño 6, corrección M
+        const n = d.length+3;
+        b.push(GS,0x28,0x6B,4,0,0x31,0x41,0x32,0, GS,0x28,0x6B,3,0,0x31,0x43,6, GS,0x28,0x6B,3,0,0x31,0x45,0x31,
+               GS,0x28,0x6B,n&255,n>>8,0x31,0x50,0x30, ...d, GS,0x28,0x6B,3,0,0x31,0x51,0x30, LF);
+      }
     }
     b.push(LF,LF,LF, GS,0x56,0x42,0);                 // avanzar y cortar (si la impresora corta)
     return new Uint8Array(b);
@@ -4851,7 +5108,7 @@
   }
   function renderImpresora(){
     const bt = IMP.cfg.modo==='bluetooth', con = !!IMP.car;
-    $('impModo').value = IMP.cfg.modo; $('impAncho').value = String(IMP.cfg.ancho); $('impAuto').checked = !!IMP.cfg.auto; $('impCajon').checked = !!IMP.cfg.cajon;
+    $('impModo').value = IMP.cfg.modo; $('impAncho').value = String(IMP.cfg.ancho); $('impAuto').checked = !!IMP.cfg.auto; $('impCajon').checked = !!IMP.cfg.cajon; $('impQR').checked = IMP.cfg.qr!==false;
     $('impEstado').textContent = !bt ? 'Impresora del computador' : con ? 'Conectada: '+IMP.cfg.nombre : IMP.cfg.nombre ? IMP.cfg.nombre+' (desconectada)' : 'Sin impresora Bluetooth';
     $('impDetalle').textContent = !bt ? 'Se abre el cuadro de imprimir del navegador.' : con ? 'Papel de '+IMP.cfg.ancho+' mm'+(IMP.cfg.auto?' · imprime sola':'') : 'Toque "Buscar impresora Bluetooth".';
     $('impIc').className = 'ic ' + (!bt ? 'ic-azul' : con ? 'ic-verde' : 'ic-rojo');
@@ -4862,6 +5119,7 @@
   $('impAncho').addEventListener('change', ()=>{ IMP.cfg.ancho = parseInt($('impAncho').value,10)||58; guardarImp(); });
   $('impAuto').addEventListener('change', ()=>{ IMP.cfg.auto = $('impAuto').checked; guardarImp(); });
   $('impCajon').addEventListener('change', ()=>{ IMP.cfg.cajon = $('impCajon').checked; guardarImp(); });
+  $('impQR').addEventListener('change', ()=>{ IMP.cfg.qr = $('impQR').checked; guardarImp(); });
   // pulso ESC p: abre el cajón conectado al puerto RJ11 de la impresora
   const PULSO_CAJON = [0x1B,0x70,0x00,0x19,0xFA];
   $('btnAbrirCajon').addEventListener('click', async ()=>{

@@ -1,13 +1,15 @@
 // Guarda la app en el equipo para que abra y funcione sin internet.
 // Los datos (Firestore) no pasan por aquí: Firebase los guarda en su propio caché.
-const VERSION = 'parqueadero-v3';
+const VERSION = 'parqueadero-v4';
 const APP = ['./', './index.html', './manifest.webmanifest', './icono.svg', './icono-192.png', './icono-512.png'];
 const LIBRERIAS = [
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
   'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js',
+  'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'
 ];
 
 self.addEventListener('install', e=>{
@@ -28,7 +30,7 @@ self.addEventListener('activate', e=>{
 });
 
 function esLibreria(url){
-  return url.hostname==='www.gstatic.com' || url.hostname==='cdnjs.cloudflare.com' ||
+  return url.hostname==='www.gstatic.com' || url.hostname==='cdnjs.cloudflare.com' || url.hostname==='cdn.jsdelivr.net' ||
          url.hostname==='fonts.googleapis.com' || url.hostname==='fonts.gstatic.com';
 }
 

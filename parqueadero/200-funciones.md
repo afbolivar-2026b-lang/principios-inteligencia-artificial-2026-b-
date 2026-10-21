@@ -100,7 +100,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 76. 📴 Control de entradas incluidas (por ejemplo, 20 entradas al mes).
 77. ✅ 📴 Congelar la mensualidad (vacaciones).
 78. 📴 Puesto fijo reservado para el abonado.
-79. 📴 Carné digital del abonado con QR.
+79. ✅ 📴 Carné digital del abonado con QR.
 80. 📴 Contrato firmado en pantalla con el dedo.
 81. ✅ 📴 Puntos de fidelidad por visita.
 82. ✅ 📴 "La visita 10 es gratis".
@@ -215,6 +215,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 180. 🌐 Chat del parqueadero por WhatsApp Business.
 
 ## I. Hardware e integraciones (181–192)
+181c. 📴 ✅ **Lector de códigos QR y de barras** por cable USB, Bluetooth (modo teclado o BLE) o WiFi (un celular hace de lector); ticket con QR.
 181b. 📴 ✅ **Impresora térmica Bluetooth** (ESC/POS por Web Bluetooth, 58 u 80 mm, imprime sola si se activa).
 181. ✅ 📴 Impresión directa en impresora térmica (WebUSB o ESC/POS) sin el cuadro de impresión.
 182. ✅ 📴 Abrir el cajón de dinero al cobrar.
