@@ -238,8 +238,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 ---
 
 ## Por dónde empezar (recomendado)
-1. ✅ **1, 2, 3 y 5**: que la app abra y trabaje sin internet aunque se recargue. Es lo más importante para no perder ventas.
-2. ✅ **7**: consecutivos que no se repitan sin internet.
-3. ✅ **122**: arqueo de caja al cerrar el turno.
-4. ✅ **181 y 182**: impresión térmica directa y apertura del cajón.
-5. ✅ **71**: recordatorios de mensualidad por WhatsApp.
+1. **1, 2, 3 y 5**: que la app abra y trabaje sin internet aunque se recargue. Es lo más importante para no perder ventas.
+2. **7**: consecutivos que no se repitan sin internet.
+3. **122**: arqueo de caja al cerrar el turno.
+4. **181 y 182**: impresión térmica directa y apertura del cajón.
+5. **71**: recordatorios de mensualidad por WhatsApp.
