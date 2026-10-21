@@ -444,6 +444,13 @@
   .ayuda p, .ayuda li{font-size:13.5px;line-height:1.6;margin:0 0 6px;}
   .ayuda kbd{font:500 11.5px var(--mono);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;background:var(--surface-2);}
 
+  .heat{display:grid;grid-template-columns:38px repeat(24,minmax(0,1fr));gap:2px;font-size:10px;color:var(--muted);}
+  .heat .c{height:22px;border-radius:4px;background:var(--surface-2);}
+  .heat .h{text-align:center;}
+  .heat .d{display:flex;align-items:center;}
+  .rep-row{display:grid;grid-template-columns:120px 1fr auto;gap:10px;align-items:center;padding:6px 0;font-size:13px;}
+  .rep-row .barra{margin-top:0;height:10px;}
+
   /* ---------- campana y avisos ---------- */
   .icon-btn{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
   .icon-btn:hover{border-color:var(--ink);}
@@ -757,6 +764,29 @@
           </div>
         </div>
         <div class="hint">Semana: lunes a domingo. Quincena: del 1 al 15 o del 16 a fin de mes. Las mensualidades suman el día en que se cobran con el botón <strong>Renovar</strong>.</div>
+      </section>
+
+      <!-- ===== REPORTES ===== -->
+      <section class="view" id="view-reportes">
+        <div class="filters">
+          <div class="seg" id="repPeriodo"><button data-r="hoy">Hoy</button><button data-r="7">7 días</button><button class="active" data-r="mes">Este mes</button><button data-r="pasado">Mes pasado</button></div>
+          <span class="sp" style="flex:1;"></span>
+          <button class="btn btn-primary btn-sm" id="btnContador">Excel para el contador</button>
+        </div>
+        <div class="stats" id="repStats"></div>
+        <div class="grid-2">
+          <div class="card"><h2 class="card-title">Ingresos por tipo de vehículo</h2><div id="repTipos"></div></div>
+          <div class="card"><h2 class="card-title">Cómo pagaron</h2><div id="repMedios"></div></div>
+        </div>
+        <div class="card" style="margin-top:16px;"><h2 class="card-title">¿A qué horas llegan? (entradas por día y hora)</h2><div id="repHeat"></div><div class="hint" id="repPico"></div></div>
+        <div class="grid-2" style="margin-top:16px;">
+          <div class="card"><h2 class="card-title">Tiempo promedio dentro</h2><div id="repTiempos"></div></div>
+          <div class="card"><h2 class="card-title">Ventas de la tienda por hora</h2><div id="repTiendaHoras"></div></div>
+        </div>
+        <div class="grid-2" style="margin-top:16px;">
+          <div class="card"><h2 class="card-title">Turnos y caja</h2><div id="repTurnos"></div></div>
+          <div class="card"><h2 class="card-title">Descuentos, anulaciones y clientes</h2><div id="repOtros"></div></div>
+        </div>
       </section>
 
       <!-- ===== HISTORIAL ===== -->
@@ -1259,6 +1289,7 @@
 
   const ICONOS = {
     whatsapp:'<svg viewBox="0 0 24 24"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8c-1-.4-1.9-1.3-2.3-2.3l.8-1-1-2z"/></svg>',
+    reportes:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
     panel:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="2"/><rect x="13" y="3" width="8" height="6" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="15" width="8" height="6" rx="2"/></svg>',
     dinero:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg>',
     bolsa:'<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
@@ -1285,6 +1316,7 @@
     { id:'tienda', nombre:'Tienda', roles:TODOS },
     { id:'inventario', nombre:'Inventario', roles:STAFF },
     { id:'caja', nombre:'Caja', roles:STAFF },
+    { id:'reportes', nombre:'Reportes', roles:STAFF },
     { id:'historial', nombre:'Historial', roles:STAFF },
     { id:'mensualidades', nombre:'Mensualidades', roles:STAFF },
     { id:'clientes', nombre:'Clientes', roles:STAFF },
@@ -1619,7 +1651,7 @@
     const bajos = productos.filter(p=> (p.stock||0) <= minDe(p)).length;
     $('nav').innerHTML = vistasPermitidas().map((v,i)=>
       '<button class="nav-btn'+(v.id===vistaActual?' active':'')+'" data-vista="'+v.id+'">'+ICONOS[v.id]+'<span>'+v.nombre+'</span>'+
-      (v.id==='inventario' && bajos ? '<span class="dot">'+bajos+'</span>' : '')+'<kbd title="Alt + '+((i+1)%10)+'">'+((i+1)%10)+'</kbd></button>'
+      (v.id==='inventario' && bajos ? '<span class="dot">'+bajos+'</span>' : '')+(i<10 ? '<kbd title="Alt + '+((i+1)%10)+'">'+((i+1)%10)+'</kbd>' : '')+'</button>'
     ).join('');
   }
   function irA(vista){
@@ -1632,6 +1664,7 @@
     renderNav();
     if(vista==='parqueo') setTimeout(()=>$('placaInput').focus(), 50);
     if(vista==='panel') renderPanel();
+    if(vista==='reportes') renderReportes();
     if(vista==='tienda') setTimeout(()=>$('posBuscar').focus(), 50);
   }
   // Alt + número abre la sección (el mismo número que se ve en el menú)
@@ -1931,13 +1964,13 @@
     escuchas.push(db.collection('historial').where('salida','>=',desde).onSnapshot(q=>{
       const todosH = docs(q).sort((a,b)=> b.salida.localeCompare(a.salida));
       historial = todosH.filter(h=>!h.anulado); anuladosH = todosH.filter(h=>h.anulado);
-      programar(renderHistorial, renderCaja, renderKpis, renderClientes, renderTurnos, renderTurnoBar, renderPanel);
+      programar(renderHistorial, renderCaja, renderKpis, renderClientes, renderTurnos, renderTurnoBar, renderPanel, renderReportes);
     }, errEscucha));
     escuchas.push(db.collection('ventas').where('fecha','>=',desde).onSnapshot(q=>{
       const todasV = docs(q).sort((a,b)=> b.fecha.localeCompare(a.fecha));
       ventas = todasV.filter(v=>!v.anulado); anuladasV = todasV.filter(v=>v.anulado);
       programar(renderInventario);
-      programar(renderVentasHoy, renderHistorial, renderCaja, renderKpis, renderTurnos, renderTurnoBar, renderPanel);
+      programar(renderVentasHoy, renderHistorial, renderCaja, renderKpis, renderTurnos, renderTurnoBar, renderPanel, renderReportes);
     }, errEscucha));
     escuchas.push(db.collection('turnos').where('inicio','>=',desde).onSnapshot(q=>{
       turnos = docs(q);
@@ -3886,6 +3919,127 @@
     renderAlertas();
   }
   setInterval(()=>{ if(perfil) revisarEquipo(); }, 30*60000);
+
+  /* ================= REPORTES ================= */
+  let repPeriodo = 'mes';
+  function rangoReporte(){
+    const h = hoy0(), fin = new Date(h); fin.setDate(fin.getDate()+1);
+    if(repPeriodo==='hoy') return { ini:h, fin, nombre:'hoy' };
+    if(repPeriodo==='7'){ const i = new Date(h); i.setDate(i.getDate()-6); return { ini:i, fin, nombre:'los últimos 7 días' }; }
+    if(repPeriodo==='pasado') return { ini:new Date(h.getFullYear(), h.getMonth()-1, 1), fin:new Date(h.getFullYear(), h.getMonth(), 1), nombre:'el mes pasado' };
+    return { ini:new Date(h.getFullYear(), h.getMonth(), 1), fin, nombre:'este mes' };
+  }
+  function datosReporte(){
+    const r = rangoReporte(), dentro = iso=>{ const f = new Date(iso); return f>=r.ini && f<r.fin; };
+    return { r, his:historial.filter(x=>dentro(x.salida)), vts:ventas.filter(x=>dentro(x.fecha)), pms:pagosMens.filter(x=>dentro(x.fecha)),
+      gas:gastos.filter(x=>dentro(x.fecha+'T12:00:00')), tur:turnos.filter(x=>x.fin && dentro(x.fin)),
+      anH:anuladosH.filter(x=>dentro(x.salida)), anV:anuladasV.filter(x=>dentro(x.fecha)), entradas:historial.concat(activos).filter(x=>dentro(x.entrada)) };
+  }
+  function filaBarra(nombre, valor, max, texto, color){
+    return '<div class="rep-row"><span>'+nombre+'</span><div class="barra"><i style="width:'+(max?Math.round(valor*100/max):0)+'%;background:'+(color||'var(--serie-1)')+'"></i></div><span class="mono">'+texto+'</span></div>';
+  }
+  function renderReportes(){
+    if(!esStaff() || vistaActual!=='reportes') return;
+    const d = datosReporte(), r = d.r;
+    const parq = d.his.reduce((s,h)=>s+(h.total||0),0), tienda = d.vts.reduce((s,v)=>s+(v.total||0),0), mens = d.pms.reduce((s,x)=>s+(x.valor||0),0);
+    const gananciaT = d.vts.reduce((s,v)=>s+v.items.reduce((a,i)=>a+(i.precio-(i.costo||0))*i.cantidad,0),0), gas = d.gas.reduce((s,g)=>s+(g.valor||0),0);
+    const cobrados = d.his.filter(h=>h.total>0);
+    // proyección: lo que va del mes, llevado a todos los días del mes
+    let proy = '';
+    if(repPeriodo==='mes'){
+      const hoyD = new Date(), diasMes = new Date(hoyD.getFullYear(), hoyD.getMonth()+1, 0).getDate();
+      proy = 'Si sigue así, cerraría el mes en '+money(Math.round((parq+tienda+mens)/hoyD.getDate()*diasMes));
+    }
+    $('repStats').innerHTML =
+      statHTML('ic-verde', ICONOS.dinero, 'Ingresos de '+r.nombre, money(parq+tienda+mens), proy || ('Parqueo '+money(parq)+' · Tienda '+money(tienda)))+
+      statHTML('ic-azul', TIPOS[3].icon, 'Vehículos atendidos', d.his.length, cobrados.length ? 'Pagan en promedio '+money(Math.round(parq/cobrados.length)) : '')+
+      statHTML('ic-amarillo', ICONOS.bolsa, 'Ganancia de la tienda', money(gananciaT), d.vts.length+' ventas por '+money(tienda))+
+      statHTML((parq+mens+gananciaT-gas)>=0?'ic-verde':'ic-rojo', ICONOS.caja2, 'Ganancia neta', money(parq+mens+gananciaT-gas), 'Gastos '+money(gas));
+
+    // por tipo
+    const porTipo = TIPOS.map(t=>({ t, v:d.his.filter(h=>h.tipo===t.id).reduce((s,h)=>s+(h.total||0),0), n:d.his.filter(h=>h.tipo===t.id).length }));
+    const maxT = Math.max(1, ...porTipo.map(x=>x.v));
+    $('repTipos').innerHTML = porTipo.map(x=>filaBarra(x.t.nombre+' <span class="muted">('+x.n+')</span>', x.v, maxT, money(x.v))).join('')+
+      (mens ? filaBarra('Mensualidades <span class="muted">('+d.pms.length+')</span>', mens, Math.max(maxT,mens), money(mens), 'var(--serie-2)') : '');
+
+    // medios de pago
+    const medios = {};
+    d.his.concat(d.vts, d.pms).forEach(x=>{ if(!(x.total||x.valor)) return; const k = x.metodoPago==='transferencia' ? medioLabel(x.medioTransferencia) : 'Efectivo'; medios[k] = (medios[k]||0) + (x.total||x.valor||0); });
+    const ms = Object.entries(medios).sort((a,b)=>b[1]-a[1]), maxM = Math.max(1, ...ms.map(x=>x[1])), totM = ms.reduce((s,x)=>s+x[1],0);
+    $('repMedios').innerHTML = ms.length ? ms.map(([k,v])=>filaBarra(esc(k), v, maxM, money(v)+' · '+Math.round(v*100/totM)+'%')).join('') : '<div class="empty">Sin pagos en '+r.nombre+'.</div>';
+
+    // mapa de calor de entradas
+    const cel = Array.from({length:7}, ()=>Array(24).fill(0));
+    d.entradas.forEach(x=>{ const f = new Date(x.entrada); cel[(f.getDay()+6)%7][f.getHours()]++; });
+    const maxH = Math.max(1, ...cel.flat()), dias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    let heat = '<div class="heat"><span></span>'+Array.from({length:24},(_,h)=>'<span class="h">'+(h%3===0?h:'')+'</span>').join('');
+    cel.forEach((fila,i)=>{ heat += '<span class="d">'+dias[i]+'</span>'+fila.map((n,h)=>'<span class="c" title="'+dias[i]+' '+h+':00 · '+n+' entrada(s)" style="'+(n?'background:color-mix(in srgb, var(--serie-1) '+Math.round(15+85*n/maxH)+'%, var(--surface))':'')+'"></span>').join(''); });
+    $('repHeat').innerHTML = heat+'</div>';
+    const porHora = Array(24).fill(0); cel.forEach(f=>f.forEach((n,h)=>porHora[h]+=n));
+    const pico = porHora.map((n,h)=>({n,h})).sort((a,b)=>b.n-a.n).slice(0,3).filter(x=>x.n);
+    const porDia = cel.map((f,i)=>({ d:dias[i], n:f.reduce((a,b)=>a+b,0) })).sort((a,b)=>b.n-a.n);
+    $('repPico').textContent = pico.length ? 'Horas pico: '+pico.map(x=>(x.h%12||12)+(x.h<12?' a. m.':' p. m.')).join(', ')+' · Día con más movimiento: '+porDia[0].d+' · Ponga más personal a esas horas.' : '';
+
+    // tiempo promedio por tipo
+    $('repTiempos').innerHTML = TIPOS.map(t=>{ const xs = d.his.filter(h=>h.tipo===t.id && h.minutos!=null); if(!xs.length) return '';
+      return '<div class="list-row"><span>'+t.nombre+' <span class="muted">('+xs.length+')</span></span><span class="mono">'+fmtDuracion(xs.reduce((s,h)=>s+h.minutos,0)/xs.length)+'</span></div>'; }).join('') || '<div class="empty">Sin salidas en '+r.nombre+'.</div>';
+
+    // tienda por hora
+    const th = Array(24).fill(0); d.vts.forEach(v=>{ th[new Date(v.fecha).getHours()] += v.total||0; });
+    const desdeH = Math.max(0, th.findIndex(x=>x>0)), hastaH = 23 - Math.max(0, th.slice().reverse().findIndex(x=>x>0));
+    $('repTiendaHoras').innerHTML = d.vts.length ? barrasSVG(th.slice(desdeH, hastaH+1).map((_,i)=>{ const h = desdeH+i; return (h%12||12)+(h<12?'a':'p'); }), [{ nombre:'Ventas', color:'var(--serie-2)', valores:th.slice(desdeH, hastaH+1) }], corto) : '<div class="empty">Sin ventas en '+r.nombre+'.</div>';
+
+    // turnos
+    const conDif = d.tur.filter(t=>t.diferencia!=null), faltas = conDif.filter(t=>t.diferencia<0), sobras = conDif.filter(t=>t.diferencia>0);
+    const ultimaFalta = turnos.filter(t=>t.fin && t.diferencia<0).sort((a,b)=>b.fin.localeCompare(a.fin))[0];
+    const diasSin = ultimaFalta ? Math.floor((Date.now()-new Date(ultimaFalta.fin))/864e5) : null;
+    const porPersona = {}; faltas.forEach(t=>{ porPersona[t.perfilNombre] = (porPersona[t.perfilNombre]||0) - t.diferencia; });
+    $('repTurnos').innerHTML =
+      '<div class="brow"><span>Turnos cerrados</span><span class="v">'+d.tur.length+'</span></div>'+
+      '<div class="brow"><span>Cuadraron</span><span class="v">'+(conDif.length-faltas.length-sobras.length)+'</span></div>'+
+      '<div class="brow"><span>Con faltante</span><span class="v" style="color:'+(faltas.length?'var(--red)':'inherit')+'">'+faltas.length+' · '+money(faltas.reduce((s,t)=>s-t.diferencia,0))+'</span></div>'+
+      '<div class="brow"><span>Con sobrante</span><span class="v">'+sobras.length+' · '+money(sobras.reduce((s,t)=>s+t.diferencia,0))+'</span></div>'+
+      Object.entries(porPersona).map(([n,v])=>'<div class="brow"><span>&nbsp;&nbsp;Faltó a '+esc(n)+'</span><span class="v">'+money(v)+'</span></div>').join('')+
+      '<div class="brow total"><span>Días sin faltantes</span><span class="v">'+(diasSin==null?'—':diasSin)+'</span></div>';
+
+    // descuentos, anulaciones, clientes
+    const conv = {}; d.his.filter(h=>h.descuentoPct && h.empresaNombre).forEach(h=>{ const des = Math.round((h.base||0)/(1-h.descuentoPct/100)) - (h.base||0); conv[h.empresaNombre] = (conv[h.empresaNombre]||0) + des; });
+    const visitas = {}; d.his.forEach(h=>{ visitas[h.placa] = (visitas[h.placa]||0)+1; });
+    const placas = Object.values(visitas), unaVez = placas.filter(n=>n===1).length;
+    $('repOtros').innerHTML =
+      Object.entries(conv).map(([n,v])=>'<div class="brow"><span>Descuento a '+esc(n)+'</span><span class="v">'+money(v)+'</span></div>').join('')+
+      '<div class="brow"><span>Cobros anulados</span><span class="v">'+d.anH.length+' · '+money(d.anH.reduce((s,x)=>s+(x.total||0),0))+'</span></div>'+
+      '<div class="brow"><span>Ventas anuladas</span><span class="v">'+d.anV.length+' · '+money(d.anV.reduce((s,x)=>s+(x.total||0),0))+'</span></div>'+
+      '<div class="brow"><span>Placas distintas</span><span class="v">'+placas.length+'</span></div>'+
+      '<div class="brow"><span>Vinieron una vez</span><span class="v">'+unaVez+'</span></div>'+
+      '<div class="brow"><span>Volvieron (2 o más veces)</span><span class="v">'+(placas.length-unaVez)+(placas.length?' · '+Math.round((placas.length-unaVez)*100/placas.length)+'%':'')+'</span></div>';
+  }
+  $('repPeriodo').addEventListener('click', e=>{
+    const b = e.target.closest('[data-r]'); if(!b) return;
+    repPeriodo = b.dataset.r; $('repPeriodo').querySelectorAll('button').forEach(x=>x.classList.toggle('active', x===b)); renderReportes();
+  });
+  // Excel para el contador: una hoja por tema
+  $('btnContador').addEventListener('click', async ()=>{
+    const d = datosReporte(), r = d.r;
+    try{
+      await cargarScript(URL_XLSX);
+      const wb = XLSX.utils.book_new(), hoja = (nombre, filas)=> XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(filas), nombre);
+      const f = x=> new Date(x).toLocaleString('es-CO');
+      const parq = d.his.reduce((s,h)=>s+(h.total||0),0), tienda = d.vts.reduce((s,v)=>s+(v.total||0),0), mens = d.pms.reduce((s,x)=>s+(x.valor||0),0), gas = d.gas.reduce((s,g)=>s+(g.valor||0),0);
+      const costoV = d.vts.reduce((s,v)=>s+v.items.reduce((a,i)=>a+(i.costo||0)*i.cantidad,0),0);
+      hoja('Resumen', [[cfg.brand], ['NIT', cfg.facturacion.nit||''], ['Periodo', r.ini.toLocaleDateString('es-CO')+' a '+new Date(r.fin-1).toLocaleDateString('es-CO')], [],
+        ['Concepto','Valor'], ['Parqueo', parq], ['Mensualidades', mens], ['Ventas tienda', tienda], ['Costo de lo vendido en tienda', -costoV], ['Gastos', -gas], ['Resultado', parq+mens+tienda-costoV-gas]]);
+      hoja('Parqueo', [['Comprobante','Fecha salida','Placa','Vehículo','Minutos','Subtotal','IVA','Total','Pago','Medio','Convenio','Atendió']].concat(
+        d.his.map(h=>[h.numeroFactura||'', f(h.salida), h.placa, nombreFor(h.tipo), h.minutos||0, h.subtotal!=null?h.subtotal:h.total, h.iva||0, h.total||0, h.metodoPago||'', medioLabel(h.medioTransferencia)||'', h.empresaNombre||'', h.operador||''])));
+      hoja('Tienda', [['Venta','Fecha','Producto','Cantidad','Precio','Costo','Total','Pago','Atendió']].concat(
+        d.vts.flatMap(v=>v.items.map(i=>[v.numero, f(v.fecha), i.nombre, i.cantidad, i.precio, i.costo||0, i.precio*i.cantidad, v.metodoPago||'', v.operador||'']))));
+      hoja('Mensualidades', [['Comprobante','Fecha','Placa','Cliente','Periodo','Desde','Hasta','Valor','Pago']].concat(
+        d.pms.map(x=>[x.numeroFactura||'', f(x.fecha), x.placa, x.cliente||'', x.periodicidad, x.desde, x.hasta, x.valor, x.metodoPago||''])));
+      hoja('Gastos', [['Fecha','Concepto','Tipo','Valor','Registró']].concat(d.gas.map(g=>[g.fecha, g.concepto, g.categoria, g.valor, g.operador||''])));
+      hoja('Anulados', [['Tipo','Número','Fecha','Valor','Motivo','Anuló']].concat(d.anH.map(x=>['Cobro', x.numeroFactura||'', f(x.salida), x.total, x.motivoAnulacion||'', x.anuladoPor||'']), d.anV.map(x=>['Venta', x.numero, f(x.fecha), x.total, x.motivoAnulacion||'', x.anuladoPor||''])));
+      XLSX.writeFile(wb, 'contador-'+cfg.brand.replace(/\W+/g,'-').toLowerCase()+'-'+aLocal(r.ini).slice(0,7)+'.xlsx');
+    }catch(e){ console.error(e); showToast('No se pudo generar el Excel.'); }
+  });
 
   /* ================= BITÁCORA ================= */
   function bitacora(accion, detalle){

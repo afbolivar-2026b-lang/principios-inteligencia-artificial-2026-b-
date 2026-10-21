@@ -143,7 +143,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 115. ✅ 📴 Etiquetas de precio para imprimir.
 116. ✅ 📴 Importar productos desde Excel.
 117. 📴 Impuesto al consumo o IVA por producto.
-118. 📴 Ventas por hora del día.
+118. ✅ 📴 Ventas por hora del día.
 119. ✅ 📴 Gastos menores del negocio (aseo, papelería, servicios públicos).
 120. ✅ 📴 Ganancia neta: ingresos menos costos y gastos.
 
@@ -177,25 +177,25 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 ## G. Reportes y estadísticas (146–165)
 146b. 📴 ✅ **Panel (dashboard)** con íconos redondos, mapa del parqueadero, ingresos de 7 días, carros por hora, inventario por acabarse, más vendido y mensualidades por vencer.
 146. ✅ 📴 Gráfico de ocupación por hora (cuándo se llena).
-147. 📴 Mapa de calor por día de la semana y hora.
-148. 📴 Tiempo promedio de permanencia por tipo de vehículo.
-149. 📴 Ingresos por tipo de vehículo en gráfico.
+147. ✅ 📴 Mapa de calor por día de la semana y hora.
+148. ✅ 📴 Tiempo promedio de permanencia por tipo de vehículo.
+149. ✅ 📴 Ingresos por tipo de vehículo en gráfico.
 150. ✅ 📴 Comparar este mes con el mes anterior.
 151. 📴 Comparar este año con el año anterior.
-152. 📴 Proyección de ingresos del mes.
+152. ✅ 📴 Proyección de ingresos del mes.
 153. ✅ 📴 Rotación de cupos (cuántas veces se usa cada puesto al día).
-154. 📴 Horas pico para planear el personal.
-155. 📴 Reporte para el contador en un Excel organizado.
+154. ✅ 📴 Horas pico para planear el personal.
+155. ✅ 📴 Reporte para el contador en un Excel organizado.
 156. ✅ 🌐 Reporte diario enviado solo por WhatsApp o correo al dueño.
 157. 📴 Panel de TV para la oficina con los datos en vivo.
-158. 📴 Reporte de descuentos y convenios entregados.
-159. 📴 Reporte de anulaciones.
-160. 📴 Reporte de clientes nuevos y clientes que regresan.
-161. 📴 Ingresos por medio de pago en gráfico.
+158. ✅ 📴 Reporte de descuentos y convenios entregados.
+159. ✅ 📴 Reporte de anulaciones.
+160. ✅ 📴 Reporte de clientes nuevos y clientes que regresan.
+161. ✅ 📴 Ingresos por medio de pago en gráfico.
 162. 📴 Reporte personalizado eligiendo columnas y fechas.
 163. 📴 Guardar filtros favoritos del historial.
-164. 📴 Reporte de turnos con sobrantes y faltantes.
-165. 📴 Indicador de "días sin faltantes".
+164. ✅ 📴 Reporte de turnos con sobrantes y faltantes.
+165. ✅ 📴 Indicador de "días sin faltantes".
 
 ## H. Experiencia del cliente y del público (166–180)
 166. ✅ 📴 Pantalla pública de "cupos disponibles" para la entrada.
