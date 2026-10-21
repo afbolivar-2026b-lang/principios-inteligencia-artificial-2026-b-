@@ -1,0 +1,91 @@
+rules_version = '2';
+// Reglas de seguridad del parqueadero.
+// Pegar en: Firebase Console › Firestore Database › Reglas › Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function tienePerfil() { return signedIn() && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)); }
+    function perfil() { return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data; }
+    function activo() { return tienePerfil() && perfil().activo == true; }
+    function esAdmin() { return activo() && perfil().rol == 'admin'; }
+    function esStaff() { return activo() && perfil().rol in ['admin', 'secretaria']; }
+    function hayAdmin() { return exists(/databases/$(database)/documents/sistema/setup); }
+
+    // Solo dice si ya se creó el primer administrador (no guarda nada privado).
+    match /sistema/setup {
+      allow read: if true;
+      allow create: if signedIn() && !hayAdmin()
+        && getAfter(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == 'admin';
+      allow update, delete: if false;
+    }
+
+    match /usuarios/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || esAdmin());
+      // El primer administrador se crea a sí mismo una sola vez; después solo el admin crea usuarios.
+      allow create: if esAdmin()
+        || (signedIn() && request.auth.uid == uid && !hayAdmin()
+            && request.resource.data.rol == 'admin'
+            && existsAfter(/databases/$(database)/documents/sistema/setup));
+      allow update: if esAdmin();
+      allow delete: if esAdmin() && request.auth.uid != uid;
+    }
+
+    match /config/{doc} {
+      allow read: if activo();
+      allow write: if esAdmin();
+    }
+
+    match /contadores/{doc} {
+      allow read, write: if activo();
+    }
+
+    match /activos/{id} {
+      allow read, create, update, delete: if activo();
+    }
+
+    match /historial/{id} {
+      allow read, create: if activo();
+      allow update: if esStaff();
+      allow delete: if esAdmin();
+    }
+
+    match /mensualidades/{id} {
+      allow read: if activo();
+      allow write: if esStaff();
+    }
+
+    match /clientes/{placa} {
+      allow read: if esStaff();
+      allow create, update: if activo();
+      allow delete: if esStaff();
+    }
+
+    match /turnos/{id} {
+      allow read: if activo();
+      allow create: if activo() && request.resource.data.perfilId == request.auth.uid;
+      allow update: if esStaff() || (activo() && resource.data.perfilId == request.auth.uid);
+      allow delete: if esAdmin();
+    }
+
+    match /productos/{id} {
+      allow read: if activo();
+      allow create, delete: if esStaff();
+      // Los trabajadores solo pueden descontar stock al vender (no cambiar precios ni sumar).
+      allow update: if esStaff()
+        || (activo()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
+            && request.resource.data.stock < resource.data.stock);
+    }
+
+    match /ventas/{id} {
+      allow read, create: if activo();
+      allow update, delete: if esAdmin();
+    }
+
+    // Datos de la versión anterior: solo el administrador (para la migración).
+    match /parqueadero/{doc} {
+      allow read, write: if esAdmin();
+    }
+  }
+}
