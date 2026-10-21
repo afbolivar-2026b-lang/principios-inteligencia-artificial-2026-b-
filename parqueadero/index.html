@@ -893,6 +893,7 @@
           <div class="field"><label for="tbOper">Trabajador</label><select class="select" id="tbOper"><option value="">Todos</option></select></div>
           <div class="field"><label for="tbTipo">Vehículo</label><select class="select" id="tbTipo"><option value="">Todos</option></select></div>
           <span class="hint" id="tbEstado" style="margin-left:auto;"></span>
+          <div class="actions" style="margin:0;"><button class="btn btn-sm" id="btnTbExcel" title="Cobros, ventas y gastos del año elegido, listos para pegar en el tablero de Excel">Datos para el Excel</button><a class="btn btn-sm btn-ghost" href="tablero-parqueadero.xlsx" download>Plantilla de Excel</a></div>
         </div>
         <div class="tb-kpis" id="tbKpis"></div>
         <div class="tb-grid" id="tbGrid"></div>
@@ -6660,6 +6661,29 @@
     $('tbEstado').textContent = (tb.mes!=null ? MESES[tb.mes]+' de ' : 'Año ')+tb.anio+(tb.oper ? ' · '+tb.oper : '')+(tb.tipo ? ' · '+nombreFor(tb.tipo) : '')+' · '+his.length+' cobros, '+vts.length+' ventas';
   }
   tb.tablas = {};
+  // datos del año con las mismas columnas de la plantilla tablero-parqueadero.xlsx
+  $('btnTbExcel').addEventListener('click', async ()=>{
+    let d; try{ d = await datosAnio(tb.anio); }catch(e){ showToast('No se pudieron cargar los datos. Revise el internet.'); return; }
+    try{ await cargarScript(URL_XLSX); }catch(e){ showToast('No se pudo preparar el Excel. Revise el internet.'); return; }
+    const PAGO = { efectivo:'Efectivo', transferencia:'Transferencia', mixto:'Dividido', fiado:'Fiado', monedero:'Monedero' };
+    const hm = iso=>{ const f = new Date(iso); return String(f.getHours()).padStart(2,'0')+':'+String(f.getMinutes()).padStart(2,'0'); };
+    const cobros = [['Fecha y hora de salida','Hora de entrada','Placa','Vehículo','Minutos','Total ($)','Pago','Atendió','Modalidad']].concat(
+      d.his.slice().sort((a,b)=>a.salida.localeCompare(b.salida)).map(h=>[new Date(h.salida), hm(h.entrada), h.placa, nombreFor(h.tipo), h.minutos||0, h.total||0, PAGO[h.metodoPago]||'Efectivo', h.operador||'',
+        esSubModo(h.modo) ? 'Mensualidad' : h.empresaNombre ? 'Convenio' : 'Por tiempo']));
+    const cats = new Set();
+    const ventasF = [['Fecha y hora','Producto','Categoría','Cantidad','Precio ($)','Costo unitario ($)','Pago','Atendió']];
+    d.vts.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).forEach(v=>(v.items||[]).forEach(i=>{
+      const pr = productos.find(p=>p.id===i.productoId), cat = v.tipo==='recarga' ? 'Recargas monedero' : v.tipo==='abono' ? 'Abonos de reservas' : (pr && pr.categoria) || 'Otros'; cats.add(cat);
+      ventasF.push([new Date(v.fecha), i.nombre, cat, i.cantidad||0, i.precio||0, i.costo||0, PAGO[v.metodoPago]||'Efectivo', v.operador||'']); }));
+    const gastosF = [['Fecha','Concepto','Valor ($)']].concat(d.gas.map(g=>[new Date(g.fecha+'T12:00:00'), g.concepto||g.categoria||'Gasto', g.valor||0]));
+    const opers = [...new Set(d.his.map(h=>h.operador).concat(d.vts.map(v=>v.operador)).filter(Boolean))].sort();
+    const listas = [['Trabajadores (péguelos en Listas!D3)','Categorías (péguelas en Listas!F2)']];
+    const cl = [...cats].sort(); for(let i=0;i<Math.max(opers.length, cl.length);i++) listas.push([opers[i]||'', cl[i]||'']);
+    const wb = XLSX.utils.book_new(), hoja = (n, f)=>{ const w = XLSX.utils.aoa_to_sheet(f, { cellDates:true, dateNF:'dd/mm/yyyy hh:mm' }); XLSX.utils.book_append_sheet(wb, w, n); };
+    hoja('Cobros', cobros); hoja('Ventas', ventasF); hoja('Gastos', gastosF); hoja('Listas', listas);
+    XLSX.writeFile(wb, 'datos-tablero-'+tb.anio+'.xlsx', { cellDates:true });
+    showToast('Listo. Pegue cada hoja en la plantilla del tablero (las instrucciones están en la hoja "Cómo usarlo").');
+  });
   $('tbAnio').addEventListener('change', ()=>{ tb.anio = +$('tbAnio').value; renderTablero(); });
   $('tbOper').addEventListener('change', ()=>{ tb.oper = $('tbOper').value; renderTablero(); });
   $('tbTipo').addEventListener('change', ()=>{ tb.tipo = $('tbTipo').value; renderTablero(); });
