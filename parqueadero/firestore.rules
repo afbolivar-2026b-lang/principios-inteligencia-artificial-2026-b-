@@ -10,6 +10,9 @@ service cloud.firestore {
     function activo() { return tienePerfil() && perfil().activo == true; }
     function esAdmin() { return activo() && perfil().rol == 'admin'; }
     function esStaff() { return activo() && perfil().rol in ['admin', 'secretaria']; }
+    // El supervisor puede ver lo mismo que la secretaria, pero no escribir nada.
+    function escribe() { return activo() && perfil().rol != 'supervisor'; }
+    function puedeVer() { return activo() && perfil().rol in ['admin', 'secretaria', 'supervisor']; }
     function hayAdmin() { return exists(/databases/$(database)/documents/sistema/setup); }
 
     // Solo dice si ya se creó el primer administrador (no guarda nada privado).
@@ -37,15 +40,18 @@ service cloud.firestore {
     }
 
     match /contadores/{doc} {
-      allow read, write: if activo();
+      allow read: if activo();
+      allow write: if escribe();
     }
 
     match /activos/{id} {
-      allow read, create, update, delete: if activo();
+      allow read: if activo();
+      allow create, update, delete: if escribe();
     }
 
     match /historial/{id} {
-      allow read, create: if activo();
+      allow read: if activo();
+      allow create: if escribe();
       allow update: if esStaff();
       allow delete: if esAdmin();
     }
@@ -56,15 +62,15 @@ service cloud.firestore {
     }
 
     match /clientes/{placa} {
-      allow read: if esStaff();
-      allow create, update: if activo();
+      allow read: if puedeVer();
+      allow create, update: if escribe();
       allow delete: if esStaff();
     }
 
     match /turnos/{id} {
       allow read: if activo();
-      allow create: if activo() && request.resource.data.perfilId == request.auth.uid;
-      allow update: if esStaff() || (activo() && resource.data.perfilId == request.auth.uid);
+      allow create: if escribe() && request.resource.data.perfilId == request.auth.uid;
+      allow update: if esStaff() || (escribe() && resource.data.perfilId == request.auth.uid);
       allow delete: if esAdmin();
     }
 
@@ -73,33 +79,36 @@ service cloud.firestore {
       allow create, delete: if esStaff();
       // Los trabajadores solo pueden descontar stock al vender (no cambiar precios ni sumar).
       allow update: if esStaff()
-        || (activo()
+        || (escribe()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock'])
             && request.resource.data.stock < resource.data.stock);
     }
 
     match /ventas/{id} {
-      allow read, create: if activo();
+      allow read: if activo();
+      allow create: if escribe();
       allow update, delete: if esAdmin();
     }
 
     // Pagos de mensualidades y quincenas (se registran al renovar).
     match /pagosMensualidad/{id} {
-      allow read, create: if esStaff();
+      allow read: if puedeVer();
+      allow create: if esStaff();
       allow update, delete: if esAdmin();
     }
 
     // Gastos del negocio (luz, arriendo, aseo...). Solo administrador y secretaria.
     match /gastos/{id} {
-      allow read, create: if esStaff();
+      allow read: if puedeVer();
+      allow create: if esStaff();
       allow update: if false;
       allow delete: if esAdmin();
     }
 
     // Fiados: cada cargo (cuando se fía) y cada abono. No se editan.
     match /fiados/{id} {
-      allow read: if esStaff();
-      allow create: if activo() && request.resource.data.uid == request.auth.uid;
+      allow read: if puedeVer();
+      allow create: if escribe() && request.resource.data.uid == request.auth.uid;
       allow update: if false;
       allow delete: if esAdmin();
     }
@@ -107,7 +116,7 @@ service cloud.firestore {
     // Novedades: choques, objetos perdidos, quejas y notas del equipo.
     match /novedades/{id} {
       allow read: if activo();
-      allow create: if activo() && request.resource.data.uid == request.auth.uid;
+      allow create: if escribe() && request.resource.data.uid == request.auth.uid;
       allow update: if esStaff();
       allow delete: if esAdmin();
     }
@@ -115,21 +124,22 @@ service cloud.firestore {
     // Lecturas del celular que hace de lector por WiFi. Se borran al recibirlas.
     match /lecturas/{id} {
       allow read: if activo();
-      allow create: if activo() && request.resource.data.uid == request.auth.uid;
+      allow create: if escribe() && request.resource.data.uid == request.auth.uid;
       allow update: if false;
-      allow delete: if activo();
+      allow delete: if escribe();
     }
 
     // Reservas con abono: cualquiera del equipo las crea; solo el personal las borra.
     match /reservas/{id} {
-      allow read, create, update: if activo();
+      allow read: if activo();
+      allow create, update: if escribe();
       allow delete: if esStaff();
     }
 
     // Quién hizo cada cambio delicado. Nadie la puede editar ni borrar.
     match /bitacora/{id} {
       allow read: if esAdmin();
-      allow create: if activo() && request.resource.data.uid == request.auth.uid;
+      allow create: if escribe() && request.resource.data.uid == request.auth.uid;
       allow update, delete: if false;
     }
 

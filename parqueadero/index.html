@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://www.gstatic.com; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https: wss://*.firebaseio.com; frame-src https://*.firebaseapp.com; object-src 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Control de Parqueadero</title>
 <meta name="theme-color" content="#1c1b17">
@@ -457,9 +457,15 @@
   .pantalla.tv .tv-mov b{background:#f2c200;color:#141413;padding:0 8px;border-radius:4px;font-family:var(--mono);}
   .pantalla.tv .tv-barra{display:flex;align-items:center;gap:12px;font-size:22px;margin:10px 0;} .pantalla.tv .tv-barra .b{flex:1;height:16px;background:#2c2b27;border-radius:8px;overflow:hidden;} .pantalla.tv .tv-barra .b i{display:block;height:100%;background:#f2c200;}
   @media (max-width:900px){ .pantalla.tv .tv-stats{grid-template-columns:1fr 1fr;} .pantalla.tv .tv-bajo{grid-template-columns:1fr;} .pantalla.tv .tv-stat .n{font-size:44px;} }
+  .ocr-cam{position:relative;background:#141413;border-radius:10px;overflow:hidden;aspect-ratio:4/3;} .ocr-cam video{width:100%;height:100%;object-fit:cover;display:block;}
+  .ocr-marco{position:absolute;left:12%;right:12%;top:34%;bottom:34%;border:3px solid #f2c200;border-radius:8px;box-shadow:0 0 0 999px rgba(0,0,0,.35);}
+  :root.supervisor #view-parqueo .card:first-child .btn-primary{opacity:.45;}
   .t-canales{display:flex;justify-content:center;gap:14px;margin-top:8px;} .t-canales div{text-align:center;font-size:9px;text-transform:uppercase;} .t-canales svg{width:72px;height:72px;display:block;margin:0 auto 2px;}
   .qr-pago{display:flex;gap:12px;align-items:center;margin-top:8px;} .qr-pago img{width:120px;height:120px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px;}
   .qr-pago .qr-monto{font:700 30px/1.1 var(--display);}
+  .anios{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;height:150px;align-items:end;} .anio-col{display:flex;flex-direction:column;align-items:center;height:100%;font-size:11px;color:var(--muted);}
+  .anio-col .barras{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:2px;} .anio-col i{display:block;width:40%;border-radius:3px 3px 0 0;min-height:1px;}
+  .b1{background:var(--serie-2);} .b2{background:var(--serie-1);} .leyenda{display:flex;gap:14px;font-size:12px;margin-top:6px;} .leyenda i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;}
   .rep-cols{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 12px;font-size:13.5px;}
   .tabla-mini{width:100%;border-collapse:collapse;font-size:13px;} .tabla-mini th,.tabla-mini td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;} .tabla-mini th{font-weight:600;color:var(--muted);}
   .tabla-wrap{overflow-x:auto;max-height:420px;}
@@ -664,6 +670,8 @@
                 <label for="placaInput">Placa</label>
                 <span class="plate-wrap"><input id="placaInput" class="plate-input" placeholder="ABC123" maxlength="10" spellcheck="false" autocomplete="off"></span>
               </div>
+              <button class="btn" id="btnLeerPlaca" type="button" title="Leer la placa con la cámara">Leer placa</button>
+              <button class="btn" id="btnTalanquera" type="button" title="Abrir la talanquera" hidden>Abrir barrera</button>
               <button class="btn" id="btnDanos" type="button" title="Marcar golpes o rayones">Daños <span class="chip chip-red" id="danosCnt" hidden>0</span></button>
               <label class="btn foto-btn" title="Foto opcional del vehículo"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>Foto<input type="file" id="fotoInput" accept="image/*" capture="environment" multiple></label>
               <img id="fotoPreview" class="foto-preview" alt="" hidden>
@@ -847,6 +855,10 @@
           <div class="card"><h2 class="card-title">Descuentos, anulaciones y clientes</h2><div id="repOtros"></div></div>
         </div>
         <div class="card" style="margin-top:16px;">
+          <h2 class="card-title">Este año contra el año pasado<span class="sp"></span><button class="btn btn-sm" id="btnCompararAnio">Comparar</button></h2>
+          <div id="repAnios"><p class="muted" style="margin:0;font-size:13px;">Trae los cobros y ventas de los dos años y los compara mes por mes. Puede tardar unos segundos.</p></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
           <h2 class="card-title">Reporte a la medida</h2>
           <div class="row" style="flex-wrap:wrap;gap:10px;align-items:flex-end;">
             <div class="field"><label for="rpDe">Qué</label><select class="select" id="rpDe"><option value="parqueo">Cobros del parqueo</option><option value="tienda">Ventas de la tienda</option></select></div>
@@ -890,7 +902,9 @@
             <input type="text" class="input upper" id="histBuscar" placeholder="Buscar placa, número o producto...">
             <input type="month" class="input" id="histMes" style="flex:0 0 auto;min-width:150px;">
             <button class="btn btn-sm" id="btnHistTodo">Ver todo</button>
+            <button class="btn btn-ghost btn-sm" id="btnGuardarFiltro" title="Guardar esta búsqueda para usarla con un toque">☆ Guardar filtro</button>
           </div>
+          <div class="chips" id="filtrosFav" style="margin-bottom:8px;"></div>
           <div class="summary" id="histResumen"></div>
           <div class="actions">
             <button class="btn btn-sm" id="btnHistExcel">Exportar a Excel</button>
@@ -1148,6 +1162,30 @@
           </div>
 
           <div class="card span2">
+            <h2 class="card-title">Talanquera (barrera)</h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;">Para una barrera manejada con un relé USB (tipo LCUS-1 o CH340). Se configura en cada equipo que tenga el relé conectado. Funciona en Chrome o Edge de computador.</p>
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <button class="btn" id="btnTalConectar">Conectar relé USB</button>
+              <div class="field"><label for="talAbrir">Comando abrir (hex)</label><input class="input mono" id="talAbrir" style="width:150px;" value="A0 01 01 A2"></div>
+              <div class="field"><label for="talCerrar">Comando soltar (hex)</label><input class="input mono" id="talCerrar" style="width:150px;" value="A0 01 00 A1"></div>
+              <div class="field"><label for="talSeg">Segundos</label><input class="input mono" id="talSeg" type="number" min="1" max="30" style="width:80px;" value="2"></div>
+              <button class="btn btn-ghost" id="btnTalProbar">Probar</button>
+            </div>
+            <label class="switch" style="margin-top:8px;"><input type="checkbox" id="talEntrada"> Abrir sola al registrar una entrada</label>
+            <label class="switch" style="margin-left:16px;"><input type="checkbox" id="talSalida"> Abrir sola al cobrar una salida</label>
+            <div class="hint" id="talEstado"></div>
+          </div>
+
+          <div class="card span2">
+            <h2 class="card-title">Conectar con otros sistemas (webhook)</h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;">Cada entrada, salida y venta se manda en formato JSON a esta dirección (por ejemplo Zapier, Make o su propio servidor). Solo direcciones https.</p>
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="field grow"><label for="cfgWebhook">Dirección del webhook</label><input class="input mono" id="cfgWebhook" maxlength="300" placeholder="https://hooks.zapier.com/…"></div>
+              <button class="btn btn-ghost" id="btnWebhookProbar">Enviar prueba</button>
+            </div>
+          </div>
+
+          <div class="card span2">
             <h2 class="card-title">Reseñas y WhatsApp del negocio</h2>
             <p class="muted" style="margin:0 0 10px;font-size:13px;">Salen como código QR al final de cada comprobante y en la encuesta de WhatsApp.</p>
             <div class="row" style="gap:10px;flex-wrap:wrap;">
@@ -1178,7 +1216,7 @@
               <div class="field grow"><label for="usrNombre">Nombre</label><input class="input" id="usrNombre" placeholder="Nombre"></div>
               <div class="field grow"><label for="usrCorreo">Correo</label><input class="input" type="email" id="usrCorreo" placeholder="correo@ejemplo.com" autocomplete="off"></div>
               <div class="field" style="width:170px;"><label for="usrClave">Contraseña (mín. 8)</label><input class="input" type="password" id="usrClave" autocomplete="new-password"></div>
-              <div class="field" style="width:140px;"><label for="usrRol">Rol</label><select class="select" id="usrRol"><option value="trabajador">Trabajador</option><option value="secretaria">Secretaria</option><option value="admin">Administrador</option></select></div>
+              <div class="field" style="width:140px;"><label for="usrRol">Rol</label><select class="select" id="usrRol"><option value="trabajador">Trabajador</option><option value="secretaria">Secretaria</option><option value="supervisor">Supervisor (solo mira)</option><option value="admin">Administrador</option></select></div>
               <button class="btn btn-primary" id="btnAddUsuario">Crear usuario</button>
             </div>
             <div id="usuariosLista"></div>
@@ -1474,6 +1512,25 @@
 </div>
 
 <!-- ===== MODAL DAÑOS ===== -->
+<div class="modal" id="ocrModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Leer la placa</h3><button class="modal-close" data-close="ocrModal">✕</button></div>
+    <div class="ocr-cam"><video id="ocrVideo" playsinline muted></video><div class="ocr-marco"></div></div>
+    <input type="file" id="ocrFoto" accept="image/*" capture="environment" hidden>
+    <p class="hint" id="ocrEstado">Ponga la placa dentro del recuadro y toque Leer. La primera vez descarga el lector (unos 5 MB); después funciona sin internet.</p>
+    <div class="row" style="gap:8px;"><button class="btn" id="btnOcrFoto">Usar una foto</button><span style="flex:1;"></span><button class="btn btn-primary" id="btnOcrLeer">Leer</button></div>
+  </div>
+</div>
+
+<div class="modal" id="tagModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Tarjeta RFID</h3><button class="modal-close" data-close="tagModal">✕</button></div>
+    <p id="tagTexto">Pase la tarjeta o el TAG por el lector ahora.</p>
+    <p class="hint">Los lectores RFID por USB escriben el número como un teclado; la app lo reconoce solo. Después, al pasar la tarjeta, la app registra la entrada o abre la salida de esa placa.</p>
+    <div class="row" style="gap:8px;"><input class="input mono" id="tagManual" placeholder="O escriba el número"><button class="btn" id="btnTagManual">Guardar</button><button class="btn btn-ghost" id="btnTagQuitar">Quitar tarjeta</button></div>
+  </div>
+</div>
+
 <div class="modal" id="reservasModal">
   <div class="modal-box wide">
     <div class="modal-head"><h3>Reservas</h3><button class="modal-close" data-close="reservasModal">✕</button></div>
@@ -1699,8 +1756,8 @@
     ajustes:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
   };
 
-  const TODOS = ['admin','secretaria','trabajador'];
-  const STAFF = ['admin','secretaria'];
+  const TODOS = ['admin','secretaria','trabajador','supervisor'];
+  const STAFF = ['admin','secretaria','supervisor'];
   const VISTAS = [
     { id:'panel', nombre:'Panel', roles:STAFF },
     { id:'parqueo', nombre:'Parqueo', roles:TODOS },
@@ -1824,8 +1881,10 @@
   }
   function esSubModo(m){ return m==='mensual' || m==='quincenal'; }
   function esAdmin(){ return perfil && perfil.rol==='admin'; }
-  function esStaff(){ return perfil && (perfil.rol==='admin' || perfil.rol==='secretaria'); }
-  function rolLabel(rol){ return rol==='admin' ? 'Administrador' : rol==='secretaria' ? 'Secretaria' : 'Trabajador'; }
+  // el supervisor ve lo mismo que la secretaria pero no puede cambiar nada (las reglas de Firebase tampoco lo dejan)
+  function esStaff(){ return perfil && (perfil.rol==='admin' || perfil.rol==='secretaria' || perfil.rol==='supervisor'); }
+  function esSupervisor(){ return perfil && perfil.rol==='supervisor'; }
+  function rolLabel(rol){ return rol==='admin' ? 'Administrador' : rol==='secretaria' ? 'Secretaria' : rol==='supervisor' ? 'Supervisor (solo mira)' : 'Trabajador'; }
   function medioLabel(v){ return { nequi:'Nequi', daviplata:'Daviplata', bbva:'BBVA', bancolombia:'Bancolombia', tarjeta:'Tarjeta', transferencia:'Transferencia' }[v] || v || ''; }
   function pagoLabel(r){ return r.metodoPago==='monedero' ? 'Monedero '+(r.monederoPlaca||'') : r.metodoPago==='transferencia' ? 'Transferencia · '+medioLabel(r.medioTransferencia) : r.metodoPago==='fiado' ? 'Fiado · '+(r.deudor||'') :
     r.metodoPago==='mixto' ? 'Efectivo '+money(r.efectivoParte||0)+' + '+medioLabel(r.medioTransferencia) : 'Efectivo'; }
@@ -2216,6 +2275,7 @@
     $('app').hidden = false;
     $('userNombre').textContent = perfil.nombre;
     $('userRol').textContent = rolLabel(perfil.rol);
+    document.documentElement.classList.toggle('supervisor', esSupervisor());
     vistaActual = esStaff() ? 'panel' : 'parqueo';
     stockPrevio = null;
     escuchar();
@@ -2375,7 +2435,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderPermisos, renderQrPago, renderCanales, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderPermisos, renderQrPago, renderCanales, renderWebhook, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -2428,7 +2488,7 @@
   function renderTodo(){
     programar(renderBrand, renderNav, renderTipos, renderTipoSelect, renderActivos, renderKpis, renderTurnoBar, renderPOS, renderCarrito,
       renderVentasHoy, renderInventario, renderCaja, renderHistorial, renderSubs, renderClientes, renderTurnos, renderAlertas,
-      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago, renderCanales, renderPromos, renderDupClientes);
+      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago, renderCanales, renderPromos, renderDupClientes, renderWebhook);
   }
 
   function renderBrand(){
@@ -2546,6 +2606,7 @@
   let ingresando = false;
   async function registrarIngreso(){
     if(ingresando) return;
+    if(esSupervisor()){ showToast('Modo supervisor: solo puede mirar.'); return; }
     const placa = limpiarPlaca($('placaInput').value);
     if(placa.length<3){ showToast('Escribe una placa válida (mínimo 3 letras o números).'); $('placaInput').focus(); return; }
     if(activos.some(a=>a.placa===placa)){ showToast('Esa placa ya está dentro del parqueadero.'); return; }
@@ -2584,6 +2645,7 @@
       };
 
       db.collection('activos').doc(v.id).set(v).catch(errGuardar);
+      enviarWebhook('entrada', v); if(talanquera.cfg.entrada) abrirTalanquera();
       if(resv){ db.collection('reservas').doc(resv.id).update({ estado:'llegó', llego:v.entrada }).catch(errGuardar); showToast('Llegó con reserva'+(resv.abono?': ya abonó '+money(resv.abono)+', se descuenta a la salida':'')+'.'); }
       $('placaInput').value = ''; $('placaInfo').innerHTML = ''; $('notaInput').value = ''; $('puestoInput').value = '';
       $('conductorNombre').value = ''; $('conductorCedula').value = '';
@@ -3010,6 +3072,7 @@
         r.ventaNumero = venta.numero;
       }
       batch.commit().catch(errGuardar);
+      enviarWebhook('salida', r); if(talanquera.cfg.salida) abrirTalanquera();
       salidaId = null;
       cerrarModal('salidaModal');
       graciasPantallaCliente(r.total);
@@ -3447,6 +3510,7 @@
       if(pago.metodoPago==='monedero') batch.set(db.collection('clientes').doc(pago.monederoPlaca), { saldo: FV.increment(-total) }, { merge:true });
       items.forEach(it=> descontarStock(batch, it));
       batch.commit().catch(errGuardar);
+      enviarWebhook('venta', venta);
       carrito = {};
       pagoPOS.reset();
       graciasPantallaCliente(total);
@@ -3879,7 +3943,7 @@
         '<div class="meta">'+nombreFor(s.tipo)+' · '+esc(s.periodicidad)+(s.cliente?' · '+esc(s.cliente):'')+(s.vencimiento?' · vence '+fmtCorto(new Date(s.vencimiento+'T00:00:00')):'')+
           (s.horario && s.horario!=='completo' ? ' · solo de '+(s.horario==='dia'?'día':'noche') : '')+(s.entradasMes ? ' · '+entradasUsadas(s)+'/'+s.entradasMes+' entradas' : '')+(s.puesto?' · puesto '+esc(s.puesto):'')+(s.firma?' · firmó':'')+'</div>'+
           ((s.placasExtra||[]).length ? '<div class="plates">'+s.placasExtra.map(p=>'<span class="plate-chip" style="padding-right:7px;">'+esc(p)+'</span>').join('')+'</div>' : '')+'</div>'+
-        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-ghost btn-sm" data-congelar="'+esc(s.id)+'">'+(s.congeladaDesde?'Reactivar':'Congelar')+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-carne="'+esc(s.id)+'">Carné</button><button class="btn btn-ghost btn-sm" data-editar-sub="'+esc(s.id)+'">Editar</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
+        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-ghost btn-sm" data-congelar="'+esc(s.id)+'">'+(s.congeladaDesde?'Reactivar':'Congelar')+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-carne="'+esc(s.id)+'">Carné</button><button class="btn btn-ghost btn-sm" data-tag-sub="'+esc(s.id)+'" title="Tarjeta o TAG RFID">'+(s.tag?'Tarjeta ✓':'Tarjeta')+'</button><button class="btn btn-ghost btn-sm" data-editar-sub="'+esc(s.id)+'">Editar</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
     }).join('') : '<div class="empty">No hay abonados con mensualidad o quincena.</div>';
   }
   $('subLista').addEventListener('click', e=>{
@@ -4430,7 +4494,7 @@
       return '<div class="list-row"><div style="min-width:0;"><strong>'+esc(u.nombre)+'</strong>'+(yo?' <span class="chip chip-gray">Tú</span>':'')+(u.activo===false?' <span class="chip chip-red">Desactivado</span>':'')+
         '<div class="meta">'+esc(u.correo)+'</div></div><div class="r">'+
         '<select class="select" style="padding:6px 8px;font-size:12.5px;" data-rol-usr="'+esc(u.id)+'"'+(yo?' disabled':'')+'>'+
-          ['trabajador','secretaria','admin'].map(r=>'<option value="'+r+'"'+(u.rol===r?' selected':'')+'>'+rolLabel(r)+'</option>').join('')+'</select>'+
+          ['trabajador','secretaria','supervisor','admin'].map(r=>'<option value="'+r+'"'+(u.rol===r?' selected':'')+'>'+rolLabel(r)+'</option>').join('')+'</select>'+
         (u.rol==='admin' ? '' : '<span class="meta" title="Horario en que puede entrar (vacío = cualquier hora)">Horario <input class="input mono" style="width:96px;padding:5px 6px;" type="time" data-hdesde="'+esc(u.id)+'" value="'+esc((u.horario||{}).desde||'')+'"> a <input class="input mono" style="width:96px;padding:5px 6px;" type="time" data-hhasta="'+esc(u.id)+'" value="'+esc((u.horario||{}).hasta||'')+'"></span>')+
         '<button class="btn btn-ghost btn-sm" data-reset-usr="'+esc(u.correo)+'">Enviar cambio de contraseña</button>'+
         (yo ? '' : '<button class="btn btn-sm '+(u.activo===false?'':'btn-danger')+'" data-activo-usr="'+esc(u.id)+'">'+(u.activo===false?'Activar':'Desactivar')+'</button>')+
@@ -4997,9 +5061,11 @@
     const codigo = String(bruto||'').trim();
     if(!codigo || !perfil) return;
     const sinGuion = limpiarPlaca(codigo);
-    // carné de abonado: AB:PLACA
-    if(/^AB:/i.test(codigo)){
-      const placa = limpiarPlaca(codigo.slice(3));
+    if(tagEsperando){ guardarTag(tagEsperando, codigo); return; }
+    const conTag = mensualidades.find(m=>m.tag && m.tag===codigo);
+    // carné de abonado (AB:PLACA) o tarjeta RFID registrada
+    if(/^AB:/i.test(codigo) || conTag){
+      const placa = conTag ? conTag.placa : limpiarPlaca(codigo.slice(3));
       const dentro = activos.find(a=>a.placa===placa);
       if(dentro){ irA('parqueo'); abrirSalida(dentro.id); anotarLectura(codigo, via, 'salida de '+placa); return; }
       irA('parqueo'); $('placaInput').value = placa; checkPlaca(); registrarIngreso(); anotarLectura(codigo, via, 'entrada de '+placa); return;
@@ -6032,6 +6098,175 @@
   $('panelMapa').addEventListener('click', e=>{ const b = e.target.closest('[data-spot]'); if(b) abrirSalida(b.dataset.spot); });
   document.addEventListener('click', e=>{ const b = e.target.closest('[data-ir]'); if(b) irA(b.dataset.ir); });
   setInterval(()=>{ if(perfil && vistaActual==='panel') renderPanel(); }, 60000);
+
+  /* ================= SUPERVISOR (solo mira) ================= */
+  const SUP_PERMITIDOS = '.nav-btn,[data-vista],.seg button,[data-recibo],[data-venta],[data-ficha],.modal-close,[data-close],#btnTV,#btnContador,#btnContable,#btnActivosExcel,#btnHistExcel,#btnRpVer,#btnRpExcel,#btnTema,#btnLetra,#btnAyuda,#btnSalir,#btnBloquear,#btnTutorial,[data-tour],#btnCampana,#btnTableta,#btnZurdo,#btnMenu,#btnPantalla,#btnPantallaCliente,#btnTkImprimir,#btnTkPDF,#btnTkIngles,#btnHistTodo,#btnCompararAnio,[data-filtro-fav],#btnGuardarFiltro,[data-salida],[data-abrir-integridad],#btnIntegridad,[data-conflicto]';
+  document.addEventListener('click', e=>{
+    if(!esSupervisor()) return;
+    const b = e.target.closest('button'); if(!b || b.closest(SUP_PERMITIDOS) || b.matches(SUP_PERMITIDOS)) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    showToast('Modo supervisor: puede mirar todo, pero no cambiar nada.');
+  }, true);
+
+  /* ================= COMPARAR CON EL AÑO PASADO ================= */
+  $('btnCompararAnio').addEventListener('click', async ()=>{
+    const y = new Date().getFullYear(), ini = new Date(y-1, 0, 1).toISOString();
+    $('repAnios').innerHTML = '<p class="muted">Cargando…</p>';
+    let h, v;
+    try{ [h, v] = await Promise.all([db.collection('historial').where('salida','>=',ini).get(), db.collection('ventas').where('fecha','>=',ini).get()]); }
+    catch(e){ errEscucha(e); $('repAnios').innerHTML = '<p class="muted">No se pudo cargar. Revise el internet.</p>'; return; }
+    const suma = { [y]:Array(12).fill(0), [y-1]:Array(12).fill(0) };
+    docs(h).filter(x=>!x.anulado).forEach(x=>{ const d = new Date(x.salida); if(suma[d.getFullYear()]) suma[d.getFullYear()][d.getMonth()] += x.total||0; });
+    docs(v).filter(x=>!x.anulado).forEach(x=>{ const d = new Date(x.fecha); if(suma[d.getFullYear()]) suma[d.getFullYear()][d.getMonth()] += x.total||0; });
+    const max = Math.max(1, ...suma[y], ...suma[y-1]), mesHoy = new Date().getMonth();
+    const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const tot = k=> suma[k].slice(0, mesHoy+1).reduce((a,b)=>a+b,0), dif = tot(y-1) ? Math.round((tot(y)-tot(y-1))/tot(y-1)*100) : null;
+    $('repAnios').innerHTML = '<div class="hint" style="margin-bottom:8px;">Enero a '+MES[mesHoy].toLowerCase()+': <strong>'+money(tot(y))+'</strong> este año contra <strong>'+money(tot(y-1))+'</strong> el año pasado'+(dif!=null?' ('+(dif>=0?'+':'')+dif+'%)':'')+'.</div>'+
+      '<div class="anios">'+MES.map((m,i)=>'<div class="anio-col" title="'+m+': '+money(suma[y][i])+' vs '+money(suma[y-1][i])+'"><div class="barras"><i class="b1" style="height:'+Math.round(suma[y-1][i]/max*100)+'%"></i><i class="b2" style="height:'+Math.round(suma[y][i]/max*100)+'%"></i></div><span>'+m+'</span></div>').join('')+'</div>'+
+      '<div class="leyenda"><span><i class="b1"></i>'+(y-1)+'</span><span><i class="b2"></i>'+y+'</span></div>'+
+      '<table class="tabla-mini" style="margin-top:10px;"><tr><th>Mes</th><th>'+(y-1)+'</th><th>'+y+'</th><th>Cambio</th></tr>'+MES.map((m,i)=>{ const a = suma[y-1][i], b = suma[y][i], c = a && i<=mesHoy ? Math.round((b-a)/a*100) : null;
+        return i>mesHoy && !a ? '' : '<tr><td>'+m+'</td><td>'+money(a)+'</td><td>'+(i>mesHoy?'—':money(b))+'</td><td style="color:'+(c==null?'inherit':c>=0?'var(--green)':'var(--red)')+'">'+(c==null?'—':(c>=0?'+':'')+c+'%')+'</td></tr>'; }).join('')+'</table>';
+  });
+
+  /* ================= FILTROS FAVORITOS DEL HISTORIAL ================= */
+  function filtrosFav(){ try{ const l = JSON.parse(localStorage.getItem('filtrosHist')||'[]'); return Array.isArray(l) ? l : []; }catch(e){ return []; } }
+  function renderFiltrosFav(){ $('filtrosFav').innerHTML = filtrosFav().map((f,i)=>'<button class="chip-btn" data-filtro-fav="'+i+'" title="Toque para aplicar; mantenga para borrar">★ '+esc(f.nombre)+'</button>').join(''); }
+  $('btnGuardarFiltro').addEventListener('click', ()=>{
+    const nombre = prompt('Nombre para este filtro:', ($('histBuscar').value.trim() || (histModo==='tienda'?'Tienda':'Parqueo'))+($('histMes').value?' '+$('histMes').value:''));
+    if(!nombre) return;
+    const l = filtrosFav().filter(f=>f.nombre!==nombre.trim()); l.push({ nombre:nombre.trim().slice(0,30), modo:histModo, buscar:$('histBuscar').value, mes:$('histMes').value });
+    try{ localStorage.setItem('filtrosHist', JSON.stringify(l.slice(-12))); }catch(e){}
+    renderFiltrosFav(); showToast('Filtro guardado.');
+  });
+  let favTimer = null;
+  $('filtrosFav').addEventListener('pointerdown', e=>{ const b = e.target.closest('[data-filtro-fav]'); if(!b) return;
+    favTimer = setTimeout(()=>{ favTimer = 'borrado'; const l = filtrosFav(), f = l[+b.dataset.filtroFav]; if(f && confirm('¿Borrar el filtro '+f.nombre+'?')){ l.splice(+b.dataset.filtroFav,1); try{ localStorage.setItem('filtrosHist', JSON.stringify(l)); }catch(err){} renderFiltrosFav(); } }, 700); });
+  $('filtrosFav').addEventListener('click', e=>{
+    const b = e.target.closest('[data-filtro-fav]'); if(!b) return;
+    if(favTimer==='borrado'){ favTimer = null; return; } clearTimeout(favTimer); favTimer = null;
+    const f = filtrosFav()[+b.dataset.filtroFav]; if(!f) return;
+    const seg = $('histSeg').querySelector('[data-h="'+f.modo+'"]'); if(seg && histModo!==f.modo) seg.click();
+    $('histBuscar').value = f.buscar||''; $('histMes').value = f.mes||'';
+    cambiarMesHistorial();
+  });
+  renderFiltrosFav();
+
+  /* ================= TALANQUERA POR RELÉ USB ================= */
+  const talanquera = { puerto:null, cfg:{ entrada:false, salida:false, abrir:'A0 01 01 A2', cerrar:'A0 01 00 A1', seg:2 } };
+  try{ Object.assign(talanquera.cfg, JSON.parse(localStorage.getItem('talanquera')||'{}')); }catch(e){}
+  function guardarTal(){ try{ localStorage.setItem('talanquera', JSON.stringify(talanquera.cfg)); }catch(e){} }
+  function hexBytes(t){ return new Uint8Array(String(t).trim().split(/[\s,]+/).filter(Boolean).map(x=>parseInt(x,16)&255)); }
+  function pintarTal(){
+    $('talAbrir').value = talanquera.cfg.abrir; $('talCerrar').value = talanquera.cfg.cerrar; $('talSeg').value = talanquera.cfg.seg;
+    $('talEntrada').checked = !!talanquera.cfg.entrada; $('talSalida').checked = !!talanquera.cfg.salida;
+    $('btnTalanquera').hidden = !talanquera.puerto;
+    $('talEstado').textContent = talanquera.puerto ? 'Relé conectado en este equipo.' : 'Sin relé conectado en este equipo.';
+  }
+  async function abrirPuertoTal(puerto){ await puerto.open({ baudRate:9600 }); talanquera.puerto = puerto; pintarTal(); }
+  async function escribirTal(bytes){ const w = talanquera.puerto.writable.getWriter(); try{ await w.write(bytes); }finally{ w.releaseLock(); } }
+  async function abrirTalanquera(){
+    if(!talanquera.puerto){ return; }
+    try{ await escribirTal(hexBytes(talanquera.cfg.abrir)); setTimeout(()=>escribirTal(hexBytes(talanquera.cfg.cerrar)).catch(()=>{}), Math.max(1, talanquera.cfg.seg)*1000); showToast('Barrera abierta.'); }
+    catch(e){ console.error(e); showToast('No se pudo abrir la barrera. Revise el cable del relé.'); }
+  }
+  $('btnTalConectar').addEventListener('click', async ()=>{
+    if(!('serial' in navigator)){ $('talEstado').textContent = 'Este navegador no maneja relés USB. Use Chrome o Edge en un computador.'; return; }
+    try{ await abrirPuertoTal(await navigator.serial.requestPort()); showToast('Relé conectado.'); }catch(e){ if(e.name!=='NotFoundError') $('talEstado').textContent = 'No se pudo conectar: '+e.message; }
+  });
+  ['talAbrir','talCerrar','talSeg','talEntrada','talSalida'].forEach(id=>$(id).addEventListener('change', ()=>{
+    Object.assign(talanquera.cfg, { abrir:$('talAbrir').value, cerrar:$('talCerrar').value, seg:Math.min(30, Math.max(1, parseInt($('talSeg').value,10)||2)), entrada:$('talEntrada').checked, salida:$('talSalida').checked });
+    guardarTal(); }));
+  $('btnTalProbar').addEventListener('click', ()=> talanquera.puerto ? abrirTalanquera() : showToast('Primero conecte el relé.'));
+  $('btnTalanquera').addEventListener('click', abrirTalanquera);
+  // el permiso de un puerto ya autorizado se recuerda: se reconecta solo al abrir la app
+  if('serial' in navigator) navigator.serial.getPorts().then(l=>{ if(l.length && (talanquera.cfg.entrada || talanquera.cfg.salida || localStorage.getItem('talanquera'))) abrirPuertoTal(l[0]).catch(()=>{}); }).catch(()=>{});
+  pintarTal();
+
+  /* ================= TARJETAS RFID PARA ABONADOS ================= */
+  let tagEsperando = null;
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-tag-sub]'); if(!b) return;
+    const sub = mensualidades.find(x=>x.id===b.dataset.tagSub); if(!sub) return;
+    tagEsperando = sub.id; $('tagManual').value = sub.tag||'';
+    $('tagTexto').innerHTML = 'Pase ahora la tarjeta de <strong>'+esc(sub.placa)+'</strong> por el lector.'+(sub.tag?' (Tiene la tarjeta '+esc(sub.tag)+')':'');
+    abrirModal('tagModal');
+  });
+  function guardarTag(id, codigo){
+    const otra = mensualidades.find(m=>m.tag===codigo && m.id!==id);
+    if(otra){ showToast('Esa tarjeta ya es de '+otra.placa+'.'); return; }
+    db.collection('mensualidades').doc(id).update({ tag: codigo||null }).catch(errGuardar);
+    tagEsperando = null; cerrarModal('tagModal');
+    showToast(codigo ? 'Tarjeta guardada.' : 'Tarjeta quitada.');
+  }
+  $('btnTagManual').addEventListener('click', ()=>{ const c = $('tagManual').value.trim(); if(tagEsperando && c) guardarTag(tagEsperando, c); });
+  $('btnTagQuitar').addEventListener('click', ()=>{ if(tagEsperando) guardarTag(tagEsperando, ''); });
+  document.addEventListener('click', e=>{ if(e.target.closest('[data-close="tagModal"]')) tagEsperando = null; });
+
+  /* ================= LEER LA PLACA CON LA CÁMARA (OCR) ================= */
+  const URL_TESS = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  let ocrWorker = null, ocrStream = null;
+  async function workerOCR(){
+    if(ocrWorker) return ocrWorker;
+    await cargarScript(URL_TESS);
+    ocrWorker = await Tesseract.createWorker('eng', 1, {
+      workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
+      corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
+      langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng@1.0.0/4.0.0_best_int' });
+    await ocrWorker.setParameters({ tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', tessedit_pageseg_mode:'7' });
+    return ocrWorker;
+  }
+  // placas colombianas: ABC123 (carro) o ABC12D (moto); se corrigen letras y números confundidos
+  function placaDeTexto(t){
+    const lim = String(t||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const aL = { '0':'O','1':'I','2':'Z','5':'S','8':'B','6':'G' }, aN = { 'O':'0','Q':'0','D':'0','I':'1','L':'1','Z':'2','S':'5','B':'8','G':'6','T':'7' };
+    for(let i=0;i+6<=lim.length;i++){
+      const w = lim.slice(i,i+6).split('');
+      const l = w.slice(0,3).map(c=>/[0-9]/.test(c) ? (aL[c]||c) : c).join(''), n = w.slice(3,5).map(c=>/[A-Z]/.test(c) ? (aN[c]||c) : c).join(''), u = w[5];
+      if(/^[A-Z]{3}$/.test(l) && /^[0-9]{2}$/.test(n)){ const u2 = /[A-Z]/.test(u) && !aN[u] ? u : (/[0-9]/.test(u) ? u : aN[u]); if(u2) return l+n+u2; }
+    }
+    return null;
+  }
+  async function leerImagenOCR(fuente){
+    $('ocrEstado').textContent = 'Leyendo…';
+    try{
+      const w = await workerOCR();
+      const c = document.createElement('canvas'), sw = fuente.videoWidth||fuente.naturalWidth||fuente.width, sh = fuente.videoHeight||fuente.naturalHeight||fuente.height;
+      // solo el recuadro del centro (donde va la placa), en gris y con contraste
+      const x0 = fuente.videoWidth ? sw*0.12 : 0, y0 = fuente.videoWidth ? sh*0.34 : 0, cw = fuente.videoWidth ? sw*0.76 : sw, ch = fuente.videoWidth ? sh*0.32 : sh;
+      const k = Math.min(2, 900/cw); c.width = Math.round(cw*k); c.height = Math.round(ch*k);
+      const x = c.getContext('2d'); x.filter = 'grayscale(1) contrast(1.6)'; x.drawImage(fuente, x0, y0, cw, ch, 0, 0, c.width, c.height);
+      const { data } = await w.recognize(c);
+      const placa = placaDeTexto(data.text);
+      if(placa){ $('placaInput').value = placa; checkPlaca(); cerrarOCR(); showToast('Placa leída: '+placa+'. Revísela antes de registrar.'); $('placaInput').focus(); }
+      else $('ocrEstado').textContent = 'No se entendió la placa ("'+(data.text||'').trim().slice(0,20)+'"). Acérquese, evite reflejos e intente otra vez, o escríbala.';
+    }catch(e){ console.error(e); $('ocrEstado').textContent = 'No se pudo cargar el lector de placas. La primera vez necesita internet.'; }
+  }
+  function cerrarOCR(){ cerrarModal('ocrModal'); if(ocrStream){ ocrStream.getTracks().forEach(t=>t.stop()); ocrStream = null; } }
+  $('btnLeerPlaca').addEventListener('click', async ()=>{
+    abrirModal('ocrModal'); $('ocrEstado').textContent = 'Ponga la placa dentro del recuadro y toque Leer.';
+    workerOCR().catch(()=>{});
+    try{ ocrStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment', width:{ ideal:1280 } } }); $('ocrVideo').srcObject = ocrStream; await $('ocrVideo').play(); }
+    catch(e){ $('ocrEstado').textContent = 'No hay cámara disponible. Use "Usar una foto".'; }
+  });
+  $('btnOcrLeer').addEventListener('click', ()=>{ if(ocrStream) leerImagenOCR($('ocrVideo')); else $('ocrFoto').click(); });
+  $('btnOcrFoto').addEventListener('click', ()=> $('ocrFoto').click());
+  $('ocrFoto').addEventListener('change', e=>{ const f = e.target.files[0]; if(!f) return; const img = new Image(); img.onload = ()=>{ leerImagenOCR(img); URL.revokeObjectURL(img.src); }; img.src = URL.createObjectURL(f); e.target.value = ''; });
+  document.addEventListener('click', e=>{ if(e.target.closest('[data-close="ocrModal"]')) cerrarOCR(); });
+
+  /* ================= WEBHOOK ================= */
+  function enviarWebhook(evento, datos){
+    const url = (cfg.webhook||{}).url; if(!url || !/^https:\/\//.test(url)) return;
+    const limpio = Object.assign({}, datos); delete limpio.foto; delete limpio.fotos; delete limpio.firma;
+    // text/plain y no-cors: así el navegador lo manda sin pedir permiso previo al servidor (no se lee la respuesta)
+    fetch(url, { method:'POST', mode:'no-cors', headers:{ 'Content-Type':'text/plain' }, body: JSON.stringify({ evento, parqueadero:cfg.brand, fecha:new Date().toISOString(), datos:limpio }) }).catch(()=>{});
+  }
+  $('cfgWebhook').addEventListener('change', ()=>{
+    const url = $('cfgWebhook').value.trim();
+    if(url && !/^https:\/\//.test(url)){ showToast('La dirección debe empezar por https://'); return; }
+    guardarConfig({ webhook:{ url } }, url ? 'Webhook guardado.' : 'Webhook quitado.');
+  });
+  $('btnWebhookProbar').addEventListener('click', ()=>{ if(!(cfg.webhook||{}).url){ showToast('Primero escriba la dirección.'); return; } enviarWebhook('prueba', { mensaje:'Hola desde '+cfg.brand }); showToast('Prueba enviada. Revísela en el otro sistema.'); });
+  function renderWebhook(){ if(esAdmin() && !enfocadoDentro('cfgWebhook')) $('cfgWebhook').value = (cfg.webhook||{}).url||''; }
 
   /* ================= RESERVAS ================= */
   let reservas = [];

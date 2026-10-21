@@ -44,7 +44,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 
 ## B. Entrada y salida de vehículos (26–45)
 26. ✅ 📴 ⚡ Reconocer el formato de placa colombiana (carro ABC123, moto ABC12D) y avisar si está mal escrita.
-27. 🌐 Leer la placa con la cámara (OCR con Tesseract.js; también puede funcionar sin internet si se guarda el modelo en el equipo).
+27. ✅ 🌐 Leer la placa con la cámara (OCR con Tesseract.js; también puede funcionar sin internet si se guarda el modelo en el equipo).
 28. ✅ 📴 Escanear el código de barras del ticket con la cámara del celular para dar la salida.
 29. ✅ 📴 ⚡ Botón "Salida rápida" para cobrar en efectivo justo y cerrar con un clic.
 30. ✅ 📴 Asignar puesto o celda (A-12) y verlo en el ticket.
@@ -169,7 +169,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 139. 🌐 Verificación en dos pasos para el administrador.
 140. ✅ 📴 Bloquear la pantalla con PIN sin cerrar la sesión.
 141. ✅ 📴 Modo cajero de solo cobro, con la pantalla simplificada.
-142. 📴 Modo supervisor de solo lectura.
+142. ✅ 📴 Modo supervisor de solo lectura.
 143. 🌐 Ver varios parqueaderos (sedes) desde una sola cuenta.
 144. 🌐 Comparar las sedes entre sí.
 145. 🌐 Pasar abonados de una sede a otra.
@@ -181,7 +181,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 148. ✅ 📴 Tiempo promedio de permanencia por tipo de vehículo.
 149. ✅ 📴 Ingresos por tipo de vehículo en gráfico.
 150. ✅ 📴 Comparar este mes con el mes anterior.
-151. 📴 Comparar este año con el año anterior.
+151. ✅ 📴 Comparar este año con el año anterior.
 152. ✅ 📴 Proyección de ingresos del mes.
 153. ✅ 📴 Rotación de cupos (cuántas veces se usa cada puesto al día).
 154. ✅ 📴 Horas pico para planear el personal.
@@ -193,7 +193,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 160. ✅ 📴 Reporte de clientes nuevos y clientes que regresan.
 161. ✅ 📴 Ingresos por medio de pago en gráfico.
 162. ✅ 📴 Reporte personalizado eligiendo columnas y fechas.
-163. 📴 Guardar filtros favoritos del historial.
+163. ✅ 📴 Guardar filtros favoritos del historial.
 164. ✅ 📴 Reporte de turnos con sobrantes y faltantes.
 165. ✅ 📴 Indicador de "días sin faltantes".
 
@@ -219,15 +219,15 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 181b. 📴 ✅ **Impresora térmica Bluetooth** (ESC/POS por Web Bluetooth, 58 u 80 mm, imprime sola si se activa).
 181. ✅ 📴 Impresión directa en impresora térmica (WebUSB o ESC/POS) sin el cuadro de impresión.
 182. ✅ 📴 Abrir el cajón de dinero al cobrar.
-183. 📴 Abrir la talanquera (barrera) con un relé USB o wifi.
-184. 📴 Lector de tarjetas RFID o TAG para abonados.
+183. ✅ 📴 Abrir la talanquera (barrera) con un relé USB o wifi.
+184. ✅ 📴 Lector de tarjetas RFID o TAG para abonados.
 185. ✅ 📴 Pantalla secundaria para el cliente con el valor a pagar.
 186. 🌐 Cámara IP en la entrada que toma la foto sola.
 187. ✅ 📴 Balanza para vender productos por peso.
 188. 🌐 Integración con datáfono (Bold, Wompi, SumUp).
 189. ✅ 🌐 Exportar a Siigo o Alegra para la contabilidad.
 190. 🌐 Integración con Google Sheets para reportes.
-191. 🌐 API o webhook para otros sistemas.
+191. ✅ 🌐 API o webhook para otros sistemas.
 192. 🌐 Respaldo automático en Google Drive.
 
 ## J. Ajustes y comodidad (193–200)
