@@ -106,7 +106,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 82. 📴 "La visita 10 es gratis".
 83. 📴 Cumpleaños del cliente con descuento.
 84. 📴 Etiquetas de cliente (taxi, domiciliario, vecino, empresa).
-85. 📴 Ficha del cliente con todas sus visitas y gastos.
+85. ✅ 📴 Ficha del cliente con todas sus visitas y gastos.
 86. 🌐 Enviar el comprobante por correo.
 87. 🌐 Portal del cliente para ver su mensualidad y pagar.
 88. 🌐 Encuesta de satisfacción por WhatsApp.
@@ -127,7 +127,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 99. 📴 Proveedores con teléfono y lo que se les debe.
 100. 📴 Órdenes de compra a proveedores.
 101. 📴 Sugerencia de pedido según lo que se vende por semana.
-102. 📴 Fechas de vencimiento por lote con alerta.
+102. ✅ 📴 Fechas de vencimiento por lote con alerta.
 103. 📴 Inventario físico: contar y ajustar, viendo las diferencias.
 104. 📴 Mermas (producto dañado o vencido) con motivo.
 105. ✅ 📴 Productos más vendidos y menos vendidos.
@@ -160,7 +160,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 130. 📴 Registro de entrada y salida del personal (asistencia).
 131. 📴 Horas trabajadas para calcular el pago.
 132. 📴 Comisión por ventas de la tienda para los trabajadores.
-133. 📴 Metas diarias con barra de progreso.
+133. ✅ 📴 Metas diarias con barra de progreso.
 134. 📴 Notas entre turnos ("llamar al de la placa XYZ").
 135. 📴 Tareas de aseo y revisión por turno, con lista de chequeo.
 136. 📴 Reporte de incidentes (choques, robos) con foto.
@@ -180,7 +180,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 147. 📴 Mapa de calor por día de la semana y hora.
 148. 📴 Tiempo promedio de permanencia por tipo de vehículo.
 149. 📴 Ingresos por tipo de vehículo en gráfico.
-150. 📴 Comparar este mes con el mes anterior.
+150. ✅ 📴 Comparar este mes con el mes anterior.
 151. 📴 Comparar este año con el año anterior.
 152. 📴 Proyección de ingresos del mes.
 153. ✅ 📴 Rotación de cupos (cuántas veces se usa cada puesto al día).

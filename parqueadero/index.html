@@ -418,6 +418,8 @@
   .billetes button:hover{border-color:var(--ink);background:var(--accent-soft);}
   .festivo{display:inline-block;margin-left:6px;padding:0 6px;border-radius:3px;background:var(--accent);color:var(--accent-ink);font-weight:600;text-transform:none;}
 
+  #fichaBody .stat{flex-direction:column;align-items:flex-start;gap:8px;padding:12px;}
+  #fichaBody .stat .v{font-size:24px;white-space:normal;}
   .side-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
   .side-btns .btn{width:100%;}
   :root.grande body{zoom:1.15;}
@@ -554,6 +556,7 @@
         <div class="saludo"><div><h2 id="panelSaludo">Buen día</h2><p id="panelFecha"></p></div>
           <button class="btn btn-primary" data-ir="parqueo">Registrar un vehículo</button></div>
         <div class="stats" id="panelStats"></div>
+        <div class="card" id="panelMeta" style="margin-bottom:16px;" hidden></div>
         <div class="dash">
           <div class="col">
             <div class="card"><h2 class="card-title">Mapa del parqueadero<span class="sp"></span><span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400;" id="mapaResumen"></span></h2>
@@ -660,6 +663,7 @@
             <div class="field" style="width:150px;"><label for="prodCategoria">Categoría</label><input class="input" id="prodCategoria" list="categoriasList" placeholder="Gaseosas"></div>
             <div class="field" style="width:140px;"><label for="prodCosto">¿Cuánto le costó?</label><input class="input mono" id="prodCosto" type="number" min="0" step="100" placeholder="2000"></div>
             <div class="field" style="width:140px;"><label for="prodPrecio">¿A cómo lo vende?</label><input class="input mono" id="prodPrecio" type="number" min="0" step="100" placeholder="3000"></div>
+            <div class="field" style="width:150px;"><label for="prodVence">Se vence (opcional)</label><input class="input" id="prodVence" type="date"></div>
             <div class="field" style="width:100px;"><label for="prodStock">Unidades</label><input class="input mono" id="prodStock" type="number" min="0" step="1" placeholder="24"></div>
             <div class="field" style="width:130px;"><label for="prodMin">Avisar cuando queden</label><input class="input mono" id="prodMin" type="number" min="0" step="1" value="5"></div>
             <button class="btn btn-primary" id="btnAddProducto">Agregar</button>
@@ -836,6 +840,7 @@
           <div class="card">
             <h2 class="card-title">Caja</h2>
             <div class="field" style="max-width:260px;"><label for="cfgFaltante">Avisar si al cerrar turno falta más de</label><input class="input mono" id="cfgFaltante" type="number" min="0" step="1000"></div>
+            <div class="field" style="max-width:260px;margin-top:12px;"><label for="cfgMeta">Meta de venta por día (parqueo + tienda)</label><input class="input mono" id="cfgMeta" type="number" min="0" step="10000"></div>
             <div class="field" style="max-width:260px;margin-top:12px;"><label for="cfgWaDueno">WhatsApp del dueño (para el resumen del día)</label><input class="input mono" id="cfgWaDueno" placeholder="3001234567"></div>
             <div class="hint">Al cerrar el turno el trabajador cuenta la caja. Si falta más de este valor, sale un aviso rojo para usted y queda en la bitácora.</div>
           </div>
@@ -1052,6 +1057,14 @@
   </div>
 </div>
 
+<!-- ===== MODAL FICHA DEL CLIENTE ===== -->
+<div class="modal" id="fichaModal">
+  <div class="modal-box wide">
+    <div class="modal-head"><h3 id="fichaTitulo">Cliente</h3><button class="modal-close" data-close="fichaModal">✕</button></div>
+    <div id="fichaBody"></div>
+  </div>
+</div>
+
 <!-- ===== MODAL ANULAR ===== -->
 <div class="modal" id="anularModal">
   <div class="modal-box">
@@ -1243,7 +1256,7 @@
       cobro: { fraccionMin:30, graciaMin:0, ticketPerdido:5000 },
       seguridad: { cierreMin:60 },
       avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] },
-      caja: { alertaFaltante:5000, whatsappDueno:'' },
+      caja: { alertaFaltante:5000, whatsappDueno:'', metaDia:0 },
       parqueo: { horasAlerta:12 },
       placasAlerta: []
     };
@@ -2659,7 +2672,9 @@
     const lista = productos.filter(p=> !q || (p.nombre||'').toLowerCase().includes(q) || (p.categoria||'').toLowerCase().includes(q));
     $('invTabla').innerHTML = lista.length ? lista.map(p=>{
       const st = p.stock||0;
-      const chip = st<=0 ? '<span class="chip chip-red">Agotado</span>' : st<=minDe(p) ? '<span class="chip chip-amber">Por acabarse</span>' : '';
+      let chip = st<=0 ? '<span class="chip chip-red">Agotado</span>' : st<=minDe(p) ? '<span class="chip chip-amber">Por acabarse</span>' : '';
+      const dv = diasParaVencer(p);
+      if(dv!=null && dv<=15) chip += ' <span class="chip '+(dv<0?'chip-red':'chip-amber')+'">'+(dv<0?'Vencido':dv===0?'Vence hoy':'Vence en '+dv+' d')+'</span>';
       return '<tr><td><strong>'+esc(p.nombre)+'</strong>'+(p.codigo?'<div class="meta mono">'+esc(p.codigo)+'</div>':'')+'</td><td class="muted">'+esc(p.categoria||'Otros')+'</td>'+
         '<td class="num muted">'+money(p.costo||0)+'</td><td class="num">'+money(p.precio)+'</td>'+
         '<td class="num">'+gananciaHTML(p.costo||0, p.precio||0)+'</td>'+
@@ -2685,8 +2700,8 @@
     if(productos.some(p=>p.nombre.toLowerCase()===nombre.toLowerCase())){ showToast('Ya existe un producto con ese nombre.'); return; }
     if(codigo && productos.some(p=>p.codigo===codigo)){ showToast('Ese código de barras ya es de otro producto.'); return; }
     const id = nuevoId();
-    db.collection('productos').doc(id).set({ id, nombre, codigo: codigo||null, categoria, precio, costo, stock, stockMin, creado:new Date().toISOString() }).catch(errGuardar);
-    ['prodNombre','prodCodigo','prodPrecio','prodCosto','prodStock'].forEach(k=>$(k).value='');
+    db.collection('productos').doc(id).set({ id, nombre, codigo: codigo||null, categoria, precio, costo, stock, stockMin, vence: $('prodVence').value || null, creado:new Date().toISOString() }).catch(errGuardar);
+    ['prodNombre','prodCodigo','prodPrecio','prodCosto','prodStock','prodVence'].forEach(k=>$(k).value='');
     $('prodMin').value = umbralAviso();
     renderMargen();
     $('prodNombre').focus();
@@ -2702,6 +2717,7 @@
       $('productoTitulo').textContent = 'Entrada de mercancía';
       $('productoBody').innerHTML = '<p style="margin:0 0 12px;"><strong>'+esc(p.nombre)+'</strong> · stock actual <strong class="mono">'+(p.stock||0)+'</strong></p>'+
         '<div class="form-grid"><div class="field"><label for="peCant">Unidades que llegaron</label><input class="input mono" id="peCant" type="number" min="1" step="1"></div>'+
+        '<div class="field"><label for="peVence2">Se vence (lote nuevo)</label><input class="input" id="peVence2" type="date" value="'+esc(p.vence||'')+'"></div>'+
         '<div class="field"><label for="peCosto">¿Cuánto le costó cada una?</label><input class="input mono" id="peCosto" type="number" min="0" step="100" value="'+(p.costo||0)+'"></div></div>';
       abrirModal('productoModal'); setTimeout(()=>$('peCant').focus(), 50);
     }else if(ed){
@@ -2710,6 +2726,7 @@
       $('productoTitulo').textContent = 'Editar producto';
       $('productoBody').innerHTML = '<div class="form-grid">'+
         '<div class="field full"><label for="peNombre">Nombre</label><input class="input" id="peNombre" value="'+esc(p.nombre)+'"></div>'+
+        '<div class="field"><label for="peVence">Se vence</label><input class="input" id="peVence" type="date" value="'+esc(p.vence||'')+'"></div>'+
         '<div class="field"><label for="peCodigo">Código de barras</label><input class="input mono" id="peCodigo" value="'+esc(p.codigo||'')+'"></div>'+
         '<div class="field"><label for="peCat">Categoría</label><input class="input" id="peCat" list="categoriasList" value="'+esc(p.categoria||'')+'"></div>'+
         '<div class="field"><label for="pePrecio">¿A cómo lo vende?</label><input class="input mono" id="pePrecio" type="number" min="0" step="100" value="'+(p.precio||0)+'"></div>'+
@@ -2732,7 +2749,7 @@
       const cant = parseInt($('peCant').value,10)||0;
       if(cant<=0){ showToast('Escribe cuántas unidades llegaron.'); return; }
       const costo = Math.max(0, parseInt($('peCosto').value,10)||0);
-      ref.update({ stock: FV.increment(cant), costo, ultimaEntrada:new Date().toISOString() }).catch(errGuardar);
+      ref.update({ stock: FV.increment(cant), costo, vence: $('peVence2').value || null, ultimaEntrada:new Date().toISOString() }).catch(errGuardar);
       showToast('+'+cant+' unidades agregadas.');
     }else{
       const nombre = $('peNombre').value.trim().slice(0,80);
@@ -2745,6 +2762,7 @@
       ref.update({
         nombre, categoria: ($('peCat').value.trim()||'Otros').slice(0,40),
         codigo: $('peCodigo').value.replace(/\s/g,'').slice(0,40) || null,
+        vence: $('peVence').value || null,
         precio: Math.max(0, parseInt($('pePrecio').value,10)||0),
         costo: Math.max(0, parseInt($('peCosto2').value,10)||0),
         stockMin: Math.max(0, parseInt($('peMin').value,10)||0),
@@ -3107,6 +3125,8 @@
         return esc(s.placa)+(s.cliente?' ('+esc(s.cliente)+')':'')+' — '+(d<0?'vencida hace '+(-d)+' día(s)':d===0?'vence hoy':'vence en '+d+' día(s)');
       }).join(' · ')+'</div>';
     }
+    const porVencer = productos.filter(p=>{ const d = diasParaVencer(p); return d!=null && d<=7 && (p.stock||0)>0; });
+    if(porVencer.length) html += '<div class="alert alert-amber"><strong>Productos por vencer:</strong> '+porVencer.map(p=>{ const d = diasParaVencer(p); return esc(p.nombre)+' ('+(d<0?'vencido':d===0?'hoy':d+' d')+')'; }).join(' · ')+'</div>';
     const limF = (cfg.caja||{}).alertaFaltante||0;
     const faltas = turnos.filter(t=>t.fin && t.diferencia<0 && -t.diferencia>limF && isSameDay(new Date(t.fin), new Date()));
     if(faltas.length) html += '<div class="alert alert-red"><strong>Faltante de caja hoy:</strong> '+faltas.map(t=>esc(t.perfilNombre)+' — faltaron '+money(-t.diferencia)).join(' · ')+'</div>';
@@ -3135,7 +3155,7 @@
     $('clientesLista').innerHTML = lista.length ? lista.map(c=>
       '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(c.placa)+'</span>'+
       '<div class="meta">'+esc(c.nombre||'Sin nombre')+(c.telefono?' · '+esc(c.telefono):'')+' · '+(visitas[c.placa]||0)+' visita(s)'+(ultima[c.placa]?' · última '+fmtCorto(new Date(ultima[c.placa])):'')+'</div></div>'+
-      '<div class="r">'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
+      '<div class="r"><button class="btn btn-ghost btn-sm" data-ficha="'+esc(c.placa)+'">Ficha</button>'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
     ).join('') : '<div class="empty">Todavía no hay clientes registrados.</div>';
   }
   $('clientesLista').addEventListener('click', e=>{
@@ -3144,6 +3164,35 @@
     if(del){ db.collection('clientes').doc(del.dataset.borrarCliente).delete().catch(errGuardar); showToast('Cliente eliminado.'); }
   });
   $('clienteBuscar').addEventListener('input', renderClientes);
+  document.addEventListener('click', e=>{ const b = e.target.closest('[data-ficha]'); if(b) abrirFicha(b.dataset.ficha); });
+  function abrirFicha(placa){
+    const c = clientes.find(x=>x.placa===placa) || { placa };
+    const vis = historial.filter(h=>h.placa===placa).sort((a,b)=>b.salida.localeCompare(a.salida));
+    const pms = pagosMens.filter(x=>x.placa===placa);
+    const gastado = vis.reduce((s,h)=>s+(h.total||0),0) + pms.reduce((s,x)=>s+(x.valor||0),0);
+    const minProm = vis.length ? Math.round(vis.reduce((s,h)=>s+(h.minutos||0),0)/vis.length) : 0;
+    const sub = subscriberFor(placa), dentro = activos.find(a=>a.placa===placa), al = alertaDe(placa);
+    // a qué hora suele venir
+    const horas = {}; vis.forEach(h=>{ const x = new Date(h.entrada).getHours(); horas[x] = (horas[x]||0)+1; });
+    const horaTop = Object.entries(horas).sort((a,b)=>b[1]-a[1])[0];
+    $('fichaTitulo').textContent = 'Ficha · '+placa;
+    $('fichaBody').innerHTML =
+      '<div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));">'+
+        statHTML('ic-azul', ICONOS.historial, 'Visitas', vis.length, 'últimos 2 meses')+
+        statHTML('ic-verde', ICONOS.dinero, 'Ha pagado', money(gastado), pms.length ? 'incluye '+pms.length+' mensualidad(es)' : '')+
+        statHTML('ic-amarillo', ICONOS.turnos, 'Tiempo promedio', fmtDuracion(minProm), horaTop ? 'suele llegar a las '+((+horaTop[0])%12||12)+(+horaTop[0]<12?' a. m.':' p. m.') : '')+
+      '</div>'+
+      '<div class="breakdown">'+
+        '<div class="brow"><span>Nombre</span><span class="v">'+esc(c.nombre||'—')+'</span></div>'+
+        '<div class="brow"><span>WhatsApp</span><span class="v">'+esc(c.telefono||'—')+'</span></div>'+
+        '<div class="brow"><span>Mensualidad</span><span class="v">'+(sub ? esc(sub.periodicidad)+' · vence '+esc(sub.vencimiento||'—') : 'No tiene')+'</span></div>'+
+        '<div class="brow"><span>Ahora</span><span class="v">'+(dentro ? 'Dentro desde las '+fmtHora(dentro.entrada) : 'Afuera')+'</span></div>'+
+        (al ? '<div class="brow"><span style="color:var(--red);">Alerta</span><span class="v" style="color:var(--red);">'+esc(al.motivo)+'</span></div>' : '')+
+      '</div>'+
+      '<div class="lbl" style="margin:6px 0 4px;">Últimas visitas</div>'+
+      (vis.length ? vis.slice(0,8).map(h=>'<div class="list-row"><span>'+fmtFechaHora(h.entrada)+' · '+fmtDuracion(h.minutos||0)+'</span><span class="money">'+money(h.total)+'</span></div>').join('') : '<div class="empty">Sin visitas en los últimos dos meses.</div>');
+    abrirModal('fichaModal');
+  }
   $('btnAddCliente').addEventListener('click', ()=>{
     const placa = limpiarPlaca($('clientePlaca').value), nombre = $('clienteNombre').value.trim().slice(0,80), tel = $('clienteTelefono').value.trim().slice(0,20);
     if(placa.length<3){ showToast('Escribe la placa.'); return; }
@@ -3195,6 +3244,7 @@
     $('cfgUmbral').value = cfg.avisosStock.umbral;
     $('cfgFaltante').value = cfg.caja.alertaFaltante;
     $('cfgWaDueno').value = cfg.caja.whatsappDueno||'';
+    $('cfgMeta').value = cfg.caja.metaDia||0;
     $('cfgHorasAlerta').value = cfg.parqueo.horasAlerta;
     renderPlacasAlerta();
     document.querySelectorAll('[data-rol-aviso]').forEach(c=>{ c.checked = cfg.avisosStock.roles.includes(c.dataset.rolAviso); });
@@ -3224,6 +3274,7 @@
   $('cfgGracia').addEventListener('change', ()=> guardarConfig({ cobro:{ graciaMin: Math.max(0, Math.min(30, parseInt($('cfgGracia').value,10)||0)) } }, 'Tolerancia actualizada.'));
   $('cfgCierre').addEventListener('change', ()=> guardarConfig({ seguridad:{ cierreMin: parseInt($('cfgCierre').value,10)||0 } }, 'Guardado.'));
   $('cfgHorasAlerta').addEventListener('change', ()=> guardarConfig({ parqueo:{ horasAlerta: Math.max(1, Math.min(720, parseInt($('cfgHorasAlerta').value,10)||12)) } }, 'Guardado.'));
+  $('cfgMeta').addEventListener('change', ()=> guardarConfig({ caja:{ metaDia: Math.max(0, parseInt($('cfgMeta').value,10)||0) } }, 'Meta guardada.'));
   $('cfgWaDueno').addEventListener('change', ()=> guardarConfig({ caja:{ whatsappDueno: $('cfgWaDueno').value.replace(/\D/g,'').slice(0,15) } }, 'Guardado.'));
   $('cfgFaltante').addEventListener('change', ()=> guardarConfig({ caja:{ alertaFaltante: Math.max(0, parseInt($('cfgFaltante').value,10)||0) } }, 'Guardado.'));
   $('cfgUmbral').addEventListener('change', ()=> guardarConfig({ avisosStock:{ umbral: Math.max(0, Math.min(999, parseInt($('cfgUmbral').value,10)||0)) } }, 'Aviso de inventario actualizado.'));
@@ -3712,6 +3763,8 @@
     renderCampana();
   });
 
+  function diasParaVencer(p){ return p.vence ? diasHasta(p.vence) : null; }
+
   /* ================= INVENTARIO: GANANCIA ================= */
   function gananciaHTML(costo, precio){
     if(!costo) return '<span class="muted">—</span>';
@@ -3906,6 +3959,19 @@
       statHTML('ic-verde', ICONOS.dinero, 'Caja de hoy', money(parqHoy+tiendaHoy+mensHoy), 'Parqueo '+money(parqHoy)+' · Tienda '+money(tiendaHoy)+(mensHoy?' · Mens. '+money(mensHoy):''))+
       statHTML('ic-amarillo', ICONOS.bolsa, 'Ventas de la tienda', vtsHoy.length, vtsHoy.length ? 'Promedio '+money(Math.round(tiendaHoy/vtsHoy.length)) : 'Aún no hay ventas hoy')+
       statHTML(bajos.length ? 'ic-rojo' : 'ic-verde', ICONOS.alerta, 'Por acabarse', bajos.length, bajos.length ? 'Productos para pedir' : 'Inventario al día');
+
+    // meta del día y comparación con el mes pasado
+    const meta = cfg.caja.metaDia||0, hecho = parqHoy+tiendaHoy;
+    const mesPas = new Date(ahora.getFullYear(), ahora.getMonth()-1, 1);
+    const hastaDia = d=> d.getDate() <= ahora.getDate();
+    const sumaMes = (ref, corte)=> historial.filter(h=>{ const f = new Date(h.salida); return isSameMonth(f, ref) && (!corte || hastaDia(f)); }).reduce((s,h)=>s+(h.total||0),0)
+      + ventas.filter(v=>{ const f = new Date(v.fecha); return isSameMonth(f, ref) && (!corte || hastaDia(f)); }).reduce((s,v)=>s+(v.total||0),0);
+    const esteMes = sumaMes(ahora, false), pasadoMismo = sumaMes(mesPas, true);
+    const delta = pasadoMismo ? Math.round((esteMes-pasadoMismo)*100/pasadoMismo) : null;
+    $('panelMeta').hidden = !meta && delta==null;
+    $('panelMeta').innerHTML = (meta ? '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;"><strong>Meta de hoy: '+money(meta)+'</strong><span class="mono">'+money(hecho)+' · '+Math.round(hecho*100/meta)+'%</span></div>'+
+      '<div class="barra" style="height:12px;border-radius:6px;"><i style="width:'+Math.min(100, Math.round(hecho*100/meta))+'%;background:'+(hecho>=meta?'var(--green)':'var(--serie-1)')+';border-radius:6px;"></i></div>' : '')+
+      (delta!=null ? '<div class="meta" style="margin-top:'+(meta?'10':'0')+'px;font-size:13px;">Este mes van '+money(esteMes)+'. A esta altura del mes pasado iban '+money(pasadoMismo)+': <strong style="color:'+(delta>=0?'var(--green)':'var(--red)')+'">'+(delta>=0?'▲ ':'▼ ')+Math.abs(delta)+'%</strong>.</div>' : '');
 
     // mapa
     let mapa = '', libres = 0;
