@@ -6546,7 +6546,7 @@
       if(v!=null && v!==0){ const h = esc2*Math.abs(v)/m, y = v>0 ? cero-h : cero;
         o += '<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+h+'" rx="3" fill="'+(v>0?'var(--c1)':'var(--c2)')+'"'+ttAttr(etiq[i], txt)+'/>';
         if(n<=12) o += '<text class="val" x="'+(x+bw/2)+'" y="'+(v>0 ? y-4 : y+h+11)+'" text-anchor="middle">'+txt+'</text>'; }
-      o += '<text x="'+(i*paso+paso/2)+'" y="'+(H-6)+'" text-anchor="middle">'+esc(etiq[i])+'</text>'; });
+      if(n<=16 || i%Math.ceil(n/12)===0) o += '<text x="'+(i*paso+paso/2)+'" y="'+(H-6)+'" text-anchor="middle">'+esc(etiq[i])+'</text>'; });
     return o+'</svg>'+leyenda([{ l:'Subió', c:'var(--c1)' }, { l:'Bajó', c:'var(--c2)' }]);
   }
   function svgDona(items, fmt){
@@ -6628,7 +6628,7 @@
     const nuevos = Array(nDias).fill(0), recurrentes = Array(nDias).fill(0), vistos = {};
     his.slice().sort((a,b)=>a.salida.localeCompare(b.salida)).forEach(h=>{ const i = idx(h.salida), k = i+'|'+h.placa; if(vistos[k]) return; vistos[k] = 1; if(primera[h.placa]===h.salida || idx(primera[h.placa])===i) nuevos[i]++; else recurrentes[i]++; });
     // crecimiento periodo a periodo
-    const crecMes = ingMes.map((v,i)=>{ const a = i>0 ? ingMes[i-1] : null; return a ? Math.round((v-a)*100/a) : null; });
+    const crecMes = ingMes.map((v,i)=>{ const a = i>0 ? ingMes[i-1] : null; return a && v ? Math.round((v-a)*100/a) : null; });
     const porTipo = TIPOS.map(t=>({ l:t.nombre, v:his.filter(h=>h.tipo===t.id).reduce((s,h)=>s+(h.total||0),0) })).filter(x=>x.v).sort((a,b)=>b.v-a.v);
     const cat = {}, prod = {};
     vts.forEach(v=>(v.items||[]).forEach(i=>{ const pr = productos.find(p=>p.id===i.productoId), c = v.tipo==='recarga' ? 'Recargas monedero' : v.tipo==='abono' ? 'Abonos de reservas' : (pr && pr.categoria) || 'Otros', sub = (i.precio||0)*(i.cantidad||0);
