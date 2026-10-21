@@ -16,6 +16,149 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* Modo "solo este equipo": reemplaza Firebase por una base de datos guardada en el mismo equipo (IndexedDB).
+   Sirve para parqueaderos que nunca tienen internet. Imita solo lo que la app usa de Firebase. */
+(function(){
+  var local = false;
+  try{ local = localStorage.getItem('modoLocal')==='1'; }catch(e){}
+  if(!local) return;
+  var store = {}, listeners = [], authCbs = [], cola = {}, colaTimer = 0, idb = null;
+  var UID = 'local-admin';
+  function clon(x){ return x===undefined ? undefined : JSON.parse(JSON.stringify(x)); }
+  function abrirIDB(){
+    return new Promise(function(res){
+      try{
+        var r = indexedDB.open('parqueadero-local', 1);
+        r.onupgradeneeded = function(){ r.result.createObjectStore('docs'); };
+        r.onsuccess = function(){ idb = r.result; var tx = idb.transaction('docs'), os = tx.objectStore('docs'), ks = os.getAllKeys(), vs = os.getAll();
+          tx.oncomplete = function(){ ks.result.forEach(function(k,i){ store[k] = vs.result[i]; }); res(); }; tx.onerror = function(){ res(); }; };
+        r.onerror = function(){ res(); };
+      }catch(e){ res(); }
+    });
+  }
+  function guardar(path){
+    cola[path] = store[path]===undefined ? null : store[path];
+    if(colaTimer) return;
+    colaTimer = setTimeout(function(){
+      colaTimer = 0; if(!idb) return;
+      var c = cola; cola = {};
+      var os = idb.transaction('docs','readwrite').objectStore('docs');
+      Object.keys(c).forEach(function(k){ if(c[k]===null) os.delete(k); else os.put(c[k], k); });
+    }, 40);
+  }
+  var listo = abrirIDB().then(function(){
+    if(!store['usuarios/'+UID]){
+      var nombre = 'Administrador'; try{ nombre = localStorage.getItem('modoLocalNombre') || nombre; }catch(e){}
+      store['usuarios/'+UID] = { nombre:nombre, correo:'', rol:'admin', activo:true, creado:new Date().toISOString() }; guardar('usuarios/'+UID);
+      store['sistema/setup'] = { creado:new Date().toISOString(), local:true }; guardar('sistema/setup');
+    }
+  });
+  // valores especiales (increment, borrar campo…)
+  function FVal(op, v){ this.__op = op; this.v = v; }
+  function aplicar(viejo, v){
+    if(v instanceof FVal){
+      if(v.__op==='inc') return (typeof viejo==='number' ? viejo : 0) + v.v;
+      if(v.__op==='del') return undefined;
+      if(v.__op==='union'){ var a = Array.isArray(viejo) ? viejo.slice() : []; v.v.forEach(function(x){ if(a.indexOf(x)<0) a.push(x); }); return a; }
+      if(v.__op==='remove') return (Array.isArray(viejo) ? viejo : []).filter(function(x){ return v.v.indexOf(x)<0; });
+      if(v.__op==='ts') return new Date().toISOString();
+    }
+    return clon(v);
+  }
+  function esObj(x){ return x && typeof x==='object' && !Array.isArray(x) && !(x instanceof FVal); }
+  function mezclar(base, data, profundo){
+    var out = Object.assign({}, base);
+    Object.keys(data).forEach(function(k){
+      var v = data[k];
+      if(profundo && esObj(v) && esObj(out[k])) out[k] = mezclar(out[k], v, true);
+      else { var r = aplicar(out[k], v); if(r===undefined) delete out[k]; else out[k] = r; }
+    });
+    return out;
+  }
+  function limpiar(data){ var out = {}; Object.keys(data).forEach(function(k){ var r = esObj(data[k]) ? limpiar(data[k]) : aplicar(undefined, data[k]); if(r!==undefined) out[k] = r; }); return out; }
+  var avisarTimer = 0, cambiados = {};
+  function avisar(path){
+    cambiados[path.split('/')[0]] = 1; cambiados[path] = 1;
+    if(avisarTimer) return;
+    avisarTimer = setTimeout(function(){
+      avisarTimer = 0; var c = cambiados; cambiados = {};
+      listeners.slice().forEach(function(l){ if(c[l.clave]) l.correr(); });
+    }, 0);
+  }
+  function snapDoc(path){ var d = store[path]; return { id:path.split('/').pop(), exists:d!==undefined, data:function(){ return clon(d); }, ref:docRef(path), metadata:{ hasPendingWrites:false, fromCache:true } }; }
+  function docRef(path){
+    var r = {
+      id: path.split('/').pop(), path: path,
+      get: function(){ return listo.then(function(){ return snapDoc(path); }); },
+      set: function(v, o){ return listo.then(function(){ store[path] = (o && o.merge && store[path]) ? mezclar(store[path], v, true) : limpiar(v); guardar(path); avisar(path); }); },
+      update: function(v){ return listo.then(function(){
+        if(store[path]===undefined){ var e = new Error('No existe el documento'); e.code = 'not-found'; throw e; }
+        var out = clon(store[path]);
+        Object.keys(v).forEach(function(k){ var partes = k.split('.'), o = out; for(var i=0;i<partes.length-1;i++){ if(!esObj(o[partes[i]])) o[partes[i]] = {}; o = o[partes[i]]; }
+          var u = partes[partes.length-1], res = aplicar(o[u], v[k]); if(res===undefined) delete o[u]; else o[u] = res; });
+        store[path] = out; guardar(path); avisar(path); }); },
+      delete: function(){ return listo.then(function(){ delete store[path]; guardar(path); avisar(path); }); },
+      onSnapshot: function(cb, err){ var l = { clave:path, correr:function(){ try{ cb(snapDoc(path)); }catch(e){ console.error(e); } } }; listeners.push(l); listo.then(function(){ setTimeout(l.correr); }); return function(){ var i = listeners.indexOf(l); if(i>=0) listeners.splice(i,1); }; },
+      collection: function(c){ return colRef(path+'/'+c); }
+    };
+    return r;
+  }
+  function cumple(d, f){ var x = d[f[0]], v = f[2];
+    switch(f[1]){ case '==': return x===v; case '>=': return x>=v; case '>': return x>v; case '<': return x<v; case '<=': return x<=v; case '!=': return x!==v;
+      case 'in': return v.indexOf(x)>=0; case 'array-contains': return Array.isArray(x) && x.indexOf(v)>=0; } return true; }
+  function colRef(nombre, filtros, lim){
+    filtros = filtros || [];
+    function lista(){
+      var pre = nombre+'/', n = nombre.split('/').length+1, out = [];
+      Object.keys(store).forEach(function(k){ if(k.indexOf(pre)===0 && k.split('/').length===n && filtros.every(function(f){ return cumple(store[k], f); })) out.push(snapDoc(k)); });
+      out.sort(function(a,b){ return a.id<b.id ? -1 : 1; });
+      return lim ? out.slice(0, lim) : out;
+    }
+    function snap(){ var d = lista(); return { docs:d, size:d.length, empty:!d.length, forEach:function(f){ d.forEach(f); }, docChanges:function(){ return []; }, metadata:{ hasPendingWrites:false, fromCache:true } }; }
+    return {
+      id: nombre.split('/').pop(),
+      doc: function(id){ return docRef(nombre+'/'+(id || (Date.now().toString(36)+Math.random().toString(36).slice(2,10)))); },
+      add: function(v){ var r = this.doc(); return r.set(v).then(function(){ return r; }); },
+      where: function(f, op, v){ return colRef(nombre, filtros.concat([[f, op, v]]), lim); },
+      orderBy: function(){ return this; },
+      limit: function(n){ return colRef(nombre, filtros, n); },
+      get: function(){ return listo.then(snap); },
+      onSnapshot: function(cb, err){ var l = { clave:nombre, correr:function(){ try{ cb(snap()); }catch(e){ console.error(e); } } }; listeners.push(l); listo.then(function(){ setTimeout(l.correr); }); return function(){ var i = listeners.indexOf(l); if(i>=0) listeners.splice(i,1); }; }
+    };
+  }
+  var db = {
+    collection: function(c){ return colRef(c); },
+    doc: function(p){ return docRef(p); },
+    enablePersistence: function(){ return Promise.resolve(); },
+    batch: function(){ var ops = []; return {
+      set: function(r,v,o){ ops.push(function(){ return r.set(v,o); }); return this; },
+      update: function(r,v){ ops.push(function(){ return r.update(v); }); return this; },
+      delete: function(r){ ops.push(function(){ return r.delete(); }); return this; },
+      commit: function(){ return ops.reduce(function(p,f){ return p.then(f); }, listo); } }; },
+    runTransaction: function(fn){ return listo.then(function(){ return fn({ get:function(r){ return r.get(); }, set:function(r,v,o){ r.set(v,o); }, update:function(r,v){ r.update(v); }, delete:function(r){ r.delete(); } }); }); },
+    waitForPendingWrites: function(){ return Promise.resolve(); }
+  };
+  var fuera = false; try{ fuera = sessionStorage.getItem('localFuera')==='1'; }catch(e){}
+  var usuario = { uid:UID, email:'', isAnonymous:false };
+  var auth = {
+    get currentUser(){ return fuera ? null : usuario; },
+    onAuthStateChanged: function(cb){ authCbs.push(cb); listo.then(function(){ setTimeout(function(){ cb(fuera ? null : usuario); }, 0); }); return function(){}; },
+    signOut: function(){ fuera = true; try{ sessionStorage.setItem('localFuera','1'); }catch(e){} authCbs.forEach(function(cb){ cb(null); }); return Promise.resolve(); },
+    entrarLocal: function(){ fuera = false; try{ sessionStorage.removeItem('localFuera'); }catch(e){} authCbs.forEach(function(cb){ cb(usuario); }); },
+    signInWithEmailAndPassword: function(){ return Promise.reject({ code:'local', message:'Este equipo trabaja sin cuenta.' }); },
+    createUserWithEmailAndPassword: function(){ return Promise.reject({ code:'local', message:'En el modo solo este equipo no se crean cuentas.' }); },
+    sendPasswordResetEmail: function(){ return Promise.reject({ code:'local' }); }
+  };
+  function firestoreFn(){ return db; }
+  firestoreFn.FieldValue = { increment:function(n){ return new FVal('inc', n); }, delete:function(){ return new FVal('del'); }, arrayUnion:function(){ return new FVal('union', [].slice.call(arguments)); },
+    arrayRemove:function(){ return new FVal('remove', [].slice.call(arguments)); }, serverTimestamp:function(){ return new FVal('ts'); } };
+  var apps = [];
+  window.firebase = { apps:apps, local:true,
+    initializeApp:function(c, n){ var a = { name:n||'[DEFAULT]', auth:function(){ return auth; }, firestore:function(){ return db; }, delete:function(){ return Promise.resolve(); } }; apps.push(a); return a; },
+    auth:function(){ return auth; }, firestore:firestoreFn };
+})();
+</script>
 <style>
   /* Paleta: papel de tiquete, tinta y amarillo de señal vial. */
   :root{
@@ -457,6 +600,8 @@
   .pantalla.tv .tv-mov b{background:#f2c200;color:#141413;padding:0 8px;border-radius:4px;font-family:var(--mono);}
   .pantalla.tv .tv-barra{display:flex;align-items:center;gap:12px;font-size:22px;margin:10px 0;} .pantalla.tv .tv-barra .b{flex:1;height:16px;background:#2c2b27;border-radius:8px;overflow:hidden;} .pantalla.tv .tv-barra .b i{display:block;height:100%;background:#f2c200;}
   @media (max-width:900px){ .pantalla.tv .tv-stats{grid-template-columns:1fr 1fr;} .pantalla.tv .tv-bajo{grid-template-columns:1fr;} .pantalla.tv .tv-stat .n{font-size:44px;} }
+  .pasar-qr{display:flex;justify-content:center;} .pasar-qr svg{width:min(320px,80vw);height:auto;background:#fff;padding:10px;border-radius:10px;}
+  .pub-links{display:flex;gap:16px;align-items:center;flex-wrap:wrap;} .pub-links svg{width:110px;height:110px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px;}
   .ocr-cam{position:relative;background:#141413;border-radius:10px;overflow:hidden;aspect-ratio:4/3;} .ocr-cam video{width:100%;height:100%;object-fit:cover;display:block;}
   .ocr-marco{position:absolute;left:12%;right:12%;top:34%;bottom:34%;border:3px solid #f2c200;border-radius:8px;box-shadow:0 0 0 999px rgba(0,0,0,.35);}
   :root.supervisor #view-parqueo .card:first-child .btn-primary{opacity:.45;}
@@ -570,6 +715,13 @@
       <div class="field"><label for="loginClave">Contraseña</label><input class="input" type="password" id="loginClave" autocomplete="current-password" placeholder="Tu contraseña"></div>
       <button class="btn btn-primary btn-lg w100" id="btnLogin">Entrar</button>
       <button class="link-btn" id="btnOlvide" type="button">¿Olvidaste tu contraseña?</button>
+      <button class="link-btn js-modo-local" type="button">Usar solo en este equipo (sin internet ni cuenta)</button>
+    </div>
+
+    <div id="localForm" hidden>
+      <div class="auth-note"><strong>Solo este equipo.</strong> Los datos se guardan aquí mismo, sin internet y sin cuenta. Para no perderlos, saque un respaldo seguido (Ajustes › Respaldo).</div>
+      <button class="btn btn-primary btn-lg w100" id="btnLocalEntrar">Entrar</button>
+      <button class="link-btn" id="btnLocalSalir" type="button">Volver a usar la cuenta en la nube</button>
     </div>
 
     <div id="setupForm" hidden>
@@ -579,6 +731,7 @@
       <div class="field"><label for="setupClave">Contraseña (mínimo 8 caracteres)</label><input class="input" type="password" id="setupClave" autocomplete="new-password"></div>
       <div class="field"><label for="setupClave2">Repite la contraseña</label><input class="input" type="password" id="setupClave2" autocomplete="new-password"></div>
       <button class="btn btn-primary btn-lg w100" id="btnSetup">Crear administrador</button>
+      <button class="link-btn js-modo-local" type="button">Usar solo en este equipo (sin internet ni cuenta)</button>
     </div>
   </div>
   </div>
@@ -692,7 +845,7 @@
           </div>
 
           <div class="card">
-            <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnReservas" title="Reservas con abono">Reservas <span class="badge" id="reservasCnt" hidden>0</span></button><button class="btn btn-ghost btn-sm" id="btnPantallaCliente" title="Abre una ventana para un segundo monitor que ve el cliente"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><path d="M7 10h4"/></svg>Pantalla cliente</button><button class="btn btn-ghost btn-sm" id="btnPantalla" title="Para un televisor en la entrada"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Pantalla de cupos</button><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
+            <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnPasarQR" title="Pasar los vehículos de este equipo a otro con códigos QR, sin internet">Pasar a otro equipo</button><button class="btn btn-ghost btn-sm" id="btnReservas" title="Reservas con abono">Reservas <span class="badge" id="reservasCnt" hidden>0</span></button><button class="btn btn-ghost btn-sm" id="btnPantallaCliente" title="Abre una ventana para un segundo monitor que ve el cliente"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><path d="M7 10h4"/></svg>Pantalla cliente</button><button class="btn btn-ghost btn-sm" id="btnPantalla" title="Para un televisor en la entrada"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Pantalla de cupos</button><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
             <div class="row" style="flex-wrap:nowrap;">
               <input type="text" id="buscarActivo" class="input mono upper grow" style="flex:1;" placeholder="Buscar o escanear ticket / placa y Enter" autocomplete="off">
               <button class="btn" id="btnEscanear" type="button" title="Escanear el ticket con la cámara"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Escanear</button>
@@ -1162,6 +1315,16 @@
           </div>
 
           <div class="card span2">
+            <h2 class="card-title">Página pública: cupos y consulta del ticket</h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;">Con esto los clientes ven los cupos libres en vivo y, escaneando el QR del ticket, cuánto llevan para pagar. Solo se publica la placa a medias, la hora de entrada y las tarifas.</p>
+            <label class="switch"><input type="checkbox" id="pubActivo"> Publicar cupos y permitir la consulta desde el ticket</label>
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:8px;">
+              <div class="field grow"><label for="pubUrl">Dirección donde está publicada la app</label><input class="input mono" id="pubUrl" maxlength="200" placeholder="https://parqueadero-tizon.web.app/"></div>
+            </div>
+            <div id="pubLinks" style="margin-top:10px;"></div>
+          </div>
+
+          <div class="card span2">
             <h2 class="card-title">Talanquera (barrera)</h2>
             <p class="muted" style="margin:0 0 10px;font-size:13px;">Para una barrera manejada con un relé USB (tipo LCUS-1 o CH340). Se configura en cada equipo que tenga el relé conectado. Funciona en Chrome o Edge de computador.</p>
             <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;">
@@ -1512,6 +1675,24 @@
 </div>
 
 <!-- ===== MODAL DAÑOS ===== -->
+<div class="modal" id="pasarModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Pasar a otro equipo</h3><button class="modal-close" data-close="pasarModal">✕</button></div>
+    <div class="seg full" id="pasarSeg" style="margin-bottom:12px;"><button class="active" data-pasar="enviar">Enviar desde este</button><button data-pasar="recibir">Recibir en este</button></div>
+    <div id="pasarEnviar">
+      <p class="hint" style="margin-top:0;">En el otro equipo toque <strong>Recibir</strong> y apunte la cámara a esta pantalla. Si son varios códigos, van cambiando solos.</p>
+      <div id="pasarQR" class="pasar-qr"></div>
+      <div class="hint" id="pasarParte" style="text-align:center;"></div>
+    </div>
+    <div id="pasarRecibir" hidden>
+      <div class="ocr-cam"><video id="pasarVideo" playsinline muted></video></div>
+      <p class="hint" id="pasarEstado">Apunte la cámara al código del otro equipo.</p>
+      <div id="pasarLista"></div>
+      <button class="btn btn-primary w100" id="btnPasarImportar" hidden>Agregar estos vehículos</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="ocrModal">
   <div class="modal-box">
     <div class="modal-head"><h3>Leer la placa</h3><button class="modal-close" data-close="ocrModal">✕</button></div>
@@ -2194,6 +2375,7 @@
   async function mostrarAcceso(){
     $('app').hidden = true;
     $('authScreen').hidden = false;
+    if(firebase.local){ $('setupForm').hidden = true; $('loginForm').hidden = true; $('localForm').hidden = false; $('authSub').textContent = 'Solo este equipo'; return; }
     $('authSub').textContent = 'Cargando…';
     let hayAdmin = true;
     try{ const s = await SETUP_REF.get(); hayAdmin = s.exists; }
@@ -2343,6 +2525,7 @@
     });
   })();
   function renderRed(){
+    if(firebase.local){ $('netStatus').hidden = true; $('syncInfo').textContent = 'Solo este equipo'; $('offlinePend').textContent = 'Este equipo trabaja solo: los datos se guardan aquí y no se suben a internet.'; return; }
     const on = navigator.onLine;
     $('netStatus').hidden = on && !pendientesSubir;
     $('netStatus').textContent = on ? 'Subiendo '+pendientesSubir+' cambio'+(pendientesSubir===1?'':'s') : 'Sin internet'+(pendientesSubir ? ' · '+pendientesSubir+' por subir' : '');
@@ -2435,7 +2618,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderPermisos, renderQrPago, renderCanales, renderWebhook, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderPermisos, renderQrPago, renderCanales, renderWebhook, renderPublico, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -2443,7 +2626,7 @@
     }, errEscucha));
     escuchas.push(db.collection('activos').onSnapshot(q=>{
       activos = docs(q);
-      programar(renderActivos, renderTipos, renderKpis, renderTurnoBar, renderPanel, renderPantalla, renderAlertas, renderTV);
+      programar(renderActivos, renderTipos, renderKpis, renderTurnoBar, renderPanel, renderPantalla, renderAlertas, renderTV, publicarCupos);
     }, errEscucha));
     escuchas.push(db.collection('reservas').where('fecha','>=',hoyISO(new Date(Date.now()-3*864e5))).onSnapshot(q=>{
       reservas = docs(q); programar(renderReservas, renderAlertas);
@@ -2488,7 +2671,7 @@
   function renderTodo(){
     programar(renderBrand, renderNav, renderTipos, renderTipoSelect, renderActivos, renderKpis, renderTurnoBar, renderPOS, renderCarrito,
       renderVentasHoy, renderInventario, renderCaja, renderHistorial, renderSubs, renderClientes, renderTurnos, renderAlertas,
-      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago, renderCanales, renderPromos, renderDupClientes, renderWebhook);
+      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago, renderCanales, renderPromos, renderDupClientes, renderWebhook, renderPublico);
   }
 
   function renderBrand(){
@@ -2636,6 +2819,7 @@
         servicioPendiente: $('servicioPendiente') && $('servicioPendiente').value ? $('servicioPendiente').value : null,
         empresaId: emp ? emp.id : null,
         abono: resv ? (resv.abono||0) : 0, reservaId: resv ? resv.id : null,
+        token: (cfg.publico||{}).activo ? Array.from(crypto.getRandomValues(new Uint8Array(10)), b=>(b%36).toString(36)).join('') : null,
         vencidaAlEntrar: vencida,
         codigoIngreso: 'E-' + pad(n),
         nota: $('notaInput').value.trim().slice(0,80) || null,
@@ -2645,6 +2829,7 @@
       };
 
       db.collection('activos').doc(v.id).set(v).catch(errGuardar);
+      if(v.token) publicarTicket(v);
       enviarWebhook('entrada', v); if(talanquera.cfg.entrada) abrirTalanquera();
       if(resv){ db.collection('reservas').doc(resv.id).update({ estado:'llegó', llego:v.entrada }).catch(errGuardar); showToast('Llegó con reserva'+(resv.abono?': ya abonó '+money(resv.abono)+', se descuenta a la salida':'')+'.'); }
       $('placaInput').value = ''; $('placaInfo').innerHTML = ''; $('notaInput').value = ''; $('puestoInput').value = '';
@@ -3056,6 +3241,7 @@
       batch.set(db.collection('historial').doc(r.id), r);
       batch.delete(db.collection('activos').doc(r.id));
       if(pago.metodoPago==='monedero') batch.set(db.collection('clientes').doc(pago.monederoPlaca), { saldo: FV.increment(-c.totalCobrar) }, { merge:true });
+      if(c.v.token) batch.delete(db.collection('publico_tickets').doc(c.v.token));
       // tarjeta de sellos: suma uno por salida cobrada y vuelve a cero cuando se usa la visita gratis
       if(cfg.fidelidad.activo && !c.esSub && clientes.some(x=>x.placa===r.placa) && (c.gratis || r.total>0))
         batch.set(db.collection('clientes').doc(r.placa), { sellos: c.gratis ? 0 : FV.increment(1) }, { merge:true });
@@ -3130,7 +3316,8 @@
       html += fila('Se cobra por', (cfg.cobro.fraccionMin==60?'hora':'fracción de '+cfg.cobro.fraccionMin+' min'));
     }
     if(v.operador) html += fila('Recibió', v.operador);
-    html += '<hr>'+barcodeSVG(v.codigoIngreso)+qrSVG(v.codigoIngreso,'qr-ticket')+'<div class="t-foot">Conserve este ticket<br>para reclamar su vehículo</div>'+pieTicket()+'</div>';
+    const urlConsulta = v.token && (cfg.publico||{}).url ? urlPublica('consulta.html')+'#'+v.token : null;
+    html += '<hr>'+barcodeSVG(v.codigoIngreso)+qrSVG(urlConsulta || v.codigoIngreso,'qr-ticket')+(urlConsulta?'<div class="t-foot" style="text-transform:none;">Escanee el QR para ver cuánto lleva</div>':'')+'<div class="t-foot">Conserve este ticket<br>para reclamar su vehículo</div>'+pieTicket()+'</div>';
     const lineas = ['TICKET DE INGRESO', 'Código: '+v.codigoIngreso, '', 'Placa: '+v.placa, 'Vehículo: '+nombreFor(v.tipo), 'Entrada: '+fmtFechaHora(v.entrada)].concat(
       v.puesto ? ['Puesto: '+v.puesto] : [], v.conductor ? ['Conductor: '+v.conductor+(v.cedula?' CC '+v.cedula:'')] : [], [
       'Modalidad: '+(esSub ? (v.modo==='mensual'?'Mensualidad':'Quincena') : 'Por tiempo')]);
@@ -4528,6 +4715,7 @@
     }
   });
   $('btnAddUsuario').addEventListener('click', async ()=>{
+    if(firebase.local){ showToast('En el modo solo este equipo hay un único usuario. Para tener varios, use la cuenta en la nube.'); return; }
     const nombre = $('usrNombre').value.trim().slice(0,60), correo = $('usrCorreo').value.trim(), clave = $('usrClave').value, rol = $('usrRol').value;
     if(!nombre || !correo){ showToast('Escribe nombre y correo.'); return; }
     if(clave.length<8){ showToast('La contraseña debe tener mínimo 8 caracteres.'); return; }
@@ -5062,6 +5250,9 @@
     if(!codigo || !perfil) return;
     const sinGuion = limpiarPlaca(codigo);
     if(tagEsperando){ guardarTag(tagEsperando, codigo); return; }
+    if(/^PQ1\|/.test(codigo)){ recibirParte(codigo); return; }
+    if(/consulta\.html#/.test(codigo)){ const tk = codigo.split('#').pop(), vt = activos.find(a=>a.token===tk);
+      if(vt){ if(vistaActual!=='parqueo') irA('parqueo'); abrirSalida(vt.id); anotarLectura(codigo, via, 'salida de '+vt.placa); return; } }
     const conTag = mensualidades.find(m=>m.tag && m.tag===codigo);
     // carné de abonado (AB:PLACA) o tarjeta RFID registrada
     if(/^AB:/i.test(codigo) || conTag){
@@ -5093,7 +5284,7 @@
       const el = document.activeElement, id = el && el.id;
       // estas casillas ya entienden el lector por su cuenta
       if(id==='buscarActivo' || id==='posBuscar') return;
-      if(id==='placaInput' && !/^(AB:|E-?\d)/i.test(cod) && !activos.some(a=>a.placa===limpiarPlaca(cod))) return;
+      if(id==='placaInput' && !/^(AB:|E-?\d|PQ1\||https?:)/i.test(cod) && !activos.some(a=>a.placa===limpiarPlaca(cod)) && !mensualidades.some(m=>m.tag && m.tag===cod) && !tagEsperando) return;
       e.preventDefault(); e.stopImmediatePropagation();
       // quita lo que el lector alcanzó a escribir en la casilla
       if(el && typeof el.value==='string'){
@@ -6098,6 +6289,123 @@
   $('panelMapa').addEventListener('click', e=>{ const b = e.target.closest('[data-spot]'); if(b) abrirSalida(b.dataset.spot); });
   document.addEventListener('click', e=>{ const b = e.target.closest('[data-ir]'); if(b) irA(b.dataset.ir); });
   setInterval(()=>{ if(perfil && vistaActual==='panel') renderPanel(); }, 60000);
+
+  /* ================= MODO SOLO ESTE EQUIPO ================= */
+  document.addEventListener('click', e=>{
+    if(!e.target.closest('.js-modo-local')) return;
+    if(!confirm('Modo "solo este equipo":\n\n• Todo se guarda en este equipo, sin internet y sin cuenta.\n• No se comparte con otros celulares ni computadores.\n• Saque respaldos seguido (Ajustes › Respaldo).\n\n¿Usarlo?')) return;
+    const nombre = prompt('¿Cómo se llama usted? (aparece en los tickets como quien atiende)', 'Administrador'); if(nombre===null) return;
+    try{ localStorage.setItem('modoLocal','1'); localStorage.setItem('modoLocalNombre', nombre.trim().slice(0,60) || 'Administrador'); sessionStorage.removeItem('localFuera'); }catch(err){}
+    location.reload();
+  });
+  $('btnLocalEntrar').addEventListener('click', ()=>{ if(auth.entrarLocal) auth.entrarLocal(); });
+  $('btnLocalSalir').addEventListener('click', ()=>{
+    if(!confirm('¿Volver a la cuenta en la nube? Los datos de este equipo quedan guardados aquí; si quiere pasarlos, saque antes un respaldo y restáurelo en la nube.')) return;
+    try{ localStorage.removeItem('modoLocal'); }catch(err){}
+    location.reload();
+  });
+
+  /* ================= PASAR VEHÍCULOS A OTRO EQUIPO CON QR ================= */
+  let pasarTimer = 0, pasarStream = null, pasarLoop = 0, pasarPartes = {}, pasarTx = null, pasarTotal = 0, pasarRecibidos = null;
+  function partesQR(){
+    const datos = JSON.stringify(activos.map(a=>[a.placa, a.tipo, a.entrada, a.codigoIngreso||'', a.puesto||'', a.modo||'tiempo', a.nota||'', a.abono||0]));
+    const tx = Math.random().toString(36).slice(2,6), tam = 350, n = Math.max(1, Math.ceil(datos.length/tam));
+    return Array.from({ length:n }, (_,i)=>'PQ1|'+tx+'|'+(i+1)+'|'+n+'|'+datos.slice(i*tam, (i+1)*tam));
+  }
+  function mostrarEnviar(){
+    clearInterval(pasarTimer);
+    if(!activos.length){ $('pasarQR').innerHTML = '<div class="empty">No hay vehículos dentro para pasar.</div>'; $('pasarParte').textContent = ''; return; }
+    const partes = partesQR(); let i = 0;
+    const pintar = ()=>{ $('pasarQR').innerHTML = qrSVG(partes[i], ''); $('pasarParte').textContent = activos.length+' vehículo(s) · código '+(i+1)+' de '+partes.length; i = (i+1) % partes.length; };
+    pintar(); if(partes.length>1) pasarTimer = setInterval(pintar, 1400);
+  }
+  function pararPasar(){ clearInterval(pasarTimer); cancelAnimationFrame(pasarLoop); if(pasarStream){ pasarStream.getTracks().forEach(t=>t.stop()); pasarStream = null; } }
+  async function mostrarRecibir(){
+    clearInterval(pasarTimer); pasarPartes = {}; pasarTx = null; pasarRecibidos = null;
+    $('pasarLista').innerHTML = ''; $('btnPasarImportar').hidden = true; $('pasarEstado').textContent = 'Apunte la cámara al código del otro equipo.';
+    try{
+      pasarStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+      const vid = $('pasarVideo'); vid.srcObject = pasarStream; await vid.play();
+      const det = 'BarcodeDetector' in window ? new BarcodeDetector({ formats:['qr_code'] }) : null;
+      if(!det) await cargarScript(URL_JSQR);
+      const c = document.createElement('canvas'), x = c.getContext('2d', { willReadFrequently:true });
+      const leer = async ()=>{
+        if(!pasarStream) return;
+        try{
+          let txt = null;
+          if(det){ const r = await det.detect(vid); if(r.length) txt = r[0].rawValue; }
+          else if(vid.videoWidth){ c.width = vid.videoWidth; c.height = vid.videoHeight; x.drawImage(vid,0,0); const r = jsQR(x.getImageData(0,0,c.width,c.height).data, c.width, c.height); if(r) txt = r.data; }
+          if(txt) recibirParte(txt);
+        }catch(e){}
+        if(pasarStream) pasarLoop = requestAnimationFrame(leer);
+      };
+      leer();
+    }catch(e){ $('pasarEstado').textContent = 'No se pudo abrir la cámara. Si tiene un lector QR conectado, páselo por los códigos.'; }
+  }
+  function recibirParte(txt){
+    const m = String(txt).match(/^PQ1\|(\w+)\|(\d+)\|(\d+)\|([\s\S]*)$/); if(!m) return;
+    if(pasarTx!==m[1]){ pasarTx = m[1]; pasarPartes = {}; }
+    pasarTotal = +m[3]; pasarPartes[m[2]] = m[4];
+    const n = Object.keys(pasarPartes).length;
+    if(!$('pasarModal').classList.contains('show')){ abrirModal('pasarModal'); verPasar('recibir', true); }
+    $('pasarEstado').textContent = 'Recibidos '+n+' de '+pasarTotal+' códigos…';
+    if(n<pasarTotal) return;
+    let lista; try{ lista = JSON.parse(Array.from({ length:pasarTotal }, (_,i)=>pasarPartes[i+1]).join('')); }catch(e){ $('pasarEstado').textContent = 'Los códigos llegaron mal. Intente otra vez.'; pasarPartes = {}; return; }
+    pararPasar();
+    pasarRecibidos = lista.filter(r=>!activos.some(a=>a.placa===r[0]));
+    $('pasarEstado').textContent = 'Listo: '+lista.length+' vehículo(s) recibidos'+(lista.length-pasarRecibidos.length ? ', '+(lista.length-pasarRecibidos.length)+' ya estaban aquí' : '')+'.';
+    $('pasarLista').innerHTML = pasarRecibidos.map(r=>'<div class="list-row"><div><span class="placa-txt">'+esc(r[0])+'</span> '+esc(nombreFor(r[1]))+'<div class="meta">Entró '+fmtFechaHora(r[2])+(r[3]?' · '+esc(r[3]):'')+(r[4]?' · puesto '+esc(r[4]):'')+'</div></div></div>').join('');
+    $('btnPasarImportar').hidden = !pasarRecibidos.length;
+  }
+  function verPasar(modo, sinCamara){
+    $('pasarSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('active', b.dataset.pasar===modo));
+    $('pasarEnviar').hidden = modo!=='enviar'; $('pasarRecibir').hidden = modo!=='recibir';
+    pararPasar();
+    if(modo==='enviar') mostrarEnviar(); else if(!sinCamara) mostrarRecibir();
+  }
+  $('btnPasarQR').addEventListener('click', ()=>{ abrirModal('pasarModal'); verPasar('enviar'); });
+  $('pasarSeg').addEventListener('click', e=>{ const b = e.target.closest('[data-pasar]'); if(b) verPasar(b.dataset.pasar); });
+  document.addEventListener('click', e=>{ if(e.target.closest('[data-close="pasarModal"]')) pararPasar(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') pararPasar(); });
+  $('btnPasarImportar').addEventListener('click', ()=>{
+    if(!pasarRecibidos || !pasarRecibidos.length) return;
+    const batch = db.batch();
+    pasarRecibidos.forEach(r=>{ const id = nuevoId();
+      batch.set(db.collection('activos').doc(id), { id, placa:r[0], tipo:r[1], entrada:r[2], codigoIngreso:r[3]||null, puesto:r[4]||null, modo:r[5]||'tiempo', nota:r[6]||null, abono:r[7]||0,
+        operador:perfil.nombre, operadorId:perfil.uid, importadoQR:true }); });
+    batch.commit().catch(errGuardar);
+    bitacora('Vehículos recibidos por QR', pasarRecibidos.map(r=>r[0]).join(', '));
+    showToast(pasarRecibidos.length+' vehículo(s) agregados.'); pasarRecibidos = null; cerrarModal('pasarModal');
+  });
+
+  /* ================= PÁGINA PÚBLICA: CUPOS Y CONSULTA DEL TICKET ================= */
+  function urlPublica(pagina){ const u = ((cfg.publico||{}).url||'').trim(); return u ? u.replace(/[^/]*$/, '').replace(/\/?$/, '/')+pagina : ''; }
+  function placaOculta(p){ p = String(p||''); return p.length>3 ? p.slice(0,3)+'•'.repeat(Math.max(1,p.length-5))+p.slice(-2) : p; }
+  function publicarTicket(v){
+    const r = cfg.rates[v.tipo]||{};
+    db.collection('publico_tickets').doc(v.token).set({ marca:cfg.brand, tipo:nombreFor(v.tipo), placa:placaOculta(v.placa), entrada:v.entrada, mensualidad: esSubModo(v.modo),
+      tarifaHora: Math.round(tarifaHoraAplicable(v.tipo, new Date(v.entrada)) * (1 + ((temporadaDe(new Date(v.entrada))||{}).pct||0)/100)), fraccionMin: cfg.cobro.fraccionMin||60, topeDia: r.dia||0, graciaMin: cfg.cobro.graciaMin||0, abono: v.abono||0,
+      telefono: cfg.facturacion.telefono||'' }).catch(()=>{});
+  }
+  let pubUltimo = 0, pubTimer = 0;
+  function publicarCupos(){
+    if(!(cfg.publico||{}).activo || !perfil || esSupervisor()) return;
+    const espera = 20000 - (Date.now()-pubUltimo);
+    if(espera>0){ if(!pubTimer) pubTimer = setTimeout(()=>{ pubTimer = 0; publicarCupos(); }, espera); return; }
+    pubUltimo = Date.now();
+    db.collection('publico').doc('cupos').set({ marca:cfg.brand, actualizado:new Date().toISOString(), direccion:cfg.facturacion.direccion||'', telefono:cfg.facturacion.telefono||'',
+      tipos: TIPOS.map(t=>({ id:t.id, nombre:t.nombre, cupo:cfg.rates[t.id].cupo||0, dentro:ocupadosPorTipo(t.id), hora:cfg.rates[t.id].hora||0, noche:cfg.rates[t.id].nocturna||0 })).filter(t=>t.cupo || t.dentro) }).catch(()=>{});
+  }
+  function renderPublico(){
+    if(!esAdmin()) return;
+    const pb = cfg.publico||{};
+    $('pubActivo').checked = !!pb.activo; if(!enfocadoDentro('pubUrl')) $('pubUrl').value = pb.url||'';
+    const cupos = urlPublica('cupos.html');
+    $('pubLinks').innerHTML = pb.activo && cupos ? '<div class="pub-links">'+qrSVG(cupos,'')+'<div><div class="lbl">Cupos en vivo</div><a href="'+esc(cupos)+'" target="_blank" rel="noopener" class="mono">'+esc(cupos)+'</a><div class="meta">Péguelo en Google Maps, Instagram o imprima este QR en la entrada. Los tickets nuevos ya salen con el QR de consulta.</div></div></div>'
+      : '<div class="meta">'+(pb.activo ? 'Escriba la dirección donde publicó la app para armar los enlaces.' : 'Apagado.')+'</div>';
+  }
+  $('pubActivo').addEventListener('change', ()=>{ guardarConfig({ publico:Object.assign({}, cfg.publico, { activo:$('pubActivo').checked }) }, $('pubActivo').checked ? 'Página pública encendida.' : 'Página pública apagada.'); if(!$('pubActivo').checked) db.collection('publico').doc('cupos').delete().catch(()=>{}); else setTimeout(()=>{ pubUltimo = 0; publicarCupos(); }, 500); });
+  $('pubUrl').addEventListener('change', ()=>{ const u = $('pubUrl').value.trim(); if(u && !/^https:\/\//.test(u)){ showToast('La dirección debe empezar por https://'); return; } guardarConfig({ publico:Object.assign({}, cfg.publico, { url:u }) }, 'Dirección guardada.'); });
 
   /* ================= SUPERVISOR (solo mira) ================= */
   const SUP_PERMITIDOS = '.nav-btn,[data-vista],.seg button,[data-recibo],[data-venta],[data-ficha],.modal-close,[data-close],#btnTV,#btnContador,#btnContable,#btnActivosExcel,#btnHistExcel,#btnRpVer,#btnRpExcel,#btnTema,#btnLetra,#btnAyuda,#btnSalir,#btnBloquear,#btnTutorial,[data-tour],#btnCampana,#btnTableta,#btnZurdo,#btnMenu,#btnPantalla,#btnPantallaCliente,#btnTkImprimir,#btnTkPDF,#btnTkIngles,#btnHistTodo,#btnCompararAnio,[data-filtro-fav],#btnGuardarFiltro,[data-salida],[data-abrir-integridad],#btnIntegridad,[data-conflicto]';

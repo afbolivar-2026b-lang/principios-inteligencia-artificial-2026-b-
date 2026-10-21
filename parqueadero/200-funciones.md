@@ -31,9 +31,9 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 13. ✅ 📴 **Resolver conflictos**: si dos equipos registraron la misma placa sin internet, se muestra un aviso para elegir el registro bueno.
 14. ✅ 📴 **Cola de fotos**: las fotos de los vehículos se guardan en IndexedDB y se suben cuando vuelve la conexión.
 15. ✅ 📴 ⚡ **Alerta sonora** cuando se va o vuelve el internet.
-16. 📴 **Modo "solo este equipo"**: todo funciona en local con IndexedDB, para parqueaderos que nunca tienen internet.
+16. ✅ 📴 **Modo "solo este equipo"**: todo funciona en local con IndexedDB, para parqueaderos que nunca tienen internet.
 17. 📴 **Sincronizar entre dos equipos por la red wifi local**, sin internet (WebRTC o código QR).
-18. 📴 **Pasar datos con código QR** de un celular a otro, por ejemplo la lista de vehículos dentro.
+18. ✅ 📴 **Pasar datos con código QR** de un celular a otro, por ejemplo la lista de vehículos dentro.
 19. ✅ 📴 **Guardar los WhatsApp pendientes**: se arma el mensaje y se envía cuando hay conexión.
 20. ✅ 📴 ⚡ **Hora local confiable**: avisar si la hora del equipo está mal, porque eso cambia los cobros.
 21. ✅ 📴 **Verificar la integridad de los datos** guardados en el equipo al abrir la app.
@@ -199,9 +199,9 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 
 ## H. Experiencia del cliente y del público (166–180)
 166. ✅ 📴 Pantalla pública de "cupos disponibles" para la entrada.
-167. 🌐 Página web pública con los cupos disponibles en vivo.
+167. ✅ 🌐 Página web pública con los cupos disponibles en vivo.
 168. 🌐 Reservas en línea con pago.
-169. 🌐 El cliente consulta lo que va a pagar escaneando el QR del ticket.
+169. ✅ 🌐 El cliente consulta lo que va a pagar escaneando el QR del ticket.
 170. 🌐 Pagar antes de llegar a la salida, desde el celular.
 171. ✅ 🌐 Aviso al cliente: "su carro está listo" (lavado o valet).
 172. 🌐 Pedir el carro al valet desde el celular.

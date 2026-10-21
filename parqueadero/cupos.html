@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https: wss://*.firebaseio.com; img-src 'self' data:; object-src 'none'; base-uri 'none'">
+<title>Cupos disponibles</title>
+<meta name="theme-color" content="#1c1b17">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+  :root{ --bg:#efebe2; --surface:#faf8f3; --line:#d8d1c2; --text:#1c1b17; --muted:#6b6557; --accent:#ffc800; --green:#2f7a4c; --red:#b8322a;
+    --display:'Barlow Condensed','Arial Narrow',sans-serif; --sans:'IBM Plex Sans',system-ui,sans-serif; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#141413; --surface:#1f1e1b; --line:#38362f; --text:#efebe2; --muted:#a39d8f; --green:#6cc38d; --red:#ef7f73; } }
+  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--sans);}
+  .hazard{height:10px;background:repeating-linear-gradient(-45deg,#1c1b17 0 14px,var(--accent) 14px 28px);}
+  main{max-width:720px;margin:0 auto;padding:22px 16px 40px;}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+  .p{width:52px;height:52px;border:4px solid currentColor;border-radius:10px;background:#2c5d8f;color:#fff;font:700 38px/44px var(--display);text-align:center;flex-shrink:0;}
+  h1{font:600 34px/1 var(--display);text-transform:uppercase;margin:0;}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 18px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+  .z{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;}
+  .z .n{font:700 52px/1 var(--display);} .z .l{font:600 18px/1.1 var(--display);text-transform:uppercase;letter-spacing:.03em;}
+  .z .s{color:var(--muted);font-size:13px;} .libre .n{color:var(--green);} .lleno .n{color:var(--red);}
+  .tar{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 16px;}
+  .tar div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);} .tar div:last-child{border:none;}
+  .info{color:var(--muted);font-size:13px;margin-top:16px;} .vacio{padding:30px 0;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="hazard"></div>
+<main>
+  <header><div class="p">P</div><h1 id="marca">Parqueadero</h1></header>
+  <p class="sub" id="act">Cargando…</p>
+  <div class="grid" id="zonas"></div>
+  <div class="tar" id="tarifas" hidden></div>
+  <p class="info" id="info"></p>
+</main>
+<script>
+(function(){
+    const firebaseConfig = {
+    apiKey: "AIzaSyB3agxDdSu19HRVznzCnXMst9y4ILkxvZY",
+    authDomain: "parqueadero-tizon.firebaseapp.com",
+    projectId: "parqueadero-tizon",
+    storageBucket: "parqueadero-tizon.firebasestorage.app",
+    messagingSenderId: "15996136445",
+    appId: "1:15996136445:web:05a3c0026a59e79dbe8794"
+  };
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function money(n){ return '$ '+Math.round(n||0).toLocaleString('es-CO'); }
+  if(!window.firebase){ $('act').textContent = 'Sin conexión. Intente de nuevo en un momento.'; return; }
+  firebase.initializeApp(firebaseConfig);
+  firebase.firestore().collection('publico').doc('cupos').onSnapshot(function(s){
+    if(!s.exists){ $('act').textContent = 'Este parqueadero no tiene la página de cupos encendida.'; $('zonas').innerHTML = ''; return; }
+    var d = s.data(); document.title = 'Cupos · '+d.marca; $('marca').textContent = d.marca;
+    var hace = Math.round((Date.now()-new Date(d.actualizado))/60000);
+    $('act').textContent = 'Actualizado '+(hace<1 ? 'hace un momento' : 'hace '+hace+' min')+' · se actualiza solo';
+    $('zonas').innerHTML = (d.tipos||[]).length ? d.tipos.map(function(t){
+      var libres = t.cupo ? Math.max(0, t.cupo-t.dentro) : null;
+      return '<div class="z '+(libres===null?'':libres===0?'lleno':'libre')+'"><div class="l">'+esc(t.nombre)+'</div><div class="n">'+(libres===null?'Hay':libres===0?'Lleno':libres)+'</div><div class="s">'+(libres===null?'puestos':libres===0?'sin cupo por ahora':'puestos libres de '+t.cupo)+'</div></div>';
+    }).join('') : '<div class="vacio">Sin datos de cupos.</div>';
+    var tar = (d.tipos||[]).filter(function(t){ return t.hora; });
+    $('tarifas').hidden = !tar.length;
+    $('tarifas').innerHTML = tar.map(function(t){ return '<div><span>'+esc(t.nombre)+'</span><span>'+money(t.hora)+' / hora'+(t.noche && t.noche!==t.hora ? ' · noche '+money(t.noche) : '')+'</span></div>'; }).join('');
+    $('info').textContent = [d.direccion, d.telefono ? 'Tel. '+d.telefono : ''].filter(Boolean).join(' · ');
+  }, function(){ $('act').textContent = 'No se pudo cargar. Revise su conexión.'; });
+})();
+</script>
+</body>
+</html>

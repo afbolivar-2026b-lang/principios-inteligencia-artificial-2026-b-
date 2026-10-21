@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https: wss://*.firebaseio.com; img-src 'self' data:; object-src 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>¿Cuánto llevo?</title>
+<meta name="theme-color" content="#1c1b17">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+  :root{ --bg:#efebe2; --surface:#faf8f3; --line:#d8d1c2; --text:#1c1b17; --muted:#6b6557; --accent:#ffc800;
+    --display:'Barlow Condensed','Arial Narrow',sans-serif; --sans:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#141413; --surface:#1f1e1b; --line:#38362f; --text:#efebe2; --muted:#a39d8f; } }
+  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 var(--sans);}
+  .hazard{height:10px;background:repeating-linear-gradient(-45deg,#1c1b17 0 14px,var(--accent) 14px 28px);}
+  main{max-width:440px;margin:0 auto;padding:22px 16px 40px;}
+  h1{font:600 28px/1 var(--display);text-transform:uppercase;margin:0 0 4px;}
+  .marca{color:var(--muted);margin:0 0 18px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;}
+  .placa{display:inline-block;background:var(--accent);color:#1c1b17;border:3px solid #1c1b17;border-radius:8px;padding:2px 12px;font:700 28px/1.2 var(--display);letter-spacing:.06em;}
+  .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);} .row:last-of-type{border:none;}
+  .row span:last-child{font-family:var(--mono);}
+  .total{font:700 54px/1 var(--display);margin:14px 0 2px;} .nota{color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="hazard"></div>
+<main>
+  <h1>¿Cuánto llevo?</h1>
+  <p class="marca" id="marca">Cargando…</p>
+  <div class="card" id="caja" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="placa" id="placa"></span><span id="tipo"></span></div>
+    <div class="row"><span>Entró</span><span id="entrada"></span></div>
+    <div class="row"><span>Tiempo dentro</span><span id="tiempo"></span></div>
+    <div class="row"><span>Tarifa</span><span id="tarifa"></span></div>
+    <div class="total" id="total"></div>
+    <div class="nota" id="nota">Valor aproximado a esta hora. El valor exacto se lo dan en la caja (puede cambiar por servicios, descuentos o convenios).</div>
+  </div>
+</main>
+<script>
+(function(){
+    const firebaseConfig = {
+    apiKey: "AIzaSyB3agxDdSu19HRVznzCnXMst9y4ILkxvZY",
+    authDomain: "parqueadero-tizon.firebaseapp.com",
+    projectId: "parqueadero-tizon",
+    storageBucket: "parqueadero-tizon.firebasestorage.app",
+    messagingSenderId: "15996136445",
+    appId: "1:15996136445:web:05a3c0026a59e79dbe8794"
+  };
+  var $ = function(id){ return document.getElementById(id); };
+  function money(n){ return '$ '+Math.round(n||0).toLocaleString('es-CO'); }
+  function dur(m){ var h = Math.floor(m/60), r = m%60; return (h ? h+' h ' : '')+r+' min'; }
+  var token = (location.hash||'').slice(1).replace(/[^a-z0-9]/gi,'');
+  if(!token){ $('marca').textContent = 'Escanee el código QR de su ticket.'; return; }
+  if(!window.firebase){ $('marca').textContent = 'Sin conexión. Intente de nuevo en un momento.'; return; }
+  firebase.initializeApp(firebaseConfig);
+  var d = null;
+  function pintar(){
+    if(!d) return;
+    var min = Math.max(0, Math.floor((Date.now()-new Date(d.entrada))/60000));
+    $('tiempo').textContent = dur(min);
+    if(d.mensualidad){ $('total').textContent = 'Mensualidad'; $('nota').textContent = 'Este vehículo está cubierto por su mensualidad.'; return; }
+    var fr = Math.max(1, d.fraccionMin||60), ef = Math.max(0, min-(d.graciaMin||0)), vf = Math.round(d.tarifaHora*fr/60);
+    var valor = Math.max(1, Math.ceil(ef/fr))*vf;
+    if(d.topeDia){ var dias = Math.floor(ef/1440), resto = ef-dias*1440, frR = (resto>0||dias===0) ? Math.max(1, Math.ceil(resto/fr)) : 0; valor = Math.min(valor, dias*d.topeDia + Math.min(d.topeDia, frR*vf)); }
+    valor = Math.max(0, valor-(d.abono||0));
+    $('total').textContent = money(valor);
+  }
+  firebase.firestore().collection('publico_tickets').doc(token).get().then(function(s){
+    if(!s.exists){ $('marca').textContent = 'Este ticket ya salió o no existe.'; return; }
+    d = s.data(); document.title = '¿Cuánto llevo? · '+d.marca;
+    $('marca').textContent = d.marca+(d.telefono ? ' · Tel. '+d.telefono : '');
+    $('placa').textContent = d.placa; $('tipo').textContent = d.tipo;
+    $('entrada').textContent = new Date(d.entrada).toLocaleString('es-CO',{ day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+    $('tarifa').textContent = money(d.tarifaHora)+' / hora';
+    $('caja').hidden = false; pintar(); setInterval(pintar, 30000);
+  }).catch(function(){ $('marca').textContent = 'No se pudo consultar. Revise su conexión.'; });
+})();
+</script>
+</body>
+</html>

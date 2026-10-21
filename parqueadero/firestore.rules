@@ -143,6 +143,18 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Página pública: cupos en vivo y la consulta del ticket con el QR.
+    // Solo tiene la placa a medias, la hora de entrada y las tarifas. Los tickets no se pueden listar, solo leer uno por su código.
+    match /publico/{doc} {
+      allow read: if true;
+      allow write: if escribe();
+    }
+    match /publico_tickets/{token} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update, delete: if escribe();
+    }
+
     // Datos de la versión anterior: solo el administrador (para la migración).
     match /parqueadero/{doc} {
       allow read, write: if esAdmin();
