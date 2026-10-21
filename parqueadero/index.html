@@ -540,7 +540,8 @@
           <div class="info" id="turnoInfo">Turno no iniciado</div>
           <div>
             <button class="btn btn-primary btn-sm" id="btnIniciarTurno">Iniciar turno</button>
-            <button class="btn btn-danger btn-sm" id="btnFinalizarTurno" hidden>Finalizar turno</button>
+            <button class="btn btn-sm" id="btnRetiro" hidden>Retiro de caja</button>
+            <button class="btn btn-danger btn-sm" id="btnFinalizarTurno" hidden>Cerrar turno y contar caja</button>
           </div>
         </div>
         <div class="kpis">
@@ -746,6 +747,12 @@
           </div>
 
           <div class="card">
+            <h2 class="card-title">Caja</h2>
+            <div class="field" style="max-width:260px;"><label for="cfgFaltante">Avisar si al cerrar turno falta más de</label><input class="input mono" id="cfgFaltante" type="number" min="0" step="1000"></div>
+            <div class="hint">Al cerrar el turno el trabajador cuenta la caja. Si falta más de este valor, sale un aviso rojo para usted y queda en la bitácora.</div>
+          </div>
+
+          <div class="card">
             <h2 class="card-title">Avisos de inventario</h2>
             <div class="field" style="max-width:240px;"><label for="cfgUmbral">Avisar cuando queden (unidades)</label><input class="input mono" id="cfgUmbral" type="number" min="0" max="999" step="1"></div>
             <div class="lbl" style="margin:14px 0 4px;">¿A quién le llega el aviso?</div>
@@ -798,6 +805,11 @@
             <div class="disclaimer"><strong>Administrador:</strong> ve y cambia todo. <strong>Secretaria:</strong> parqueo, tienda, inventario, caja, historial, mensualidades, clientes y turnos. <strong>Trabajador:</strong> solo registra entradas, salidas y ventas de la tienda, y maneja su turno. Las contraseñas las guarda Google (Firebase) cifradas: ni siquiera el administrador puede verlas. Si alguien la olvida, usa “Enviar cambio de contraseña”.</div>
           </div>
 
+          <div class="card span2">
+            <h2 class="card-title">Bitácora<span class="sp"></span><span class="badge" id="bitCount">0</span></h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;">Quién hizo cada cambio delicado: anulaciones, retiros, cierres de caja con diferencia, productos borrados o corregidos, tarifas y usuarios. No se puede borrar.</p>
+            <div id="bitLista"></div>
+          </div>
           <div class="card span2">
             <h2 class="card-title">Respaldo</h2>
             <p class="muted" style="margin:0 0 12px;font-size:13px;">Descarga una copia de todo lo que tiene este equipo (vehículos dentro, historial, ventas, productos, mensualidades, clientes, turnos y ajustes). Funciona sin internet.</p>
@@ -863,6 +875,49 @@
   <div class="modal-box">
     <div class="modal-head"><h3>Balance del turno</h3><button class="modal-close" data-close="balanceModal">✕</button></div>
     <div class="breakdown" id="balanceBody"></div>
+    <div class="modal-actions"><button class="btn" id="btnBalanceImprimir">Imprimir cuadre</button></div>
+  </div>
+</div>
+
+<!-- ===== MODAL INICIAR TURNO ===== -->
+<div class="modal" id="baseModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Iniciar turno</h3><button class="modal-close" data-close="baseModal">✕</button></div>
+    <div class="field"><label for="baseValor">¿Con cuánto efectivo empieza la caja? (base)</label><input class="input mono" id="baseValor" type="number" min="0" step="1000" placeholder="50000"></div>
+    <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnConfirmarBase">Iniciar turno</button>
+  </div>
+</div>
+
+<!-- ===== MODAL RETIRO ===== -->
+<div class="modal" id="retiroModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Retiro de caja</h3><button class="modal-close" data-close="retiroModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="retiroValor">Valor que sale</label><input class="input mono" id="retiroValor" type="number" min="0" step="1000"></div>
+      <div class="field"><label for="retiroMotivo">¿Para qué?</label><input class="input" id="retiroMotivo" placeholder="Entregado a la oficina"></div>
+    </div>
+    <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnConfirmarRetiro">Registrar retiro</button>
+  </div>
+</div>
+
+<!-- ===== MODAL ARQUEO ===== -->
+<div class="modal" id="arqueoModal">
+  <div class="modal-box wide">
+    <div class="modal-head"><h3>Cerrar turno · contar caja</h3><button class="modal-close" data-close="arqueoModal">✕</button></div>
+    <p style="font-size:13px;margin:0 0 10px;" class="muted">Cuente los billetes y monedas que hay en la caja ahora.</p>
+    <div class="form-grid" id="arqueoBilletes"></div>
+    <div class="breakdown" id="arqueoResumen"></div>
+    <button class="btn btn-danger btn-lg w100" id="btnConfirmarArqueo">Cerrar turno</button>
+  </div>
+</div>
+
+<!-- ===== MODAL ANULAR ===== -->
+<div class="modal" id="anularModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="anularTitulo">Anular</h3><button class="modal-close" data-close="anularModal">✕</button></div>
+    <p style="font-size:13.5px;line-height:1.55;margin-top:0;" id="anularTexto"></p>
+    <div class="field"><label for="anularMotivo">Motivo (obligatorio)</label><input class="input" id="anularMotivo" placeholder="Ej. se cobró dos veces"></div>
+    <button class="btn btn-danger btn-lg w100" style="margin-top:14px;" id="btnConfirmarAnular">Anular</button>
   </div>
 </div>
 
@@ -1045,7 +1100,8 @@
       facturacion: { nit:'', direccion:'', telefono:'', prefijo:'FE', ivaPct:0 },
       cobro: { fraccionMin:30, graciaMin:0 },
       seguridad: { cierreMin:60 },
-      avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] }
+      avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] },
+      caja: { alertaFaltante:5000 }
     };
   }
   function mergeConfig(d){
@@ -1058,6 +1114,7 @@
     out.cobro = Object.assign(defaultConfig().cobro, d.cobro||{});
     out.seguridad = Object.assign(defaultConfig().seguridad, d.seguridad||{});
     out.avisosStock = Object.assign(defaultConfig().avisosStock, d.avisosStock||{});
+    out.caja = Object.assign(defaultConfig().caja, d.caja||{});
     out.servicios = Array.isArray(d.servicios) ? d.servicios : [];
     out.empresas = Array.isArray(d.empresas) ? d.empresas : [];
     return out;
@@ -1075,6 +1132,7 @@
   let categoriaPOS = '';
   let histModo = 'parqueo';
   let histMesExtra = null;
+  let anuladosH = [], anuladasV = [], bitacoraLista = [];
   let imprimirAlAbrir = false;
 
   /* ---------- utilidades ---------- */
@@ -1446,6 +1504,7 @@
     detenerEscuchas();
     perfil = null;
     activos=[]; historial=[]; mensualidades=[]; clientes=[]; turnos=[]; productos=[]; ventas=[]; usuarios=[];
+    anuladosH=[]; anuladasV=[]; bitacoraLista=[];
     carrito = {};
     fotoPendiente = null;
     histMesExtra = null;
@@ -1601,29 +1660,32 @@
       programar(renderSubs, renderAlertas, checkPlaca, renderPanel);
     }, errEscucha));
     escuchas.push(db.collection('historial').where('salida','>=',desde).onSnapshot(q=>{
-      historial = docs(q).sort((a,b)=> b.salida.localeCompare(a.salida));
+      const todosH = docs(q).sort((a,b)=> b.salida.localeCompare(a.salida));
+      historial = todosH.filter(h=>!h.anulado); anuladosH = todosH.filter(h=>h.anulado);
       programar(renderHistorial, renderCaja, renderKpis, renderClientes, renderTurnos, renderTurnoBar, renderPanel);
     }, errEscucha));
     escuchas.push(db.collection('ventas').where('fecha','>=',desde).onSnapshot(q=>{
-      ventas = docs(q).sort((a,b)=> b.fecha.localeCompare(a.fecha));
+      const todasV = docs(q).sort((a,b)=> b.fecha.localeCompare(a.fecha));
+      ventas = todasV.filter(v=>!v.anulado); anuladasV = todasV.filter(v=>v.anulado);
       programar(renderVentasHoy, renderHistorial, renderCaja, renderKpis, renderTurnos, renderTurnoBar, renderPanel);
     }, errEscucha));
     escuchas.push(db.collection('turnos').where('inicio','>=',desde).onSnapshot(q=>{
       turnos = docs(q);
-      programar(renderTurnoBar, renderTurnos);
+      programar(renderTurnoBar, renderTurnos, renderAlertas);
     }, errEscucha));
     if(esStaff()){
       escuchas.push(db.collection('clientes').onSnapshot(q=>{ clientes = docs(q); programar(renderClientes); }, errEscucha));
     }
     if(esAdmin()){
       escuchas.push(db.collection('usuarios').onSnapshot(q=>{ usuarios = docs(q); programar(renderUsuarios); }, errEscucha));
+      escuchas.push(db.collection('bitacora').where('fecha','>=',desde).onSnapshot(q=>{ bitacoraLista = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderBitacora); }, errEscucha));
     }
   }
 
   function renderTodo(){
     programar(renderBrand, renderNav, renderTipos, renderTipoSelect, renderActivos, renderKpis, renderTurnoBar, renderPOS, renderCarrito,
       renderVentasHoy, renderInventario, renderCaja, renderHistorial, renderSubs, renderClientes, renderTurnos, renderAlertas,
-      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana);
+      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora);
   }
 
   function renderBrand(){
@@ -2093,7 +2155,8 @@
     const parqueo = salidas.reduce((s,h)=>s+(h.total||0),0);
     const tienda = vts.reduce((s,v)=>s+(v.total||0),0);
     const efectivo = salidas.concat(vts).filter(x=>x.metodoPago==='efectivo').reduce((s,x)=>s+(x.total||0),0);
-    return { ingresos, salidas: salidas.length, ventas: vts.length, parqueo, tienda, total: parqueo+tienda, efectivo };
+    const base = t.base||0, retiros = (t.retiros||[]).reduce((s,r)=>s+(r.valor||0),0);
+    return { ingresos, salidas: salidas.length, ventas: vts.length, parqueo, tienda, total: parqueo+tienda, efectivo, base, retiros, esperado: base+efectivo-retiros };
   }
   function renderTurnoBar(){
     const bar = $('turnoBar');
@@ -2106,19 +2169,78 @@
     }else $('turnoInfo').textContent = 'Turno no iniciado';
     $('btnIniciarTurno').hidden = !!t;
     $('btnFinalizarTurno').hidden = !t;
+    $('btnRetiro').hidden = !t;
   }
   $('btnIniciarTurno').addEventListener('click', ()=>{
     if(turnoAbiertoDe(perfil.uid)){ showToast('Ya tienes un turno abierto.'); return; }
-    const id = nuevoId();
-    db.collection('turnos').doc(id).set({ id, perfilId:perfil.uid, perfilNombre:perfil.nombre, inicio:new Date().toISOString(), fin:null }).catch(errGuardar);
-    showToast('Turno iniciado.');
+    $('baseValor').value = '';
+    abrirModal('baseModal'); setTimeout(()=>$('baseValor').focus(), 50);
   });
+  $('btnConfirmarBase').addEventListener('click', ()=>{
+    if(turnoAbiertoDe(perfil.uid)) return;
+    const id = nuevoId(), base = Math.max(0, parseInt($('baseValor').value,10)||0);
+    db.collection('turnos').doc(id).set({ id, perfilId:perfil.uid, perfilNombre:perfil.nombre, inicio:new Date().toISOString(), fin:null, base, retiros:[] }).catch(errGuardar);
+    cerrarModal('baseModal');
+    showToast('Turno iniciado con base de '+money(base)+'.');
+  });
+  $('btnRetiro').addEventListener('click', ()=>{ $('retiroValor').value=''; $('retiroMotivo').value=''; abrirModal('retiroModal'); setTimeout(()=>$('retiroValor').focus(), 50); });
+  $('btnConfirmarRetiro').addEventListener('click', ()=>{
+    const t = turnoAbiertoDe(perfil.uid); if(!t) return;
+    const valor = Math.max(0, parseInt($('retiroValor').value,10)||0), motivo = $('retiroMotivo').value.trim().slice(0,80) || 'Retiro';
+    if(!valor){ showToast('Escribe el valor que sale de la caja.'); return; }
+    const st = statsTurno(t);
+    if(valor > st.esperado && !confirm('Ese retiro es mayor que el efectivo que debería haber ('+money(st.esperado)+'). ¿Registrar igual?')) return;
+    const retiros = (t.retiros||[]).concat([{ valor, motivo, fecha:new Date().toISOString() }]);
+    db.collection('turnos').doc(t.id).update({ retiros }).catch(errGuardar);
+    bitacora('Retiro de caja', money(valor)+' · '+motivo);
+    cerrarModal('retiroModal');
+    showToast('Retiro de '+money(valor)+' registrado.');
+  });
+  const DENOMINACIONES = [100000, 50000, 20000, 10000, 5000, 2000, 1000];
+  function totalArqueo(){
+    let t = DENOMINACIONES.reduce((s,d)=> s + d*(parseInt(($('den'+d)||{}).value,10)||0), 0);
+    return t + (parseInt($('denMonedas').value,10)||0);
+  }
+  function renderArqueo(){
+    const t = turnoAbiertoDe(perfil.uid); if(!t) return;
+    const st = statsTurno(t), contado = totalArqueo(), dif = contado - st.esperado;
+    $('arqueoResumen').innerHTML =
+      '<div class="brow"><span>Base</span><span class="v">'+money(st.base)+'</span></div>'+
+      '<div class="brow"><span>Cobrado en efectivo</span><span class="v">'+money(st.efectivo)+'</span></div>'+
+      '<div class="brow"><span>Retiros</span><span class="v">−'+money(st.retiros)+'</span></div>'+
+      '<div class="brow"><span>Debería haber</span><span class="v">'+money(st.esperado)+'</span></div>'+
+      '<div class="brow"><span>Contado</span><span class="v">'+money(contado)+'</span></div>'+
+      '<div class="brow total"><span>'+(dif===0?'Cuadra':dif>0?'Sobra':'Falta')+'</span><span class="v" style="color:'+(dif<0?'var(--red)':dif>0?'var(--blue)':'var(--green)')+'">'+money(Math.abs(dif))+'</span></div>';
+  }
   $('btnFinalizarTurno').addEventListener('click', ()=>{
     const t = turnoAbiertoDe(perfil.uid); if(!t) return;
-    const fin = new Date().toISOString();
-    db.collection('turnos').doc(t.id).update({ fin }).catch(errGuardar);
-    mostrarBalance(Object.assign({}, t, { fin }));
-    showToast('Turno finalizado.');
+    $('arqueoBilletes').innerHTML = DENOMINACIONES.map(d=>'<div class="field"><label for="den'+d+'">Billetes de '+money(d)+'</label><input class="input mono" id="den'+d+'" type="number" min="0" step="1" placeholder="0"></div>').join('')+
+      '<div class="field"><label for="denMonedas">Monedas (total en pesos)</label><input class="input mono" id="denMonedas" type="number" min="0" step="50" placeholder="0"></div>';
+    renderArqueo();
+    abrirModal('arqueoModal');
+  });
+  $('arqueoBilletes').addEventListener('input', renderArqueo);
+  $('btnConfirmarArqueo').addEventListener('click', ()=>{
+    const t = turnoAbiertoDe(perfil.uid); if(!t) return;
+    const fin = new Date().toISOString(), st = statsTurno(t, fin), contado = totalArqueo(), diferencia = contado - st.esperado;
+    const billetes = {}; DENOMINACIONES.forEach(d=>{ const n = parseInt($('den'+d).value,10)||0; if(n) billetes[d] = n; });
+    const cierre = { fin, contado, esperado:st.esperado, diferencia, billetes, monedas: parseInt($('denMonedas').value,10)||0 };
+    db.collection('turnos').doc(t.id).update(cierre).catch(errGuardar);
+    if(diferencia) bitacora('Cierre de caja con diferencia', (diferencia<0?'Faltaron ':'Sobraron ')+money(Math.abs(diferencia))+' · '+t.perfilNombre);
+    cerrarModal('arqueoModal');
+    mostrarBalance(Object.assign({}, t, cierre));
+    showToast('Turno cerrado.');
+  });
+  let balanceActual = null;
+  $('btnBalanceImprimir').addEventListener('click', ()=>{
+    if(!balanceActual) return;
+    const { t, st } = balanceActual;
+    const lineas = ['Persona: '+t.perfilNombre, 'Inicio: '+fmtFechaHora(t.inicio), 'Fin: '+fmtFechaHora(t.fin), '',
+      'Ingresos: '+st.ingresos, 'Salidas: '+st.salidas+' · '+money(st.parqueo), 'Ventas: '+st.ventas+' · '+money(st.tienda), '',
+      'Base: '+money(st.base), 'Efectivo: '+money(st.efectivo)].concat((t.retiros||[]).map(r=>'Retiro: −'+money(r.valor)+' '+r.motivo),
+      ['Debería haber: '+money(st.esperado)], t.contado!=null ? ['Contado: '+money(t.contado), (t.diferencia<0?'Faltó':'Sobró')+': '+money(Math.abs(t.diferencia||0))] : [],
+      ['', 'TOTAL: '+money(st.total)]);
+    imprimirTicket({ titulo:'Cuadre de turno', lineas, codigo:null, html:'<div class="ticket">'+ticketCabecera()+'<div class="t-title">CUADRE DE TURNO</div>'+lineas.map(l=>l?fila(l.split(': ')[0], l.split(': ').slice(1).join(': ')):'<hr>').join('')+'</div>' });
   });
   function mostrarBalance(t){
     const st = statsTurno(t, t.fin);
@@ -2130,8 +2252,14 @@
       '<div class="brow"><span>Vehículos ingresados</span><span class="v">'+st.ingresos+'</span></div>'+
       '<div class="brow"><span>Salidas cobradas</span><span class="v">'+st.salidas+' · '+money(st.parqueo)+'</span></div>'+
       '<div class="brow"><span>Ventas de tienda</span><span class="v">'+st.ventas+' · '+money(st.tienda)+'</span></div>'+
-      '<div class="brow"><span>Efectivo a entregar</span><span class="v">'+money(st.efectivo)+'</span></div>'+
+      '<div class="brow"><span>Base de caja</span><span class="v">'+money(st.base)+'</span></div>'+
+      '<div class="brow"><span>Cobrado en efectivo</span><span class="v">'+money(st.efectivo)+'</span></div>'+
+      (t.retiros||[]).map(r=>'<div class="brow"><span>Retiro · '+esc(r.motivo)+'</span><span class="v">−'+money(r.valor)+'</span></div>').join('')+
+      '<div class="brow"><span>Debería haber</span><span class="v">'+money(st.esperado)+'</span></div>'+
+      (t.contado!=null ? '<div class="brow"><span>Contado</span><span class="v">'+money(t.contado)+'</span></div>'+
+        '<div class="brow"><span>'+(t.diferencia===0?'Cuadra':t.diferencia>0?'Sobró':'Faltó')+'</span><span class="v" style="color:'+(t.diferencia<0?'var(--red)':'inherit')+'">'+money(Math.abs(t.diferencia||0))+'</span></div>' : '')+
       '<div class="brow total"><span>Total cobrado</span><span class="v">'+money(st.total)+'</span></div>';
+    balanceActual = { t, st };
     abrirModal('balanceModal');
   }
 
@@ -2331,6 +2459,7 @@
       const p = productos.find(x=>x.id===del.dataset.borrarProd); if(!p) return;
       if(!confirm('¿Eliminar '+p.nombre+' del inventario?')) return;
       db.collection('productos').doc(p.id).delete().catch(errGuardar);
+      bitacora('Producto borrado', p.nombre+' · tenía '+(p.stock||0)+' unidades');
       showToast('Producto eliminado.');
     }
   });
@@ -2346,6 +2475,11 @@
     }else{
       const nombre = $('peNombre').value.trim().slice(0,80);
       if(!nombre){ showToast('El nombre no puede quedar vacío.'); return; }
+      const pAnt = productos.find(x=>x.id===productoAccion.id) || {};
+      const stNuevo = Math.max(0, parseInt($('peStock').value,10)||0);
+      if(stNuevo !== (pAnt.stock||0)) bitacora('Conteo de inventario corregido', nombre+': de '+(pAnt.stock||0)+' a '+stNuevo);
+      const prNuevo = Math.max(0, parseInt($('pePrecio').value,10)||0);
+      if(prNuevo !== (pAnt.precio||0)) bitacora('Precio cambiado', nombre+': de '+money(pAnt.precio||0)+' a '+money(prNuevo));
       ref.update({
         nombre, categoria: ($('peCat').value.trim()||'Otros').slice(0,40),
         precio: Math.max(0, parseInt($('pePrecio').value,10)||0),
@@ -2444,7 +2578,8 @@
             db.collection('historial').where('salida','>=',ini.toISOString()).where('salida','<',fin.toISOString()).get(),
             db.collection('ventas').where('fecha','>=',ini.toISOString()).where('fecha','<',fin.toISOString()).get()
           ]);
-          histMesExtra = { mes, historial: docs(h).sort((a,b)=>b.salida.localeCompare(a.salida)), ventas: docs(v).sort((a,b)=>b.fecha.localeCompare(a.fecha)) };
+          const hh = docs(h).sort((a,b)=>b.salida.localeCompare(a.salida)), vv = docs(v).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+          histMesExtra = { mes, historial: hh.filter(x=>!x.anulado), ventas: vv.filter(x=>!x.anulado), anuladosH: hh.filter(x=>x.anulado), anuladasV: vv.filter(x=>x.anulado) };
         }catch(e){ errEscucha(e); }
       }
     }
@@ -2471,15 +2606,20 @@
     const rows = histFiltrado();
     const total = rows.reduce((s,r)=>s+(r.total||0),0);
     $('histResumen').innerHTML = rows.length+(histModo==='tienda'?' venta(s)':' comprobante(s)')+' en '+esc(etiquetaPeriodo())+' · Total: <strong>'+money(total)+'</strong>';
-    if(rows.length===0){ $('histLista').innerHTML = '<div class="empty">No hay registros en ese periodo.</div>'; return; }
-    if(histModo==='tienda'){ $('histLista').innerHTML = rows.slice(0,200).map(ventaFilaHTML).join(''); return; }
+    const anul = histAnulados();
+    if(anul.length) $('histResumen').innerHTML += ' · <span style="color:var(--red);">'+anul.length+' anulado(s), no suman</span>';
+    const anulHTML = anul.length ? '<div class="lbl" style="margin:18px 0 4px;color:var(--red);">Anulados</div>'+anul.map(x=>
+      '<div class="list-row" style="opacity:.7;"><div style="min-width:0;"><strong class="mono" style="text-decoration:line-through;">'+esc(x.numeroFactura||x.numero||'')+'</strong> '+(x.placa?'<span class="placa-txt">'+esc(x.placa)+'</span>':'')+
+      '<div class="meta">'+esc(x.motivoAnulacion||'')+' · anuló '+esc(x.anuladoPor||'')+' · '+fmtFechaHora(x.anuladoEn||x.salida||x.fecha)+'</div></div><span class="money" style="text-decoration:line-through;">'+money(x.total)+'</span></div>').join('') : '';
+    if(rows.length===0){ $('histLista').innerHTML = '<div class="empty">No hay registros en ese periodo.</div>'+anulHTML; return; }
+    if(histModo==='tienda'){ $('histLista').innerHTML = rows.slice(0,200).map(v=>ventaFilaHTML(v).replace('<button class="btn btn-ghost btn-sm" data-venta=', (esAdmin()?'<button class="btn btn-ghost btn-sm" data-anular-venta="'+esc(v.id)+'">Anular</button>':'')+'<button class="btn btn-ghost btn-sm" data-venta=')).join('')+anulHTML; return; }
     $('histLista').innerHTML = rows.slice(0,200).map(h=>{
       const totalHtml = (esSubModo(h.modo) && !h.total) ? '<span class="chip chip-green">INCLUIDO</span>' : '<span class="money accent">'+money(h.total)+'</span>';
       return '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(h.placa)+'</span>'+
         '<div class="meta">'+esc(h.numeroFactura||'')+' · '+nombreFor(h.tipo)+' · '+fmtFechaHora(h.salida)+
         (h.minutos!=null?' · '+fmtDuracion(h.minutos):'')+(h.total?' · '+esc(pagoLabel(h)):'')+(h.operador?' · '+esc(h.operador):'')+'</div></div>'+
-        '<div class="r">'+totalHtml+'<button class="btn btn-ghost btn-sm" data-recibo="'+esc(h.id)+'">Ver</button></div></div>';
-    }).join('');
+        '<div class="r">'+totalHtml+(esStaff() && h.total ? '<button class="btn btn-ghost btn-sm" data-anular-cobro="'+esc(h.id)+'">Anular</button>' : '')+'<button class="btn btn-ghost btn-sm" data-recibo="'+esc(h.id)+'">Ver</button></div></div>';
+    }).join('')+anulHTML;
   }
   $('histLista').addEventListener('click', e=>{
     const b = e.target.closest('[data-recibo]'); if(!b) return;
@@ -2626,6 +2766,9 @@
         return esc(s.placa)+(s.cliente?' ('+esc(s.cliente)+')':'')+' — '+(d<0?'vencida hace '+(-d)+' día(s)':d===0?'vence hoy':'vence en '+d+' día(s)');
       }).join(' · ')+'</div>';
     }
+    const limF = (cfg.caja||{}).alertaFaltante||0;
+    const faltas = turnos.filter(t=>t.fin && t.diferencia<0 && -t.diferencia>limF && isSameDay(new Date(t.fin), new Date()));
+    if(faltas.length) html += '<div class="alert alert-red"><strong>Faltante de caja hoy:</strong> '+faltas.map(t=>esc(t.perfilNombre)+' — faltaron '+money(-t.diferencia)).join(' · ')+'</div>';
     const bajos = productos.filter(p=>(p.stock||0)<=minDe(p));
     if(bajos.length){
       html += '<div class="alert alert-amber"><strong>Tienda — pedir mercancía:</strong> '+bajos.slice(0,12).map(p=>esc(p.nombre)+' ('+(p.stock||0)+')').join(' · ')+(bajos.length>12?' …':'')+'</div>';
@@ -2682,7 +2825,9 @@
     const cerrados = turnos.filter(t=>t.fin).sort((a,b)=>b.fin.localeCompare(a.fin));
     $('turnosHist').innerHTML = cerrados.length ? cerrados.slice(0,100).map(t=>{
       const st = statsTurno(t, t.fin);
-      return '<div class="list-row"><div><strong>'+esc(t.perfilNombre)+'</strong>'+
+      const lim = (cfg.caja||{}).alertaFaltante||0;
+      const chip = t.diferencia==null ? '' : t.diferencia < 0 ? ' <span class="chip '+(-t.diferencia>lim?'chip-red':'chip-amber')+'">Faltó '+money(-t.diferencia)+'</span>' : t.diferencia>0 ? ' <span class="chip chip-blue">Sobró '+money(t.diferencia)+'</span>' : ' <span class="chip chip-green">Cuadró</span>';
+      return '<div class="list-row"><div><strong>'+esc(t.perfilNombre)+'</strong>'+chip+
         '<div class="meta">'+fmtCorto(new Date(t.inicio))+' · '+fmtHora(t.inicio)+' a '+fmtHora(t.fin)+' ('+fmtDuracion((new Date(t.fin)-new Date(t.inicio))/60000)+') · '+st.ingresos+' ingresos · '+st.salidas+' salidas · '+st.ventas+' ventas</div></div>'+
         '<div class="r"><span class="money accent">'+money(st.total)+'</span><button class="btn btn-ghost btn-sm" data-balance="'+esc(t.id)+'">Ver</button></div></div>';
     }).join('') : '<div class="empty">Todavía no hay turnos terminados.</div>';
@@ -2705,6 +2850,7 @@
     $('cfgGracia').value = cfg.cobro.graciaMin||0;
     $('cfgCierre').value = String(cfg.seguridad.cierreMin);
     $('cfgUmbral').value = cfg.avisosStock.umbral;
+    $('cfgFaltante').value = cfg.caja.alertaFaltante;
     document.querySelectorAll('[data-rol-aviso]').forEach(c=>{ c.checked = cfg.avisosStock.roles.includes(c.dataset.rolAviso); });
     renderFactPreview();
     const fr = cfg.cobro.fraccionMin, h = cfg.rates.carro.hora, vf = Math.round(h*fr/60);
@@ -2730,6 +2876,7 @@
   $('cfgFraccion').addEventListener('change', ()=> guardarConfig({ cobro:{ fraccionMin: parseInt($('cfgFraccion').value,10)||30 } }, 'Forma de cobro actualizada.'));
   $('cfgGracia').addEventListener('change', ()=> guardarConfig({ cobro:{ graciaMin: Math.max(0, Math.min(30, parseInt($('cfgGracia').value,10)||0)) } }, 'Tolerancia actualizada.'));
   $('cfgCierre').addEventListener('change', ()=> guardarConfig({ seguridad:{ cierreMin: parseInt($('cfgCierre').value,10)||0 } }, 'Guardado.'));
+  $('cfgFaltante').addEventListener('change', ()=> guardarConfig({ caja:{ alertaFaltante: Math.max(0, parseInt($('cfgFaltante').value,10)||0) } }, 'Guardado.'));
   $('cfgUmbral').addEventListener('change', ()=> guardarConfig({ avisosStock:{ umbral: Math.max(0, Math.min(999, parseInt($('cfgUmbral').value,10)||0)) } }, 'Aviso de inventario actualizado.'));
   document.querySelectorAll('[data-rol-aviso]').forEach(c=> c.addEventListener('change', ()=>{
     const roles = [...document.querySelectorAll('[data-rol-aviso]')].filter(x=>x.checked).map(x=>x.dataset.rolAviso);
@@ -2750,6 +2897,7 @@
     const val = Math.max(0, parseInt(inp.value,10)||0);
     inp.value = val;
     guardarConfig({ rates:{ [inp.dataset.tipo]:{ [inp.dataset.campo]: val } } }, 'Tarifa de '+nombreFor(inp.dataset.tipo)+' actualizada.');
+    bitacora('Tarifa cambiada', nombreFor(inp.dataset.tipo)+' · '+inp.dataset.campo+': '+money(cfg.rates[inp.dataset.tipo][inp.dataset.campo])+' → '+money(val));
   });
 
   function renderServicios(){
@@ -2816,6 +2964,7 @@
   $('usuariosLista').addEventListener('change', e=>{
     const s = e.target.closest('[data-rol-usr]'); if(!s) return;
     db.collection('usuarios').doc(s.dataset.rolUsr).update({ rol:s.value }).then(()=>showToast('Rol actualizado.')).catch(errGuardar);
+    const u = usuarios.find(x=>x.id===s.dataset.rolUsr); bitacora('Rol cambiado', (u?u.nombre:'')+' → '+rolLabel(s.value));
   });
   $('usuariosLista').addEventListener('click', async e=>{
     const rs = e.target.closest('[data-reset-usr]'), ac = e.target.closest('[data-activo-usr]');
@@ -2827,6 +2976,7 @@
       const activar = u.activo===false;
       if(!activar && !confirm('¿Desactivar a '+u.nombre+'? No podrá entrar hasta que lo actives de nuevo.')) return;
       db.collection('usuarios').doc(u.id).update({ activo:activar }).then(()=>showToast(activar?'Usuario activado.':'Usuario desactivado.')).catch(errGuardar);
+      bitacora(activar?'Usuario activado':'Usuario desactivado', u.nombre);
     }
   });
   $('btnAddUsuario').addEventListener('click', async ()=>{
@@ -2842,6 +2992,7 @@
       await sec.auth().signOut();
       $('usrNombre').value=''; $('usrCorreo').value=''; $('usrClave').value='';
       showToast(nombre+' ya puede entrar con su correo y contraseña.');
+      bitacora('Usuario creado', nombre+' · '+rolLabel(rol));
     }catch(e){
       console.error(e);
       showToast(e && e.code && e.code.startsWith('auth/') ? errorAuth(e) : 'No se pudo crear el usuario.');
@@ -2863,6 +3014,7 @@
         }
       }
       await CONT_REF.set({ ticket:1, factura:1, venta:1 });
+      bitacora('Datos reiniciados', 'Se borró historial, vehículos, ventas, mensualidades, clientes y turnos');
       cerrarModal('resetModal');
       showToast('Datos reiniciados.');
     }catch(e){ errGuardar(e); }
@@ -2904,6 +3056,61 @@
       showToast('Listo: tus datos anteriores ya están en el nuevo sistema.');
     }catch(e){ console.error(e); showToast('No se pudieron pasar los datos anteriores. Se intentará de nuevo al volver a entrar.'); }
   }
+
+  /* ================= BITÁCORA ================= */
+  function bitacora(accion, detalle){
+    if(!perfil) return;
+    const id = nuevoId();
+    db.collection('bitacora').doc(id).set({ id, fecha:new Date().toISOString(), uid:perfil.uid, nombre:perfil.nombre, rol:perfil.rol, accion, detalle:String(detalle||'').slice(0,300) }).catch(e=>console.warn('bitácora', e));
+  }
+  function renderBitacora(){
+    if(!esAdmin()) return;
+    $('bitCount').textContent = bitacoraLista.length;
+    $('bitLista').innerHTML = bitacoraLista.length ? bitacoraLista.slice(0,100).map(b=>
+      '<div class="mini-row"><span class="ic sm '+(/anul|borr|falt|reinic/i.test(b.accion+b.detalle)?'ic-rojo':'ic-azul')+'">'+ICONOS.historial+'</span>'+
+      '<div class="t"><strong>'+esc(b.accion)+'</strong> <span class="muted">· '+esc(b.nombre)+'</span><div class="meta">'+esc(b.detalle)+'</div></div><span class="meta mono">'+fmtFechaHora(b.fecha)+'</span></div>').join('')
+      : '<div class="empty">Todavía no hay cambios registrados.</div>';
+  }
+
+  /* ================= ANULAR COBROS Y VENTAS ================= */
+  function histAnulados(){
+    const mes = $('histMes').value, extra = histMesExtra && histMesExtra.mes===mes;
+    if(histModo==='tienda') return (extra ? histMesExtra.anuladasV : anuladasV).filter(v=>enMes(v.fecha, mes));
+    return (extra ? histMesExtra.anuladosH : anuladosH).filter(h=>enMes(h.salida, mes));
+  }
+  let anularActual = null;
+  function pedirAnular(tipo, reg){
+    anularActual = { tipo, reg };
+    $('anularTitulo').textContent = tipo==='venta' ? 'Anular venta '+reg.numero : 'Anular cobro '+(reg.numeroFactura||reg.placa);
+    $('anularTexto').innerHTML = 'Se quita <strong>'+money(reg.total)+'</strong> de la caja. El registro no se borra: queda tachado en el historial y en la bitácora.'+(tipo==='venta'?' Los productos vuelven al inventario.':'');
+    $('anularMotivo').value = '';
+    abrirModal('anularModal'); setTimeout(()=>$('anularMotivo').focus(), 50);
+  }
+  document.addEventListener('click', e=>{
+    const c = e.target.closest('[data-anular-cobro]'), v = e.target.closest('[data-anular-venta]');
+    if(c){ const r = historial.find(x=>x.id===c.dataset.anularCobro) || (histMesExtra && histMesExtra.historial.find(x=>x.id===c.dataset.anularCobro)); if(r) pedirAnular('cobro', r); }
+    if(v){ const r = ventas.find(x=>x.id===v.dataset.anularVenta) || (histMesExtra && histMesExtra.ventas.find(x=>x.id===v.dataset.anularVenta)); if(r) pedirAnular('venta', r); }
+  });
+  $('btnConfirmarAnular').addEventListener('click', ()=>{
+    if(!anularActual) return;
+    const motivo = $('anularMotivo').value.trim().slice(0,120);
+    if(motivo.length<4){ showToast('Escribe el motivo de la anulación.'); return; }
+    const { tipo, reg } = anularActual;
+    const marca = { anulado:true, anuladoPor:perfil.nombre, anuladoPorId:perfil.uid, anuladoEn:new Date().toISOString(), motivoAnulacion:motivo };
+    if(tipo==='venta'){
+      const b = db.batch();
+      b.update(db.collection('ventas').doc(reg.id), marca);
+      reg.items.forEach(it=> b.update(db.collection('productos').doc(it.productoId), { stock: FV.increment(it.cantidad) }));
+      b.commit().catch(errGuardar);
+      bitacora('Venta anulada', reg.numero+' · '+money(reg.total)+' · '+motivo);
+    }else{
+      db.collection('historial').doc(reg.id).update(marca).catch(errGuardar);
+      bitacora('Cobro anulado', (reg.numeroFactura||'')+' · '+reg.placa+' · '+money(reg.total)+' · '+motivo);
+    }
+    if(histMesExtra){ histMesExtra = null; }
+    cerrarModal('anularModal');
+    showToast('Anulado.');
+  });
 
   /* ================= AVISOS DE INVENTARIO ================= */
   function umbralAviso(){ return (cfg.avisosStock && cfg.avisosStock.umbral!=null) ? cfg.avisosStock.umbral : 5; }

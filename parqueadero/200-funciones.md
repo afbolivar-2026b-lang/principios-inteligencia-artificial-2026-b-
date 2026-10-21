@@ -85,7 +85,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 63. 📴 Tarifas por temporada (diciembre, Semana Santa).
 64. 📴 Simulador de tarifa: "¿cuánto paga alguien que entra a las 7 pm y sale a las 2 am?".
 65. 📴 Historial de cambios de tarifa con fecha.
-66. 📴 Anular un cobro con motivo y permiso del administrador.
+66. ✅ 📴 Anular un cobro con motivo y permiso del administrador.
 67. 📴 Devoluciones de la tienda que regresan el stock.
 68. 🌐 Factura electrónica conectada a Alegra, Siigo o Factus.
 69. 📴 Retención y autorretención en los comprobantes para empresas.
@@ -148,14 +148,14 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 120. 📴 Ganancia neta: ingresos menos costos y gastos.
 
 ## F. Caja, turnos y control (121–145)
-121. 📴 Base de caja al iniciar el turno.
-122. 📴 Arqueo al cerrar el turno: contar los billetes por denominación y ver si sobra o falta.
-123. 📴 Retiros de caja durante el turno (mandar plata a la oficina).
-124. 📴 Entrega de turno con firma del que entrega y del que recibe.
-125. 📴 Cuadre de turno impreso en la impresora de tickets.
-126. 📴 Alerta de faltante mayor a X pesos.
-127. 📴 Bitácora de todo lo que hizo cada usuario (auditoría).
-128. 📴 Avisar cuando alguien borra o anula registros.
+121. ✅ 📴 Base de caja al iniciar el turno.
+122. ✅ 📴 Arqueo al cerrar el turno: contar los billetes por denominación y ver si sobra o falta.
+123. ✅ 📴 Retiros de caja durante el turno (mandar plata a la oficina).
+124. ✅ 📴 Entrega de turno con firma del que entrega y del que recibe.
+125. ✅ 📴 Cuadre de turno impreso en la impresora de tickets.
+126. ✅ 📴 Alerta de faltante mayor a X pesos.
+127. ✅ 📴 Bitácora de todo lo que hizo cada usuario (auditoría).
+128. ✅ 📴 Avisar cuando alguien borra o anula registros.
 129. 📴 Horario permitido por trabajador.
 130. 📴 Registro de entrada y salida del personal (asistencia).
 131. 📴 Horas trabajadas para calcular el pago.
