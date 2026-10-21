@@ -54,7 +54,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 34. ✅ 📴 Varias fotos por vehículo: frente, atrás y laterales.
 35. ✅ 📴 Registrar las llaves entregadas (valet) con el número del gancho.
 36. ✅ 📴 ⚡ Registrar cascos y objetos guardados de las motos.
-37. 📴 Entrada por reserva: la placa ya llega con el pago adelantado.
+37. ✅ 📴 Entrada por reserva: la placa ya llega con el pago adelantado.
 38. ✅ 📴 Aviso de vehículo con más de X horas dentro (posible abandono).
 39. ✅ 📴 ⚡ Deshacer la última entrada o salida durante 1 minuto.
 40. ✅ 📴 Corregir la placa con registro de quién la cambió.
@@ -107,14 +107,14 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 83. ✅ 📴 Cumpleaños del cliente con descuento.
 84. ✅ 📴 Etiquetas de cliente (taxi, domiciliario, vecino, empresa).
 85. ✅ 📴 Ficha del cliente con todas sus visitas y gastos.
-86. 🌐 Enviar el comprobante por correo.
+86. ✅ 🌐 Enviar el comprobante por correo.
 87. 🌐 Portal del cliente para ver su mensualidad y pagar.
-88. 🌐 Encuesta de satisfacción por WhatsApp.
+88. ✅ 🌐 Encuesta de satisfacción por WhatsApp.
 89. ✅ 📴 Clientes inactivos (que dejaron de venir) para recuperarlos.
-90. 🌐 Mensajes masivos de promoción por WhatsApp a los clientes que lo aceptaron.
+90. ✅ 🌐 Mensajes masivos de promoción por WhatsApp a los clientes que lo aceptaron.
 91. ✅ 📴 Registrar la autorización de tratamiento de datos (Ley 1581).
 92. ✅ 📴 Borrar los datos de un cliente si lo pide (derecho de supresión).
-93. 📴 Unir clientes duplicados.
+93. ✅ 📴 Unir clientes duplicados.
 94. ✅ 📴 Importar clientes desde Excel.
 95. ✅ 📴 Convenios con un tope mensual de horas por empresa.
 
@@ -206,13 +206,13 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 171. ✅ 🌐 Aviso al cliente: "su carro está listo" (lavado o valet).
 172. 🌐 Pedir el carro al valet desde el celular.
 173. ✅ 📴 Ticket con publicidad de la tienda.
-174. 📴 Ticket en inglés para turistas.
-175. 🌐 Google Maps y reseñas: botón de "califíquenos".
+174. ✅ 📴 Ticket en inglés para turistas.
+175. ✅ 🌐 Google Maps y reseñas: botón de "califíquenos".
 176. ✅ 📴 Turnos de lavado con hora estimada.
 177. 🌐 Notificación al abonado cuando su puesto fijo está ocupado.
 178. ✅ 📴 Cartel imprimible de tarifas generado desde Ajustes.
 179. ✅ 📴 Avisos legales en el ticket (responsabilidad, horario).
-180. 🌐 Chat del parqueadero por WhatsApp Business.
+180. ✅ 🌐 Chat del parqueadero por WhatsApp Business.
 
 ## I. Hardware e integraciones (181–192)
 181c. 📴 ✅ **Lector de códigos QR y de barras** por cable USB, Bluetooth (modo teclado o BLE) o WiFi (un celular hace de lector); ticket con QR.

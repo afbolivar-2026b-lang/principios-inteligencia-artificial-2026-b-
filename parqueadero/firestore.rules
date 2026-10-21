@@ -120,6 +120,12 @@ service cloud.firestore {
       allow delete: if activo();
     }
 
+    // Reservas con abono: cualquiera del equipo las crea; solo el personal las borra.
+    match /reservas/{id} {
+      allow read, create, update: if activo();
+      allow delete: if esStaff();
+    }
+
     // Quién hizo cada cambio delicado. Nadie la puede editar ni borrar.
     match /bitacora/{id} {
       allow read: if esAdmin();

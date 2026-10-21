@@ -457,6 +457,7 @@
   .pantalla.tv .tv-mov b{background:#f2c200;color:#141413;padding:0 8px;border-radius:4px;font-family:var(--mono);}
   .pantalla.tv .tv-barra{display:flex;align-items:center;gap:12px;font-size:22px;margin:10px 0;} .pantalla.tv .tv-barra .b{flex:1;height:16px;background:#2c2b27;border-radius:8px;overflow:hidden;} .pantalla.tv .tv-barra .b i{display:block;height:100%;background:#f2c200;}
   @media (max-width:900px){ .pantalla.tv .tv-stats{grid-template-columns:1fr 1fr;} .pantalla.tv .tv-bajo{grid-template-columns:1fr;} .pantalla.tv .tv-stat .n{font-size:44px;} }
+  .t-canales{display:flex;justify-content:center;gap:14px;margin-top:8px;} .t-canales div{text-align:center;font-size:9px;text-transform:uppercase;} .t-canales svg{width:72px;height:72px;display:block;margin:0 auto 2px;}
   .qr-pago{display:flex;gap:12px;align-items:center;margin-top:8px;} .qr-pago img{width:120px;height:120px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px;}
   .qr-pago .qr-monto{font:700 30px/1.1 var(--display);}
   .rep-cols{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 12px;font-size:13.5px;}
@@ -683,7 +684,7 @@
           </div>
 
           <div class="card">
-            <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnPantallaCliente" title="Abre una ventana para un segundo monitor que ve el cliente"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><path d="M7 10h4"/></svg>Pantalla cliente</button><button class="btn btn-ghost btn-sm" id="btnPantalla" title="Para un televisor en la entrada"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Pantalla de cupos</button><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
+            <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnReservas" title="Reservas con abono">Reservas <span class="badge" id="reservasCnt" hidden>0</span></button><button class="btn btn-ghost btn-sm" id="btnPantallaCliente" title="Abre una ventana para un segundo monitor que ve el cliente"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><path d="M7 10h4"/></svg>Pantalla cliente</button><button class="btn btn-ghost btn-sm" id="btnPantalla" title="Para un televisor en la entrada"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Pantalla de cupos</button><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
             <div class="row" style="flex-wrap:nowrap;">
               <input type="text" id="buscarActivo" class="input mono upper grow" style="flex:1;" placeholder="Buscar o escanear ticket / placa y Enter" autocomplete="off">
               <button class="btn" id="btnEscanear" type="button" title="Escanear el ticket con la cámara"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Escanear</button>
@@ -942,11 +943,13 @@
             <div class="field grow"><label for="clienteNombre">Nombre</label><input class="input" id="clienteNombre" placeholder="Nombre del cliente"></div>
             <div class="field" style="width:150px;"><label for="clienteTelefono">WhatsApp</label><input class="input mono" id="clienteTelefono" placeholder="3001234567"></div>
             <div class="field" style="width:150px;"><label for="clienteCumple">Cumpleaños</label><input class="input" id="clienteCumple" type="date"></div>
+            <div class="field" style="width:190px;"><label for="clienteCorreo">Correo</label><input class="input" type="email" id="clienteCorreo" placeholder="cliente@correo.com"></div>
             <div class="field" style="width:180px;"><label for="clienteEtiquetas">Etiquetas</label><input class="input" id="clienteEtiquetas" list="etiquetasList" placeholder="taxi, vecino…"></div>
             <button class="btn btn-primary" id="btnAddCliente">Guardar</button>
             <datalist id="etiquetasList"><option value="taxi"><option value="domiciliario"><option value="vecino"><option value="empresa"><option value="moto de reparto"><option value="frecuente"></datalist>
           </div>
           <label class="switch" style="margin-bottom:8px;"><input type="checkbox" id="clienteAutoriza"> El cliente autoriza el tratamiento de sus datos (Ley 1581 de 2012)</label>
+          <label class="switch" style="margin-bottom:8px;margin-left:16px;"><input type="checkbox" id="clientePromos"> Acepta recibir promociones por WhatsApp</label>
           <div class="filters">
             <input type="text" class="input" id="clienteBuscar" placeholder="Buscar por nombre, placa o WhatsApp...">
             <div class="seg" id="clienteFiltro"><button class="active" data-f="todos">Todos</button><button data-f="inactivos">No vienen hace 30 días</button><button data-f="cumple">Cumplen este mes</button></div>
@@ -955,6 +958,19 @@
           <div class="chips" id="etiquetasChips" style="margin-bottom:8px;"></div>
           <div id="clientesLista"></div>
           <div class="hint">Ordenados de más a menos visitas (últimos dos meses). Se llenan solos cuando guardas el nombre o WhatsApp en el comprobante de salida.</div>
+        </div>
+        <div class="grid-2" style="margin-bottom:16px;">
+          <div class="card">
+            <h2 class="card-title">Promoción por WhatsApp<span class="sp"></span><span class="badge" id="promoCount">0</span></h2>
+            <p class="muted" style="margin:0 0 8px;font-size:13px;">Solo les llega a los clientes que aceptaron recibir promociones. WhatsApp no deja mandar todo de una vez desde una página: toque Enviar en cada uno y la app lleva la cuenta.</p>
+            <textarea class="input" id="promoTexto" rows="3" maxlength="500" placeholder="Ej. Este fin de semana el lavado va a $12.000. ¡Lo esperamos!"></textarea>
+            <div id="promoLista" style="margin-top:8px;max-height:260px;overflow:auto;"></div>
+          </div>
+          <div class="card">
+            <h2 class="card-title">Clientes repetidos</h2>
+            <p class="muted" style="margin:0 0 8px;font-size:13px;">Mismo WhatsApp o mismo nombre en varias placas. Al unirlos queda un solo cliente con todas sus placas, sellos y saldo.</p>
+            <div id="dupClientes"></div>
+          </div>
         </div>
         <div class="card" id="deudasCard">
           <h2 class="card-title">Fiados (cuentas por cobrar)<span class="sp"></span><span class="money" id="deudasTotal"></span></h2>
@@ -1132,6 +1148,15 @@
           </div>
 
           <div class="card span2">
+            <h2 class="card-title">Reseñas y WhatsApp del negocio</h2>
+            <p class="muted" style="margin:0 0 10px;font-size:13px;">Salen como código QR al final de cada comprobante y en la encuesta de WhatsApp.</p>
+            <div class="row" style="gap:10px;flex-wrap:wrap;">
+              <div class="field grow"><label for="cfgResenas">Enlace para calificar en Google Maps</label><input class="input" id="cfgResenas" maxlength="200" placeholder="https://g.page/r/…/review"></div>
+              <div class="field" style="width:220px;"><label for="cfgWaNegocio">WhatsApp del negocio (chat)</label><input class="input mono" id="cfgWaNegocio" maxlength="20" placeholder="3001234567"></div>
+            </div>
+          </div>
+
+          <div class="card span2">
             <h2 class="card-title">Cobro con QR (Nequi, Daviplata, Bre-B)</h2>
             <p class="muted" style="margin:0 0 10px;font-size:13px;">Suba la imagen del QR de su cuenta. Cuando el pago es por transferencia, la app lo muestra con el valor exacto para que el cliente lo escanee y escriba ese monto.</p>
             <div class="row" style="gap:10px;align-items:flex-end;flex-wrap:wrap;">
@@ -1212,12 +1237,16 @@
       <div class="field"><label for="tkNombre">Nombre del cliente (opcional)</label><input class="input" id="tkNombre" placeholder="Nombre"></div>
       <label class="switch"><input type="checkbox" id="tkAutoriza"> Autoriza el tratamiento de sus datos (Ley 1581)</label>
       <div class="field"><label for="tkTelefono">WhatsApp del cliente (opcional)</label><input class="input mono" type="tel" id="tkTelefono" placeholder="3001234567"></div>
+      <div class="field"><label for="tkCorreo">Correo del cliente (opcional)</label><input class="input" type="email" id="tkCorreo" placeholder="cliente@correo.com"></div>
       <button class="btn btn-sm" id="btnGuardarContacto">Guardar datos del cliente</button>
     </div>
     <div class="modal-actions">
       <button class="btn btn-green" id="btnTkWhatsapp">WhatsApp</button>
       <button class="btn" id="btnTkImprimir">Imprimir</button>
       <button class="btn" id="btnTkPDF">PDF</button>
+      <button class="btn" id="btnTkCorreo">Correo</button>
+      <button class="btn" id="btnTkEncuesta" hidden title="Pregunta por WhatsApp cómo lo atendieron">Encuesta</button>
+      <button class="btn btn-ghost" id="btnTkIngles" title="Ticket en inglés para turistas">English</button>
     </div>
   </div>
 </div>
@@ -1445,6 +1474,25 @@
 </div>
 
 <!-- ===== MODAL DAÑOS ===== -->
+<div class="modal" id="reservasModal">
+  <div class="modal-box wide">
+    <div class="modal-head"><h3>Reservas</h3><button class="modal-close" data-close="reservasModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="rsPlaca">Placa</label><input class="input mono upper" id="rsPlaca" maxlength="10" placeholder="ABC123"></div>
+      <div class="field"><label for="rsTipo">Vehículo</label><select class="select" id="rsTipo"></select></div>
+      <div class="field"><label for="rsNombre">Nombre</label><input class="input" id="rsNombre" maxlength="60"></div>
+      <div class="field"><label for="rsTel">WhatsApp</label><input class="input mono" id="rsTel" maxlength="20" placeholder="3001234567"></div>
+      <div class="field"><label for="rsFecha">Día</label><input class="input" type="date" id="rsFecha"></div>
+      <div class="field"><label for="rsHora">Hora de llegada</label><input class="input" type="time" id="rsHora"></div>
+      <div class="field"><label for="rsAbono">Abono (pago adelantado)</label><input class="input mono" type="number" min="0" step="1000" id="rsAbono" placeholder="0"></div>
+      <div class="field"><label for="rsMedio">Pagó con</label><select class="select" id="rsMedio"><option value="efectivo">Efectivo</option><option value="nequi">Nequi</option><option value="daviplata">Daviplata</option><option value="bancolombia">Bancolombia</option><option value="transferencia">Otro banco</option></select></div>
+    </div>
+    <button class="btn btn-primary" id="btnAddReserva" style="margin-top:10px;">Guardar reserva</button>
+    <h4 style="margin:16px 0 6px;">Próximas</h4>
+    <div id="reservasLista"></div>
+  </div>
+</div>
+
 <div class="modal" id="devolverModal">
   <div class="modal-box">
     <div class="modal-head"><h3>Devolución</h3><button class="modal-close" data-close="devolverModal">✕</button></div>
@@ -2190,7 +2238,7 @@
     detenerEscuchas();
     perfil = null;
     activos=[]; historial=[]; mensualidades=[]; clientes=[]; turnos=[]; productos=[]; ventas=[]; usuarios=[];
-    anuladosH=[]; anuladasV=[]; bitacoraLista=[]; gastos=[]; pagosMens=[]; fiados=[]; novedades=[];
+    anuladosH=[]; anuladasV=[]; reservas=[]; bitacoraLista=[]; gastos=[]; pagosMens=[]; fiados=[]; novedades=[];
     carrito = {};
     fotoPendiente = null;
     histMesExtra = null;
@@ -2327,7 +2375,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderPermisos, renderQrPago, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderPermisos, renderQrPago, renderCanales, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -2336,6 +2384,9 @@
     escuchas.push(db.collection('activos').onSnapshot(q=>{
       activos = docs(q);
       programar(renderActivos, renderTipos, renderKpis, renderTurnoBar, renderPanel, renderPantalla, renderAlertas, renderTV);
+    }, errEscucha));
+    escuchas.push(db.collection('reservas').where('fecha','>=',hoyISO(new Date(Date.now()-3*864e5))).onSnapshot(q=>{
+      reservas = docs(q); programar(renderReservas, renderAlertas);
     }, errEscucha));
     escuchas.push(db.collection('productos').onSnapshot(q=>{
       productos = docs(q).sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||''));
@@ -2366,7 +2417,7 @@
       escuchas.push(db.collection('fiados').onSnapshot(q=>{ fiados = docs(q); programar(renderDeudas, renderCaja, renderTurnos); }, errEscucha));
       escuchas.push(db.collection('pagosMensualidad').where('fecha','>=',desde).onSnapshot(q=>{ pagosMens = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderCaja, renderPanel, renderTurnos); }, errEscucha));
       escuchas.push(db.collection('gastos').where('fecha','>=',desde.slice(0,10)).onSnapshot(q=>{ gastos = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderCaja, renderPanel); }, errEscucha));
-      escuchas.push(db.collection('clientes').onSnapshot(q=>{ clientes = docs(q); programar(renderClientes, renderDeudas, renderEtiquetas, renderAlertas); }, errEscucha));
+      escuchas.push(db.collection('clientes').onSnapshot(q=>{ clientes = docs(q); programar(renderClientes, renderDeudas, renderEtiquetas, renderAlertas, renderPromos, renderDupClientes); }, errEscucha));
     }
     if(esAdmin()){
       escuchas.push(db.collection('usuarios').onSnapshot(q=>{ usuarios = docs(q); programar(renderUsuarios); }, errEscucha));
@@ -2377,7 +2428,7 @@
   function renderTodo(){
     programar(renderBrand, renderNav, renderTipos, renderTipoSelect, renderActivos, renderKpis, renderTurnoBar, renderPOS, renderCarrito,
       renderVentasHoy, renderInventario, renderCaja, renderHistorial, renderSubs, renderClientes, renderTurnos, renderAlertas,
-      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago);
+      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols, renderQrPago, renderCanales, renderPromos, renderDupClientes);
   }
 
   function renderBrand(){
@@ -2509,6 +2560,7 @@
     if(puestoN && activos.some(a=>a.puesto===puestoN)){ showToast('El puesto '+puestoN+' ya está ocupado.'); return; }
     if(cfg.parqueo.pedirConductor && (!$('conductorNombre').value.trim() || !$('conductorCedula').value.trim())){ showToast('Escriba el nombre y la cédula del conductor.'); return; }
     const emp = empresaForPlate(placa);
+    const resv = reservaDe(placa);
     ingresando = true; $('btnIngresar').disabled = true;
     try{
       const n = await siguienteNumero('ticket');
@@ -2522,6 +2574,7 @@
         danos: danosPendientes.length ? danosPendientes.slice() : null,
         servicioPendiente: $('servicioPendiente') && $('servicioPendiente').value ? $('servicioPendiente').value : null,
         empresaId: emp ? emp.id : null,
+        abono: resv ? (resv.abono||0) : 0, reservaId: resv ? resv.id : null,
         vencidaAlEntrar: vencida,
         codigoIngreso: 'E-' + pad(n),
         nota: $('notaInput').value.trim().slice(0,80) || null,
@@ -2531,6 +2584,7 @@
       };
 
       db.collection('activos').doc(v.id).set(v).catch(errGuardar);
+      if(resv){ db.collection('reservas').doc(resv.id).update({ estado:'llegó', llego:v.entrada }).catch(errGuardar); showToast('Llegó con reserva'+(resv.abono?': ya abonó '+money(resv.abono)+', se descuenta a la salida':'')+'.'); }
       $('placaInput').value = ''; $('placaInfo').innerHTML = ''; $('notaInput').value = ''; $('puestoInput').value = '';
       $('conductorNombre').value = ''; $('conductorCedula').value = '';
       fotoPendiente = null; $('fotoInput').value = ''; $('fotoPreview').hidden = true; fotosExtra = [];
@@ -2721,7 +2775,7 @@
       const total = getTotal(), el = $(p+'Dev');
       const qp = cfg.qrPago||{};
       $(p+'QR').innerHTML = metodo==='transferencia' && (qp.img || qp.llave) && total>0 ? (qp.img ? '<img src="'+esc(qp.img)+'" alt="QR para pagar">' : '')+'<div><div class="lbl">Muéstrele este QR al cliente</div><div class="qr-monto">'+money(total)+'</div>'+(qp.llave?'<div class="meta">Llave: <span class="mono">'+esc(qp.llave)+'</span></div>':'')+'</div>' : '';
-      if(conFiado && metodo==='monedero'){ const c = clientes.find(x=>x.placa===limpiarPlaca($(p+'MonPlaca').value)); $(p+'MonSaldo').innerHTML = c ? '<span>Saldo</span><span class="mono" style="color:'+((c.saldo||0)>=total?'var(--green)':'var(--red)')+';">'+money(c.saldo||0)+'</span>' : '<span class="muted">Escriba una placa con monedero</span><span></span>'; }
+      if(conFiado && metodo==='monedero'){ const c = clienteDe(limpiarPlaca($(p+'MonPlaca').value)); $(p+'MonSaldo').innerHTML = c ? '<span>Saldo</span><span class="mono" style="color:'+((c.saldo||0)>=total?'var(--green)':'var(--red)')+';">'+money(c.saldo||0)+'</span>' : '<span class="muted">Escriba una placa con monedero</span><span></span>'; }
       billetes(total);
       if(metodo==='mixto'){ const e = Math.max(0, parseInt($(p+'MixEfe').value,10)||0); $(p+'MixRes').innerHTML = '<span>Por '+esc(medioLabel($(p+'MixMedio').value))+'</span><span class="mono">'+money(Math.max(0,total-e))+'</span>'; }
       const val = $(p+'Recibido').value;
@@ -2740,7 +2794,7 @@
     if(conFiado) $(p+'MonPlaca').addEventListener('input', devuelta);
     return {
       reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; $(p+'MixEfe').value=''; if(conFiado){ $(p+'Deudor').value=''; $(p+'MonPlaca').value=''; } pintar(); },
-      setPlaca(pl){ if(conFiado){ $(p+'MonPlaca').value = pl||''; const c = clientes.find(x=>x.placa===pl); if(c && (c.saldo||0)>0){ metodo='monedero'; pintar(); } } },
+      setPlaca(pl){ if(conFiado){ $(p+'MonPlaca').value = pl||''; const c = clienteDe(pl); if(c && (c.saldo||0)>0){ metodo='monedero'; pintar(); } } },
       exacto(){ metodo='efectivo'; $(p+'Recibido').value = getTotal(); pintar(); },
       actualizarFiado(){ if(conFiado) box.querySelectorAll('.js-fiado').forEach(b=>{ b.hidden = !puedeFiar(); }); },
       refrescar: devuelta,
@@ -2750,9 +2804,9 @@
         const recibido = (metodo==='efectivo' && !isNaN(rec)) ? rec : null;
         const deudor = metodo==='fiado' ? $(p+'Deudor').value.trim().slice(0,60) : null;
         const efePart = metodo==='mixto' ? Math.max(0, parseInt($(p+'MixEfe').value,10)||0) : null;
-        const monPlaca = metodo==='monedero' ? limpiarPlaca($(p+'MonPlaca').value) : null, monCli = monPlaca ? clientes.find(x=>x.placa===monPlaca) : null;
+        const monPlaca = metodo==='monedero' ? limpiarPlaca($(p+'MonPlaca').value) : null, monCli = monPlaca ? clienteDe(monPlaca) : null;
         return {
-          monederoPlaca: monPlaca, sinSaldo: metodo==='monedero' && (!monCli || (monCli.saldo||0) < total),
+          monederoPlaca: monCli ? monCli.placa : monPlaca, sinSaldo: metodo==='monedero' && (!monCli || (monCli.saldo||0) < total),
           metodoPago: metodo, deudor,
           sinDeudor: metodo==='fiado' && !deudor,
           mixtoMal: metodo==='mixto' && (!efePart || efePart>=total),
@@ -2798,8 +2852,9 @@
     const tiendaItems = Object.entries(salidaTienda).map(([id,cant])=>{ const p = productos.find(x=>x.id===id); return p ? { productoId:id, nombre:p.nombre, cantidad:cant, precio:p.precio, costo:p.costo||0 } : null; }).filter(Boolean);
     const tiendaTotal = tiendaItems.reduce((s,i)=>s+i.precio*i.cantidad,0);
     const propina = Math.max(0, parseInt(($('salidaPropina')||{}).value,10)||0);
-    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, gratis, descFid, cupon, descCupon, descCumple, validacion, subtotal, ivaPct, iva, total: subtotal + iva,
-      tiendaItems, tiendaTotal, propina, totalCobrar: subtotal + iva + tiendaTotal };
+    const anticipo = Math.min(v.abono||0, subtotal + iva);
+    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, gratis, descFid, cupon, descCupon, descCumple, validacion, subtotal, ivaPct, iva, anticipo, total: subtotal + iva - anticipo,
+      tiendaItems, tiendaTotal, propina, totalCobrar: subtotal + iva - anticipo + tiendaTotal };
   }
 
   function abrirSalida(id){
@@ -2878,6 +2933,7 @@
       else if($('salidaCupon') && $('salidaCupon').value.trim()) html += '<div class="brow"><span style="color:var(--red);">Cupón no válido o vencido</span><span class="v"></span></div>';
       if(c.servTotal) html += '<div class="brow"><span>Servicios</span><span class="v">'+money(c.servTotal)+'</span></div>';
       if(c.ivaPct) html += '<div class="brow"><span>IVA '+c.ivaPct+'%</span><span class="v">'+money(c.iva)+'</span></div>';
+      if(c.anticipo) html += '<div class="brow"><span>Abono de la reserva</span><span class="v">−'+money(c.anticipo)+'</span></div>';
       html += '<div class="brow total"><span>Total a cobrar</span><span class="v">'+money(c.total)+'</span></div>';
     }
     if(c.tiendaItems.length){
@@ -2922,7 +2978,7 @@
         propina: c.propina || 0, validacion: c.validacion ? c.validacion.nombre : null, evento: k && k.enEvento ? k.evento : null, temporada: k && k.temporada ? k.temporada.nombre : null,
         descuentoNombre: k ? (k.descuentoNombre||null) : null, efectivoParte: pago.metodoPago==='mixto' ? Math.min(c.total, pago.efectivoParte||0) : null,
         tiendaItems: c.tiendaItems.map(i=>({ nombre:i.nombre, cantidad:i.cantidad, precio:i.precio })), tiendaTotal: c.tiendaTotal,
-        descuentoCumple: c.descCumple || 0,
+        descuentoCumple: c.descCumple || 0, anticipo: c.anticipo || 0, reservaId: c.v.reservaId || null,
         fidelidad: !!c.gratis, descuentoFidelidad: c.descFid || 0, cupon: c.descCupon ? c.cupon.codigo : null, descuentoCupon: c.descCupon || 0, deudor: pago.deudor || null,
         empresaNombre: emp ? emp.nombre : null, descuentoPct: k ? k.descuentoPct : 0,
         numeroFactura: (cfg.facturacion.prefijo||'FE') + '-' + pad(n),
@@ -2978,6 +3034,9 @@
   function abrirTicket(t){
     const tk = cfg.ticket||{};
     if(!t.conPie && (tk.pie || tk.legal)){ t.lineas = t.lineas.concat([''], tk.pie ? [tk.pie] : [], tk.legal ? [tk.legal] : []); t.conPie = true; }
+    const cn = cfg.canales||{};
+    if(!t.conCanales && t.placa!==undefined && /Comprobante|Venta/.test(t.titulo) && (cn.resenas || cn.whatsapp)){ t.lineas = t.lineas.concat([''], cn.resenas ? ['Califíquenos: '+cn.resenas] : [], cn.whatsapp ? ['WhatsApp: '+cn.whatsapp] : []); t.conCanales = true; }
+    t.original = { html:t.html, lineas:t.lineas.slice(), titulo:t.titulo }; ticketIngles = false; $('btnTkIngles').textContent = 'English';
     ticketActual = t;
     $('ticketTitulo').textContent = t.titulo;
     $('ticketBody').innerHTML = t.html;
@@ -2986,7 +3045,9 @@
       const c = clientes.find(x=>x.placa===t.placa);
       $('tkNombre').value = c ? (c.nombre||'') : '';
       $('tkTelefono').value = c ? (c.telefono||'') : '';
+      $('tkCorreo').value = c ? (c.correo||'') : '';
     }
+    $('btnTkEncuesta').hidden = !t.placa;
     abrirModal('ticketModal');
     const auto = imprimirAlAbrir; imprimirAlAbrir = false;
     if(auto && IMP.cfg.auto && IMP.cfg.modo==='bluetooth') imprimirTicket(t, true);
@@ -3035,7 +3096,11 @@
     else{
       l.push('Subtotal: '+money(r.subtotal!=null?r.subtotal:r.total));
       if(r.ivaPct) l.push('IVA ('+r.ivaPct+'%): '+money(r.iva||0));
+      if(r.anticipo) l.push('Abono de la reserva: -'+money(r.anticipo));
       l.push('TOTAL: '+money(r.total + (r.tiendaTotal||0)), 'Pago: '+pagoLabel(r));
+      if(r.retefuente) l.push('Retención en la fuente: -'+money(r.retefuente));
+      if(r.reteica) l.push('Retención de ICA: -'+money(r.reteica));
+      if(r.netoEmpresa!=null) l.push('Neto que paga la empresa: '+money(r.netoEmpresa));
       if(r.efectivoRecibido!=null) l.push('Recibido: '+money(r.efectivoRecibido), 'Devuelta: '+money(r.vuelto||0));
     }
     if(r.operador) l.push('Atendió: '+r.operador);
@@ -3061,6 +3126,7 @@
     }else{
       html += fila('Subtotal', money(r.subtotal));
       if(r.ivaPct) html += fila('IVA ('+r.ivaPct+'%)', money(r.iva||0));
+      if(r.anticipo) html += fila('Abono de la reserva', '−'+money(r.anticipo));
       html += '<div class="t-big">'+money(r.total + (r.tiendaTotal||0))+'</div>'+fila('Pago', pagoLabel(r));
       if(r.retefuente) html += fila('Retención en la fuente', '−'+money(r.retefuente));
       if(r.reteica) html += fila('Retención de ICA', '−'+money(r.reteica));
@@ -3068,7 +3134,7 @@
       if(r.efectivoRecibido!=null) html += fila('Recibido', money(r.efectivoRecibido))+fila('Devuelta', money(r.vuelto||0));
     }
     if(r.operador) html += fila('Atendió', r.operador);
-    html += '<hr>'+barcodeSVG(r.numeroFactura||r.placa)+'<div class="t-foot">¡Gracias por su visita!</div>'+pieTicket()+'</div>';
+    html += '<hr>'+barcodeSVG(r.numeroFactura||r.placa)+'<div class="t-foot">¡Gracias por su visita!</div>'+pieCanales()+pieTicket()+'</div>';
     abrirTicket({ titulo:'Comprobante '+(r.numeroFactura||''), html, lineas:reciboLineas(r), archivo:'comprobante-'+r.placa+'-'+(r.numeroFactura||'')+'.pdf', codigo:r.numeroFactura||r.placa, placa:r.placa, efectivo:r.metodoPago==='efectivo' });
   }
 
@@ -3080,8 +3146,10 @@
   function guardarContacto(avisar){
     if(!ticketActual || !ticketActual.placa) return;
     const nombre = $('tkNombre').value.trim().slice(0,80), telefono = $('tkTelefono').value.trim().slice(0,20);
-    if(!nombre && !telefono){ if(avisar) showToast('Escribe el nombre o el WhatsApp.'); return; }
+    if(!nombre && !telefono && !$('tkCorreo').value.trim()){ if(avisar) showToast('Escribe el nombre, el WhatsApp o el correo.'); return; }
     upsertCliente(ticketActual.placa, nombre, telefono, $('tkAutoriza').checked);
+    const correo = $('tkCorreo').value.trim().slice(0,80);
+    if(correo) db.collection('clientes').doc(ticketActual.placa).set({ correo }, { merge:true }).catch(errGuardar);
     if(avisar) showToast('Datos del cliente guardados.');
   }
   $('btnGuardarContacto').addEventListener('click', ()=>guardarContacto(true));
@@ -3404,7 +3472,7 @@
     if(v.devolucionDe) html += fila('Devolución de', v.devolucionDe);
     if(v.efectivoRecibido!=null) html += fila('Recibido', money(v.efectivoRecibido))+fila('Devuelta', money(v.vuelto||0));
     if(v.operador) html += fila('Atendió', v.operador);
-    html += '<hr>'+barcodeSVG(v.numero)+'<div class="t-foot">¡Gracias por su compra!</div>'+pieTicket()+'</div>';
+    html += '<hr>'+barcodeSVG(v.numero)+'<div class="t-foot">¡Gracias por su compra!</div>'+pieCanales()+pieTicket()+'</div>';
     abrirTicket({ titulo:'Venta '+v.numero, html, lineas:lineasVenta(v), archivo:'venta-'+v.numero+'.pdf', codigo:v.numero, placa:null, efectivo:v.metodoPago==='efectivo' });
   }
 
@@ -4012,6 +4080,8 @@
     if(dup.length) html += '<div class="alert alert-red"><strong>Placa registrada dos veces:</strong> '+dup.map(pl=>esc(pl)+' <button class="btn btn-sm" data-conflicto="'+esc(pl)+'">Revisar</button>').join(' · ')+'</div>';
     const waP = waPendientes();
     if(waP.length && navigator.onLine) html += '<div class="alert alert-amber"><strong>Volvió el internet:</strong> hay '+waP.length+' WhatsApp sin enviar. <button class="btn btn-sm" id="btnWaPend">Enviar ahora</button></div>';
+    const rHoy = reservas.filter(r=>r.estado==='pendiente' && r.fecha===hoyISO());
+    if(rHoy.length) html += '<div class="alert alert-amber"><strong>Reservas para hoy:</strong> '+rHoy.map(r=>esc(r.placa)+(r.hora?' ('+esc(r.hora)+')':'')+(r.abono?' abonó '+money(r.abono):'')).join(' · ')+'</div>';
     if(problemasDatos.length && esStaff()) html += '<div class="alert alert-amber"><strong>La revisión de datos encontró '+problemasDatos.length+' cosa(s) por corregir.</strong> <button class="btn btn-sm" data-abrir-integridad>Ver</button></div>';
     // nota del turno anterior (últimas 24 h)
     const ultimo = turnos.filter(t=>t.fin && t.nota && (Date.now()-new Date(t.fin))<864e5).sort((a,b)=>b.fin.localeCompare(a.fin))[0];
@@ -4067,7 +4137,7 @@
     $('clientesLista').innerHTML = lista.length ? lista.map(c=>
       '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(c.placa)+'</span>'+
       (c.autorizaDatos?' <span class="chip chip-green">Autorizó datos</span>':'')+(esCumpleHoy(c)?' <span class="chip chip-amber">Cumple hoy</span>':'')+
-      (c.etiquetas||[]).map(t=>' <span class="chip chip-gray">'+esc(t)+'</span>').join('')+(cfg.fidelidad.activo && c.sellos?' <span class="chip chip-amber">'+c.sellos+' sellos</span>':'')+(c.saldo?' <span class="chip chip-blue">Monedero '+money(c.saldo)+'</span>':'')+
+      (c.etiquetas||[]).map(t=>' <span class="chip chip-gray">'+esc(t)+'</span>').join('')+(cfg.fidelidad.activo && c.sellos?' <span class="chip chip-amber">'+c.sellos+' sellos</span>':'')+(c.saldo?' <span class="chip chip-blue">Monedero '+money(c.saldo)+'</span>':'')+(c.aceptaPromos?' <span class="chip chip-green">Promos</span>':'')+((c.placasExtra||[]).length?' <span class="chip chip-gray">+ '+esc(c.placasExtra.join(', '))+'</span>':'')+
       '<div class="meta">'+esc(c.nombre||'Sin nombre')+(c.telefono?' · '+esc(c.telefono):'')+' · '+(visitas[c.placa]||0)+' visita(s)'+(ultima[c.placa]?' · última '+fmtCorto(new Date(ultima[c.placa])):'')+'</div></div>'+
       '<div class="r">'+(esCumpleHoy(c) && c.telefono ? '<button class="btn btn-sm" data-felicitar="'+esc(c.placa)+'">Felicitar</button>' : '')+'<button class="btn btn-ghost btn-sm" data-recargar="'+esc(c.placa)+'">Recargar</button><button class="btn btn-ghost btn-sm" data-ficha="'+esc(c.placa)+'">Ficha</button>'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
     ).join('') : '<div class="empty">Todavía no hay clientes registrados.</div>';
@@ -4156,9 +4226,11 @@
     upsertCliente(placa, nombre, tel, $('clienteAutoriza').checked);
     const extra = {};
     if($('clienteCumple').value) extra.cumple = $('clienteCumple').value.slice(5);
+    if($('clienteCorreo').value.trim()) extra.correo = $('clienteCorreo').value.trim().slice(0,80);
+    if($('clientePromos').checked) Object.assign(extra, { aceptaPromos:true, fechaAceptaPromos:new Date().toISOString() });
     const et = etiquetasDe($('clienteEtiquetas').value); if(et.length) extra.etiquetas = et;
     if(Object.keys(extra).length) db.collection('clientes').doc(placa).set(extra, { merge:true }).catch(errGuardar);
-    $('clientePlaca').value=''; $('clienteNombre').value=''; $('clienteTelefono').value=''; $('clienteCumple').value=''; $('clienteEtiquetas').value='';
+    $('clientePlaca').value=''; $('clienteNombre').value=''; $('clienteTelefono').value=''; $('clienteCumple').value=''; $('clienteEtiquetas').value=''; $('clienteCorreo').value=''; $('clientePromos').checked = false;
     showToast('Cliente guardado.');
   });
 
@@ -5960,6 +6032,153 @@
   $('panelMapa').addEventListener('click', e=>{ const b = e.target.closest('[data-spot]'); if(b) abrirSalida(b.dataset.spot); });
   document.addEventListener('click', e=>{ const b = e.target.closest('[data-ir]'); if(b) irA(b.dataset.ir); });
   setInterval(()=>{ if(perfil && vistaActual==='panel') renderPanel(); }, 60000);
+
+  /* ================= RESERVAS ================= */
+  let reservas = [];
+  function hoyISO(d){ d = d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  // vale la reserva de hoy o de ayer (por si llega pasada la medianoche)
+  function reservaDe(placa){ const ay = hoyISO(new Date(Date.now()-864e5)), hoy = hoyISO(); return reservas.find(r=>r.placa===placa && r.estado==='pendiente' && (r.fecha===hoy || r.fecha===ay)); }
+  function renderReservas(){
+    const hoy = hoyISO(), prox = reservas.filter(r=>r.estado==='pendiente' && r.fecha>=hoyISO(new Date(Date.now()-864e5))).sort((a,b)=>(a.fecha+a.hora).localeCompare(b.fecha+b.hora));
+    const deHoy = prox.filter(r=>r.fecha===hoy).length;
+    $('reservasCnt').hidden = !deHoy; $('reservasCnt').textContent = deHoy;
+    $('rsTipo').innerHTML = TIPOS.map(t=>'<option value="'+t.id+'"'+(t.id==='carro'?' selected':'')+'>'+esc(t.nombre)+'</option>').join('');
+    $('reservasLista').innerHTML = prox.length ? prox.map(r=>'<div class="list-row"><div><span class="placa-txt">'+esc(r.placa)+'</span> '+(r.fecha===hoy?'<span class="chip chip-amber">Hoy</span>':'')+
+      '<div class="meta">'+esc(r.fecha)+(r.hora?' · '+esc(r.hora):'')+' · '+esc(nombreFor(r.tipo))+(r.nombre?' · '+esc(r.nombre):'')+(r.abono?' · abonó '+money(r.abono):'')+'</div></div>'+
+      '<div class="r">'+(r.telefono?'<button class="btn btn-sm btn-green" data-wa-reserva="'+esc(r.id)+'">Confirmar</button>':'')+'<button class="btn btn-ghost btn-sm" data-cancelar-reserva="'+esc(r.id)+'">Cancelar</button></div></div>').join('')
+      : '<div class="empty">No hay reservas pendientes.</div>';
+  }
+  $('btnReservas').addEventListener('click', ()=>{ if(!$('rsFecha').value) $('rsFecha').value = hoyISO(); renderReservas(); abrirModal('reservasModal'); });
+  $('btnAddReserva').addEventListener('click', async ()=>{
+    const placa = limpiarPlaca($('rsPlaca').value), fecha = $('rsFecha').value, abono = Math.max(0, parseInt($('rsAbono').value,10)||0);
+    if(placa.length<3 || !fecha){ showToast('Escriba la placa y el día.'); return; }
+    if(reservas.some(r=>r.placa===placa && r.fecha===fecha && r.estado==='pendiente')){ showToast('Esa placa ya tiene reserva ese día.'); return; }
+    const r = { id:nuevoId(), placa, tipo:$('rsTipo').value, nombre:$('rsNombre').value.trim().slice(0,60), telefono:$('rsTel').value.trim().slice(0,20), fecha, hora:$('rsHora').value||'',
+      abono, estado:'pendiente', creada:new Date().toISOString(), uid:perfil.uid, operador:perfil.nombre };
+    const batch = db.batch();
+    batch.set(db.collection('reservas').doc(r.id), r);
+    if(abono){
+      // el abono entra a la caja hoy; a la salida se descuenta de lo que se cobra
+      const n = await siguienteNumero('venta'), medio = $('rsMedio').value;
+      const venta = { id:nuevoId(), numero:'V-'+pad(n), fecha:r.creada, tipo:'abono', placa, items:[{ nombre:'Abono reserva '+placa+' ('+fecha+')', cantidad:1, precio:abono, costo:0 }], total:abono,
+        metodoPago: medio==='efectivo' ? 'efectivo' : 'transferencia', medioTransferencia: medio==='efectivo' ? null : medio, efectivoRecibido:null, vuelto:null, deudor:null, efectivoParte:null, operador:perfil.nombre, operadorId:perfil.uid };
+      batch.set(db.collection('ventas').doc(venta.id), venta);
+      r.ventaAbono = venta.numero;
+    }
+    batch.commit().catch(errGuardar);
+    if(r.nombre || r.telefono) upsertCliente(placa, r.nombre, r.telefono, false);
+    ['rsPlaca','rsNombre','rsTel','rsHora','rsAbono'].forEach(k=>$(k).value='');
+    showToast('Reserva guardada para '+placa+(abono?' con abono de '+money(abono):'')+'.');
+  });
+  $('reservasLista').addEventListener('click', e=>{
+    const c = e.target.closest('[data-cancelar-reserva]'), w = e.target.closest('[data-wa-reserva]');
+    if(w){ const r = reservas.find(x=>x.id===w.dataset.waReserva); if(r) abrirWhatsapp(r.telefono, 'Hola'+(r.nombre?' '+r.nombre:'')+', le confirmamos su reserva en '+cfg.brand+' para el '+r.fecha+(r.hora?' a las '+r.hora:'')+' (placa '+r.placa+')'+(r.abono?'. Abonó '+money(r.abono)+', que se descuenta al salir':'')+'. ¡Lo esperamos!'); }
+    if(c){ const r = reservas.find(x=>x.id===c.dataset.cancelarReserva); if(!r || !confirm('¿Cancelar la reserva de '+r.placa+'?'+(r.abono?' El abono de '+money(r.abono)+' hay que devolverlo aparte.':''))) return;
+      db.collection('reservas').doc(r.id).update({ estado:'cancelada', canceladaPor:perfil.nombre }).catch(errGuardar); bitacora('Reserva cancelada', r.placa+' · '+r.fecha+(r.abono?' · abono '+money(r.abono):'')); }
+  });
+
+  /* ================= CORREO, ENCUESTA E INGLÉS EN EL TICKET ================= */
+  function pieCanales(){
+    const cn = cfg.canales||{}, wa = cn.whatsapp ? 'https://wa.me/'+formatearWhatsapp(cn.whatsapp) : '';
+    if(!cn.resenas && !wa) return '';
+    return '<div class="t-canales">'+(cn.resenas ? '<div>'+qrSVG(cn.resenas,'')+'Califíquenos</div>' : '')+(wa ? '<div>'+qrSVG(wa,'')+'Escríbanos</div>' : '')+'</div>';
+  }
+  $('btnTkCorreo').addEventListener('click', ()=>{
+    if(!ticketActual) return;
+    guardarContacto(false);
+    const correo = ticketActual.placa ? $('tkCorreo').value.trim() : '';
+    location.href = 'mailto:'+encodeURIComponent(correo)+'?subject='+encodeURIComponent(ticketActual.titulo+' · '+cfg.brand)+'&body='+encodeURIComponent(cfg.brand+'\n'+ticketActual.lineas.join('\n'));
+  });
+  $('btnTkEncuesta').addEventListener('click', ()=>{
+    if(!ticketActual || !ticketActual.placa) return;
+    guardarContacto(false);
+    const tel = $('tkTelefono').value.trim(); if(!tel){ showToast('Escriba el WhatsApp del cliente.'); return; }
+    const nom = $('tkNombre').value.trim(), cn = cfg.canales||{};
+    abrirWhatsapp(tel, 'Hola'+(nom?' '+nom:'')+', gracias por visitar '+cfg.brand+'. ¿Cómo lo atendimos hoy? Responda con un número del 1 (mal) al 5 (excelente).'+(cn.resenas?'\n\nSi le gustó, nos ayuda mucho calificarnos aquí: '+cn.resenas:''));
+    db.collection('clientes').doc(ticketActual.placa).set({ encuestaEnviada:new Date().toISOString() }, { merge:true }).catch(()=>{});
+  });
+  const INGLES = [['COMPROBANTE DE PAGO','PAYMENT RECEIPT'],['TICKET DE INGRESO','PARKING TICKET'],['VENTA TIENDA','STORE SALE'],['Comprobante No.','Receipt No.'],['Comprobante','Receipt'],['Ticket de ingreso','Parking ticket'],
+    ['Tiempo cobrado','Time charged'],['Recargo por noche','Overnight fee'],['Ticket perdido','Lost ticket'],['Visita gratis','Free visit'],['Abono de la reserva','Reservation deposit'],['Neto que paga la empresa','Net paid by company'],
+    ['Retención en la fuente','Withholding tax'],['Retención de ICA','ICA withholding'],['Se cobra por','Charged per'],['fracción de','fraction of'],['Modalidad','Plan'],['Por tiempo','By time'],['Mensualidad','Monthly pass'],['Quincena','Biweekly pass'],
+    ['Incluido en','Included in'],['Conserve este ticket','Keep this ticket'],['para reclamar su vehículo','to claim your vehicle'],['¡Gracias por su visita!','Thank you for your visit!'],['¡Gracias por su compra!','Thank you for your purchase!'],
+    ['Califíquenos','Rate us'],['Escríbanos','Message us'],['Vehículo','Vehicle'],['Entrada','Entry'],['Salida','Exit'],['Placa','Plate'],['Puesto','Spot'],['Tarifa','Rate'],['Recibió','Received by'],['Atendió','Served by'],
+    ['Subtotal','Subtotal'],['Pago','Payment'],['Efectivo','Cash'],['Transferencia','Bank transfer'],['Dividido','Split'],['Recibido','Received'],['Devuelta','Change'],['Fecha','Date'],['Servicio','Service'],['Descuento','Discount'],
+    ['Convenio','Agreement'],['Validación','Validation'],['Cupón','Coupon'],['Daños','Damage'],['Conductor','Driver'],['Incluye','Includes'],['Carro','Car'],['Moto','Motorcycle'],['Tractomula','Truck'],['Bus','Bus'],['Chiva','Chiva bus'],
+    ['Venta No.','Sale No.'],['Venta','Sale'],['Código','Code'],[' hora',' hour'],['Daños','Damage']];
+  const MESES_EN = { ene:'Jan', feb:'Feb', mar:'Mar', abr:'Apr', may:'May', jun:'Jun', jul:'Jul', ago:'Aug', sept:'Sep', sep:'Sep', oct:'Oct', nov:'Nov', dic:'Dec' };
+  function aIngles(t){
+    t = String(t).replace(/(\d{1,2}) de (ene|feb|mar|abr|may|jun|jul|ago|sept|sep|oct|nov|dic)\.? de (\d{4})/g, (m,d,mo,y)=>MESES_EN[mo]+' '+d+', '+y).replace(/p\.\s?m\./g,'PM').replace(/a\.\s?m\./g,'AM');
+    return INGLES.reduce((s,[es,en])=>s.split(es).join(en), t);
+  }
+  let ticketIngles = false;
+  $('btnTkIngles').addEventListener('click', ()=>{
+    if(!ticketActual || !ticketActual.original) return;
+    ticketIngles = !ticketIngles;
+    const o = ticketActual.original;
+    if(ticketIngles){
+      const tmp = document.createElement('div'); tmp.innerHTML = o.html;
+      const w = document.createTreeWalker(tmp, NodeFilter.SHOW_TEXT); let n; while((n = w.nextNode())) n.nodeValue = aIngles(n.nodeValue);
+      ticketActual.html = tmp.innerHTML; ticketActual.lineas = o.lineas.map(aIngles); ticketActual.titulo = aIngles(o.titulo);
+    }else{ ticketActual.html = o.html; ticketActual.lineas = o.lineas.slice(); ticketActual.titulo = o.titulo; }
+    $('ticketBody').innerHTML = ticketActual.html; $('ticketTitulo').textContent = ticketActual.titulo;
+    $('btnTkIngles').textContent = ticketIngles ? 'Español' : 'English';
+  });
+  $('cfgResenas').addEventListener('change', ()=> guardarConfig({ canales:Object.assign({}, cfg.canales, { resenas:$('cfgResenas').value.trim().slice(0,200) }) }, 'Enlace de reseñas guardado.'));
+  $('cfgWaNegocio').addEventListener('change', ()=> guardarConfig({ canales:Object.assign({}, cfg.canales, { whatsapp:$('cfgWaNegocio').value.trim().slice(0,20) }) }, 'WhatsApp del negocio guardado.'));
+  function renderCanales(){ if(!esAdmin()) return; const cn = cfg.canales||{}; if(!enfocadoDentro('cfgResenas')) $('cfgResenas').value = cn.resenas||''; if(!enfocadoDentro('cfgWaNegocio')) $('cfgWaNegocio').value = cn.whatsapp||''; }
+
+  /* ================= PROMOCIONES Y CLIENTES REPETIDOS ================= */
+  const promoEnviados = new Set();
+  function renderPromos(){
+    if(!esStaff()) return;
+    const l = clientes.filter(c=>c.aceptaPromos && c.telefono);
+    $('promoCount').textContent = l.length;
+    $('promoLista').innerHTML = l.length ? l.map(c=>'<div class="list-row"><div><span class="placa-txt">'+esc(c.placa)+'</span> '+esc(c.nombre||'')+'<div class="meta">'+esc(c.telefono)+'</div></div><div class="r">'+
+      (promoEnviados.has(c.placa) ? '<span class="chip chip-green">Enviado</span>' : '<button class="btn btn-sm btn-green" data-promo="'+esc(c.placa)+'">Enviar</button>')+'</div></div>').join('')
+      : '<div class="empty">Ningún cliente ha aceptado promociones todavía. Márquelo al guardar el cliente.</div>';
+  }
+  $('promoLista').addEventListener('click', e=>{
+    const b = e.target.closest('[data-promo]'); if(!b) return;
+    const txt = $('promoTexto').value.trim(); if(txt.length<5){ showToast('Escriba el mensaje de la promoción.'); $('promoTexto').focus(); return; }
+    const c = clientes.find(x=>x.placa===b.dataset.promo); if(!c) return;
+    abrirWhatsapp(c.telefono, 'Hola'+(c.nombre?' '+c.nombre.split(' ')[0]:'')+', '+txt+'\n\n'+cfg.brand+' · Si no quiere recibir más mensajes, responda NO.');
+    promoEnviados.add(c.placa); renderPromos();
+  });
+  function clienteDe(placa){ return clientes.find(x=>x.placa===placa) || clientes.find(x=>(x.placasExtra||[]).includes(placa)); }
+  function gruposRepetidos(){
+    const por = {};
+    clientes.forEach(c=>{
+      const t = String(c.telefono||'').replace(/\D/g,'').slice(-10), n = String(c.nombre||'').trim().toLowerCase();
+      if(t.length>=7) (por['t'+t] = por['t'+t]||[]).push(c);
+      else if(n.length>=5) (por['n'+n] = por['n'+n]||[]).push(c);
+    });
+    return Object.values(por).filter(g=>g.length>1);
+  }
+  function renderDupClientes(){
+    if(!esStaff()) return;
+    const g = gruposRepetidos();
+    $('dupClientes').innerHTML = g.length ? g.map((grupo,i)=>'<div class="list-row"><div><strong>'+esc(grupo[0].nombre||grupo[0].telefono||'')+'</strong><div class="meta">'+grupo.map(c=>esc(c.placa)).join(', ')+(grupo[0].telefono?' · '+esc(grupo[0].telefono):'')+'</div></div>'+
+      '<div class="r"><button class="btn btn-sm" data-unir="'+i+'">Unir en '+esc(grupo[0].placa)+'</button></div></div>').join('')
+      : '<div class="empty">No hay clientes repetidos.</div>';
+  }
+  $('dupClientes').addEventListener('click', e=>{
+    const b = e.target.closest('[data-unir]'); if(!b) return;
+    const grupo = gruposRepetidos()[+b.dataset.unir]; if(!grupo) return;
+    const [prin, ...otros] = grupo;
+    if(!confirm('¿Unir '+otros.map(c=>c.placa).join(', ')+' dentro de '+prin.placa+'? Se suman los sellos y el saldo del monedero.')) return;
+    const data = { placasExtra:[...new Set((prin.placasExtra||[]).concat(otros.flatMap(c=>[c.placa].concat(c.placasExtra||[]))))].filter(x=>x!==prin.placa),
+      sellos:(prin.sellos||0)+otros.reduce((s,c)=>s+(c.sellos||0),0), saldo:(prin.saldo||0)+otros.reduce((s,c)=>s+(c.saldo||0),0),
+      etiquetas:[...new Set((prin.etiquetas||[]).concat(otros.flatMap(c=>c.etiquetas||[])))] };
+    ['nombre','telefono','correo','cumple'].forEach(k=>{ if(!prin[k]){ const o = otros.find(c=>c[k]); if(o) data[k] = o[k]; } });
+    if(otros.some(c=>c.aceptaPromos)) data.aceptaPromos = true;
+    if(otros.some(c=>c.autorizaDatos)) data.autorizaDatos = true;
+    const batch = db.batch();
+    batch.set(db.collection('clientes').doc(prin.placa), data, { merge:true });
+    otros.forEach(c=>batch.delete(db.collection('clientes').doc(c.placa)));
+    batch.commit().catch(errGuardar);
+    bitacora('Clientes unidos', prin.placa+' ← '+otros.map(c=>c.placa).join(', '));
+    showToast('Listo: quedó un solo cliente ('+prin.placa+').');
+  });
 
   /* ================= IMPUESTOS POR PRODUCTO ================= */
   const IMPUESTOS = { iva19:{ n:'IVA 19%', pct:19 }, iva5:{ n:'IVA 5%', pct:5 }, inc8:{ n:'Impoconsumo 8%', pct:8 } };
