@@ -3,6 +3,7 @@
 Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, foto, mensualidades, convenios, tienda, inventario, caja, historial, Excel/PDF, clientes, turnos, roles, comprobante con código de barras, servicios, tarifas de día y de noche, IVA, cierre de sesión automático y tema claro u oscuro.
 
 **Marcas:**
+- ✅ ya está hecha en `index.html` (fase 1).
 - 📴 funciona sin internet, una vez que el modo sin internet (sección A) esté instalado.
 - 🌐 necesita internet.
 - ⚡ es fácil de hacer (menos de un día).
@@ -15,21 +16,21 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 
 **Lo que falta:** si se cierra o se recarga la página sin internet, la app no abre, porque descarga Firebase de internet y no tiene un *service worker*. Iniciar sesión también necesita internet. Las funciones 1–5 resuelven esto y van primero.
 
-1. 📴 **Instalar la app como PWA** (manifest e ícono). Se abre desde el escritorio o el celular como una app normal.
-2. 📴 **Service worker que guarda la app en el equipo** (HTML y los archivos de Firebase). Así abre aunque no haya internet.
-3. 📴 **Mantener la sesión iniciada sin internet**: se usa la sesión guardada de Firebase Auth y no se pide clave otra vez.
-4. 📴 **PIN local de 4 dígitos por trabajador** para cambiar de turno sin internet. Se valida contra un hash guardado en el equipo.
-5. 📴 ⚡ **Contador de cambios pendientes por subir**, por ejemplo "12 cambios esperando internet".
-6. 📴 ⚡ **Hora de la última sincronización** visible en la barra superior.
+1. ✅ 📴 **Instalar la app como PWA** (manifest e ícono). Se abre desde el escritorio o el celular como una app normal.
+2. ✅ 📴 **Service worker que guarda la app en el equipo** (HTML y los archivos de Firebase). Así abre aunque no haya internet.
+3. ✅ 📴 **Mantener la sesión iniciada sin internet**: se usa la sesión guardada de Firebase Auth y no se pide clave otra vez.
+4. ✅ 📴 **PIN local de 4 dígitos por trabajador** para cambiar de turno sin internet. Se valida contra un hash guardado en el equipo.
+5. ✅ 📴 ⚡ **Contador de cambios pendientes por subir**, por ejemplo "12 cambios esperando internet".
+6. ✅ 📴 ⚡ **Hora de la última sincronización** visible en la barra superior.
 7. 📴 **Consecutivo de comprobante sin internet**: se reserva un bloque de números por equipo, por ejemplo del 1001 al 1100, para que no se repitan.
 8. 📴 **Imprimir ticket y comprobante sin internet**. Ya funciona con `window.print`; solo hay que asegurar que el código de barras se genera en el equipo.
 9. 📴 **Calcular el cobro sin internet** con las tarifas guardadas en el equipo.
-10. 📴 **Respaldo automático en el equipo**: un archivo JSON diario que se descarga solo.
+10. ✅ 📴 **Respaldo automático en el equipo**: un archivo JSON diario que se descarga solo.
 11. 📴 **Restaurar desde un respaldo JSON** si se daña el equipo.
 12. 📴 **Exportar a Excel o CSV sin internet** con lo que está guardado en el equipo.
 13. 📴 **Resolver conflictos**: si dos equipos registraron la misma placa sin internet, se muestra un aviso para elegir el registro bueno.
 14. 📴 **Cola de fotos**: las fotos de los vehículos se guardan en IndexedDB y se suben cuando vuelve la conexión.
-15. 📴 ⚡ **Alerta sonora** cuando se va o vuelve el internet.
+15. ✅ 📴 ⚡ **Alerta sonora** cuando se va o vuelve el internet.
 16. 📴 **Modo "solo este equipo"**: todo funciona en local con IndexedDB, para parqueaderos que nunca tienen internet.
 17. 📴 **Sincronizar entre dos equipos por la red wifi local**, sin internet (WebRTC o código QR).
 18. 📴 **Pasar datos con código QR** de un celular a otro, por ejemplo la lista de vehículos dentro.
@@ -38,8 +39,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 21. 📴 **Verificar la integridad de los datos** guardados en el equipo al abrir la app.
 22. 📴 **Límite de almacenamiento**: avisar cuando el equipo se está quedando sin espacio.
 23. 📴 **Copia en USB**: exportar el respaldo directamente a una memoria USB.
-24. 📴 ⚡ **Página "Estoy sin internet"** con lo que se puede y lo que no se puede hacer.
-25. 📴 **Actualizar la app sola** cuando vuelve el internet, sin perder los datos.
+24. ✅ 📴 ⚡ **Página "Estoy sin internet"** con lo que se puede y lo que no se puede hacer.
+25. ✅ 📴 **Actualizar la app sola** cuando vuelve el internet, sin perder los datos.
 
 ## B. Entrada y salida de vehículos (26–45)
 26. 📴 ⚡ Reconocer el formato de placa colombiana (carro ABC123, moto ABC12D) y avisar si está mal escrita.
@@ -61,7 +62,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 42. 📴 Lista negra de placas con alerta al entrar.
 43. 📴 Lista VIP con tarifa especial automática.
 44. 📴 Registrar el conductor (nombre y cédula) cuando el negocio lo exige.
-45. 📴 ⚡ Atajos de teclado: F2 para entrada, F4 para salida y F8 para la tienda.
+45. ✅ 📴 ⚡ Atajos de teclado: F2 para entrada, F4 para salida y F8 para la tienda.
 
 ## C. Cobros y pagos (46–70)
 46. 📴 Tarifa plana por día (24 horas) con tope máximo.
@@ -164,7 +165,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 137. 📴 Libro de objetos perdidos.
 138. 📴 Permisos más finos: por ejemplo, la secretaria puede anular, pero no borrar.
 139. 🌐 Verificación en dos pasos para el administrador.
-140. 📴 Bloquear la pantalla con PIN sin cerrar la sesión.
+140. ✅ 📴 Bloquear la pantalla con PIN sin cerrar la sesión.
 141. 📴 Modo cajero de solo cobro, con la pantalla simplificada.
 142. 📴 Modo supervisor de solo lectura.
 143. 🌐 Ver varios parqueaderos (sedes) desde una sola cuenta.
@@ -227,7 +228,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 ## J. Ajustes y comodidad (193–200)
 193. 📴 Asistente de configuración inicial paso a paso.
 194. 📴 Cambiar el logo del negocio para el ticket y el menú.
-195. 📴 Elegir uno de los 200 diseños de la galería como tema de la app.
+195. ✅ 📴 Elegir uno de los 200 diseños de la galería como tema de la app.
 196. 📴 Tamaño de letra grande para personas mayores.
 197. 📴 Modo zurdo o modo tableta con botones grandes.
 198. 📴 Idioma inglés.
@@ -237,8 +238,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 ---
 
 ## Por dónde empezar (recomendado)
-1. **1, 2, 3 y 5**: que la app abra y trabaje sin internet aunque se recargue. Es lo más importante para no perder ventas.
-2. **7**: consecutivos que no se repitan sin internet.
-3. **122**: arqueo de caja al cerrar el turno.
-4. **181 y 182**: impresión térmica directa y apertura del cajón.
-5. **71**: recordatorios de mensualidad por WhatsApp.
+1. ✅ **1, 2, 3 y 5**: que la app abra y trabaje sin internet aunque se recargue. Es lo más importante para no perder ventas.
+2. ✅ **7**: consecutivos que no se repitan sin internet.
+3. ✅ **122**: arqueo de caja al cerrar el turno.
+4. ✅ **181 y 182**: impresión térmica directa y apertura del cajón.
+5. ✅ **71**: recordatorios de mensualidad por WhatsApp.
