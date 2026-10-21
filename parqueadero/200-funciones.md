@@ -89,23 +89,23 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 67. 📴 Devoluciones de la tienda que regresan el stock.
 68. 🌐 Factura electrónica conectada a Alegra, Siigo o Factus.
 69. 📴 Retención y autorretención en los comprobantes para empresas.
-70. 📴 Cotización para empresas (cuántos cupos al mes y cuánto valen).
+70. ✅ 📴 Cotización para empresas (cuántos cupos al mes y cuánto valen).
 
 ## D. Mensualidades y clientes (71–95)
 71. ✅ 🌐 Recordatorio automático por WhatsApp 3 días antes del vencimiento.
 72. ✅ 📴 ⚡ Lista de mensualidades vencidas hoy o esta semana.
 73. ✅ 📴 Renovar con un clic, extendiendo el mismo periodo.
-74. 📴 Varias placas en una sola mensualidad (familia o empresa).
-75. 📴 Mensualidad solo de día o solo de noche.
-76. 📴 Control de entradas incluidas (por ejemplo, 20 entradas al mes).
+74. ✅ 📴 Varias placas en una sola mensualidad (familia o empresa).
+75. ✅ 📴 Mensualidad solo de día o solo de noche.
+76. ✅ 📴 Control de entradas incluidas (por ejemplo, 20 entradas al mes).
 77. ✅ 📴 Congelar la mensualidad (vacaciones).
-78. 📴 Puesto fijo reservado para el abonado.
+78. ✅ 📴 Puesto fijo reservado para el abonado.
 79. ✅ 📴 Carné digital del abonado con QR.
-80. 📴 Contrato firmado en pantalla con el dedo.
+80. ✅ 📴 Contrato firmado en pantalla con el dedo.
 81. ✅ 📴 Puntos de fidelidad por visita.
 82. ✅ 📴 "La visita 10 es gratis".
-83. 📴 Cumpleaños del cliente con descuento.
-84. 📴 Etiquetas de cliente (taxi, domiciliario, vecino, empresa).
+83. ✅ 📴 Cumpleaños del cliente con descuento.
+84. ✅ 📴 Etiquetas de cliente (taxi, domiciliario, vecino, empresa).
 85. ✅ 📴 Ficha del cliente con todas sus visitas y gastos.
 86. 🌐 Enviar el comprobante por correo.
 87. 🌐 Portal del cliente para ver su mensualidad y pagar.
@@ -115,7 +115,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 91. ✅ 📴 Registrar la autorización de tratamiento de datos (Ley 1581).
 92. ✅ 📴 Borrar los datos de un cliente si lo pide (derecho de supresión).
 93. 📴 Unir clientes duplicados.
-94. 📴 Importar clientes desde Excel.
+94. ✅ 📴 Importar clientes desde Excel.
 95. ✅ 📴 Convenios con un tope mensual de horas por empresa.
 
 ## E. Tienda e inventario (96–120)

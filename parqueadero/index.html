@@ -855,8 +855,25 @@
             <div class="field" style="width:140px;"><label for="subTelefono">WhatsApp</label><input class="input mono" id="subTelefono" placeholder="3001234567"></div>
             <div class="field grow"><label for="subCliente">Cliente</label><input class="input" id="subCliente" placeholder="Nombre o referencia"></div>
             <div class="field" style="width:150px;"><label for="subVence">Vence</label><input class="input" type="date" id="subVence"></div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="field grow"><label for="subPlacas">Otras placas de la misma mensualidad</label><input class="input mono upper" id="subPlacas" placeholder="Ej. XYZ123, MTR45F (familia o empresa)"></div>
+            <div class="field" style="width:150px;"><label for="subHorario">Horario</label><select class="select" id="subHorario"><option value="completo">Todo el día</option><option value="dia">Solo de día (6 a. m. – 6 p. m.)</option><option value="noche">Solo de noche (6 p. m. – 6 a. m.)</option></select></div>
+            <div class="field" style="width:130px;"><label for="subEntradas">Entradas al mes</label><input class="input mono" id="subEntradas" type="number" min="0" placeholder="0 = sin límite"></div>
+            <div class="field" style="width:110px;"><label for="subPuesto">Puesto fijo</label><input class="input mono upper" id="subPuesto" maxlength="8" placeholder="C-03"></div>
             <button class="btn btn-primary" id="btnAddSub">Agregar</button>
           </div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Cotización para empresas</h2>
+          <div class="row">
+            <div class="field grow"><label for="cotEmpresa">Empresa</label><input class="input" id="cotEmpresa" placeholder="Nombre de la empresa"></div>
+            <div class="field" style="width:100px;"><label for="cotMeses">Meses</label><input class="input mono" id="cotMeses" type="number" min="1" value="1"></div>
+            <div class="field" style="width:110px;"><label for="cotDesc">Descuento %</label><input class="input mono" id="cotDesc" type="number" min="0" max="100" value="0"></div>
+          </div>
+          <div class="row" style="margin-top:10px;" id="cotCupos"></div>
+          <div class="breakdown" id="cotResumen"></div>
+          <div class="actions"><button class="btn" id="btnCotImprimir">Imprimir o guardar PDF</button><button class="btn btn-green" id="btnCotWA">Enviar por WhatsApp</button></div>
         </div>
         <div class="card"><h2 class="card-title">Abonados <span class="badge" id="subCount">0</span></h2><div id="subLista"></div></div>
       </section>
@@ -868,13 +885,18 @@
             <div class="field" style="width:110px;"><label for="clientePlaca">Placa</label><input class="input mono upper" id="clientePlaca" placeholder="ABC123" maxlength="10"></div>
             <div class="field grow"><label for="clienteNombre">Nombre</label><input class="input" id="clienteNombre" placeholder="Nombre del cliente"></div>
             <div class="field" style="width:150px;"><label for="clienteTelefono">WhatsApp</label><input class="input mono" id="clienteTelefono" placeholder="3001234567"></div>
+            <div class="field" style="width:150px;"><label for="clienteCumple">Cumpleaños</label><input class="input" id="clienteCumple" type="date"></div>
+            <div class="field" style="width:180px;"><label for="clienteEtiquetas">Etiquetas</label><input class="input" id="clienteEtiquetas" list="etiquetasList" placeholder="taxi, vecino…"></div>
             <button class="btn btn-primary" id="btnAddCliente">Guardar</button>
+            <datalist id="etiquetasList"><option value="taxi"><option value="domiciliario"><option value="vecino"><option value="empresa"><option value="moto de reparto"><option value="frecuente"></datalist>
           </div>
           <label class="switch" style="margin-bottom:8px;"><input type="checkbox" id="clienteAutoriza"> El cliente autoriza el tratamiento de sus datos (Ley 1581 de 2012)</label>
           <div class="filters">
             <input type="text" class="input" id="clienteBuscar" placeholder="Buscar por nombre, placa o WhatsApp...">
-            <div class="seg" id="clienteFiltro"><button class="active" data-f="todos">Todos</button><button data-f="inactivos">No vienen hace 30 días</button></div>
+            <div class="seg" id="clienteFiltro"><button class="active" data-f="todos">Todos</button><button data-f="inactivos">No vienen hace 30 días</button><button data-f="cumple">Cumplen este mes</button></div>
+            <button class="btn btn-sm" id="btnImportarCli">Importar Excel</button><button class="btn btn-ghost btn-sm" id="btnPlantillaCli">Plantilla</button><input type="file" id="importarCli" accept=".xlsx,.xls,.csv" hidden>
           </div>
+          <div class="chips" id="etiquetasChips" style="margin-bottom:8px;"></div>
           <div id="clientesLista"></div>
           <div class="hint">Ordenados de más a menos visitas (últimos dos meses). Se llenan solos cuando guardas el nombre o WhatsApp en el comprobante de salida.</div>
         </div>
@@ -986,7 +1008,10 @@
             <div class="hint">Al cerrar el turno el trabajador las marca. En el balance queda cuántas hizo.</div>
             <h2 class="card-title" style="margin-top:20px;">Fidelidad y cupones</h2>
             <label class="switch"><input type="checkbox" id="cfgFidelidad"> Tarjeta de sellos: cada salida cobrada da un sello</label>
-            <div class="field" style="max-width:240px;margin-top:6px;"><label for="cfgFidVisitas">La visita número … es gratis</label><input class="input mono" id="cfgFidVisitas" type="number" min="2" max="50" step="1"></div>
+            <div class="form-grid" style="margin-top:6px;">
+              <div class="field"><label for="cfgFidVisitas">La visita número … es gratis</label><input class="input mono" id="cfgFidVisitas" type="number" min="2" max="50" step="1"></div>
+              <div class="field"><label for="cfgCumplePct">Descuento el día del cumpleaños (%)</label><input class="input mono" id="cfgCumplePct" type="number" min="0" max="100" step="5"></div>
+            </div>
             <div class="lbl" style="margin:14px 0 4px;">Cupones de descuento</div>
             <div class="row" style="margin-bottom:8px;">
               <input class="input mono upper" id="cupCodigo" placeholder="Código" maxlength="16" style="width:120px;">
@@ -1127,6 +1152,11 @@
   <div class="modal-box wide">
     <div class="modal-head"><h3>Contrato de servicio</h3><button class="modal-close" data-close="contratoModal">✕</button></div>
     <div class="contrato-text" id="contratoBody"></div>
+    <div id="firmaZona" style="margin-top:12px;">
+      <div class="lbl" style="margin-bottom:4px;">Firma del cliente (con el dedo o el mouse)</div>
+      <canvas id="firmaCanvas" width="520" height="150" style="width:100%;height:150px;border:1.5px dashed var(--line-2);border-radius:var(--radius-sm);background:#fff;touch-action:none;"></canvas>
+      <div class="row" style="margin-top:6px;"><button class="btn btn-sm" id="btnFirmaBorrar">Borrar</button><button class="btn btn-sm btn-primary" id="btnFirmaGuardar">Guardar firma</button></div>
+    </div>
     <div class="modal-actions">
       <button class="btn" id="btnContratoWord">Word</button>
       <button class="btn" id="btnContratoImprimir">Imprimir</button>
@@ -1311,6 +1341,23 @@
     <div class="field"><label for="abonoValor">Valor que abona</label><input class="input mono" id="abonoValor" type="number" min="0" step="1000"></div>
     <div id="abonoPago"></div>
     <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnConfirmarAbono">Registrar abono</button>
+  </div>
+</div>
+
+<!-- ===== MODAL EDITAR ABONADO ===== -->
+<div class="modal" id="editSubModal">
+  <div class="modal-box wide">
+    <div class="modal-head"><h3 id="esTitulo">Editar abonado</h3><button class="modal-close" data-close="editSubModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="esCliente">Cliente</label><input class="input" id="esCliente"></div>
+      <div class="field"><label for="esTelefono">WhatsApp</label><input class="input mono" id="esTelefono"></div>
+      <div class="field"><label for="esTipo">Vehículo</label><select class="select" id="esTipo"></select></div>
+      <div class="field"><label for="esHorario">Horario</label><select class="select" id="esHorario"><option value="completo">Todo el día</option><option value="dia">Solo de día</option><option value="noche">Solo de noche</option></select></div>
+      <div class="field full"><label for="esPlacas">Otras placas</label><input class="input mono upper" id="esPlacas" placeholder="Separadas por coma"></div>
+      <div class="field"><label for="esEntradas">Entradas al mes (0 = sin límite)</label><input class="input mono" id="esEntradas" type="number" min="0"></div>
+      <div class="field"><label for="esPuesto">Puesto fijo</label><input class="input mono upper" id="esPuesto" maxlength="8"></div>
+    </div>
+    <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnGuardarSub">Guardar</button>
   </div>
 </div>
 
@@ -1839,6 +1886,7 @@
     if(vista==='parqueo') setTimeout(()=>$('placaInput').focus(), 50);
     if(vista==='panel') renderPanel();
     if(vista==='reportes') renderReportes();
+    if(vista==='mensualidades') renderCotizacion();
     if(vista==='tienda') setTimeout(()=>$('posBuscar').focus(), 50);
   }
   // Alt + número abre la sección (el mismo número que se ve en el menú)
@@ -2159,7 +2207,7 @@
       escuchas.push(db.collection('fiados').onSnapshot(q=>{ fiados = docs(q); programar(renderDeudas, renderCaja, renderTurnos); }, errEscucha));
       escuchas.push(db.collection('pagosMensualidad').where('fecha','>=',desde).onSnapshot(q=>{ pagosMens = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderCaja, renderPanel, renderTurnos); }, errEscucha));
       escuchas.push(db.collection('gastos').where('fecha','>=',desde.slice(0,10)).onSnapshot(q=>{ gastos = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderCaja, renderPanel); }, errEscucha));
-      escuchas.push(db.collection('clientes').onSnapshot(q=>{ clientes = docs(q); programar(renderClientes, renderDeudas); }, errEscucha));
+      escuchas.push(db.collection('clientes').onSnapshot(q=>{ clientes = docs(q); programar(renderClientes, renderDeudas, renderEtiquetas, renderAlertas); }, errEscucha));
     }
     if(esAdmin()){
       escuchas.push(db.collection('usuarios').onSnapshot(q=>{ usuarios = docs(q); programar(renderUsuarios); }, errEscucha));
@@ -2205,7 +2253,21 @@
     if(val) sel.value = val;
   }
 
-  function subscriberFor(placa){ return mensualidades.find(s=>s.placa===placa); }
+  function subscriberFor(placa){ return mensualidades.find(s=>s.placa===placa || (s.placasExtra||[]).includes(placa)); }
+  // por qué una mensualidad vigente no cubre esta entrada (null si sí la cubre)
+  function motivoSinMensualidad(sub, fecha){
+    if(!sub) return null;
+    if(sub.congeladaDesde) return 'La mensualidad está congelada: se cobrará por tiempo.';
+    const h = (fecha||new Date()).getHours();
+    if(sub.horario==='dia' && (h<6 || h>=18)) return 'Su mensualidad es solo de día: a esta hora se cobra por tiempo.';
+    if(sub.horario==='noche' && h>=6 && h<18) return 'Su mensualidad es solo de noche: a esta hora se cobra por tiempo.';
+    if(sub.entradasMes>0 && entradasUsadas(sub) >= sub.entradasMes) return 'Ya usó las '+sub.entradasMes+' entradas del mes: se cobrará por tiempo.';
+    return null;
+  }
+  function entradasUsadas(sub){
+    const placas = [sub.placa].concat(sub.placasExtra||[]), hoy = new Date();
+    return historial.concat(activos).filter(x=> placas.includes(x.placa) && esSubModo(x.modo) && isSameMonth(new Date(x.entrada), hoy)).length;
+  }
   function empresaForPlate(placa){ return cfg.empresas.find(e=>(e.placas||[]).includes(placa)); }
   function diasHasta(fechaISO){ return Math.round((new Date(fechaISO+'T00:00:00') - hoy0())/86400000); }
   function isVencida(sub){ return !!(sub && sub.vencimiento && diasHasta(sub.vencimiento) < 0); }
@@ -2217,9 +2279,10 @@
       const sub = subscriberFor(placa), emp = empresaForPlate(placa);
       const dentro = activos.find(a=>a.placa===placa);
       if(dentro) info.push('<div class="info-line info-red">Esta placa ya está dentro desde las '+fmtHora(dentro.entrada)+'.</div>');
-      if(sub && sub.congeladaDesde){
-        info.push('<div class="info-line info-blue">La mensualidad está congelada: se cobrará por tiempo.</div>');
+      if(sub && motivoSinMensualidad(sub)){
+        info.push('<div class="info-line info-blue">'+esc(motivoSinMensualidad(sub))+'</div>');
       }else if(sub && !isVencida(sub)){
+        if(sub.entradasMes>0) info.push('<div class="info-line info-blue">Lleva '+entradasUsadas(sub)+' de '+sub.entradasMes+' entradas este mes.</div>');
         info.push('<div class="info-line info-green">Tiene '+(sub.periodicidad==='mensual'?'mensualidad':'quincena')+' al día'+(sub.cliente?' ('+esc(sub.cliente)+')':'')+': entra sin cobro por tiempo.</div>');
         if(sub.tipo!==tipoSeleccionado){ tipoSeleccionado = sub.tipo; renderTipos(); }
       }else if(sub){
@@ -2277,6 +2340,7 @@
     if(cupoLleno(tipo)){ showToast('No hay cupos disponibles para '+nombreFor(tipo)+'.'); return; }
     const alerta = alertaDe(placa);
     if(alerta && !confirm('ALERTA para '+placa+': '+alerta.motivo+'\n\n¿Registrar la entrada igual?')) return;
+    if(sub && sub.puesto && !$('puestoInput').value.trim() && !activos.some(a=>a.puesto===sub.puesto)) $('puestoInput').value = sub.puesto;
     const puestoN = limpiarPuesto($('puestoInput').value);
     if(puestoN && activos.some(a=>a.puesto===puestoN)){ showToast('El puesto '+puestoN+' ya está ocupado.'); return; }
     if(cfg.parqueo.pedirConductor && (!$('conductorNombre').value.trim() || !$('conductorCedula').value.trim())){ showToast('Escriba el nombre y la cédula del conductor.'); return; }
@@ -2286,7 +2350,7 @@
       const n = await siguienteNumero('ticket');
       const v = {
         id: nuevoId(), placa, tipo,
-        modo: (sub && !vencida && !sub.congeladaDesde) ? sub.periodicidad : 'tiempo',
+        modo: (sub && !vencida && !motivoSinMensualidad(sub)) ? sub.periodicidad : 'tiempo',
         entrada: new Date().toISOString(),
         operador: perfil.nombre, operadorId: perfil.uid,
         foto: fotoPendiente || null,
@@ -2545,14 +2609,16 @@
     const descFid = gratis ? base : 0;
     const cupon = (!esSub && $('salidaCupon')) ? cuponValido($('salidaCupon').value) : null;
     const descCupon = cupon && !gratis ? Math.min(base, cupon.pct ? Math.round(base*cupon.pct/100) : (cupon.valor||0)) : 0;
-    const subtotal = base - descFid - descCupon + servTotal + perdido + pernocta;
+    const cliS = clientes.find(x=>x.placa===v.placa);
+    const descCumple = (!esSub && !gratis && cfg.fidelidad.cumplePct && esCumpleHoy(cliS)) ? Math.round((base-descCupon)*cfg.fidelidad.cumplePct/100) : 0;
+    const subtotal = base - descFid - descCupon - descCumple + servTotal + perdido + pernocta;
     const ivaPct = cfg.facturacion.ivaPct || 0;
     const iva = Math.round(subtotal*ivaPct/100);
     // productos de la tienda que se cobran junto con la salida
     const tiendaItems = Object.entries(salidaTienda).map(([id,cant])=>{ const p = productos.find(x=>x.id===id); return p ? { productoId:id, nombre:p.nombre, cantidad:cant, precio:p.precio, costo:p.costo||0 } : null; }).filter(Boolean);
     const tiendaTotal = tiendaItems.reduce((s,i)=>s+i.precio*i.cantidad,0);
     const propina = Math.max(0, parseInt(($('salidaPropina')||{}).value,10)||0);
-    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, gratis, descFid, cupon, descCupon, validacion, subtotal, ivaPct, iva, total: subtotal + iva,
+    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, gratis, descFid, cupon, descCupon, descCumple, validacion, subtotal, ivaPct, iva, total: subtotal + iva,
       tiendaItems, tiendaTotal, propina, totalCobrar: subtotal + iva + tiendaTotal };
   }
 
@@ -2624,6 +2690,7 @@
       if(c.pernocta) html += '<div class="brow"><span>Pasó '+c.noches+' noche(s)</span><span class="v">'+money(c.pernocta)+'</span></div>';
       if(c.descFid) html += '<div class="brow"><span>Visita gratis (fidelidad)</span><span class="v">−'+money(c.descFid)+'</span></div>';
       if(c.descCupon) html += '<div class="brow"><span>Cupón '+esc(c.cupon.codigo)+'</span><span class="v">−'+money(c.descCupon)+'</span></div>';
+      if(c.descCumple) html += '<div class="brow"><span>Descuento de cumpleaños '+cfg.fidelidad.cumplePct+'%</span><span class="v">−'+money(c.descCumple)+'</span></div>';
       else if($('salidaCupon') && $('salidaCupon').value.trim()) html += '<div class="brow"><span style="color:var(--red);">Cupón no válido o vencido</span><span class="v"></span></div>';
       if(c.servTotal) html += '<div class="brow"><span>Servicios</span><span class="v">'+money(c.servTotal)+'</span></div>';
       if(c.ivaPct) html += '<div class="brow"><span>IVA '+c.ivaPct+'%</span><span class="v">'+money(c.iva)+'</span></div>';
@@ -2670,6 +2737,7 @@
         propina: c.propina || 0, validacion: c.validacion ? c.validacion.nombre : null, evento: k && k.enEvento ? k.evento : null, temporada: k && k.temporada ? k.temporada.nombre : null,
         descuentoNombre: k ? (k.descuentoNombre||null) : null, efectivoParte: pago.metodoPago==='mixto' ? Math.min(c.total, pago.efectivoParte||0) : null,
         tiendaItems: c.tiendaItems.map(i=>({ nombre:i.nombre, cantidad:i.cantidad, precio:i.precio })), tiendaTotal: c.tiendaTotal,
+        descuentoCumple: c.descCumple || 0,
         fidelidad: !!c.gratis, descuentoFidelidad: c.descFid || 0, cupon: c.descCupon ? c.cupon.codigo : null, descuentoCupon: c.descCupon || 0, deudor: pago.deudor || null,
         empresaNombre: emp ? emp.nombre : null, descuentoPct: k ? k.descuentoPct : 0,
         numeroFactura: (cfg.facturacion.prefijo||'FE') + '-' + pad(n),
@@ -3499,8 +3567,10 @@
     $('subLista').innerHTML = lista.length ? lista.map(s=>{
       const st = s.congeladaDesde ? { txt:'Congelada desde '+fmtCorto(new Date(s.congeladaDesde+'T12:00:00')), cls:'chip-blue' } : statusVencimiento(s.vencimiento);
       return '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(s.placa)+'</span> <span class="chip '+st.cls+'">'+st.txt+'</span>'+
-        '<div class="meta">'+nombreFor(s.tipo)+' · '+esc(s.periodicidad)+(s.cliente?' · '+esc(s.cliente):'')+(s.vencimiento?' · vence '+fmtCorto(new Date(s.vencimiento+'T00:00:00')):'')+'</div></div>'+
-        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-ghost btn-sm" data-congelar="'+esc(s.id)+'">'+(s.congeladaDesde?'Reactivar':'Congelar')+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-carne="'+esc(s.id)+'">Carné</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
+        '<div class="meta">'+nombreFor(s.tipo)+' · '+esc(s.periodicidad)+(s.cliente?' · '+esc(s.cliente):'')+(s.vencimiento?' · vence '+fmtCorto(new Date(s.vencimiento+'T00:00:00')):'')+
+          (s.horario && s.horario!=='completo' ? ' · solo de '+(s.horario==='dia'?'día':'noche') : '')+(s.entradasMes ? ' · '+entradasUsadas(s)+'/'+s.entradasMes+' entradas' : '')+(s.puesto?' · puesto '+esc(s.puesto):'')+(s.firma?' · firmó':'')+'</div>'+
+          ((s.placasExtra||[]).length ? '<div class="plates">'+s.placasExtra.map(p=>'<span class="plate-chip" style="padding-right:7px;">'+esc(p)+'</span>').join('')+'</div>' : '')+'</div>'+
+        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-ghost btn-sm" data-congelar="'+esc(s.id)+'">'+(s.congeladaDesde?'Reactivar':'Congelar')+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-carne="'+esc(s.id)+'">Carné</button><button class="btn btn-ghost btn-sm" data-editar-sub="'+esc(s.id)+'">Editar</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
     }).join('') : '<div class="empty">No hay abonados con mensualidad o quincena.</div>';
   }
   $('subLista').addEventListener('click', e=>{
@@ -3545,6 +3615,49 @@
       showToast(s.placa+' reactivada: vence el '+fmtCorto(v)+'.');
     }
   });
+  function listaPlacas(txt, principal){ return [...new Set(String(txt||'').split(/[,;\s]+/).map(limpiarPlaca).filter(p=>p.length>=3 && p!==principal))].slice(0,10); }
+  let subEditando = null;
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-editar-sub]'); if(!b) return;
+    const s = mensualidades.find(x=>x.id===b.dataset.editarSub); if(!s) return;
+    subEditando = s;
+    $('esTitulo').textContent = 'Editar abonado · '+s.placa;
+    $('esTipo').innerHTML = TIPOS.map(t=>'<option value="'+t.id+'">'+t.nombre+'</option>').join('');
+    $('esCliente').value = s.cliente||''; $('esTelefono').value = s.telefono||''; $('esTipo').value = s.tipo; $('esHorario').value = s.horario||'completo';
+    $('esPlacas').value = (s.placasExtra||[]).join(', '); $('esEntradas').value = s.entradasMes||0; $('esPuesto').value = s.puesto||'';
+    abrirModal('editSubModal');
+  });
+  $('btnGuardarSub').addEventListener('click', ()=>{
+    const s = subEditando; if(!s) return;
+    db.collection('mensualidades').doc(s.id).update({ cliente:$('esCliente').value.trim().slice(0,80), telefono:$('esTelefono').value.replace(/\D/g,'').slice(0,15), tipo:$('esTipo').value,
+      horario:$('esHorario').value, placasExtra:listaPlacas($('esPlacas').value, s.placa), entradasMes:Math.max(0, parseInt($('esEntradas').value,10)||0), puesto:limpiarPuesto($('esPuesto').value)||null }).catch(errGuardar);
+    cerrarModal('editSubModal'); showToast('Abonado actualizado.');
+  });
+
+  /* ---------- cotización para empresas ---------- */
+  function renderCotizacion(){
+    if(!$('cotCupos').children.length) $('cotCupos').innerHTML = TIPOS.map(t=>'<div class="field" style="width:120px;"><label for="cot_'+t.id+'">'+t.nombre+' (cupos)</label><input class="input mono" id="cot_'+t.id+'" type="number" min="0" value="0" data-cot="'+t.id+'"></div>').join('');
+    const meses = Math.max(1, parseInt($('cotMeses').value,10)||1), desc = Math.min(100, Math.max(0, parseInt($('cotDesc').value,10)||0));
+    const filas = TIPOS.map(t=>({ t, n: Math.max(0, parseInt($('cot_'+t.id).value,10)||0), v: cfg.rates[t.id].mensual||0 })).filter(x=>x.n);
+    const sub = filas.reduce((s,x)=>s+x.n*x.v,0)*meses, des = Math.round(sub*desc/100);
+    $('cotResumen').innerHTML = filas.length ? filas.map(x=>'<div class="brow"><span>'+x.n+' × '+x.t.nombre+' a '+money(x.v)+'/mes'+(meses>1?' × '+meses+' meses':'')+'</span><span class="v">'+money(x.n*x.v*meses)+'</span></div>').join('')+
+      (desc?'<div class="brow"><span>Descuento '+desc+'%</span><span class="v">−'+money(des)+'</span></div>':'')+
+      '<div class="brow total"><span>Total</span><span class="v">'+money(sub-des)+'</span></div>' : '<div class="brow"><span>Escriba cuántos cupos de cada tipo necesita la empresa.</span></div>';
+    return { filas, meses, desc, sub, des, total:sub-des };
+  }
+  ['cotEmpresa','cotMeses','cotDesc'].forEach(id=> $(id).addEventListener('input', renderCotizacion));
+  $('cotCupos').addEventListener('input', renderCotizacion);
+  function textoCotizacion(){
+    const c = renderCotizacion(), f = cfg.facturacion, emp = $('cotEmpresa').value.trim() || 'la empresa';
+    return ['COTIZACIÓN DE PARQUEO MENSUAL', cfg.brand+(f.nit?' · NIT '+f.nit:''), new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'}), '', 'Para: '+emp, '']
+      .concat(c.filas.map(x=>x.n+' cupo(s) de '+x.t.nombre+' a '+money(x.v)+' al mes: '+money(x.n*x.v*c.meses)), [c.meses>1?'Por '+c.meses+' meses.':'', c.desc?'Descuento '+c.desc+'%: -'+money(c.des):'', 'TOTAL: '+money(c.total), '', 'Cotización válida por 15 días. '+(f.telefono?'Informes: '+f.telefono:'')].filter(x=>x!==''));
+  }
+  $('btnCotImprimir').addEventListener('click', ()=>{
+    const l = textoCotizacion(); if(!renderCotizacion().filas.length){ showToast('Escriba los cupos.'); return; }
+    imprimirHTML('<div style="font-family:Arial,sans-serif;max-width:600px;line-height:1.7;font-size:14px;"><h2 style="margin:0 0 6px;">'+esc(l[0])+'</h2>'+l.slice(1).map(x=>'<div>'+esc(x)+'</div>').join('')+'</div>');
+  });
+  $('btnCotWA').addEventListener('click', ()=>{ if(!renderCotizacion().filas.length){ showToast('Escriba los cupos.'); return; } abrirWhatsapp('', textoCotizacion().join('\n')); });
+
   let renovarActual = null;
   const pagoRenovar = controlPago('renovarPago', ()=> parseInt($('renovarValor').value,10)||0);
   $('renovarValor').addEventListener('input', ()=>{ pagoRenovar.mostrar((parseInt($('renovarValor').value,10)||0)>0); pagoRenovar.refrescar(); });
@@ -3586,8 +3699,9 @@
     if(placa.length<3){ showToast('Escribe la placa.'); return; }
     if(subscriberFor(placa)){ showToast('Esa placa ya está registrada.'); return; }
     const id = nuevoId();
-    db.collection('mensualidades').doc(id).set({ id, placa, tipo:$('subTipo').value, periodicidad:$('subPeriodo').value, cliente:$('subCliente').value.trim().slice(0,80), telefono:$('subTelefono').value.replace(/\D/g,'').slice(0,15), vencimiento:$('subVence').value }).catch(errGuardar);
-    $('subPlaca').value=''; $('subCliente').value=''; $('subVence').value=''; $('subTelefono').value='';
+    db.collection('mensualidades').doc(id).set({ id, placa, tipo:$('subTipo').value, periodicidad:$('subPeriodo').value, cliente:$('subCliente').value.trim().slice(0,80), telefono:$('subTelefono').value.replace(/\D/g,'').slice(0,15), vencimiento:$('subVence').value,
+      placasExtra: listaPlacas($('subPlacas').value, placa), horario:$('subHorario').value, entradasMes: Math.max(0, parseInt($('subEntradas').value,10)||0), puesto: limpiarPuesto($('subPuesto').value)||null }).catch(errGuardar);
+    $('subPlaca').value=''; $('subCliente').value=''; $('subVence').value=''; $('subTelefono').value=''; $('subPlacas').value=''; $('subEntradas').value=''; $('subPuesto').value=''; $('subHorario').value='completo';
     showToast(placa+' agregada.');
   });
 
@@ -3619,9 +3733,33 @@
     const sub = mensualidades.find(s=>s.id===id); if(!sub) return;
     const lineas = textoContrato(sub);
     contratoActual = { sub, lineas };
-    $('contratoBody').innerHTML = lineas.map(l=> l==='' ? '<br>' : '<div>'+esc(l)+'</div>').join('');
+    $('contratoBody').innerHTML = lineas.map(l=> l==='' ? '<br>' : '<div>'+esc(l)+'</div>').join('')+
+      (sub.firma && /^data:image\/png/.test(sub.firma) ? '<div style="margin-top:8px;"><img src="'+sub.firma+'" alt="Firma" style="max-width:260px;border-bottom:1px solid #111;"><div class="meta">Firmado por el cliente el '+fmtFechaHora(sub.firmaFecha)+'</div></div>' : '');
+    $('firmaZona').hidden = !!sub.firma;
+    limpiarFirma();
     abrirModal('contratoModal');
   }
+  // firma en pantalla
+  const firmaCtx = $('firmaCanvas').getContext('2d');
+  let firmando = false, firmaTrazos = 0;
+  function limpiarFirma(){ firmaCtx.fillStyle = '#fff'; firmaCtx.fillRect(0,0,520,150); firmaCtx.strokeStyle = '#111'; firmaCtx.lineWidth = 2.4; firmaCtx.lineCap = 'round'; firmaTrazos = 0; }
+  function puntoFirma(e){ const r = $('firmaCanvas').getBoundingClientRect(); return [ (e.clientX - r.left)*520/r.width, (e.clientY - r.top)*150/r.height ]; }
+  $('firmaCanvas').addEventListener('pointerdown', e=>{ firmando = true; const [x,y] = puntoFirma(e); firmaCtx.beginPath(); firmaCtx.moveTo(x,y); $('firmaCanvas').setPointerCapture(e.pointerId); });
+  $('firmaCanvas').addEventListener('pointermove', e=>{ if(!firmando) return; const [x,y] = puntoFirma(e); firmaCtx.lineTo(x,y); firmaCtx.stroke(); firmaTrazos++; });
+  ['pointerup','pointerleave'].forEach(ev=> $('firmaCanvas').addEventListener(ev, ()=>{ firmando = false; }));
+  $('btnFirmaBorrar').addEventListener('click', limpiarFirma);
+  $('btnFirmaGuardar').addEventListener('click', ()=>{
+    if(!contratoActual) return;
+    if(firmaTrazos < 10){ showToast('Falta la firma.'); return; }
+    const firma = $('firmaCanvas').toDataURL('image/png');
+    db.collection('mensualidades').doc(contratoActual.sub.id).update({ firma, firmaFecha:new Date().toISOString() }).catch(errGuardar);
+    bitacora('Contrato firmado', contratoActual.sub.placa);
+    contratoActual.sub = Object.assign({}, contratoActual.sub, { firma, firmaFecha:new Date().toISOString() });
+    abrirContrato(contratoActual.sub.id);
+    $('contratoBody').innerHTML += '<div style="margin-top:8px;"><img src="'+firma+'" alt="Firma" style="max-width:260px;border-bottom:1px solid #111;"></div>';
+    $('firmaZona').hidden = true;
+    showToast('Firma guardada.');
+  });
   $('btnContratoWord').addEventListener('click', ()=>{ if(contratoActual) descargarWord(contratoActual.lineas.map(l=> l==='' ? '<p>&nbsp;</p>' : '<p>'+esc(l)+'</p>').join(''), 'contrato-'+contratoActual.sub.placa); });
   $('btnContratoImprimir').addEventListener('click', ()=> imprimirHTML('<div style="font-family:sans-serif;max-width:600px;line-height:1.6;font-size:13px;">'+$('contratoBody').innerHTML+'</div>'));
   $('btnContratoPDF').addEventListener('click', ()=>{ if(contratoActual) pdfTexto('Contrato de servicio — '+contratoActual.sub.placa, contratoActual.lineas, 'contrato-'+contratoActual.sub.placa+'.pdf'); });
@@ -3648,6 +3786,8 @@
     }
     const porVencer = productos.filter(p=>{ const d = diasParaVencer(p); return d!=null && d<=7 && (p.stock||0)>0; });
     if(porVencer.length) html += '<div class="alert alert-amber"><strong>Productos por vencer:</strong> '+porVencer.map(p=>{ const d = diasParaVencer(p); return esc(p.nombre)+' ('+(d<0?'vencido':d===0?'hoy':d+' d')+')'; }).join(' · ')+'</div>';
+    const cumples = clientes.filter(esCumpleHoy);
+    if(cumples.length) html += '<div class="alert alert-amber"><strong>Hoy cumplen años:</strong> '+cumples.map(c=>esc(c.nombre||c.placa)+' ('+esc(c.placa)+')').join(' · ')+(cfg.fidelidad.cumplePct?' — tienen '+cfg.fidelidad.cumplePct+'% de descuento':'')+'</div>';
     const limF = (cfg.caja||{}).alertaFaltante||0;
     const faltas = turnos.filter(t=>t.fin && t.diferencia<0 && -t.diferencia>limF && isSameDay(new Date(t.fin), new Date()));
     if(faltas.length) html += '<div class="alert alert-red"><strong>Faltante de caja hoy:</strong> '+faltas.map(t=>esc(t.perfilNombre)+' — faltaron '+money(-t.diferencia)).join(' · ')+'</div>';
@@ -3673,14 +3813,17 @@
     const visitas = {}, ultima = {};
     historial.forEach(h=>{ visitas[h.placa] = (visitas[h.placa]||0)+1; if(!ultima[h.placa] || h.salida>ultima[h.placa]) ultima[h.placa] = h.salida; });
     const hace30 = new Date(Date.now()-30*864e5).toISOString();
-    const lista = clientes.filter(c=> (!q || (c.nombre||'').toLowerCase().includes(q) || (c.placa||'').toLowerCase().includes(q) || (c.telefono||'').includes(q))
-        && (filtroClientes!=='inactivos' || !ultima[c.placa] || ultima[c.placa] < hace30))
+    const mesHoy = String(new Date().getMonth()+1).padStart(2,'0');
+    const lista = clientes.filter(c=> (!q || (c.nombre||'').toLowerCase().includes(q) || (c.placa||'').toLowerCase().includes(q) || (c.telefono||'').includes(q) || (c.etiquetas||[]).some(t=>t.includes(q)))
+        && (filtroClientes!=='inactivos' || !ultima[c.placa] || ultima[c.placa] < hace30)
+        && (filtroClientes!=='cumple' || (c.cumple||'').startsWith(mesHoy)))
       .sort((a,b)=>(visitas[b.placa]||0)-(visitas[a.placa]||0));
     $('clientesLista').innerHTML = lista.length ? lista.map(c=>
       '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(c.placa)+'</span>'+
-      (c.autorizaDatos?' <span class="chip chip-green">Autorizó datos</span>':'')+(cfg.fidelidad.activo && c.sellos?' <span class="chip chip-amber">'+c.sellos+' sellos</span>':'')+
+      (c.autorizaDatos?' <span class="chip chip-green">Autorizó datos</span>':'')+(esCumpleHoy(c)?' <span class="chip chip-amber">Cumple hoy</span>':'')+
+      (c.etiquetas||[]).map(t=>' <span class="chip chip-gray">'+esc(t)+'</span>').join('')+(cfg.fidelidad.activo && c.sellos?' <span class="chip chip-amber">'+c.sellos+' sellos</span>':'')+
       '<div class="meta">'+esc(c.nombre||'Sin nombre')+(c.telefono?' · '+esc(c.telefono):'')+' · '+(visitas[c.placa]||0)+' visita(s)'+(ultima[c.placa]?' · última '+fmtCorto(new Date(ultima[c.placa])):'')+'</div></div>'+
-      '<div class="r"><button class="btn btn-ghost btn-sm" data-ficha="'+esc(c.placa)+'">Ficha</button>'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
+      '<div class="r">'+(esCumpleHoy(c) && c.telefono ? '<button class="btn btn-sm" data-felicitar="'+esc(c.placa)+'">Felicitar</button>' : '')+'<button class="btn btn-ghost btn-sm" data-ficha="'+esc(c.placa)+'">Ficha</button>'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
     ).join('') : '<div class="empty">Todavía no hay clientes registrados.</div>';
   }
   $('clientesLista').addEventListener('click', e=>{
@@ -3690,6 +3833,46 @@
   });
   $('clienteBuscar').addEventListener('input', renderClientes);
   let filtroClientes = 'todos';
+  function etiquetasDe(txt){ return [...new Set(String(txt||'').split(',').map(x=>x.trim().toLowerCase().slice(0,24)).filter(Boolean))].slice(0,6); }
+  function hoyMMDD(){ const d = new Date(); return String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function esCumpleHoy(c){ return !!(c && c.cumple && c.cumple===hoyMMDD()); }
+  function renderEtiquetas(){
+    const todas = [...new Set(clientes.flatMap(c=>c.etiquetas||[]))].sort();
+    $('etiquetasChips').innerHTML = todas.map(t=>'<button class="chip-btn" data-etq="'+esc(t)+'">'+esc(t)+' ('+clientes.filter(c=>(c.etiquetas||[]).includes(t)).length+')</button>').join('');
+  }
+  $('etiquetasChips').addEventListener('click', e=>{ const b = e.target.closest('[data-etq]'); if(!b) return; $('clienteBuscar').value = b.dataset.etq; renderClientes(); });
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-felicitar]'); if(!b) return;
+    const c = clientes.find(x=>x.placa===b.dataset.felicitar); if(!c) return;
+    const pct = cfg.fidelidad.cumplePct||0;
+    abrirWhatsapp(c.telefono, '¡Feliz cumpleaños'+(c.nombre?', '+c.nombre:'')+'! Le desea todo el equipo de '+cfg.brand+'.'+(pct?' Hoy tiene '+pct+'% de descuento en su parqueo.':''));
+  });
+  // importar clientes desde Excel
+  const COLS_CLI = ['Placa','Nombre','WhatsApp','Cumpleaños (DD/MM)','Etiquetas','Autoriza datos (sí/no)'];
+  $('btnPlantillaCli').addEventListener('click', ()=> descargarExcel(COLS_CLI, [['ABC123','Pedro Rojas','3104567890','15/03','taxi, frecuente','sí']], 'plantilla-clientes.xlsx', 'Clientes'));
+  $('btnImportarCli').addEventListener('click', ()=> $('importarCli').click());
+  $('importarCli').addEventListener('change', async e=>{
+    const f = e.target.files[0]; e.target.value = ''; if(!f) return;
+    try{
+      await cargarScript(URL_XLSX);
+      const wb = XLSX.read(await f.arrayBuffer(), { type:'array' });
+      const filas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval:'' });
+      const lista = filas.map(r=>{
+        const placa = limpiarPlaca(r['Placa']); if(placa.length<3) return null;
+        const cu = /^(\d{1,2})[\/\-](\d{1,2})/.exec(String(r['Cumpleaños (DD/MM)']||''));
+        const x = { placa, nombre:String(r['Nombre']||'').trim().slice(0,80), telefono:String(r['WhatsApp']||'').replace(/\D/g,'').slice(0,15) };
+        if(cu) x.cumple = cu[2].padStart(2,'0')+'-'+cu[1].padStart(2,'0');
+        const et = etiquetasDe(r['Etiquetas']); if(et.length) x.etiquetas = et;
+        if(/^s/i.test(String(r['Autoriza datos (sí/no)']||''))) Object.assign(x, { autorizaDatos:true, fechaAutorizacion:new Date().toISOString() });
+        return x;
+      }).filter(Boolean);
+      if(!lista.length){ showToast('El archivo no tiene clientes con placa. Use la plantilla.'); return; }
+      if(!confirm('Se van a importar '+lista.length+' clientes. Los que ya existen se actualizan. ¿Continuar?')) return;
+      for(let i=0;i<lista.length;i+=400){ const b = db.batch(); lista.slice(i,i+400).forEach(x=> b.set(db.collection('clientes').doc(x.placa), x, { merge:true })); await b.commit(); }
+      bitacora('Clientes importados', lista.length+' clientes');
+      showToast(lista.length+' clientes importados.');
+    }catch(err){ console.error(err); showToast('No se pudo leer el archivo. Use la plantilla.'); }
+  });
   $('clienteFiltro').addEventListener('click', e=>{ const b = e.target.closest('[data-f]'); if(!b) return; filtroClientes = b.dataset.f; $('clienteFiltro').querySelectorAll('button').forEach(x=>x.classList.toggle('active', x===b)); renderClientes(); });
   document.addEventListener('click', e=>{ const b = e.target.closest('[data-ficha]'); if(b) abrirFicha(b.dataset.ficha); });
   function abrirFicha(placa){
@@ -3724,8 +3907,12 @@
     const placa = limpiarPlaca($('clientePlaca').value), nombre = $('clienteNombre').value.trim().slice(0,80), tel = $('clienteTelefono').value.trim().slice(0,20);
     if(placa.length<3){ showToast('Escribe la placa.'); return; }
     if(!nombre && !tel){ showToast('Escribe al menos el nombre o el WhatsApp.'); return; }
-    upsertCliente(placa, nombre, tel);
-    $('clientePlaca').value=''; $('clienteNombre').value=''; $('clienteTelefono').value='';
+    upsertCliente(placa, nombre, tel, $('clienteAutoriza').checked);
+    const extra = {};
+    if($('clienteCumple').value) extra.cumple = $('clienteCumple').value.slice(5);
+    const et = etiquetasDe($('clienteEtiquetas').value); if(et.length) extra.etiquetas = et;
+    if(Object.keys(extra).length) db.collection('clientes').doc(placa).set(extra, { merge:true }).catch(errGuardar);
+    $('clientePlaca').value=''; $('clienteNombre').value=''; $('clienteTelefono').value=''; $('clienteCumple').value=''; $('clienteEtiquetas').value='';
     showToast('Cliente guardado.');
   });
 
@@ -3779,7 +3966,7 @@
     $('cfgComision').value = cfg.caja.comisionPct||0;
     $('cfgFiado').checked = !!cfg.fiado.activo; $('cfgFiadoTrab').checked = !!cfg.fiado.trabajador;
     $('cfgChecklist').value = (cfg.checklist||[]).join('\n');
-    $('cfgFidelidad').checked = !!cfg.fidelidad.activo; $('cfgFidVisitas').value = cfg.fidelidad.visitas||10;
+    $('cfgFidelidad').checked = !!cfg.fidelidad.activo; $('cfgFidVisitas').value = cfg.fidelidad.visitas||10; $('cfgCumplePct').value = cfg.fidelidad.cumplePct||0;
     renderCupones();
     renderTarifasEspeciales();
     $('cfgHorasAlerta').value = cfg.parqueo.horasAlerta;
@@ -3833,6 +4020,7 @@
   $('cfgFiadoTrab').addEventListener('change', ()=> guardarConfig({ fiado:{ trabajador:$('cfgFiadoTrab').checked } }, 'Guardado.'));
   $('cfgChecklist').addEventListener('change', ()=> guardarConfig({ checklist: $('cfgChecklist').value.split('\n').map(x=>x.trim().slice(0,80)).filter(Boolean).slice(0,15) }, 'Tareas guardadas.'));
   $('cfgFidelidad').addEventListener('change', ()=> guardarConfig({ fidelidad:{ activo:$('cfgFidelidad').checked } }, 'Guardado.'));
+  $('cfgCumplePct').addEventListener('change', ()=> guardarConfig({ fidelidad:{ cumplePct: Math.max(0, Math.min(100, parseInt($('cfgCumplePct').value,10)||0)) } }, 'Guardado.'));
   $('cfgFidVisitas').addEventListener('change', ()=> guardarConfig({ fidelidad:{ visitas: Math.max(2, Math.min(50, parseInt($('cfgFidVisitas').value,10)||10)) } }, 'Guardado.'));
   $('cfgComision').addEventListener('change', ()=> guardarConfig({ caja:{ comisionPct: Math.max(0, Math.min(50, parseFloat($('cfgComision').value)||0)) } }, 'Comisión guardada.'));
   $('cfgMeta').addEventListener('change', ()=> guardarConfig({ caja:{ metaDia: Math.max(0, parseInt($('cfgMeta').value,10)||0) } }, 'Meta guardada.'));
