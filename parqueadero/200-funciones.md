@@ -50,8 +50,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 30. ✅ 📴 Asignar puesto o celda (A-12) y verlo en el ticket.
 31. ✅ 📴 Mapa visual del parqueadero con los puestos libres y ocupados.
 32. ✅ 📴 ⚡ Nota libre por vehículo, por ejemplo "rayón en la puerta" o "deja las llaves".
-33. 📴 Revisión de daños al entrar: dibujo del carro donde se marcan los golpes.
-34. 📴 Varias fotos por vehículo: frente, atrás y laterales.
+33. ✅ 📴 Revisión de daños al entrar: dibujo del carro donde se marcan los golpes.
+34. ✅ 📴 Varias fotos por vehículo: frente, atrás y laterales.
 35. ✅ 📴 Registrar las llaves entregadas (valet) con el número del gancho.
 36. ✅ 📴 ⚡ Registrar cascos y objetos guardados de las motos.
 37. 📴 Entrada por reserva: la placa ya llega con el pago adelantado.
@@ -122,8 +122,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 96b. 📴 ✅ **Aviso de inventario por acabarse** a administrador, secretaria y vendedor (notificación del equipo + campana), por defecto con 5 unidades.
 96c. 📴 ✅ **Costo y precio al agregar producto**, con la ganancia por unidad y total.
 96. ✅ 📴 Lector de código de barras (USB o cámara) para vender productos.
-97. 📴 Combos (gaseosa y papas a un precio especial).
-98. 📴 Precio por cantidad (3 por $5.000).
+97. ✅ 📴 Combos (gaseosa y papas a un precio especial).
+98. ✅ 📴 Precio por cantidad (3 por $5.000).
 99. ✅ 📴 Proveedores con teléfono y lo que se les debe.
 100. ✅ 📴 Órdenes de compra a proveedores.
 101. ✅ 📴 Sugerencia de pedido según lo que se vende por semana.
@@ -133,7 +133,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 105. ✅ 📴 Productos más vendidos y menos vendidos.
 106. ✅ 📴 Margen de ganancia por producto.
 107. ✅ 📴 Cambiar varios precios a la vez (por ejemplo, subir 5 %).
-108. 📴 Fotos de los productos en la tienda.
+108. ✅ 📴 Fotos de los productos en la tienda.
 109. ✅ 📴 Vender servicios de la tienda (recargas, minutos) sin stock.
 110. ✅ 📴 Agregar productos de la tienda a la cuenta del parqueo y cobrar todo junto.
 111. ✅ 📴 Venta en espera (dejar una venta abierta y atender a otro cliente).
@@ -203,12 +203,12 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 168. 🌐 Reservas en línea con pago.
 169. 🌐 El cliente consulta lo que va a pagar escaneando el QR del ticket.
 170. 🌐 Pagar antes de llegar a la salida, desde el celular.
-171. 🌐 Aviso al cliente: "su carro está listo" (lavado o valet).
+171. ✅ 🌐 Aviso al cliente: "su carro está listo" (lavado o valet).
 172. 🌐 Pedir el carro al valet desde el celular.
 173. ✅ 📴 Ticket con publicidad de la tienda.
 174. 📴 Ticket en inglés para turistas.
 175. 🌐 Google Maps y reseñas: botón de "califíquenos".
-176. 📴 Turnos de lavado con hora estimada.
+176. ✅ 📴 Turnos de lavado con hora estimada.
 177. 🌐 Notificación al abonado cuando su puesto fijo está ocupado.
 178. ✅ 📴 Cartel imprimible de tarifas generado desde Ajustes.
 179. ✅ 📴 Avisos legales en el ticket (responsabilidad, horario).

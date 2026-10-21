@@ -595,6 +595,7 @@
             <div class="card"><h2 class="card-title">Inventario por acabarse<span class="sp"></span><button class="btn btn-ghost btn-sm" data-ir="inventario">Ver inventario</button></h2><div id="panelStock"></div></div>
             <div class="card"><h2 class="card-title">Más vendido este mes</h2><div id="panelTop"></div></div>
             <div class="card"><h2 class="card-title">Mensualidades por vencer</h2><div id="panelSubs"></div></div>
+            <div class="card"><h2 class="card-title">Lavados y servicios en curso</h2><div id="panelServ"></div></div>
           </div>
         </div>
       </section>
@@ -624,12 +625,14 @@
                 <label for="placaInput">Placa</label>
                 <span class="plate-wrap"><input id="placaInput" class="plate-input" placeholder="ABC123" maxlength="10" spellcheck="false" autocomplete="off"></span>
               </div>
-              <label class="btn foto-btn" title="Foto opcional del vehículo"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>Foto<input type="file" id="fotoInput" accept="image/*" capture="environment"></label>
+              <button class="btn" id="btnDanos" type="button" title="Marcar golpes o rayones">Daños <span class="chip chip-red" id="danosCnt" hidden>0</span></button>
+              <label class="btn foto-btn" title="Foto opcional del vehículo"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>Foto<input type="file" id="fotoInput" accept="image/*" capture="environment" multiple></label>
               <img id="fotoPreview" class="foto-preview" alt="" hidden>
               <button class="btn btn-primary btn-lg" id="btnIngresar">Registrar entrada</button>
             </div>
             <div class="row" style="margin-top:12px;">
               <div class="field" style="width:110px;"><label for="puestoInput">Puesto</label><input class="input mono upper" id="puestoInput" maxlength="8" placeholder="C-04" autocomplete="off"></div>
+              <div class="field" id="servicioRow" style="width:180px;" hidden><label for="servicioPendiente">Servicio (lavado…)</label><select class="select" id="servicioPendiente"></select></div>
               <div class="field grow"><label for="notaInput">Nota (opcional)</label><input class="input" id="notaInput" maxlength="80" placeholder="Ej. deja las llaves en el gancho 4 · rayón puerta derecha · 2 cascos"></div>
             </div>
             <div class="row" id="conductorRow" style="margin-top:10px;" hidden>
@@ -1358,6 +1361,17 @@
       <div class="field"><label for="esPuesto">Puesto fijo</label><input class="input mono upper" id="esPuesto" maxlength="8"></div>
     </div>
     <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnGuardarSub">Guardar</button>
+  </div>
+</div>
+
+<!-- ===== MODAL DAÑOS ===== -->
+<div class="modal" id="danosModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Daños al entrar</h3><button class="modal-close" data-close="danosModal">✕</button></div>
+    <p class="hint" style="margin-top:0;">Toque las partes que llegan con golpes o rayones. Queda en el ticket y se ve al dar la salida.</p>
+    <svg id="danosSVG" viewBox="0 0 200 300" style="width:100%;max-width:260px;display:block;margin:0 auto;"></svg>
+    <div class="chips" id="danosLista" style="margin-top:10px;"></div>
+    <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" data-close="danosModal">Listo</button>
   </div>
 </div>
 
@@ -2168,7 +2182,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -2310,9 +2324,14 @@
   $('placaInput').addEventListener('keydown', e=>{ if(e.key==='Enter') registrarIngreso(); });
   $('btnIngresar').addEventListener('click', registrarIngreso);
 
+  let fotosExtra = [];
   $('fotoInput').addEventListener('change', function(e){
-    const file = e.target.files[0];
+    const files = [...e.target.files];
+    const file = files[0];
     if(!file){ fotoPendiente = null; $('fotoPreview').hidden = true; return; }
+    // hasta 4 fotos: la primera es la principal, las demás quedan como fotos extra
+    fotosExtra = [];
+    files.slice(1,4).forEach(f=> fotoPequena(f, 320, d=>{ fotosExtra.push(d); showToast((fotosExtra.length+1)+' fotos listas.'); }));
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = function(){
@@ -2354,6 +2373,9 @@
         entrada: new Date().toISOString(),
         operador: perfil.nombre, operadorId: perfil.uid,
         foto: fotoPendiente || null,
+        fotos: fotosExtra.length ? fotosExtra.slice() : null,
+        danos: danosPendientes.length ? danosPendientes.slice() : null,
+        servicioPendiente: $('servicioPendiente') && $('servicioPendiente').value ? $('servicioPendiente').value : null,
         empresaId: emp ? emp.id : null,
         vencidaAlEntrar: vencida,
         codigoIngreso: 'E-' + pad(n),
@@ -2366,7 +2388,8 @@
       db.collection('activos').doc(v.id).set(v).catch(errGuardar);
       $('placaInput').value = ''; $('placaInfo').innerHTML = ''; $('notaInput').value = ''; $('puestoInput').value = '';
       $('conductorNombre').value = ''; $('conductorCedula').value = '';
-      fotoPendiente = null; $('fotoInput').value = ''; $('fotoPreview').hidden = true;
+      fotoPendiente = null; $('fotoInput').value = ''; $('fotoPreview').hidden = true; fotosExtra = [];
+      danosPendientes = []; $('danosCnt').hidden = true; if($('servicioPendiente')) $('servicioPendiente').value = '';
       showToast(placa+' registrada.');
       ofrecerDeshacer(v);
       imprimirAlAbrir = true; mostrarTicketIngreso(v);
@@ -2464,6 +2487,9 @@
       if(min > cfg.parqueo.horasAlerta*60) badges += '<span class="chip chip-red">+'+cfg.parqueo.horasAlerta+' h</span>';
       if(alertaDe(v.placa)) badges += '<span class="chip chip-red">ALERTA</span>';
       if(v.puesto) badges += '<span class="chip chip-gray">'+esc(v.puesto)+'</span>';
+      if((v.danos||[]).length) badges += '<span class="chip chip-red" title="'+esc(v.danos.join(', '))+'">'+v.danos.length+' daño(s)</span>';
+      if(v.servicioPendiente){ const sv = cfg.servicios.find(x=>x.id===v.servicioPendiente), es = ESTADOS_SERV[v.servicioEstado||'pendiente'];
+        badges += '<button class="chip '+es[1]+'" style="cursor:pointer;" data-serv-estado="'+esc(v.id)+'" title="Tocar para cambiar el estado">'+esc(sv?sv.nombre:'Servicio')+': '+es[0]+'</button>'; }
       return '<div class="activo" data-id="'+esc(v.id)+'">'+
         '<div class="activo-l"><div class="activo-ic">'+(v.foto ? '<img src="'+esc(v.foto)+'" alt="">' : iconFor(v.tipo))+'</div>'+
           '<div style="min-width:0;"><div><span class="placa-txt">'+esc(v.placa)+'</span>'+(badges?'<span class="badges">'+badges+'</span>':'')+'</div>'+
@@ -2628,12 +2654,15 @@
     $('salidaTitulo').textContent = 'Salida · '+v.placa;
     const al = alertaDe(v.placa);
     $('salidaAvisos').innerHTML = (al ? '<div class="info-line info-red" style="margin-bottom:10px;">'+(al.bloquea?'NO DEJAR SALIR: ':'ALERTA: ')+esc(al.motivo)+'</div>' : '')+
-      (v.nota ? '<div class="info-line info-blue" style="margin-bottom:10px;">Nota: '+esc(v.nota)+'</div>' : '');
+      (v.nota ? '<div class="info-line info-blue" style="margin-bottom:10px;">Nota: '+esc(v.nota)+'</div>' : '')+
+      ((v.danos||[]).length ? '<div class="info-line info-red" style="margin-bottom:10px;">Llegó con daños en: '+esc(v.danos.join(', '))+'</div>' : '')+
+      ([v.foto].concat(v.fotos||[]).filter(Boolean).length ? '<div style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;">'+[v.foto].concat(v.fotos||[]).filter(Boolean).map(f=>'<img src="'+esc(f)+'" alt="" style="height:70px;border-radius:6px;border:1px solid var(--line);">').join('')+'</div>' : '');
     $('salidaServicios').innerHTML = cfg.servicios.length
       ? '<div class="lbl" style="margin-bottom:4px;">Servicios adicionales</div>'+cfg.servicios.map(s=>
           '<label class="serv-check"><input type="checkbox" class="salida-serv" data-id="'+esc(s.id)+'"> '+esc(s.nombre)+' <span class="p">'+money(s.precio)+'</span></label>').join('')
       : '';
     const cli = clientes.find(x=>x.placa===v.placa);
+    if(v.servicioPendiente){ const chk = $('salidaServicios').querySelector('.salida-serv[data-id="'+v.servicioPendiente+'"]'); if(chk) chk.checked = true; }
     if(!esSubModo(v.modo) && cfg.fidelidad.activo && cli){
       const sellos = cli.sellos||0, meta = cfg.fidelidad.visitas||10;
       $('salidaServicios').innerHTML += sellos >= meta-1
@@ -2758,7 +2787,7 @@
           metodoPago:pago.metodoPago, medioTransferencia:pago.medioTransferencia, efectivoRecibido:null, vuelto:null, deudor:pago.deudor||null,
           efectivoParte: pago.metodoPago==='mixto' ? Math.max(0, (pago.efectivoParte||0) - (r.efectivoParte||0)) : null, operador:perfil.nombre, operadorId:perfil.uid };
         batch.set(db.collection('ventas').doc(venta.id), venta);
-        c.tiendaItems.forEach(it=>{ const pr = productos.find(x=>x.id===it.productoId); if(!pr || !pr.servicio) batch.update(db.collection('productos').doc(it.productoId), { stock: FV.increment(-it.cantidad) }); });
+        c.tiendaItems.forEach(it=> descontarStock(batch, it));
         if(pago.metodoPago==='fiado') cargoFiado(batch, pago.deudor, venta.total, venta.numero, 'Tienda con la salida de '+r.placa);
         r.ventaNumero = venta.numero;
       }
@@ -2806,6 +2835,7 @@
     let html = '<div class="ticket">'+ticketCabecera()+'<div class="t-title">TICKET DE INGRESO</div><div class="t-big">'+esc(v.codigoIngreso)+'</div><hr>';
     html += fila('Placa', v.placa)+fila('Vehículo', nombreFor(v.tipo))+fila('Entrada', fmtFechaHora(v.entrada));
     if(v.puesto) html += fila('Puesto', v.puesto);
+    if((v.danos||[]).length) html += fila('Daños', v.danos.join(', '));
     if(v.conductor) html += fila('Conductor', v.conductor+(v.cedula?' · CC '+v.cedula:''));
     html += fila('Modalidad', esSub ? (v.modo==='mensual'?'Mensualidad':'Quincena') : 'Por tiempo');
     if(!esSub){
@@ -3058,12 +3088,13 @@
     }
     if(lista.length===0){ $('posProductos').innerHTML = '<div class="empty" style="grid-column:1/-1;">Ningún producto coincide.</div>'; return; }
     $('posProductos').innerHTML = lista.map(p=>{
-      const disp = p.servicio ? Infinity : (p.stock||0) - (carrito[p.id]||0);
-      const bajo = (p.stock||0) <= minDe(p);
+      const st = stockDe(p), disp = st - (carrito[p.id]||0);
+      const bajo = (p.stock||0) <= minDe(p) && !(p.componentes||[]).length;
       return '<button class="prod" data-prod="'+esc(p.id)+'"'+(disp<=0?' disabled':'')+'>'+
-        '<span class="pn">'+esc(p.nombre)+'</span><span class="pc">'+esc(p.categoria||'Otros')+'</span>'+
-        '<span class="pp">'+money(p.precio)+'</span>'+
-        '<span class="ps'+(bajo?' bajo':'')+'">'+(p.servicio ? 'Servicio' : (p.stock||0)<=0 ? 'Agotado' : 'Quedan '+p.stock)+'</span></button>';
+        (p.foto ? '<img src="'+esc(p.foto)+'" alt="" style="width:100%;height:70px;object-fit:cover;border-radius:6px;margin-bottom:4px;">' : '')+
+        '<span class="pn">'+esc(p.nombre)+'</span><span class="pc">'+esc(p.categoria||'Otros')+((p.componentes||[]).length?' · combo':'')+'</span>'+
+        '<span class="pp">'+money(p.precio)+'</span>'+(p.promoCant>1 && p.promoPrecio ? '<span class="chip chip-amber" style="align-self:flex-start;">'+p.promoCant+' por '+money(p.promoPrecio)+'</span>' : '')+
+        '<span class="ps'+(bajo?' bajo':'')+'">'+(p.servicio ? 'Servicio' : st<=0 ? 'Agotado' : 'Quedan '+st)+'</span></button>';
     }).join('');
   }
   $('posCategorias').addEventListener('click', e=>{ const b = e.target.closest('[data-cat]'); if(b){ categoriaPOS = b.dataset.cat; renderPOS(); } });
@@ -3072,7 +3103,7 @@
   function venderPorCodigo(codigo){
     const p = productos.find(x=>x.codigo && x.codigo===String(codigo).trim());
     if(!p) return false;
-    if(!p.servicio && (p.stock||0) - (carrito[p.id]||0) <= 0){ showToast(p.nombre+' está agotado.'); return true; }
+    if(stockDe(p) - (carrito[p.id]||0) <= 0){ showToast(p.nombre+' está agotado.'); return true; }
     agregarAlCarrito(p.id); pitar(true);
     return true;
   }
@@ -3088,11 +3119,24 @@
     delta = delta || 1;
     const p = productos.find(x=>x.id===id); if(!p) return;
     const nueva = (carrito[id]||0) + delta;
-    if(!p.servicio && nueva > (p.stock||0)){ showToast('Solo quedan '+(p.stock||0)+' de '+p.nombre+'.'); return; }
+    if(nueva > stockDe(p)){ showToast('Solo quedan '+stockDe(p)+' de '+p.nombre+'.'); return; }
     if(nueva<=0) delete carrito[id]; else carrito[id] = nueva;
     renderCarrito(); renderPOS();
   }
-  function totalCarrito(){ return Object.entries(carrito).reduce((s,[id,c])=>{ const p = productos.find(x=>x.id===id); return s + (p ? p.precio*c : 0); }, 0); }
+  // "3 por $5.000": cada grupo completo va al precio de la promoción y lo que sobra a precio normal
+  function subtotalItem(p, c){
+    if(p.promoCant>1 && p.promoPrecio>0){ const g = Math.floor(c/p.promoCant); return g*p.promoPrecio + (c - g*p.promoCant)*p.precio; }
+    return p.precio*c;
+  }
+  function totalCarrito(){ return Object.entries(carrito).reduce((s,[id,c])=>{ const p = productos.find(x=>x.id===id); return s + (p ? subtotalItem(p,c) : 0); }, 0); }
+  // un combo no tiene stock propio: descuenta el de sus productos
+  function stockCombo(p){ return Math.min(...p.componentes.map(k=>{ const q = productos.find(x=>x.id===k.id); return q ? Math.floor((q.stock||0)/k.cant) : 0; })); }
+  function stockDe(p){ return p.servicio ? Infinity : (p.componentes||[]).length ? stockCombo(p) : (p.stock||0); }
+  function descontarStock(batch, it){
+    const pr = productos.find(x=>x.id===it.productoId); if(!pr) return;
+    if((pr.componentes||[]).length) pr.componentes.forEach(k=> batch.update(db.collection('productos').doc(k.id), { stock: FV.increment(-k.cant*it.cantidad) }));
+    else if(!pr.servicio) batch.update(db.collection('productos').doc(it.productoId), { stock: FV.increment(-it.cantidad) });
+  }
   function renderCarrito(){
     for(const id in carrito){ if(!productos.find(p=>p.id===id)) delete carrito[id]; }
     const items = Object.entries(carrito);
@@ -3100,7 +3144,7 @@
       const p = productos.find(x=>x.id===id);
       return '<div class="cart-item"><div class="ci-n">'+esc(p.nombre)+'<small>'+money(p.precio)+'</small></div>'+
         '<div class="qty"><button data-q="-1" data-id="'+esc(id)+'" aria-label="Quitar uno">−</button><span>'+c+'</span><button data-q="1" data-id="'+esc(id)+'" aria-label="Agregar uno">+</button></div>'+
-        '<span class="ci-t">'+money(p.precio*c)+'</span></div>';
+        '<span class="ci-t">'+money(subtotalItem(p,c))+'</span></div>';
     }).join('') : '<div class="empty">Toca un producto para agregarlo a la venta.</div>';
     $('cartTotal').textContent = money(totalCarrito());
     $('btnCobrarVenta').disabled = items.length===0;
@@ -3136,11 +3180,13 @@
   const pagoPOS = controlPago('posPago', totalCarrito, true);
 
   $('btnCobrarVenta').addEventListener('click', async ()=>{
-    const items = Object.entries(carrito).map(([id,c])=>{ const p = productos.find(x=>x.id===id); return p ? { productoId:id, nombre:p.nombre, cantidad:c, precio:p.precio, costo:p.costo||0 } : null; }).filter(Boolean);
+    const items = Object.entries(carrito).map(([id,c])=>{ const p = productos.find(x=>x.id===id); if(!p) return null;
+      const sub = subtotalItem(p,c), costo = (p.componentes||[]).length ? p.componentes.reduce((s,k)=>{ const q = productos.find(x=>x.id===k.id); return s + (q ? (q.costo||0)*k.cant : 0); },0) : (p.costo||0);
+      return { productoId:id, nombre:p.nombre, cantidad:c, precio: sub/c, subtotal:sub, costo }; }).filter(Boolean);
     if(!items.length) return;
     for(const it of items){
       const p = productos.find(x=>x.id===it.productoId);
-      if(!p.servicio && (p.stock||0) < it.cantidad){ showToast('No hay suficiente '+p.nombre+'. Revisa la venta.'); return; }
+      if(stockDe(p) < it.cantidad){ showToast('No hay suficiente '+p.nombre+'. Revisa la venta.'); return; }
     }
     const total = items.reduce((s,i)=>s+i.precio*i.cantidad,0);
     const pago = pagoPOS.datos(total);
@@ -3159,7 +3205,7 @@
       const batch = db.batch();
       batch.set(db.collection('ventas').doc(venta.id), venta);
       if(pago.metodoPago==='fiado') cargoFiado(batch, pago.deudor, total, venta.numero, 'Tienda: '+items.map(i=>i.cantidad+'× '+i.nombre).join(', '));
-      items.forEach(it=>{ const pr = productos.find(x=>x.id===it.productoId); if(!pr || !pr.servicio) batch.update(db.collection('productos').doc(it.productoId), { stock: FV.increment(-it.cantidad) }); });
+      items.forEach(it=> descontarStock(batch, it));
       batch.commit().catch(errGuardar);
       carrito = {};
       pagoPOS.reset();
@@ -3278,6 +3324,12 @@
       $('productoBody').innerHTML = '<div class="form-grid">'+
         '<div class="field full"><label for="peNombre">Nombre</label><input class="input" id="peNombre" value="'+esc(p.nombre)+'"></div>'+
         '<div class="field full"><label class="switch"><input type="checkbox" id="peServ"'+(p.servicio?' checked':'')+'> Es un servicio o recarga (no lleva inventario)</label></div>'+
+        '<div class="field"><label for="pePromoCant">Promoción: lleve</label><input class="input mono" id="pePromoCant" type="number" min="0" value="'+(p.promoCant||'')+'" placeholder="3"></div>'+
+        '<div class="field"><label for="pePromoPrecio">por (precio total)</label><input class="input mono" id="pePromoPrecio" type="number" min="0" step="100" value="'+(p.promoPrecio||'')+'" placeholder="5000"></div>'+
+        '<div class="field full"><label for="peFoto">Foto del producto</label><input class="input" id="peFoto" type="file" accept="image/*">'+(p.foto?'<img src="'+esc(p.foto)+'" alt="" style="width:70px;height:70px;object-fit:cover;border-radius:6px;margin-top:6px;">':'')+'</div>'+
+        '<div class="field full"><label>Combo: productos que incluye (déjelo vacío si no es combo)</label><div style="max-height:150px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px 10px;">'+
+          productos.filter(x=>x.id!==p.id && !(x.componentes||[]).length).map(x=>{ const k = (p.componentes||[]).find(c=>c.id===x.id);
+            return '<label class="switch" style="padding:3px 0;"><input type="number" min="0" style="width:52px;" class="input mono" data-comp="'+esc(x.id)+'" value="'+(k?k.cant:0)+'"> '+esc(x.nombre)+'</label>'; }).join('')+'</div></div>'+
         '<div class="field"><label for="peProv">Proveedor</label><input class="input" id="peProv" list="proveedoresList" value="'+esc(p.proveedor||'')+'"></div>'+
         '<div class="field"><label for="peVence">Se vence</label><input class="input" id="peVence" type="date" value="'+esc(p.vence||'')+'"></div>'+
         '<div class="field"><label for="peCodigo">Código de barras</label><input class="input mono" id="peCodigo" value="'+esc(p.codigo||'')+'"></div>'+
@@ -3294,6 +3346,12 @@
       bitacora('Producto borrado', p.nombre+' · tenía '+(p.stock||0)+' unidades');
       showToast('Producto eliminado.');
     }
+  });
+  // la foto del producto se guarda apenas se elige
+  document.addEventListener('change', e=>{
+    if(e.target.id!=='peFoto' || !productoAccion) return;
+    const f = e.target.files[0]; if(!f) return;
+    fotoPequena(f, 200, d=> db.collection('productos').doc(productoAccion.id).update({ foto:d }).then(()=>showToast('Foto guardada.')).catch(errGuardar));
   });
   $('btnProductoGuardar').addEventListener('click', ()=>{
     if(!productoAccion) return;
@@ -3322,6 +3380,8 @@
         vence: $('peVence').value || null,
         proveedor: $('peProv').value.trim().slice(0,60) || null,
         servicio: $('peServ').checked,
+        promoCant: Math.max(0, parseInt($('pePromoCant').value,10)||0), promoPrecio: Math.max(0, parseInt($('pePromoPrecio').value,10)||0),
+        componentes: [...document.querySelectorAll('[data-comp]')].map(i=>({ id:i.dataset.comp, cant:Math.max(0, parseInt(i.value,10)||0) })).filter(k=>k.cant>0),
         precio: Math.max(0, parseInt($('pePrecio').value,10)||0),
         costo: Math.max(0, parseInt($('peCosto2').value,10)||0),
         stockMin: Math.max(0, parseInt($('peMin').value,10)||0),
@@ -4461,6 +4521,46 @@
     renderAlertas();
   }
   setInterval(()=>{ if(perfil) revisarEquipo(); }, 30*60000);
+
+  /* ================= DAÑOS DEL VEHÍCULO ================= */
+  let danosPendientes = [];
+  const PARTES = [['Bómper delantero',60,10,80,22],['Capó',55,34,90,52],['Panorámico',60,88,80,26],['Techo',60,116,80,60],['Vidrio trasero',60,178,80,24],['Baúl',55,204,90,48],['Bómper trasero',60,254,80,22],
+    ['Puerta delantera izq.',20,90,32,60],['Puerta trasera izq.',20,152,32,60],['Puerta delantera der.',148,90,32,60],['Puerta trasera der.',148,152,32,60],['Espejo izq.',4,82,16,14],['Espejo der.',180,82,16,14]];
+  function pintarDanos(){
+    $('danosSVG').innerHTML = '<rect x="18" y="8" width="164" height="270" rx="48" fill="none" stroke="var(--line-2)" stroke-width="2"/>'+PARTES.map(([n,x,y,w,h])=>{
+      const on = danosPendientes.includes(n);
+      return '<rect data-parte="'+esc(n)+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6" fill="'+(on?'var(--red)':'var(--surface-2)')+'" stroke="var(--ink)" stroke-width="1.2" style="cursor:pointer"><title>'+esc(n)+'</title></rect>';
+    }).join('');
+    $('danosLista').innerHTML = danosPendientes.length ? danosPendientes.map(d=>'<span class="chip chip-red">'+esc(d)+'</span>').join('') : '<span class="muted">Sin daños marcados.</span>';
+    $('danosCnt').hidden = !danosPendientes.length; $('danosCnt').textContent = danosPendientes.length;
+  }
+  $('btnDanos').addEventListener('click', ()=>{ pintarDanos(); abrirModal('danosModal'); });
+  $('danosSVG').addEventListener('click', e=>{
+    const r = e.target.closest('[data-parte]'); if(!r) return;
+    const n = r.dataset.parte;
+    danosPendientes = danosPendientes.includes(n) ? danosPendientes.filter(x=>x!==n) : danosPendientes.concat([n]);
+    pintarDanos();
+  });
+
+  /* ================= SERVICIOS EN PROCESO (lavado) ================= */
+  function renderServicioPendiente(){
+    const sel = $('servicioPendiente'); if(!sel) return;
+    const val = sel.value;
+    sel.innerHTML = '<option value="">Ninguno</option>'+cfg.servicios.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.nombre)+' · '+money(x.precio)+'</option>').join('');
+    sel.value = val; $('servicioRow').hidden = !cfg.servicios.length;
+  }
+  const ESTADOS_SERV = { pendiente:['Pendiente','chip-amber'], proceso:['En proceso','chip-blue'], listo:['Listo','chip-green'] };
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-serv-estado]'); if(!b) return;
+    const v = activos.find(a=>a.id===b.dataset.servEstado); if(!v) return;
+    const sig = { pendiente:'proceso', proceso:'listo', listo:'listo' }[v.servicioEstado||'pendiente'];
+    db.collection('activos').doc(v.id).update({ servicioEstado:sig, ['servicio_'+sig]:new Date().toISOString() }).catch(errGuardar);
+    if(sig==='listo'){
+      const cli = clientes.find(c=>c.placa===v.placa), sv = cfg.servicios.find(x=>x.id===v.servicioPendiente);
+      if(cli && cli.telefono && confirm('¿Avisarle al cliente por WhatsApp que el '+(sv?sv.nombre.toLowerCase():'servicio')+' está listo?'))
+        abrirWhatsapp(cli.telefono, 'Hola'+(cli.nombre?' '+cli.nombre:'')+', su vehículo '+v.placa+' ya está listo'+(sv?' ('+sv.nombre+')':'')+'. Puede recogerlo cuando quiera en '+cfg.brand+'.');
+    }
+  });
 
   /* ================= TARIFAS ESPECIALES ================= */
   function temporadaDe(d){
@@ -5637,6 +5737,12 @@
     $('panelTop').innerHTML = top.length ? top.map(([n,c])=>
       '<div class="mini-row"><span class="ic sm ic-tinta">'+ICONOS.bolsa+'</span><div class="t"><strong>'+esc(n)+'</strong><div class="barra"><i style="width:'+Math.round(c*100/maxTop)+'%"></i></div></div><span class="mono">'+c+'</span></div>').join('')
       : '<div class="empty">Aún no hay ventas este mes.</div>';
+
+    // servicios en curso
+    const enServ = activos.filter(a=>a.servicioPendiente && a.servicioEstado!=='listo');
+    $('panelServ').innerHTML = enServ.length ? enServ.map(a=>{ const sv = cfg.servicios.find(x=>x.id===a.servicioPendiente), es = ESTADOS_SERV[a.servicioEstado||'pendiente'];
+      return '<div class="mini-row"><span class="ic sm ic-azul">'+iconFor(a.tipo)+'</span><div class="t"><span class="placa-txt" style="font-size:13px;">'+esc(a.placa)+'</span> '+esc(sv?sv.nombre:'')+'<div class="meta">Entró '+fmtHora(a.entrada)+'</div></div><button class="chip '+es[1]+'" style="cursor:pointer;" data-serv-estado="'+esc(a.id)+'">'+es[0]+'</button></div>'; }).join('')
+      : '<div class="empty">No hay servicios en curso.</div>';
 
     // mensualidades
     const subs = mensualidades.filter(s=>s.vencimiento && diasHasta(s.vencimiento)<=7).sort((a,b)=>a.vencimiento.localeCompare(b.vencimiento));
