@@ -124,24 +124,24 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 96. ✅ 📴 Lector de código de barras (USB o cámara) para vender productos.
 97. 📴 Combos (gaseosa y papas a un precio especial).
 98. 📴 Precio por cantidad (3 por $5.000).
-99. 📴 Proveedores con teléfono y lo que se les debe.
-100. 📴 Órdenes de compra a proveedores.
-101. 📴 Sugerencia de pedido según lo que se vende por semana.
+99. ✅ 📴 Proveedores con teléfono y lo que se les debe.
+100. ✅ 📴 Órdenes de compra a proveedores.
+101. ✅ 📴 Sugerencia de pedido según lo que se vende por semana.
 102. ✅ 📴 Fechas de vencimiento por lote con alerta.
-103. 📴 Inventario físico: contar y ajustar, viendo las diferencias.
-104. 📴 Mermas (producto dañado o vencido) con motivo.
+103. ✅ 📴 Inventario físico: contar y ajustar, viendo las diferencias.
+104. ✅ 📴 Mermas (producto dañado o vencido) con motivo.
 105. ✅ 📴 Productos más vendidos y menos vendidos.
 106. ✅ 📴 Margen de ganancia por producto.
-107. 📴 Cambiar varios precios a la vez (por ejemplo, subir 5 %).
+107. ✅ 📴 Cambiar varios precios a la vez (por ejemplo, subir 5 %).
 108. 📴 Fotos de los productos en la tienda.
-109. 📴 Vender servicios de la tienda (recargas, minutos) sin stock.
+109. ✅ 📴 Vender servicios de la tienda (recargas, minutos) sin stock.
 110. 📴 Agregar productos de la tienda a la cuenta del parqueo y cobrar todo junto.
 111. ✅ 📴 Venta en espera (dejar una venta abierta y atender a otro cliente).
 112. 📴 Varias bodegas o neveras.
 113. ✅ 📴 Historial de cambios de costo.
 114. ✅ 📴 Alerta de producto sin moverse en 30 días.
-115. 📴 Etiquetas de precio para imprimir.
-116. 📴 Importar productos desde Excel.
+115. ✅ 📴 Etiquetas de precio para imprimir.
+116. ✅ 📴 Importar productos desde Excel.
 117. 📴 Impuesto al consumo o IVA por producto.
 118. 📴 Ventas por hora del día.
 119. ✅ 📴 Gastos menores del negocio (aseo, papelería, servicios públicos).
