@@ -28,15 +28,15 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 10. ✅ 📴 **Respaldo automático en el equipo**: un archivo JSON diario que se descarga solo.
 11. ✅ 📴 **Restaurar desde un respaldo JSON** si se daña el equipo.
 12. ✅ 📴 **Exportar a Excel o CSV sin internet** con lo que está guardado en el equipo.
-13. 📴 **Resolver conflictos**: si dos equipos registraron la misma placa sin internet, se muestra un aviso para elegir el registro bueno.
+13. ✅ 📴 **Resolver conflictos**: si dos equipos registraron la misma placa sin internet, se muestra un aviso para elegir el registro bueno.
 14. ✅ 📴 **Cola de fotos**: las fotos de los vehículos se guardan en IndexedDB y se suben cuando vuelve la conexión.
 15. ✅ 📴 ⚡ **Alerta sonora** cuando se va o vuelve el internet.
 16. 📴 **Modo "solo este equipo"**: todo funciona en local con IndexedDB, para parqueaderos que nunca tienen internet.
 17. 📴 **Sincronizar entre dos equipos por la red wifi local**, sin internet (WebRTC o código QR).
 18. 📴 **Pasar datos con código QR** de un celular a otro, por ejemplo la lista de vehículos dentro.
-19. 📴 **Guardar los WhatsApp pendientes**: se arma el mensaje y se envía cuando hay conexión.
+19. ✅ 📴 **Guardar los WhatsApp pendientes**: se arma el mensaje y se envía cuando hay conexión.
 20. ✅ 📴 ⚡ **Hora local confiable**: avisar si la hora del equipo está mal, porque eso cambia los cobros.
-21. 📴 **Verificar la integridad de los datos** guardados en el equipo al abrir la app.
+21. ✅ 📴 **Verificar la integridad de los datos** guardados en el equipo al abrir la app.
 22. ✅ 📴 **Límite de almacenamiento**: avisar cuando el equipo se está quedando sin espacio.
 23. ✅ 📴 **Copia en USB**: exportar el respaldo directamente a una memoria USB.
 24. ✅ 📴 ⚡ **Página "Estoy sin internet"** con lo que se puede y lo que no se puede hacer.
@@ -156,7 +156,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 126. ✅ 📴 Alerta de faltante mayor a X pesos.
 127. ✅ 📴 Bitácora de todo lo que hizo cada usuario (auditoría).
 128. ✅ 📴 Avisar cuando alguien borra o anula registros.
-129. 📴 Horario permitido por trabajador.
+129. ✅ 📴 Horario permitido por trabajador.
 130. ✅ 📴 Registro de entrada y salida del personal (asistencia).
 131. ✅ 📴 Horas trabajadas para calcular el pago.
 132. ✅ 📴 Comisión por ventas de la tienda para los trabajadores.
@@ -165,10 +165,10 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 135. ✅ 📴 Tareas de aseo y revisión por turno, con lista de chequeo.
 136. ✅ 📴 Reporte de incidentes (choques, robos) con foto.
 137. ✅ 📴 Libro de objetos perdidos.
-138. 📴 Permisos más finos: por ejemplo, la secretaria puede anular, pero no borrar.
+138. ✅ 📴 Permisos más finos: por ejemplo, la secretaria puede anular, pero no borrar.
 139. 🌐 Verificación en dos pasos para el administrador.
 140. ✅ 📴 Bloquear la pantalla con PIN sin cerrar la sesión.
-141. 📴 Modo cajero de solo cobro, con la pantalla simplificada.
+141. ✅ 📴 Modo cajero de solo cobro, con la pantalla simplificada.
 142. 📴 Modo supervisor de solo lectura.
 143. 🌐 Ver varios parqueaderos (sedes) desde una sola cuenta.
 144. 🌐 Comparar las sedes entre sí.
@@ -187,12 +187,12 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 154. ✅ 📴 Horas pico para planear el personal.
 155. ✅ 📴 Reporte para el contador en un Excel organizado.
 156. ✅ 🌐 Reporte diario enviado solo por WhatsApp o correo al dueño.
-157. 📴 Panel de TV para la oficina con los datos en vivo.
+157. ✅ 📴 Panel de TV para la oficina con los datos en vivo.
 158. ✅ 📴 Reporte de descuentos y convenios entregados.
 159. ✅ 📴 Reporte de anulaciones.
 160. ✅ 📴 Reporte de clientes nuevos y clientes que regresan.
 161. ✅ 📴 Ingresos por medio de pago en gráfico.
-162. 📴 Reporte personalizado eligiendo columnas y fechas.
+162. ✅ 📴 Reporte personalizado eligiendo columnas y fechas.
 163. 📴 Guardar filtros favoritos del historial.
 164. ✅ 📴 Reporte de turnos con sobrantes y faltantes.
 165. ✅ 📴 Indicador de "días sin faltantes".
@@ -231,13 +231,13 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 192. 🌐 Respaldo automático en Google Drive.
 
 ## J. Ajustes y comodidad (193–200)
-193. 📴 Asistente de configuración inicial paso a paso.
+193. ✅ 📴 Asistente de configuración inicial paso a paso.
 194. ✅ 📴 Cambiar el logo del negocio para el ticket y el menú.
 195. ✅ 📴 Elegir uno de los 200 diseños de la galería como tema de la app.
 196. ✅ 📴 Tamaño de letra grande para personas mayores.
-197. 📴 Modo zurdo o modo tableta con botones grandes.
+197. ✅ 📴 Modo zurdo o modo tableta con botones grandes.
 198. 📴 Idioma inglés.
-199. 📴 Tutorial interactivo para trabajadores nuevos.
+199. ✅ 📴 Tutorial interactivo para trabajadores nuevos.
 200. ✅ 📴 ⚡ Página de ayuda con preguntas frecuentes y videos cortos.
 
 ---

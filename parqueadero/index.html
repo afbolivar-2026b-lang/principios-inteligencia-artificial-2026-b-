@@ -426,6 +426,39 @@
   .side-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
   .side-btns .btn{width:100%;}
   :root.grande body{zoom:1.15;}
+  /* modo tableta: botones grandes y solo lo necesario para cobrar */
+  :root.tableta .btn{min-height:50px;font-size:16px;padding:10px 18px;}
+  :root.tableta .btn-sm{min-height:44px;font-size:15px;}
+  :root.tableta .input,:root.tableta .select{min-height:52px;font-size:18px;}
+  :root.tableta .nav-btn{padding:16px 16px 16px 13px;font-size:17px;}
+  :root.tableta .nav-btn:not([data-vista="parqueo"]):not([data-vista="tienda"]):not([data-vista="novedades"]){display:none;}
+  :root.tableta #alertas,:root.tableta #view-parqueo .kpis,:root.tableta #turnoBar .btn:not(#btnFinalizarTurno):not(#btnIniciarTurno){display:none;}
+  :root.tableta [data-salida],:root.tableta #btnIngresar,:root.tableta #btnCobrarVenta{min-height:60px;font-size:19px;}
+  /* modo zurdo: el menú pasa a la derecha */
+  @media (min-width:901px){ :root.zurdo .app{flex-direction:row-reverse;} :root.zurdo .sidebar{border-right:none;border-left:1px solid var(--side-line);} }
+  /* tutorial */
+  .tour-luz{position:fixed;z-index:1200;border-radius:10px;box-shadow:0 0 0 9999px rgba(20,20,19,.72);outline:3px solid #f2c200;pointer-events:none;transition:all .25s ease;}
+  .tour-caja{position:fixed;z-index:1201;width:min(340px,calc(100vw - 32px));background:var(--surface);color:var(--ink);border-radius:12px;border-top:6px solid #f2c200;padding:16px 18px;box-shadow:0 18px 40px rgba(0,0,0,.35);}
+  .tour-caja h4{margin:0 0 6px;font:600 20px/1.1 var(--display);text-transform:uppercase;}
+  .tour-caja p{margin:0 0 12px;font-size:14px;line-height:1.45;}
+  .tour-caja .pie{display:flex;align-items:center;gap:8px;} .tour-caja .pie .n{flex:1;font:12px var(--mono);color:var(--muted);}
+  /* asistente */
+  .asist-pasos{display:flex;gap:6px;margin-bottom:14px;} .asist-pasos span{flex:1;height:6px;border-radius:3px;background:var(--line-2);} .asist-pasos span.on{background:#f2c200;}
+  /* panel de TV de oficina */
+  .pantalla.tv .tv-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:26px;}
+  .pantalla.tv .tv-stat{border:3px solid #3a3933;border-radius:20px;padding:20px 24px;}
+  .pantalla.tv .tv-stat .l{font:600 22px/1 var(--display);text-transform:uppercase;letter-spacing:.05em;opacity:.75;}
+  .pantalla.tv .tv-stat .n{font:700 76px/1.05 var(--display);margin-top:8px;}
+  .pantalla.tv .tv-bajo{flex:1;display:grid;grid-template-columns:1.2fr 1fr;gap:18px;margin-top:18px;min-height:0;}
+  .pantalla.tv .tv-box{border:3px solid #3a3933;border-radius:20px;padding:18px 24px;overflow:hidden;}
+  .pantalla.tv .tv-box h3{font:600 24px/1 var(--display);text-transform:uppercase;margin:0 0 12px;opacity:.75;}
+  .pantalla.tv .tv-mov{display:flex;justify-content:space-between;font-size:24px;padding:8px 0;border-bottom:1px solid #2c2b27;}
+  .pantalla.tv .tv-mov b{background:#f2c200;color:#141413;padding:0 8px;border-radius:4px;font-family:var(--mono);}
+  .pantalla.tv .tv-barra{display:flex;align-items:center;gap:12px;font-size:22px;margin:10px 0;} .pantalla.tv .tv-barra .b{flex:1;height:16px;background:#2c2b27;border-radius:8px;overflow:hidden;} .pantalla.tv .tv-barra .b i{display:block;height:100%;background:#f2c200;}
+  @media (max-width:900px){ .pantalla.tv .tv-stats{grid-template-columns:1fr 1fr;} .pantalla.tv .tv-bajo{grid-template-columns:1fr;} .pantalla.tv .tv-stat .n{font-size:44px;} }
+  .rep-cols{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 12px;font-size:13.5px;}
+  .tabla-mini{width:100%;border-collapse:collapse;font-size:13px;} .tabla-mini th,.tabla-mini td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;} .tabla-mini th{font-weight:600;color:var(--muted);}
+  .tabla-wrap{overflow-x:auto;max-height:420px;}
   .pantalla{position:fixed;inset:0;z-index:900;background:#141413;color:#efebe2;display:flex;flex-direction:column;padding:28px 36px;cursor:pointer;}
   .pantalla .hazard{position:absolute;left:0;right:0;top:0;height:12px;}
   .pantalla header{display:flex;align-items:center;gap:18px;margin-top:10px;}
@@ -555,6 +588,8 @@
         <button class="btn btn-sm" id="btnTema" type="button">Tema</button>
         <button class="btn btn-sm" id="btnLetra" type="button">Letra grande</button>
         <button class="btn btn-sm" id="btnAyuda" type="button">Ayuda</button>
+        <button class="btn btn-sm" id="btnTableta" type="button" title="Botones grandes y solo cobro">Tableta</button>
+        <button class="btn btn-sm" id="btnZurdo" type="button" title="Menú a la derecha">Zurdo</button>
       </div>
       <button class="btn btn-sm" id="btnSalir" type="button" style="margin-top:6px;">Cerrar sesión</button>
     </div>
@@ -579,7 +614,7 @@
       <!-- ===== PANEL ===== -->
       <section class="view" id="view-panel">
         <div class="saludo"><div><h2 id="panelSaludo">Buen día</h2><p id="panelFecha"></p></div>
-          <button class="btn btn-primary" data-ir="parqueo">Registrar un vehículo</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn" id="btnTV" title="Para un televisor en la oficina">Pantalla de oficina (TV)</button><button class="btn btn-primary" data-ir="parqueo">Registrar un vehículo</button></div></div>
         <div class="stats" id="panelStats"></div>
         <div class="card" id="panelMeta" style="margin-bottom:16px;" hidden></div>
         <div class="dash">
@@ -805,6 +840,20 @@
           <div class="card"><h2 class="card-title">Turnos y caja</h2><div id="repTurnos"></div>
             <h2 class="card-title" style="margin-top:18px;">Personal: horas y comisiones</h2><div id="repPersonal"></div></div>
           <div class="card"><h2 class="card-title">Descuentos, anulaciones y clientes</h2><div id="repOtros"></div></div>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <h2 class="card-title">Reporte a la medida</h2>
+          <div class="row" style="flex-wrap:wrap;gap:10px;align-items:flex-end;">
+            <div class="field"><label for="rpDe">Qué</label><select class="select" id="rpDe"><option value="parqueo">Cobros del parqueo</option><option value="tienda">Ventas de la tienda</option></select></div>
+            <div class="field"><label for="rpDesde">Desde</label><input class="input" type="date" id="rpDesde"></div>
+            <div class="field"><label for="rpHasta">Hasta</label><input class="input" type="date" id="rpHasta"></div>
+            <div class="field"><label for="rpOperador">Trabajador</label><select class="select" id="rpOperador"><option value="">Todos</option></select></div>
+            <button class="btn btn-primary" id="btnRpVer">Ver</button>
+            <button class="btn" id="btnRpExcel">Descargar Excel</button>
+          </div>
+          <div class="rep-cols" id="rpCols"></div>
+          <div class="hint" id="rpResumen"></div>
+          <div class="tabla-wrap" id="rpTabla"></div>
         </div>
       </section>
 
@@ -1079,6 +1128,11 @@
           </div>
 
           <div class="card span2">
+            <h2 class="card-title">Puesta a punto<span class="sp"></span><button class="btn btn-sm" id="btnAsistente">Asistente de configuración</button><button class="btn btn-sm" id="btnIntegridad">Revisar los datos</button></h2>
+            <p class="muted" style="margin:0;font-size:13px;">El asistente le pregunta lo básico (nombre, tarifas y cupos) paso a paso. La revisión busca registros dañados o repetidos en este equipo y en la nube.</p>
+          </div>
+
+          <div class="card span2">
             <h2 class="card-title">Usuarios y permisos</h2>
             <div class="row" style="margin-bottom:12px;">
               <div class="field grow"><label for="usrNombre">Nombre</label><input class="input" id="usrNombre" placeholder="Nombre"></div>
@@ -1088,6 +1142,9 @@
               <button class="btn btn-primary" id="btnAddUsuario">Crear usuario</button>
             </div>
             <div id="usuariosLista"></div>
+            <h3 style="margin:18px 0 6px;font:600 16px var(--display);text-transform:uppercase;">Qué puede hacer cada rol</h3>
+            <p class="muted" style="margin:0 0 8px;font-size:13px;">Quite lo que no quiera permitir. El administrador siempre puede todo.</p>
+            <div class="tabla-wrap"><table class="tabla-mini" id="permisosTabla"></table></div>
             <div class="disclaimer"><strong>Administrador:</strong> ve y cambia todo. <strong>Secretaria:</strong> parqueo, tienda, inventario, caja, historial, mensualidades, clientes y turnos. <strong>Trabajador:</strong> solo registra entradas, salidas y ventas de la tienda, y maneja su turno. Las contraseñas las guarda Google (Firebase) cifradas: ni siquiera el administrador puede verlas. Si alguien la olvida, usa “Enviar cambio de contraseña”.</div>
           </div>
 
@@ -1219,6 +1276,13 @@
   <footer id="pantallaPie"></footer>
 </div>
 
+<div class="pantalla tv" id="pantallaTV" hidden title="Toque para salir">
+  <div class="hazard"></div>
+  <header><div class="logo-mark">P</div><h1 id="tvMarca">Parqueadero</h1><div class="hora" id="tvHora"></div></header>
+  <div class="tv-stats" id="tvStats"></div>
+  <div class="tv-bajo"><div class="tv-box"><h3>Últimos movimientos</h3><div id="tvMovs"></div></div><div class="tv-box"><h3>Ocupación</h3><div id="tvOcup"></div><h3 style="margin-top:18px;">Pendientes</h3><div id="tvPend" style="font-size:22px;line-height:1.5;"></div></div></div>
+</div>
+
 <!-- ===== MODAL AYUDA ===== -->
 <div class="modal" id="ayudaModal">
   <div class="modal-box wide ayuda">
@@ -1231,6 +1295,7 @@
       <li>En la <strong>Tienda</strong>: pase el lector de código de barras por el producto y se agrega a la venta.</li>
       <li><kbd>Esc</kbd> cierra cualquier ventana.</li>
     </ul>
+    <p><button class="btn btn-primary" id="btnTutorial" type="button">Ver el recorrido guiado (2 minutos)</button></p>
     <h4>Preguntas frecuentes</h4>
     <p><strong>¿Qué pasa si se va el internet?</strong> Siga trabajando. Arriba sale "Sin internet" con los cambios que faltan por subir; se suben solos cuando vuelva. Los tickets usan números apartados para este equipo, así nunca se repiten.</p>
     <p><strong>¿Cómo conecto la impresora Bluetooth?</strong> Prenda la impresora, toque el ícono de impresora arriba › Buscar impresora Bluetooth y elíjala. Funciona en Chrome o Edge de Android y computador, no en iPhone.</p>
@@ -1365,6 +1430,39 @@
 </div>
 
 <!-- ===== MODAL DAÑOS ===== -->
+<div class="modal" id="waPendModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>WhatsApp pendientes</h3><button class="modal-close" data-close="waPendModal">✕</button></div>
+    <p class="hint" style="margin-top:0;">Se armaron cuando no había internet. Toque Enviar en cada uno; WhatsApp abre con el mensaje listo.</p>
+    <div id="waPendLista"></div>
+  </div>
+</div>
+
+<div class="modal" id="conflictoModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Placa registrada dos veces</h3><button class="modal-close" data-close="conflictoModal">✕</button></div>
+    <p class="hint" style="margin-top:0;">Pasa cuando dos equipos registraron la misma placa sin internet. Deje el registro correcto; los otros se borran y queda anotado en la bitácora.</p>
+    <div id="conflictoLista"></div>
+  </div>
+</div>
+
+<div class="modal" id="integridadModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Revisión de los datos</h3><button class="modal-close" data-close="integridadModal">✕</button></div>
+    <div id="integridadLista"></div>
+    <button class="btn btn-primary w100" id="btnIntegridadArreglar" style="margin-top:12px;">Corregir lo que se pueda</button>
+  </div>
+</div>
+
+<div class="modal" id="asistModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Configuremos el parqueadero</h3><button class="modal-close" data-close="asistModal">✕</button></div>
+    <div class="asist-pasos" id="asistPasos"><span></span><span></span><span></span><span></span></div>
+    <div id="asistPaso"></div>
+    <div class="row" style="margin-top:16px;gap:8px;"><button class="btn" id="btnAsistAtras">Atrás</button><span style="flex:1;"></span><button class="btn btn-primary" id="btnAsistSig">Siguiente</button></div>
+  </div>
+</div>
+
 <div class="modal" id="danosModal">
   <div class="modal-box">
     <div class="modal-head"><h3>Daños al entrar</h3><button class="modal-close" data-close="danosModal">✕</button></div>
@@ -2023,6 +2121,12 @@
       return;
     }
     perfil = Object.assign({ uid:user.uid }, snap.data());
+    if(fueraDeHorario(perfil)){
+      const h = perfil.horario; perfil = null;
+      await auth.signOut();
+      mostrarErrorAuth('Su horario para entrar es de '+h.desde+' a '+h.hasta+'. Si necesita entrar ahora, pídale permiso al administrador.');
+      return;
+    }
     $('authScreen').hidden = true;
     $('app').hidden = false;
     $('userNombre').textContent = perfil.nombre;
@@ -2039,6 +2143,10 @@
     renderEspera();
     renderTodo();
     if(esAdmin()) migrarDatosAntiguos();
+    setTimeout(()=>{ if(perfil) verificarIntegridad(false); }, 6000);
+    setTimeout(()=>{ if(perfil && !esAdmin()) ofrecerTutorial(); }, 1500);
+    setTimeout(()=>{ if(perfil) revisarWaPendientes(); }, 2000);
+    setTimeout(()=>{ if(perfil) ofrecerAsistente(); }, 5000);
   }
 
   function salirDeApp(){
@@ -2182,7 +2290,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderPermisos, renderServicioPendiente, renderDeudas, renderProveedores, renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -2190,7 +2298,7 @@
     }, errEscucha));
     escuchas.push(db.collection('activos').onSnapshot(q=>{
       activos = docs(q);
-      programar(renderActivos, renderTipos, renderKpis, renderTurnoBar, renderPanel, renderPantalla);
+      programar(renderActivos, renderTipos, renderKpis, renderTurnoBar, renderPanel, renderPantalla, renderAlertas, renderTV);
     }, errEscucha));
     escuchas.push(db.collection('productos').onSnapshot(q=>{
       productos = docs(q).sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||''));
@@ -2232,7 +2340,7 @@
   function renderTodo(){
     programar(renderBrand, renderNav, renderTipos, renderTipoSelect, renderActivos, renderKpis, renderTurnoBar, renderPOS, renderCarrito,
       renderVentasHoy, renderInventario, renderCaja, renderHistorial, renderSubs, renderClientes, renderTurnos, renderAlertas,
-      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora);
+      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana, renderBitacora, renderPermisos, renderRpCols);
   }
 
   function renderBrand(){
@@ -3827,6 +3935,11 @@
   /* ---------- avisos ---------- */
   function renderAlertas(){
     let html = '';
+    const dup = placasDuplicadas();
+    if(dup.length) html += '<div class="alert alert-red"><strong>Placa registrada dos veces:</strong> '+dup.map(pl=>esc(pl)+' <button class="btn btn-sm" data-conflicto="'+esc(pl)+'">Revisar</button>').join(' · ')+'</div>';
+    const waP = waPendientes();
+    if(waP.length && navigator.onLine) html += '<div class="alert alert-amber"><strong>Volvió el internet:</strong> hay '+waP.length+' WhatsApp sin enviar. <button class="btn btn-sm" id="btnWaPend">Enviar ahora</button></div>';
+    if(problemasDatos.length && esStaff()) html += '<div class="alert alert-amber"><strong>La revisión de datos encontró '+problemasDatos.length+' cosa(s) por corregir.</strong> <button class="btn btn-sm" data-abrir-integridad>Ver</button></div>';
     // nota del turno anterior (últimas 24 h)
     const ultimo = turnos.filter(t=>t.fin && t.nota && (Date.now()-new Date(t.fin))<864e5).sort((a,b)=>b.fin.localeCompare(a.fin))[0];
     if(ultimo) html += '<div class="alert alert-amber"><strong>Nota del turno anterior ('+esc(ultimo.perfilNombre)+', '+fmtHora(ultimo.fin)+'):</strong> '+esc(ultimo.nota)+'</div>';
@@ -4170,12 +4283,21 @@
         '<div class="meta">'+esc(u.correo)+'</div></div><div class="r">'+
         '<select class="select" style="padding:6px 8px;font-size:12.5px;" data-rol-usr="'+esc(u.id)+'"'+(yo?' disabled':'')+'>'+
           ['trabajador','secretaria','admin'].map(r=>'<option value="'+r+'"'+(u.rol===r?' selected':'')+'>'+rolLabel(r)+'</option>').join('')+'</select>'+
+        (u.rol==='admin' ? '' : '<span class="meta" title="Horario en que puede entrar (vacío = cualquier hora)">Horario <input class="input mono" style="width:96px;padding:5px 6px;" type="time" data-hdesde="'+esc(u.id)+'" value="'+esc((u.horario||{}).desde||'')+'"> a <input class="input mono" style="width:96px;padding:5px 6px;" type="time" data-hhasta="'+esc(u.id)+'" value="'+esc((u.horario||{}).hasta||'')+'"></span>')+
         '<button class="btn btn-ghost btn-sm" data-reset-usr="'+esc(u.correo)+'">Enviar cambio de contraseña</button>'+
         (yo ? '' : '<button class="btn btn-sm '+(u.activo===false?'':'btn-danger')+'" data-activo-usr="'+esc(u.id)+'">'+(u.activo===false?'Activar':'Desactivar')+'</button>')+
         '</div></div>';
     }).join('') : '<div class="empty">Cargando usuarios…</div>';
   }
   $('usuariosLista').addEventListener('change', e=>{
+    const h = e.target.closest('[data-hdesde],[data-hhasta]');
+    if(h){
+      const id = h.dataset.hdesde || h.dataset.hhasta, u = usuarios.find(x=>x.id===id); if(!u) return;
+      const desde = $('usuariosLista').querySelector('[data-hdesde="'+id+'"]').value, hasta = $('usuariosLista').querySelector('[data-hhasta="'+id+'"]').value;
+      db.collection('usuarios').doc(id).update({ horario: (desde && hasta) ? { desde, hasta } : null }).then(()=>showToast(desde && hasta ? 'Horario guardado: '+desde+' a '+hasta+'.' : 'Sin horario: puede entrar a cualquier hora.')).catch(errGuardar);
+      bitacora('Horario de trabajador', u.nombre+': '+(desde && hasta ? desde+' a '+hasta : 'sin límite'));
+      return;
+    }
     const s = e.target.closest('[data-rol-usr]'); if(!s) return;
     db.collection('usuarios').doc(s.dataset.rolUsr).update({ rol:s.value }).then(()=>showToast('Rol actualizado.')).catch(errGuardar);
     const u = usuarios.find(x=>x.id===s.dataset.rolUsr); bitacora('Rol cambiado', (u?u.nombre:'')+' → '+rolLabel(s.value));
@@ -4400,6 +4522,13 @@
   /* ================= WHATSAPP: RECORDATORIOS Y RESUMEN ================= */
   function abrirWhatsapp(numero, texto){
     const n = numero ? formatearWhatsapp(numero) : '';
+    if(!navigator.onLine){
+      const lista = waPendientes(); lista.push({ id:nuevoId(), n, texto, t:new Date().toISOString() });
+      try{ localStorage.setItem('waPendientes', JSON.stringify(lista.slice(-50))); }catch(e){}
+      showToast('No hay internet: el WhatsApp quedó guardado y se lo recuerdo cuando vuelva la conexión.');
+      programar(renderAlertas);
+      return;
+    }
     window.open('https://wa.me/'+n+'?text='+encodeURIComponent(texto), '_blank', 'noopener');
   }
   document.addEventListener('click', e=>{
@@ -5755,6 +5884,332 @@
   $('panelMapa').addEventListener('click', e=>{ const b = e.target.closest('[data-spot]'); if(b) abrirSalida(b.dataset.spot); });
   document.addEventListener('click', e=>{ const b = e.target.closest('[data-ir]'); if(b) irA(b.dataset.ir); });
   setInterval(()=>{ if(perfil && vistaActual==='panel') renderPanel(); }, 60000);
+
+  /* ================= WHATSAPP PENDIENTES (sin internet) ================= */
+  function waPendientes(){ try{ const l = JSON.parse(localStorage.getItem('waPendientes')||'[]'); return Array.isArray(l) ? l : []; }catch(e){ return []; } }
+  function guardarWaPend(l){ try{ localStorage.setItem('waPendientes', JSON.stringify(l)); }catch(e){} }
+  function renderWaPend(){
+    const l = waPendientes();
+    $('waPendLista').innerHTML = l.length ? l.map(w=>'<div class="list-row"><div style="min-width:0;"><strong>'+esc(w.n||'Sin número')+'</strong><div class="meta">'+esc(w.texto.slice(0,90))+(w.texto.length>90?'…':'')+' · '+fmtHora(w.t)+'</div></div>'+
+      '<div class="r"><button class="btn btn-sm btn-green" data-wa-env="'+esc(w.id)+'">Enviar</button><button class="btn-icon" data-wa-quitar="'+esc(w.id)+'" title="Descartar">✕</button></div></div>').join('') : '<div class="empty">No quedan mensajes pendientes.</div>';
+  }
+  function revisarWaPendientes(){ if(navigator.onLine && waPendientes().length){ showToast('Hay '+waPendientes().length+' WhatsApp que no se enviaron por falta de internet.'); programar(renderAlertas); } }
+  window.addEventListener('online', ()=>{ if(perfil) revisarWaPendientes(); });
+  window.addEventListener('offline', ()=>{ if(perfil) programar(renderAlertas); });
+  document.addEventListener('click', e=>{
+    if(e.target.closest('#btnWaPend')){ renderWaPend(); abrirModal('waPendModal'); return; }
+    const env = e.target.closest('[data-wa-env]'), qu = e.target.closest('[data-wa-quitar]');
+    if(!env && !qu) return;
+    const l = waPendientes(), w = l.find(x=>x.id===(env||qu).dataset[env?'waEnv':'waQuitar']); if(!w) return;
+    if(env) window.open('https://wa.me/'+w.n+'?text='+encodeURIComponent(w.texto), '_blank', 'noopener');
+    guardarWaPend(l.filter(x=>x!==w)); renderWaPend(); programar(renderAlertas);
+    if(!waPendientes().length) cerrarModal('waPendModal');
+  });
+
+  /* ================= CONFLICTOS: misma placa dos veces ================= */
+  function placasDuplicadas(){
+    const c = {};
+    activos.forEach(a=>{ const k = limpiarPlaca(a.placa||''); if(k) c[k] = (c[k]||0)+1; });
+    return Object.keys(c).filter(k=>c[k]>1);
+  }
+  function renderConflicto(placa){
+    const regs = activos.filter(a=>limpiarPlaca(a.placa||'')===placa).sort((a,b)=>(a.entrada||'').localeCompare(b.entrada||''));
+    if(regs.length<2){ cerrarModal('conflictoModal'); return; }
+    $('conflictoLista').innerHTML = regs.map((a,i)=>'<div class="list-row"><div style="min-width:0;"><span class="plate">'+esc(a.placa)+'</span> <strong>'+esc(nombreFor(a.tipo))+'</strong>'+(i===0?' <span class="chip chip-green">Llegó primero</span>':'')+
+      '<div class="meta">Entró '+fmtFechaHora(a.entrada)+' · '+esc(a.operador||'')+' · '+esc(a.codigoIngreso||'')+(a.puesto?' · puesto '+esc(a.puesto):'')+(a.nota?' · '+esc(a.nota):'')+'</div></div>'+
+      '<div class="r"><button class="btn btn-sm btn-primary" data-dejar="'+esc(a.id)+'">Dejar este</button></div></div>').join('');
+  }
+  document.addEventListener('click', e=>{
+    const c = e.target.closest('[data-conflicto]');
+    if(c){ conflictoPlaca = c.dataset.conflicto; renderConflicto(conflictoPlaca); abrirModal('conflictoModal'); return; }
+    const d = e.target.closest('[data-dejar]'); if(!d) return;
+    const bueno = activos.find(a=>a.id===d.dataset.dejar); if(!bueno) return;
+    const otros = activos.filter(a=>a.id!==bueno.id && limpiarPlaca(a.placa||'')===limpiarPlaca(bueno.placa||''));
+    const batch = db.batch(); otros.forEach(a=>batch.delete(db.collection('activos').doc(a.id)));
+    batch.commit().then(()=>showToast('Listo: quedó un solo registro de '+bueno.placa+'.')).catch(errGuardar);
+    bitacora('Registro repetido resuelto', bueno.placa+': se dejó la entrada de '+fmtHora(bueno.entrada)+' y se borraron '+otros.length);
+    cerrarModal('conflictoModal');
+  });
+  let conflictoPlaca = null;
+
+  /* ================= REVISIÓN DE DATOS ================= */
+  let problemasDatos = [];
+  const fechaMala = x=> !x || isNaN(new Date(x).getTime());
+  function verificarIntegridad(mostrar){
+    const p = [];
+    // lo que está guardado en este equipo
+    ['ventasEspera','consecutivosReservados','impresora','waPendientes','canalLector'].forEach(k=>{
+      let v = null; try{ v = localStorage.getItem(k); }catch(e){}
+      if(v && v[0] && '[{'.includes(v[0])){ try{ JSON.parse(v); }catch(e){ p.push({ tipo:'local', k, txt:'Dato dañado en este equipo: '+k }); } }
+    });
+    activos.forEach(a=>{
+      if(!a.placa) p.push({ tipo:'activo', id:a.id, txt:'Vehículo dentro sin placa (ticket '+(a.codigoIngreso||a.id)+')' });
+      else if(fechaMala(a.entrada)) p.push({ tipo:'activo', id:a.id, txt:a.placa+': la hora de entrada está dañada' });
+      else if(new Date(a.entrada) > new Date(Date.now()+10*60000)) p.push({ tipo:'activoFuturo', id:a.id, txt:a.placa+': entró "en el futuro" ('+fmtFechaHora(a.entrada)+'); revise la hora del equipo que lo registró' });
+    });
+    placasDuplicadas().forEach(pl=>p.push({ tipo:'dup', placa:pl, txt:'La placa '+pl+' está registrada dos veces' }));
+    historial.forEach(h=>{ if(typeof h.total!=='number' || isNaN(h.total) || h.total<0) p.push({ tipo:'cobro', id:h.id, txt:'Cobro de '+(h.placa||'?')+' con valor raro ('+h.total+')' }); else if(fechaMala(h.salida)) p.push({ tipo:'cobro', id:h.id, txt:'Cobro de '+(h.placa||'?')+' sin fecha de salida válida' }); });
+    productos.forEach(x=>{ if((x.stock||0)<0) p.push({ tipo:'stock', id:x.id, txt:x.nombre+': el inventario quedó en '+x.stock+' (negativo)' }); if(x.precio!=null && (isNaN(x.precio) || x.precio<0)) p.push({ tipo:'precio', id:x.id, txt:x.nombre+': precio inválido' }); });
+    problemasDatos = p;
+    programar(renderAlertas);
+    if(mostrar){ renderIntegridad(); abrirModal('integridadModal'); }
+    return p;
+  }
+  function renderIntegridad(){
+    $('integridadLista').innerHTML = problemasDatos.length ? problemasDatos.map(x=>'<div class="list-row"><div>'+esc(x.txt)+'</div><div class="r">'+(x.tipo==='dup'?'<button class="btn btn-sm" data-conflicto="'+esc(x.placa)+'">Revisar</button>':'')+'</div></div>').join('')
+      : '<div class="empty">Todo en orden: no se encontró nada raro.</div>';
+    $('btnIntegridadArreglar').hidden = !problemasDatos.some(x=>x.tipo==='local' || (x.tipo==='stock' && esStaff()));
+  }
+  $('btnIntegridad').addEventListener('click', ()=>verificarIntegridad(true));
+  document.addEventListener('click', e=>{ if(e.target.closest('[data-abrir-integridad]')){ renderIntegridad(); abrirModal('integridadModal'); } });
+  $('btnIntegridadArreglar').addEventListener('click', ()=>{
+    let n = 0;
+    problemasDatos.forEach(x=>{
+      if(x.tipo==='local'){ try{ localStorage.removeItem(x.k); n++; }catch(e){} }
+      if(x.tipo==='stock' && esStaff()){ db.collection('productos').doc(x.id).update({ stock:0 }).catch(errGuardar); bitacora('Inventario negativo corregido', (productos.find(p=>p.id===x.id)||{}).nombre+' → 0'); n++; }
+    });
+    showToast(n ? 'Se corrigieron '+n+' dato(s).' : 'Lo que queda hay que revisarlo a mano.');
+    setTimeout(()=>{ verificarIntegridad(false); renderIntegridad(); }, 600);
+  });
+
+  /* ================= HORARIO PERMITIDO ================= */
+  function fueraDeHorario(u){
+    if(!u || u.rol==='admin' || !u.horario || !u.horario.desde || !u.horario.hasta) return false;
+    const d = new Date(), ahora = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'), { desde, hasta } = u.horario;
+    return desde<=hasta ? (ahora<desde || ahora>hasta) : (ahora<desde && ahora>hasta);
+  }
+  setInterval(()=>{ if(perfil && fueraDeHorario(perfil)) showToast('Se terminó su horario ('+perfil.horario.hasta+'). Cierre el turno cuando termine lo que está haciendo.'); }, 10*60000);
+
+  /* ================= PERMISOS POR ROL ================= */
+  const PERMISOS = [
+    ['anularCobro','Anular cobros y ventas', '[data-anular-cobro],[data-anular-venta]'],
+    ['borrarProducto','Borrar productos', '[data-borrar-prod]'],
+    ['editarProducto','Cambiar precios y productos', '[data-editar]'],
+    ['borrarMensualidad','Borrar mensualidades', '[data-borrar-sub]'],
+    ['editarEntrada','Corregir una entrada', '[data-editar-veh]'],
+    ['retiro','Sacar plata de la caja (retiros)', '#btnRetiro'],
+    ['excel','Descargar Excel', '#btnContador,#btnActivosExcel,#btnRpExcel']
+  ];
+  const PERMISOS_DEF = { anularCobro:{secretaria:true}, borrarProducto:{secretaria:true}, editarProducto:{secretaria:true}, borrarMensualidad:{secretaria:true}, editarEntrada:{secretaria:true,trabajador:true}, retiro:{secretaria:true,trabajador:true}, excel:{secretaria:true,trabajador:true} };
+  function puede(acc){
+    if(!perfil) return false;
+    if(perfil.rol==='admin') return true;
+    const p = Object.assign({}, PERMISOS_DEF[acc]||{}, ((cfg.permisos||{})[acc])||{});
+    return !!p[perfil.rol];
+  }
+  document.addEventListener('click', e=>{
+    for(const [acc, nombre, sel] of PERMISOS){
+      if(e.target.closest(sel) && !puede(acc)){
+        e.stopImmediatePropagation(); e.preventDefault();
+        showToast('No tiene permiso para: '+nombre.toLowerCase()+'. Pídaselo al administrador.');
+        return;
+      }
+    }
+  }, true);
+  function renderPermisos(){
+    if(!esAdmin()) return;
+    const roles = ['secretaria','trabajador'];
+    $('permisosTabla').innerHTML = '<tr><th>Acción</th>'+roles.map(r=>'<th>'+rolLabel(r)+'</th>').join('')+'</tr>'+PERMISOS.map(([acc,nombre])=>{
+      const p = Object.assign({}, PERMISOS_DEF[acc], (cfg.permisos||{})[acc]||{});
+      return '<tr><td>'+esc(nombre)+'</td>'+roles.map(r=>'<td><input type="checkbox" data-perm="'+acc+'" data-perm-rol="'+r+'"'+(p[r]?' checked':'')+'></td>').join('')+'</tr>';
+    }).join('');
+  }
+  $('permisosTabla').addEventListener('change', e=>{
+    const c = e.target.closest('[data-perm]'); if(!c) return;
+    const permisos = JSON.parse(JSON.stringify(cfg.permisos||{}));
+    permisos[c.dataset.perm] = Object.assign({}, PERMISOS_DEF[c.dataset.perm], permisos[c.dataset.perm]||{}, { [c.dataset.permRol]: c.checked });
+    guardarConfig({ permisos }, 'Permiso guardado.');
+    bitacora('Permiso cambiado', rolLabel(c.dataset.permRol)+': '+(PERMISOS.find(x=>x[0]===c.dataset.perm)||[])[1]+' → '+(c.checked?'sí':'no'));
+  });
+
+  /* ================= MODO TABLETA Y MODO ZURDO ================= */
+  function aplicarModo(clase, on, btn, txtOn, txtOff){ document.documentElement.classList.toggle(clase, !!on); $(btn).textContent = on ? txtOn : txtOff; }
+  let modoTableta = false, modoZurdo = false;
+  try{ modoTableta = localStorage.getItem('modoTableta')==='1'; modoZurdo = localStorage.getItem('modoZurdo')==='1'; }catch(e){}
+  aplicarModo('tableta', modoTableta, 'btnTableta', 'Pantalla normal', 'Tableta');
+  aplicarModo('zurdo', modoZurdo, 'btnZurdo', 'Diestro', 'Zurdo');
+  $('btnTableta').addEventListener('click', ()=>{
+    modoTableta = !modoTableta; try{ localStorage.setItem('modoTableta', modoTableta?'1':'0'); }catch(e){}
+    aplicarModo('tableta', modoTableta, 'btnTableta', 'Pantalla normal', 'Tableta');
+    if(modoTableta && !['parqueo','tienda','novedades'].includes(vistaActual)) irA('parqueo');
+    showToast(modoTableta ? 'Modo tableta: botones grandes y solo lo de cobrar.' : 'Pantalla normal.');
+  });
+  $('btnZurdo').addEventListener('click', ()=>{
+    modoZurdo = !modoZurdo; try{ localStorage.setItem('modoZurdo', modoZurdo?'1':'0'); }catch(e){}
+    aplicarModo('zurdo', modoZurdo, 'btnZurdo', 'Diestro', 'Zurdo');
+  });
+
+  /* ================= PANTALLA DE OFICINA (TV) ================= */
+  function renderTV(){
+    if($('pantallaTV').hidden) return;
+    const hoy = new Date();
+    $('tvMarca').textContent = cfg.brand;
+    $('tvHora').textContent = hoy.toLocaleTimeString('es-CO',{hour:'2-digit', minute:'2-digit', hour12:false});
+    const parqueo = historial.filter(h=>!esSubModo(h.modo) && isSameDay(new Date(h.salida), hoy)).reduce((s,h)=>s+(h.total||0),0);
+    const tienda = ventas.filter(v=>isSameDay(new Date(v.fecha), hoy)).reduce((s,v)=>s+(v.total||0),0);
+    const entradas = activos.concat(historial).filter(v=>isSameDay(new Date(v.entrada), hoy)).length;
+    $('tvStats').innerHTML = [['Dentro ahora', activos.length], ['Entradas hoy', entradas], ['Parqueo hoy', money(parqueo)], ['Tienda hoy', money(tienda)]]
+      .map(([l,n])=>'<div class="tv-stat"><div class="l">'+l+'</div><div class="n">'+n+'</div></div>').join('');
+    const movs = activos.map(a=>({ t:a.entrada, placa:a.placa, txt:'Entró · '+nombreFor(a.tipo) }))
+      .concat(historial.filter(h=>isSameDay(new Date(h.salida), hoy)).map(h=>({ t:h.salida, placa:h.placa, txt:'Salió · '+money(h.total||0) })))
+      .sort((a,b)=>(b.t||'').localeCompare(a.t||'')).slice(0,7);
+    $('tvMovs').innerHTML = movs.length ? movs.map(m=>'<div class="tv-mov"><span><b>'+esc(m.placa)+'</b> '+esc(m.txt)+'</span><span>'+fmtHora(m.t)+'</span></div>').join('') : '<div style="font-size:22px;opacity:.6;">Sin movimientos hoy.</div>';
+    $('tvOcup').innerHTML = TIPOS.map(t=>{ const cupo = cfg.rates[t.id].cupo||0, d = ocupadosPorTipo(t.id); if(!cupo && !d) return '';
+      const pct = cupo ? Math.min(100, Math.round(d/cupo*100)) : 100;
+      return '<div class="tv-barra"><span style="width:130px;">'+esc(t.nombre)+'</span><span class="b"><i style="width:'+pct+'%"></i></span><span style="width:90px;text-align:right;">'+d+(cupo?'/'+cupo:'')+'</span></div>'; }).join('');
+    const subs = mensualidades.filter(s=>s.vencimiento && diasHasta(s.vencimiento)<=5).length;
+    const bajos = productos.filter(p=>(p.stock||0)<=minDe(p)).length;
+    const serv = activos.filter(a=>a.servicioPendiente && a.servicioEstado!=='listo').length;
+    $('tvPend').innerHTML = [subs+' mensualidad(es) por vencer', bajos+' producto(s) por pedir', serv+' lavado(s) en curso'].join('<br>');
+  }
+  $('btnTV').addEventListener('click', ()=>{
+    $('pantallaTV').hidden = false; renderTV();
+    try{ document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){}
+  });
+  function cerrarTV(){ if($('pantallaTV').hidden) return; $('pantallaTV').hidden = true; try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){} }
+  $('pantallaTV').addEventListener('click', cerrarTV);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') cerrarTV(); });
+  setInterval(()=>{ if(perfil) renderTV(); }, 15000);
+
+  /* ================= REPORTE A LA MEDIDA ================= */
+  const RP_COLS = {
+    parqueo: [['placa','Placa',h=>h.placa],['tipo','Tipo',h=>nombreFor(h.tipo)],['entrada','Entrada',h=>fmtFechaHora(h.entrada)],['salida','Salida',h=>fmtFechaHora(h.salida)],
+      ['minutos','Minutos',h=>h.minutos||0],['total','Total',h=>h.total||0],['pago','Pago',h=>pagoLabel(h)],['operador','Cobró',h=>h.operador||''],
+      ['servicios','Servicios',h=>(h.serviciosNombres||[]).join(', ')],['empresa','Convenio',h=>h.empresaNombre||''],['ticket','Ticket',h=>h.codigoIngreso||''],['factura','Factura',h=>h.numeroFactura||'']],
+    tienda: [['fecha','Fecha',v=>fmtFechaHora(v.fecha)],['productos','Productos',v=>(v.items||[]).map(i=>i.cantidad+' '+i.nombre).join(', ')],['total','Total',v=>v.total||0],
+      ['pago','Pago',v=>pagoLabel(v)],['operador','Vendió',v=>v.operador||''],['numero','Número',v=>v.numero||'']]
+  };
+  const RP_DEF = { parqueo:['placa','tipo','entrada','salida','total','pago','operador'], tienda:['fecha','productos','total','pago','operador'] };
+  let rpFilas = null;
+  function renderRpCols(){
+    const de = $('rpDe').value;
+    $('rpCols').innerHTML = RP_COLS[de].map(([k,n])=>'<label><input type="checkbox" data-rpcol="'+k+'"'+(RP_DEF[de].includes(k)?' checked':'')+'> '+n+'</label>').join('');
+    const ops = [...new Set(usuarios.map(u=>u.nombre).concat(historial.map(h=>h.operador)).filter(Boolean))];
+    $('rpOperador').innerHTML = '<option value="">Todos</option>'+ops.map(o=>'<option>'+esc(o)+'</option>').join('');
+    if(!$('rpDesde').value){ const d = new Date(); $('rpHasta').value = aLocal(d).slice(0,10); d.setDate(1); $('rpDesde').value = aLocal(d).slice(0,10); }
+  }
+  async function armarReporte(){
+    const de = $('rpDe').value, desde = $('rpDesde').value, hasta = $('rpHasta').value, op = $('rpOperador').value;
+    if(!desde || !hasta || desde>hasta){ showToast('Revise las fechas.'); return null; }
+    const ini = new Date(desde+'T00:00'), fin = new Date(hasta+'T00:00'); fin.setDate(fin.getDate()+1);
+    const campo = de==='parqueo' ? 'salida' : 'fecha';
+    let filas;
+    if(ini >= inicioVentana()) filas = (de==='parqueo' ? historial : ventas).filter(x=>{ const t = new Date(x[campo]); return t>=ini && t<fin; });
+    else{
+      $('rpResumen').textContent = 'Cargando…';
+      try{ filas = docs(await db.collection(de==='parqueo'?'historial':'ventas').where(campo,'>=',ini.toISOString()).where(campo,'<',fin.toISOString()).get()); }
+      catch(e){ errEscucha(e); return null; }
+    }
+    filas = filas.filter(x=>!x.anulado && (!op || x.operador===op)).sort((a,b)=>(a[campo]||'').localeCompare(b[campo]||''));
+    const cols = RP_COLS[de].filter(([k])=>{ const c = $('rpCols').querySelector('[data-rpcol="'+k+'"]'); return c && c.checked; });
+    if(!cols.length){ showToast('Elija al menos una columna.'); return null; }
+    return { cols, filas, total: filas.reduce((s,x)=>s+(x.total||0),0), de, desde, hasta };
+  }
+  $('rpDe').addEventListener('change', renderRpCols);
+  $('btnRpVer').addEventListener('click', async ()=>{
+    const r = await armarReporte(); if(!r) return; rpFilas = r;
+    $('rpResumen').textContent = r.filas.length+' registro(s) · total '+money(r.total)+(r.filas.length>300?' · se muestran los primeros 300; el Excel lleva todos':'');
+    $('rpTabla').innerHTML = '<table class="tabla-mini"><tr>'+r.cols.map(c=>'<th>'+c[1]+'</th>').join('')+'</tr>'+r.filas.slice(0,300).map(x=>'<tr>'+r.cols.map(c=>{ const v = c[2](x); return '<td>'+(c[0]==='total'?money(v):esc(String(v)))+'</td>'; }).join('')+'</tr>').join('')+'</table>';
+  });
+  $('btnRpExcel').addEventListener('click', async ()=>{
+    const r = await armarReporte(); if(!r) return;
+    descargarExcel(r.cols.map(c=>c[1]), r.filas.map(x=>r.cols.map(c=>c[2](x))), 'reporte-'+r.de+'-'+r.desde+'-a-'+r.hasta+'.xlsx', 'Reporte');
+  });
+
+  /* ================= ASISTENTE DE CONFIGURACIÓN ================= */
+  let asistPaso = 0, asistDatos = null;
+  function abrirAsistente(){
+    asistPaso = 0;
+    asistDatos = { brand:cfg.brand, telefono:cfg.facturacion.telefono||'', direccion:cfg.facturacion.direccion||'', nit:cfg.facturacion.nit||'',
+      rates: JSON.parse(JSON.stringify(cfg.rates)) };
+    renderAsistente(); abrirModal('asistModal');
+  }
+  function leerAsistente(){
+    const v = id=> $(id) ? $(id).value : null, n = id=> Math.max(0, parseInt(v(id),10)||0);
+    if(asistPaso===0){ asistDatos.brand = (v('asBrand')||'').trim().slice(0,60) || asistDatos.brand; asistDatos.telefono = v('asTel').trim(); asistDatos.direccion = v('asDir').trim(); asistDatos.nit = v('asNit').trim(); }
+    if(asistPaso===1) TIPOS.forEach(t=>{ asistDatos.rates[t.id].hora = n('asH_'+t.id); asistDatos.rates[t.id].mensual = n('asM_'+t.id); });
+    if(asistPaso===2) TIPOS.forEach(t=>{ asistDatos.rates[t.id].cupo = n('asC_'+t.id); });
+  }
+  function renderAsistente(){
+    [...$('asistPasos').children].forEach((x,i)=>x.classList.toggle('on', i<=asistPaso));
+    const d = asistDatos, campo = (id,l,val,tipo,ph)=>'<div class="field"><label for="'+id+'">'+l+'</label><input class="input'+(tipo==='number'?' mono':'')+'" id="'+id+'" type="'+(tipo||'text')+'" value="'+esc(String(val==null?'':val))+'" placeholder="'+(ph||'')+'"></div>';
+    let h = '';
+    if(asistPaso===0) h = '<h4 style="margin:0 0 10px;">1. Su negocio</h4><div class="form-grid">'+campo('asBrand','Nombre del parqueadero',d.brand)+campo('asTel','Teléfono',d.telefono,'tel','3001234567')+campo('asDir','Dirección',d.direccion,'text','Calle 5 # 10-20')+campo('asNit','NIT (opcional)',d.nit)+'</div>';
+    if(asistPaso===1) h = '<h4 style="margin:0 0 10px;">2. Tarifas</h4><p class="hint" style="margin-top:0;">Cuánto cobra por hora y por mes. Lo demás (noche, quincena, fracciones) se ajusta después en Ajustes.</p>'+
+      '<table class="tabla-mini"><tr><th>Vehículo</th><th>Por hora</th><th>Mensualidad</th></tr>'+TIPOS.map(t=>'<tr><td>'+esc(t.nombre)+'</td><td><input class="input mono" style="width:110px;" type="number" min="0" step="100" id="asH_'+t.id+'" value="'+d.rates[t.id].hora+'"></td><td><input class="input mono" style="width:130px;" type="number" min="0" step="1000" id="asM_'+t.id+'" value="'+d.rates[t.id].mensual+'"></td></tr>').join('')+'</table>';
+    if(asistPaso===2) h = '<h4 style="margin:0 0 10px;">3. Cupos</h4><p class="hint" style="margin-top:0;">¿Cuántos caben de cada uno? Deje 0 si no quiere límite. Con esto se arma el mapa y la pantalla de cupos.</p>'+
+      '<table class="tabla-mini"><tr><th>Vehículo</th><th>Cupos</th></tr>'+TIPOS.map(t=>'<tr><td>'+esc(t.nombre)+'</td><td><input class="input mono" style="width:110px;" type="number" min="0" id="asC_'+t.id+'" value="'+(d.rates[t.id].cupo||0)+'"></td></tr>').join('')+'</table>';
+    if(asistPaso===3) h = '<h4 style="margin:0 0 10px;">4. ¡Listo!</h4><p>'+esc(d.brand)+' queda con carro a '+money(d.rates.carro.hora)+' la hora y moto a '+money(d.rates.moto.hora)+'.</p>'+
+      '<p class="hint">Lo que sigue (cuando quiera):</p><ul style="margin:0;padding-left:18px;line-height:1.7;font-size:14px;"><li>Ajustes › Usuarios: cree las cuentas de la secretaria y los trabajadores.</li><li>Ícono de impresora arriba: conecte la impresora Bluetooth o USB.</li><li>Inventario: agregue los productos de la tienda.</li><li>Ayuda › Recorrido guiado: para enseñarle la app a un trabajador nuevo.</li></ul>';
+    $('asistPaso').innerHTML = h;
+    $('btnAsistAtras').hidden = asistPaso===0;
+    $('btnAsistSig').textContent = asistPaso===3 ? 'Guardar y terminar' : 'Siguiente';
+  }
+  $('btnAsistAtras').addEventListener('click', ()=>{ leerAsistente(); asistPaso = Math.max(0, asistPaso-1); renderAsistente(); });
+  $('btnAsistSig').addEventListener('click', ()=>{
+    leerAsistente();
+    if(asistPaso<3){ asistPaso++; renderAsistente(); return; }
+    const d = asistDatos;
+    guardarConfig({ brand:d.brand, rates:d.rates, facturacion:Object.assign({}, cfg.facturacion, { telefono:d.telefono, direccion:d.direccion, nit:d.nit }), asistenteHecho:true }, 'Configuración guardada. ¡A trabajar!');
+    bitacora('Asistente de configuración', d.brand+' · carro '+money(d.rates.carro.hora)+'/h · moto '+money(d.rates.moto.hora)+'/h');
+    cerrarModal('asistModal');
+  });
+  $('btnAsistente').addEventListener('click', abrirAsistente);
+  let asistenteOfrecido = false;
+  function ofrecerAsistente(){
+    if(asistenteOfrecido || !esAdmin() || cfg.asistenteHecho || activos.length || historial.length) return;
+    asistenteOfrecido = true; abrirAsistente();
+  }
+
+  /* ================= RECORRIDO GUIADO ================= */
+  const TOUR = [
+    { vista:'parqueo', sel:'#tiposGrid', t:'Tipo de vehículo', x:'Primero toque qué entra: carro, moto, bus… Debajo de cada uno ve cuántos cupos van ocupados.' },
+    { vista:'parqueo', sel:'#placaInput', t:'La placa', x:'Escriba la placa y presione Enter. Si es mensualidad o convenio, la app lo detecta sola y le avisa.' },
+    { vista:'parqueo', sel:'#btnIngresar', t:'Registrar la entrada', x:'Imprime el ticket con código QR. Puede marcar daños, tomar fotos o pedir un lavado antes de registrar.' },
+    { vista:'parqueo', sel:'#activosList', t:'Dar salida', x:'Aquí están los que siguen dentro. Toque "Dar salida" o pase el lector por el ticket, y la app calcula cuánto cobrar.' },
+    { vista:'tienda', sel:'#posProductos', t:'La tienda', x:'Toque los productos o pase el lector de código de barras. Las promociones y combos se calculan solos.' },
+    { vista:'tienda', sel:'#btnCobrarVenta', t:'Cobrar', x:'Elija cómo pagan (efectivo, transferencia, dividido o fiado) y cobre. El inventario se descuenta solo.' },
+    { vista:null, sel:'#btnCampana', t:'Avisos', x:'La campana le avisa cuando se está acabando un producto o vence una mensualidad.' },
+    { vista:null, sel:'#btnLector', t:'Lector de códigos', x:'Conecte aquí el lector por cable USB, Bluetooth, o use un celular por WiFi como lector.' },
+    { vista:'parqueo', sel:'#turnoBar', t:'Su turno', x:'Al empezar abra el turno; al terminar ciérrelo contando la plata. La app le dice si sobra o falta.' }
+  ];
+  let tourI = -1, tourLuz = null, tourCaja = null;
+  function iniciarTour(){ cerrarModal('ayudaModal'); tourI = 0; mostrarTour(); }
+  function terminarTour(){
+    tourI = -1; if(tourLuz) tourLuz.remove(); if(tourCaja) tourCaja.remove(); tourLuz = tourCaja = null;
+    try{ localStorage.setItem('tutorialVisto_'+(perfil?perfil.uid:''), '1'); }catch(e){}
+  }
+  function mostrarTour(){
+    let paso = TOUR[tourI];
+    if(paso.vista && vistaActual!==paso.vista && vistasPermitidas().some(v=>v.id===paso.vista)) irA(paso.vista);
+    let el = document.querySelector(paso.sel);
+    if(!el || !el.offsetParent){ if(tourI<TOUR.length-1){ tourI++; return mostrarTour(); } return terminarTour(); }
+    el.scrollIntoView({ block:'center', behavior:'instant' });
+    if(!tourLuz){ tourLuz = document.createElement('div'); tourLuz.className = 'tour-luz'; document.body.appendChild(tourLuz); }
+    if(!tourCaja){ tourCaja = document.createElement('div'); tourCaja.className = 'tour-caja'; tourCaja.setAttribute('role','dialog'); document.body.appendChild(tourCaja); }
+    const r = el.getBoundingClientRect(), m = 6;
+    Object.assign(tourLuz.style, { left:(r.left-m)+'px', top:(r.top-m)+'px', width:(r.width+2*m)+'px', height:(r.height+2*m)+'px' });
+    tourCaja.innerHTML = '<h4>'+esc(paso.t)+'</h4><p>'+esc(paso.x)+'</p><div class="pie"><span class="n">'+(tourI+1)+' de '+TOUR.length+'</span>'+
+      '<button class="btn btn-sm" data-tour="salir">Salir</button>'+(tourI?'<button class="btn btn-sm" data-tour="atras">Atrás</button>':'')+'<button class="btn btn-sm btn-primary" data-tour="sig">'+(tourI===TOUR.length-1?'Terminar':'Siguiente')+'</button></div>';
+    const cw = tourCaja.offsetWidth, ch = tourCaja.offsetHeight, vw = innerWidth, vh = innerHeight;
+    let top = r.bottom + 14; if(top + ch > vh - 10) top = Math.max(10, r.top - ch - 14);
+    let left = Math.min(Math.max(10, r.left), vw - cw - 10);
+    Object.assign(tourCaja.style, { left:left+'px', top:top+'px' });
+  }
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-tour]'); if(!b) return;
+    if(b.dataset.tour==='salir') return terminarTour();
+    if(b.dataset.tour==='atras'){ tourI = Math.max(0, tourI-1); return mostrarTour(); }
+    if(tourI>=TOUR.length-1) return terminarTour();
+    tourI++; mostrarTour();
+  });
+  document.addEventListener('keydown', e=>{ if(tourI>=0 && e.key==='Escape') terminarTour(); });
+  window.addEventListener('resize', ()=>{ if(tourI>=0) mostrarTour(); });
+  $('btnTutorial').addEventListener('click', iniciarTour);
+  function ofrecerTutorial(){
+    let visto = false; try{ visto = localStorage.getItem('tutorialVisto_'+perfil.uid)==='1'; }catch(e){}
+    if(!visto) iniciarTour();
+  }
 
   /* ================= INICIO ================= */
   tickClock();
