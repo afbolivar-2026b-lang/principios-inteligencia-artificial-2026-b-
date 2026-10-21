@@ -413,6 +413,32 @@
   .scan-wrap{position:relative;}
   .scan-wrap::after{content:'';position:absolute;left:10%;right:10%;top:45%;height:2px;background:var(--red);box-shadow:0 0 8px var(--red);}
 
+  .billetes{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .billetes button{background:var(--surface);border:1px solid var(--line-2);border-radius:20px;padding:5px 11px;font:600 12.5px var(--mono);color:var(--text);cursor:pointer;}
+  .billetes button:hover{border-color:var(--ink);background:var(--accent-soft);}
+  .festivo{display:inline-block;margin-left:6px;padding:0 6px;border-radius:3px;background:var(--accent);color:var(--accent-ink);font-weight:600;text-transform:none;}
+
+  .side-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .side-btns .btn{width:100%;}
+  :root.grande body{zoom:1.15;}
+  .pantalla{position:fixed;inset:0;z-index:900;background:#141413;color:#efebe2;display:flex;flex-direction:column;padding:28px 36px;cursor:pointer;}
+  .pantalla .hazard{position:absolute;left:0;right:0;top:0;height:12px;}
+  .pantalla header{display:flex;align-items:center;gap:18px;margin-top:10px;}
+  .pantalla header .logo-mark{width:72px;height:72px;font-size:52px;border-width:4px;}
+  .pantalla h1{font:600 56px/1 var(--display);text-transform:uppercase;margin:0;flex:1;}
+  .pantalla .hora{font:600 64px/1 var(--display);}
+  .pantalla .zonas{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;align-content:center;margin-top:24px;}
+  .pantalla .zona{border:3px solid #3a3933;border-radius:20px;padding:24px;text-align:center;}
+  .pantalla .zona svg{width:64px;height:64px;stroke:#efebe2;fill:none;stroke-width:1.4;}
+  .pantalla .zona .n{font:700 120px/1 var(--display);margin:10px 0 4px;}
+  .pantalla .zona .l{font:600 26px/1.1 var(--display);text-transform:uppercase;letter-spacing:.04em;}
+  .pantalla .zona.libre{border-color:#2f7a4c;} .pantalla .zona.libre .n{color:#6cc38d;}
+  .pantalla .zona.lleno{border-color:#b8322a;} .pantalla .zona.lleno .n{color:#ec7b6f;}
+  .pantalla footer{text-align:center;color:#9b9688;font-size:15px;}
+  .ayuda h4{font:600 18px/1.2 var(--display);text-transform:uppercase;margin:16px 0 6px;}
+  .ayuda p, .ayuda li{font-size:13.5px;line-height:1.6;margin:0 0 6px;}
+  .ayuda kbd{font:500 11.5px var(--mono);border:1px solid var(--line-2);border-radius:4px;padding:0 5px;background:var(--surface-2);}
+
   /* ---------- campana y avisos ---------- */
   .icon-btn{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
   .icon-btn:hover{border-color:var(--ink);}
@@ -498,8 +524,12 @@
     <div class="side-user">
       <div class="n" id="userNombre">-</div>
       <div class="r" id="userRol"></div>
-      <button class="btn btn-sm" id="btnBloquear" type="button" style="margin-bottom:6px;">Bloquear pantalla</button>
-      <button class="btn btn-sm" id="btnTema" type="button">Cambiar tema</button>
+      <div class="side-btns">
+        <button class="btn btn-sm" id="btnBloquear" type="button">Bloquear</button>
+        <button class="btn btn-sm" id="btnTema" type="button">Tema</button>
+        <button class="btn btn-sm" id="btnLetra" type="button">Letra grande</button>
+        <button class="btn btn-sm" id="btnAyuda" type="button">Ayuda</button>
+      </div>
       <button class="btn btn-sm" id="btnSalir" type="button" style="margin-top:6px;">Cerrar sesión</button>
     </div>
   </aside>
@@ -577,7 +607,7 @@
           </div>
 
           <div class="card">
-            <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
+            <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnPantalla" title="Para un televisor en la entrada"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Pantalla de cupos</button><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
             <div class="row" style="flex-wrap:nowrap;">
               <input type="text" id="buscarActivo" class="input mono upper grow" style="flex:1;" placeholder="Buscar o escanear ticket / placa y Enter" autocomplete="off">
               <button class="btn" id="btnEscanear" type="button" title="Escanear el ticket con la cámara"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Escanear</button>
@@ -592,7 +622,10 @@
         <div class="pos">
           <div class="card">
             <div class="pos-toolbar">
-              <input type="text" id="posBuscar" class="input w100" placeholder="Buscar producto (gaseosa, agua, papas...)" autocomplete="off">
+              <div class="row" style="flex-wrap:nowrap;">
+                <input type="text" id="posBuscar" class="input" style="flex:1;" placeholder="Buscar producto o pasar el lector de código de barras" autocomplete="off">
+                <button class="btn" id="btnEscanearProd" type="button" title="Leer el código de barras con la cámara"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Escanear</button>
+              </div>
               <div class="chips" id="posCategorias"></div>
             </div>
             <div class="productos-grid" id="posProductos"></div>
@@ -623,6 +656,7 @@
           <h2 class="card-title">Agregar producto</h2>
           <div class="row">
             <div class="field grow"><label for="prodNombre">Nombre</label><input class="input" id="prodNombre" placeholder="Ej. Coca-Cola 400 ml"></div>
+            <div class="field" style="width:160px;"><label for="prodCodigo">Código de barras</label><input class="input mono" id="prodCodigo" placeholder="Opcional" autocomplete="off"></div>
             <div class="field" style="width:150px;"><label for="prodCategoria">Categoría</label><input class="input" id="prodCategoria" list="categoriasList" placeholder="Gaseosas"></div>
             <div class="field" style="width:140px;"><label for="prodCosto">¿Cuánto le costó?</label><input class="input mono" id="prodCosto" type="number" min="0" step="100" placeholder="2000"></div>
             <div class="field" style="width:140px;"><label for="prodPrecio">¿A cómo lo vende?</label><input class="input mono" id="prodPrecio" type="number" min="0" step="100" placeholder="3000"></div>
@@ -667,7 +701,26 @@
             <div id="cajaGanancia"></div>
           </div>
         </div>
-        <div class="hint">Semana: lunes a domingo. Quincena: del 1 al 15 o del 16 a fin de mes. Las mensualidades y quincenas de abonados no suman aquí porque se cobran aparte.</div>
+        <div class="grid-2" style="margin-top:16px;">
+          <div class="card">
+            <h2 class="card-title">Gastos del negocio<span class="sp"></span><span class="money" id="gastosMesTotal"></span></h2>
+            <div class="row" style="margin-bottom:12px;">
+              <div class="field grow"><label for="gastoConcepto">Concepto</label><input class="input" id="gastoConcepto" placeholder="Ej. recibo de la luz"></div>
+              <div class="field" style="width:150px;"><label for="gastoCategoria">Tipo</label><select class="select" id="gastoCategoria">
+                <option>Servicios públicos</option><option>Arriendo</option><option>Nómina</option><option>Aseo</option><option>Mantenimiento</option><option>Papelería</option><option>Impuestos</option><option>Otros</option></select></div>
+              <div class="field" style="width:120px;"><label for="gastoValor">Valor</label><input class="input mono" id="gastoValor" type="number" min="0" step="1000"></div>
+              <div class="field" style="width:150px;"><label for="gastoFecha">Fecha</label><input class="input" id="gastoFecha" type="date"></div>
+              <button class="btn btn-primary" id="btnAddGasto">Agregar</button>
+            </div>
+            <div id="gastosLista"></div>
+          </div>
+          <div class="card">
+            <h2 class="card-title">Resultado del mes</h2>
+            <div id="cajaNeta"></div>
+            <div class="actions" style="margin-top:14px;"><button class="btn btn-green" id="btnResumenWA">Enviar resumen del día por WhatsApp</button></div>
+          </div>
+        </div>
+        <div class="hint">Semana: lunes a domingo. Quincena: del 1 al 15 o del 16 a fin de mes. Las mensualidades suman el día en que se cobran con el botón <strong>Renovar</strong>.</div>
       </section>
 
       <!-- ===== HISTORIAL ===== -->
@@ -697,6 +750,7 @@
             <div class="field" style="width:110px;"><label for="subPlaca">Placa</label><input class="input mono upper" id="subPlaca" placeholder="ABC123" maxlength="10"></div>
             <div class="field" style="width:130px;"><label for="subTipo">Vehículo</label><select class="select" id="subTipo"></select></div>
             <div class="field" style="width:120px;"><label for="subPeriodo">Periodo</label><select class="select" id="subPeriodo"><option value="mensual">Mensual</option><option value="quincenal">Quincenal</option></select></div>
+            <div class="field" style="width:140px;"><label for="subTelefono">WhatsApp</label><input class="input mono" id="subTelefono" placeholder="3001234567"></div>
             <div class="field grow"><label for="subCliente">Cliente</label><input class="input" id="subCliente" placeholder="Nombre o referencia"></div>
             <div class="field" style="width:150px;"><label for="subVence">Vence</label><input class="input" type="date" id="subVence"></div>
             <button class="btn btn-primary" id="btnAddSub">Agregar</button>
@@ -752,7 +806,16 @@
                 <select class="select" id="cfgFraccion"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora completa</option></select></div>
               <div class="field"><label for="cfgGracia">Minutos de tolerancia</label><input class="input mono" id="cfgGracia" type="number" min="0" max="30" step="1"></div>
             </div>
+            <div class="field" style="margin-top:12px;max-width:240px;"><label for="cfgPerdido">Cobro por ticket perdido</label><input class="input mono" id="cfgPerdido" type="number" min="0" step="500"></div>
             <div class="disclaimer" id="cobroEjemplo"></div>
+            <h2 class="card-title" style="margin-top:20px;">Simulador de cobro</h2>
+            <div class="form-grid">
+              <div class="field"><label for="simTipo">Vehículo</label><select class="select" id="simTipo"></select></div>
+              <div class="field"><label for="simEmpresa">Convenio</label><select class="select" id="simEmpresa"></select></div>
+              <div class="field"><label for="simEntrada">Entra</label><input class="input" type="datetime-local" id="simEntrada"></div>
+              <div class="field"><label for="simSalida">Sale</label><input class="input" type="datetime-local" id="simSalida"></div>
+            </div>
+            <div class="breakdown" id="simResultado"></div>
             <h2 class="card-title" style="margin-top:20px;">Seguridad</h2>
             <div class="field"><label for="cfgCierre">Cerrar sesión sola si nadie usa el equipo por</label>
               <select class="select" id="cfgCierre"><option value="0">Nunca</option><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="480">8 horas</option></select></div>
@@ -773,6 +836,7 @@
           <div class="card">
             <h2 class="card-title">Caja</h2>
             <div class="field" style="max-width:260px;"><label for="cfgFaltante">Avisar si al cerrar turno falta más de</label><input class="input mono" id="cfgFaltante" type="number" min="0" step="1000"></div>
+            <div class="field" style="max-width:260px;margin-top:12px;"><label for="cfgWaDueno">WhatsApp del dueño (para el resumen del día)</label><input class="input mono" id="cfgWaDueno" placeholder="3001234567"></div>
             <div class="hint">Al cerrar el turno el trabajador cuenta la caja. Si falta más de este valor, sale un aviso rojo para usted y queda en la bitácora.</div>
           </div>
 
@@ -788,11 +852,12 @@
 
           <div class="card span2">
             <h2 class="card-title">Tarifas y cupos</h2>
-            <div class="scroll-x"><table class="table" style="min-width:640px;">
-              <thead><tr><th>Vehículo</th><th>Hora (día)</th><th>Hora noche / finde</th><th>Quincenal</th><th>Mensual</th><th>Cupos (0 = sin límite)</th></tr></thead>
+            <div class="scroll-x"><table class="table" style="min-width:820px;">
+              <thead><tr><th>Vehículo</th><th>Hora (día)</th><th>Hora noche / finde / festivo</th><th>Tope por día (0 = sin tope)</th><th>Quincenal</th><th>Mensual</th><th>Cupos (0 = sin límite)</th></tr></thead>
               <tbody id="ratesTabla"></tbody>
             </table></div>
-            <div class="hint">La tarifa de noche/finde aplica a los vehículos que entran entre 6 pm y 6 am, o sábados y domingos.</div>
+            <div class="hint">La tarifa de noche aplica a los vehículos que entran entre 6 pm y 6 am, los sábados, domingos y <strong>festivos de Colombia</strong> (se calculan solos cada año). El <strong>tope por día</strong> es lo máximo que se cobra por cada 24 horas: si el cobro por horas pasa de ese valor, se cobra el tope.</div>
+            <div class="actions" style="margin-top:12px;"><button class="btn btn-sm" id="btnCartel">Imprimir cartel de tarifas</button></div>
           </div>
 
           <div class="card">
@@ -936,12 +1001,54 @@
   </div>
 </div>
 
+<!-- ===== PANTALLA DE CUPOS (para un televisor en la entrada) ===== -->
+<div class="pantalla" id="pantallaCupos" hidden title="Toque para salir">
+  <div class="hazard"></div>
+  <header><div class="logo-mark">P</div><h1 id="pantallaMarca">Parqueadero</h1><div class="hora" id="pantallaHora"></div></header>
+  <div class="zonas" id="pantallaZonas"></div>
+  <footer id="pantallaPie"></footer>
+</div>
+
+<!-- ===== MODAL AYUDA ===== -->
+<div class="modal" id="ayudaModal">
+  <div class="modal-box wide ayuda">
+    <div class="modal-head"><h3>Ayuda</h3><button class="modal-close" data-close="ayudaModal">✕</button></div>
+    <h4>Atajos de teclado</h4>
+    <ul>
+      <li><kbd>Alt</kbd> + <kbd>1</kbd> … <kbd>0</kbd>: cambia de sección (el número sale al lado de cada una en el menú).</li>
+      <li>En <strong>Placa</strong>: escriba y presione <kbd>Enter</kbd> para registrar la entrada.</li>
+      <li>En <strong>Buscar o escanear</strong>: pase el lector por el ticket y se abre la salida.</li>
+      <li>En la <strong>Tienda</strong>: pase el lector de código de barras por el producto y se agrega a la venta.</li>
+      <li><kbd>Esc</kbd> cierra cualquier ventana.</li>
+    </ul>
+    <h4>Preguntas frecuentes</h4>
+    <p><strong>¿Qué pasa si se va el internet?</strong> Siga trabajando. Arriba sale "Sin internet" con los cambios que faltan por subir; se suben solos cuando vuelva. Los tickets usan números apartados para este equipo, así nunca se repiten.</p>
+    <p><strong>¿Cómo conecto la impresora Bluetooth?</strong> Prenda la impresora, toque el ícono de impresora arriba › Buscar impresora Bluetooth y elíjala. Funciona en Chrome o Edge de Android y computador, no en iPhone.</p>
+    <p><strong>¿Por qué no me llegan los avisos de inventario?</strong> Toque la campana › Activar notificaciones. El aviso llega a los equipos que tengan la app abierta. En Ajustes › Avisos de inventario se elige a quién le llega y con cuántas unidades.</p>
+    <p><strong>¿Cómo cierro el turno?</strong> Parqueo › Cerrar turno y contar caja. Cuente los billetes y la app le dice si sobra o falta.</p>
+    <p><strong>Me equivoqué al registrar una entrada.</strong> Durante 60 segundos sale el botón Deshacer. Si ya pasó, pídale al administrador que anule el cobro en Historial.</p>
+    <p><strong>¿Cuándo se cobra la tarifa de noche?</strong> Si el vehículo entra entre 6 p. m. y 6 a. m., en sábado, domingo o festivo. El simulador de Ajustes muestra cuánto pagaría cualquier caso.</p>
+    <p><strong>Olvidé mi contraseña.</strong> En la pantalla de entrada toque "¿Olvidaste tu contraseña?" y le llega un correo.</p>
+  </div>
+</div>
+
 <!-- ===== MODAL ESCANEAR ===== -->
 <div class="modal" id="scanModal">
   <div class="modal-box">
     <div class="modal-head"><h3>Escanear ticket</h3><button class="modal-close" data-close="scanModal">✕</button></div>
     <div class="scan-wrap"><video class="scan-video" id="scanVideo" playsinline muted></video></div>
     <p class="hint" style="text-align:center;">Ponga el código de barras del ticket frente a la cámara.</p>
+  </div>
+</div>
+
+<!-- ===== MODAL RENOVAR MENSUALIDAD ===== -->
+<div class="modal" id="renovarModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="renovarTitulo">Renovar</h3><button class="modal-close" data-close="renovarModal">✕</button></div>
+    <div class="breakdown" id="renovarDetalle"></div>
+    <div class="field"><label for="renovarValor">Valor que paga</label><input class="input mono" id="renovarValor" type="number" min="0" step="1000"></div>
+    <div id="renovarPago"></div>
+    <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnConfirmarRenovar">Cobrar y renovar</button>
   </div>
 </div>
 
@@ -1063,6 +1170,7 @@
   ];
 
   const ICONOS = {
+    whatsapp:'<svg viewBox="0 0 24 24"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8c-1-.4-1.9-1.3-2.3-2.3l.8-1-1-2z"/></svg>',
     panel:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="2"/><rect x="13" y="3" width="8" height="6" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="15" width="8" height="6" rx="2"/></svg>',
     dinero:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg>',
     bolsa:'<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
@@ -1132,10 +1240,10 @@
       rates: JSON.parse(JSON.stringify(DEFAULT_RATES)),
       servicios: [], empresas: [],
       facturacion: { nit:'', direccion:'', telefono:'', prefijo:'FE', ivaPct:0 },
-      cobro: { fraccionMin:30, graciaMin:0 },
+      cobro: { fraccionMin:30, graciaMin:0, ticketPerdido:5000 },
       seguridad: { cierreMin:60 },
       avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] },
-      caja: { alertaFaltante:5000 },
+      caja: { alertaFaltante:5000, whatsappDueno:'' },
       parqueo: { horasAlerta:12 },
       placasAlerta: []
     };
@@ -1170,7 +1278,7 @@
   let categoriaPOS = '';
   let histModo = 'parqueo';
   let histMesExtra = null;
-  let anuladosH = [], anuladasV = [], bitacoraLista = [];
+  let anuladosH = [], anuladasV = [], bitacoraLista = [], gastos = [], pagosMens = [];
   let imprimirAlAbrir = false;
 
   /* ---------- utilidades ---------- */
@@ -1360,6 +1468,27 @@
   function imprimirHTML(html){ $('printArea').innerHTML = html; window.print(); }
 
   /* ---------- consecutivos sin repetir entre equipos ---------- */
+  const BLOQUE = 15;
+  function leerBloques(){ try{ return JSON.parse(localStorage.getItem('consecutivosReservados')||'{}'); }catch(e){ return {}; } }
+  function guardarBloques(b){ try{ localStorage.setItem('consecutivosReservados', JSON.stringify(b)); }catch(e){} }
+  // con internet, cada equipo aparta 15 números de cada consecutivo para usarlos solo si se cae la conexión
+  async function reservarBloques(){
+    if(!navigator.onLine || !perfil) return;
+    const bl = leerBloques();
+    for(const campo of ['ticket','factura','venta']){
+      if(bl[campo] && bl[campo].fin - bl[campo].next >= 4) continue;
+      try{
+        const ini = await db.runTransaction(async tx=>{
+          const s = await tx.get(CONT_REF);
+          const actual = (s.exists && s.data()[campo]) || 1;
+          tx.set(CONT_REF, { [campo]: actual+BLOQUE }, { merge:true });
+          return actual;
+        });
+        bl[campo] = { next:ini, fin:ini+BLOQUE-1 };
+        guardarBloques(bl);
+      }catch(e){ console.warn('No se pudo reservar consecutivos', e); }
+    }
+  }
   async function siguienteNumero(campo){
     if(navigator.onLine){
       try{
@@ -1371,7 +1500,14 @@
         });
       }catch(e){ console.warn('Consecutivo sin transacción', e); }
     }
-    // sin internet: usa el último número conocido y lo sube cuando vuelva la conexión
+    // sin internet: usa los números que este equipo reservó, así no se repiten con otro equipo
+    const bl = leerBloques();
+    if(bl[campo] && bl[campo].next <= bl[campo].fin){
+      const n = bl[campo].next++;
+      guardarBloques(bl);
+      return n;
+    }
+    // si no tiene reserva: usa el último número conocido y lo sube cuando vuelva la conexión
     const actual = contadores[campo] || 1;
     contadores[campo] = actual + 1;
     CONT_REF.set({ [campo]: FV.increment(1) }, { merge:true }).catch(()=>{});
@@ -1382,7 +1518,8 @@
   function tickClock(){
     const now = new Date();
     $('clockTime').textContent = now.toLocaleTimeString('es-CO',{hour12:false});
-    $('clockDate').textContent = now.toLocaleDateString('es-CO',{weekday:'long', day:'numeric', month:'long'});
+    const fecha = now.toLocaleDateString('es-CO',{weekday:'long', day:'numeric', month:'long'});
+    if($('clockDate').dataset.f !== fecha){ $('clockDate').dataset.f = fecha; $('clockDate').innerHTML = esc(fecha)+(esFestivo(now)?'<span class="festivo">Festivo</span>':''); }
   }
 
   /* ---------- navegación ---------- */
@@ -1534,6 +1671,7 @@
     stockPrevio = null;
     escuchar();
     irA(vistaActual);
+    setTimeout(reservarBloques, 4000);
     renderTodo();
     if(esAdmin()) migrarDatosAntiguos();
   }
@@ -1542,7 +1680,7 @@
     detenerEscuchas();
     perfil = null;
     activos=[]; historial=[]; mensualidades=[]; clientes=[]; turnos=[]; productos=[]; ventas=[]; usuarios=[];
-    anuladosH=[]; anuladasV=[]; bitacoraLista=[];
+    anuladosH=[]; anuladasV=[]; bitacoraLista=[]; gastos=[]; pagosMens=[];
     carrito = {};
     fotoPendiente = null;
     histMesExtra = null;
@@ -1601,7 +1739,7 @@
       o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.18);
     }catch(e){}
   }
-  window.addEventListener('online', ()=>{ renderRed(); if(perfil){ pitar(true); showToast('Volvió el internet. Subiendo los cambios…'); } if(!pendientesSubir) ultimaSync = new Date(); });
+  window.addEventListener('online', ()=>{ setTimeout(reservarBloques, 3000); renderRed(); if(perfil){ pitar(true); showToast('Volvió el internet. Subiendo los cambios…'); } if(!pendientesSubir) ultimaSync = new Date(); });
   window.addEventListener('offline', ()=>{ renderRed(); if(perfil){ pitar(false); showToast('Se fue el internet. Puedes seguir trabajando.'); } });
   $('netStatus').addEventListener('click', ()=>{ renderRed(); abrirModal('offlineModal'); });
 
@@ -1686,7 +1824,7 @@
     }, errEscucha));
     escuchas.push(db.collection('activos').onSnapshot(q=>{
       activos = docs(q);
-      programar(renderActivos, renderTipos, renderKpis, renderTurnoBar, renderPanel);
+      programar(renderActivos, renderTipos, renderKpis, renderTurnoBar, renderPanel, renderPantalla);
     }, errEscucha));
     escuchas.push(db.collection('productos').onSnapshot(q=>{
       productos = docs(q).sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||''));
@@ -1712,6 +1850,8 @@
       programar(renderTurnoBar, renderTurnos, renderAlertas);
     }, errEscucha));
     if(esStaff()){
+      escuchas.push(db.collection('pagosMensualidad').where('fecha','>=',desde).onSnapshot(q=>{ pagosMens = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderCaja, renderPanel, renderTurnos); }, errEscucha));
+      escuchas.push(db.collection('gastos').where('fecha','>=',desde.slice(0,10)).onSnapshot(q=>{ gastos = docs(q).sort((a,b)=>b.fecha.localeCompare(a.fecha)); programar(renderCaja, renderPanel); }, errEscucha));
       escuchas.push(db.collection('clientes').onSnapshot(q=>{ clientes = docs(q); programar(renderClientes); }, errEscucha));
     }
     if(esAdmin()){
@@ -1856,9 +1996,28 @@
   function tarifaHoraAplicable(tipo, entradaDate){
     const r = cfg.rates[tipo] || {};
     const day = entradaDate.getDay(), hour = entradaDate.getHours();
-    if(day===0 || day===6 || hour>=18 || hour<6) return r.nocturna || r.hora || 0;
+    if(day===0 || day===6 || hour>=18 || hour<6 || esFestivo(entradaDate)) return r.nocturna || r.hora || 0;
     return r.hora || 0;
   }
+  /* festivos de Colombia (Ley 51 de 1983): fijos, trasladables al lunes y los que dependen de la Pascua */
+  const festivosCache = {};
+  function festivosDe(y){
+    if(festivosCache[y]) return festivosCache[y];
+    const f = new Set(), clave = d=> d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    const fijo = (m,d)=> f.add(clave(new Date(y,m-1,d)));
+    const lunes = d=>{ const x = new Date(d); while(x.getDay()!==1) x.setDate(x.getDate()+1); f.add(clave(x)); };
+    // Pascua (algoritmo anónimo gregoriano)
+    const a=y%19, b=Math.floor(y/100), c=y%100, d=Math.floor(b/4), e=b%4, g=Math.floor((8*b+13)/25), h=(19*a+b-d-g+15)%30,
+          i=Math.floor(c/4), k=c%4, l=(32+2*e+2*i-h-k)%7, m=Math.floor((a+11*h+19*l)/433), mes=Math.floor((h+l-7*m+90)/25), dia=(h+l-7*m+33*mes+19)%32;
+    const pascua = new Date(y, mes-1, dia);
+    const masDias = n=>{ const x = new Date(pascua); x.setDate(x.getDate()+n); return x; };
+    [[1,1],[5,1],[7,20],[8,7],[12,8],[12,25]].forEach(([mm,dd])=>fijo(mm,dd));
+    [[1,6],[3,19],[6,29],[8,15],[10,12],[11,1],[11,11]].forEach(([mm,dd])=>lunes(new Date(y,mm-1,dd)));
+    f.add(clave(masDias(-3))); f.add(clave(masDias(-2)));          // Jueves y Viernes Santo
+    [39,60,68].forEach(n=>lunes(masDias(n)));                     // Ascensión, Corpus Christi, Sagrado Corazón
+    return festivosCache[y] = f;
+  }
+  function esFestivo(d){ return festivosDe(d.getFullYear()).has(d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()); }
   // Se cobra por fracciones: con fracción de 30 min, 30 min = media hora y 30 + 30 = 1 hora.
   function calcularCobro(v, ms){
     const fraccion = Math.max(1, parseInt(cfg.cobro.fraccionMin,10) || 30);
@@ -1867,11 +2026,19 @@
     const fracciones = Math.max(1, Math.ceil(Math.max(0, minutos - gracia) / fraccion));
     const tarifaHora = tarifaHoraAplicable(v.tipo, new Date(v.entrada));
     const valorFraccion = Math.round(tarifaHora * fraccion / 60);
-    const bruto = fracciones * valorFraccion;
+    let bruto = fracciones * valorFraccion, topeDia = 0, diasTope = 0;
+    const tope = (cfg.rates[v.tipo]||{}).dia||0;
+    if(tope>0){
+      // cada 24 h completas cuestan como máximo el tope; lo que sobra se cobra por fracción, también con tope
+      const minEf = Math.max(0, minutos - gracia), dias = Math.floor(minEf/1440), resto = minEf - dias*1440;
+      const frResto = (resto>0 || dias===0) ? Math.max(1, Math.ceil(resto/fraccion)) : 0;
+      const conTope = dias*tope + Math.min(tope, frResto*valorFraccion);
+      if(conTope < bruto){ bruto = conTope; topeDia = tope; diasTope = dias + (frResto*valorFraccion>=tope ? 1 : 0); }
+    }
     let descuentoPct = 0;
     if(v.empresaId){ const emp = cfg.empresas.find(e=>e.id===v.empresaId); if(emp) descuentoPct = emp.descuentoPct||0; }
     const valor = Math.round(bruto * (1 - descuentoPct/100));
-    return { minutos, fraccion, fracciones, minutosCobrados: fracciones*fraccion, tarifaHora, valorFraccion, bruto, descuentoPct, valor };
+    return { minutos, fraccion, fracciones, minutosCobrados: fracciones*fraccion, tarifaHora, valorFraccion, bruto, descuentoPct, valor, topeDia, diasTope, bruto0: fracciones*valorFraccion };
   }
 
   function costoActivoHTML(v){
@@ -1950,7 +2117,7 @@
       '<div class="pago-box">'+
         '<div class="seg full"><button type="button" data-m="efectivo" class="active">Efectivo</button><button type="button" data-m="transferencia">Transferencia</button></div>'+
         '<div class="field" id="'+p+'Efe"><label for="'+p+'Recibido">¿Con cuánto paga?</label><input class="input mono" type="number" min="0" step="500" id="'+p+'Recibido" placeholder="Ej. 10000">'+
-          '<div class="devuelta" id="'+p+'Dev"></div></div>'+
+          '<div class="billetes" id="'+p+'Bil"></div><div class="devuelta" id="'+p+'Dev"></div></div>'+
         '<div class="field" id="'+p+'Tra" hidden><label for="'+p+'Medio">¿A cuál cuenta?</label><select class="select" id="'+p+'Medio">'+
           '<option value="nequi">Nequi</option><option value="daviplata">Daviplata</option><option value="bancolombia">Bancolombia</option><option value="bbva">BBVA</option><option value="transferencia">Otro banco</option></select></div>'+
       '</div>';
@@ -1962,8 +2129,15 @@
       $(p+'Tra').hidden = metodo!=='transferencia';
       devuelta();
     }
+    function billetes(total){
+      const el = $(p+'Bil'); if(!el) return;
+      if(metodo!=='efectivo' || total<=0){ el.innerHTML = ''; return; }
+      const op = [total].concat([2000,5000,10000,20000,50000,100000].filter(b=>b>total).slice(0,4));
+      el.innerHTML = op.map((v,i)=>'<button type="button" data-billete="'+v+'">'+(i===0?'Exacto':money(v))+'</button>').join('');
+    }
     function devuelta(){
       const total = getTotal(), el = $(p+'Dev');
+      billetes(total);
       const val = $(p+'Recibido').value;
       if(metodo!=='efectivo' || total<=0 || val===''){ el.innerHTML = ''; return; }
       const dif = (parseFloat(val)||0) - total;
@@ -1971,7 +2145,10 @@
         ? '<span style="color:var(--red);">Falta</span><span class="mono" style="color:var(--red);">'+money(-dif)+'</span>'
         : '<span>Devuelta</span><span class="mono" style="color:var(--green);">'+money(dif)+'</span>';
     }
-    box.addEventListener('click', e=>{ const b = e.target.closest('[data-m]'); if(b){ metodo = b.dataset.m; pintar(); } });
+    box.addEventListener('click', e=>{
+      const b = e.target.closest('[data-m]'); if(b){ metodo = b.dataset.m; pintar(); }
+      const bi = e.target.closest('[data-billete]'); if(bi){ $(p+'Recibido').value = bi.dataset.billete; devuelta(); }
+    });
     $(p+'Recibido').addEventListener('input', devuelta);
     return {
       reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; pintar(); },
@@ -2005,10 +2182,11 @@
     const servIds = Array.from(document.querySelectorAll('.salida-serv:checked')).map(c=>c.dataset.id);
     const servs = servIds.map(id=>cfg.servicios.find(s=>s.id===id)).filter(Boolean);
     const servTotal = servs.reduce((s,x)=>s+(x.precio||0),0);
-    const subtotal = base + servTotal;
+    const perdido = (!esSub && $('salidaPerdido') && $('salidaPerdido').checked) ? (cfg.cobro.ticketPerdido||0) : 0;
+    const subtotal = base + servTotal + perdido;
     const ivaPct = cfg.facturacion.ivaPct || 0;
     const iva = Math.round(subtotal*ivaPct/100);
-    return { v, ms, esSub, cobro, base, servs, servTotal, subtotal, ivaPct, iva, total: subtotal + iva };
+    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, subtotal, ivaPct, iva, total: subtotal + iva };
   }
 
   function abrirSalida(id){
@@ -2022,6 +2200,8 @@
       ? '<div class="lbl" style="margin-bottom:4px;">Servicios adicionales</div>'+cfg.servicios.map(s=>
           '<label class="serv-check"><input type="checkbox" class="salida-serv" data-id="'+esc(s.id)+'"> '+esc(s.nombre)+' <span class="p">'+money(s.precio)+'</span></label>').join('')
       : '';
+    if(!esSubModo(v.modo) && cfg.cobro.ticketPerdido>0)
+      $('salidaServicios').innerHTML += '<label class="serv-check"><input type="checkbox" id="salidaPerdido"> Perdió el ticket <span class="p">'+money(cfg.cobro.ticketPerdido)+'</span></label>';
     pagoSalida.reset();
     actualizarSalida();
     abrirModal('salidaModal');
@@ -2037,8 +2217,11 @@
     }else{
       const k = c.cobro;
       html += '<div class="brow"><span>Tiempo cobrado</span><span class="v">'+fmtDuracion(k.minutosCobrados)+'</span></div>';
-      html += '<div class="brow"><span>'+k.fracciones+' × '+k.fraccion+' min a '+money(k.valorFraccion)+'</span><span class="v">'+money(k.bruto)+'</span></div>';
+      html += '<div class="brow"><span>'+k.fracciones+' × '+k.fraccion+' min a '+money(k.valorFraccion)+'</span><span class="v">'+money(k.bruto0)+'</span></div>';
+      if(k.topeDia) html += '<div class="brow"><span>Tope por día ('+money(k.topeDia)+')</span><span class="v">'+money(k.bruto)+'</span></div>';
+      if(esFestivo(new Date(c.v.entrada))) html += '<div class="brow"><span>Entró en festivo: tarifa de noche</span><span class="v">'+money(k.tarifaHora)+'/h</span></div>';
       if(k.descuentoPct) html += '<div class="brow"><span>Convenio −'+k.descuentoPct+'%</span><span class="v">−'+money(k.bruto-k.valor)+'</span></div>';
+      if(c.perdido) html += '<div class="brow"><span>Ticket perdido</span><span class="v">'+money(c.perdido)+'</span></div>';
       if(c.servTotal) html += '<div class="brow"><span>Servicios</span><span class="v">'+money(c.servTotal)+'</span></div>';
       if(c.ivaPct) html += '<div class="brow"><span>IVA '+c.ivaPct+'%</span><span class="v">'+money(c.iva)+'</span></div>';
       html += '<div class="brow total"><span>Total a cobrar</span><span class="v">'+money(c.total)+'</span></div>';
@@ -2068,7 +2251,7 @@
         id: c.v.id, placa: c.v.placa, tipo: c.v.tipo, modo: c.v.modo, codigoIngreso: c.v.codigoIngreso||null,
         entrada: c.v.entrada, salida: new Date().toISOString(),
         minutos: Math.floor(c.ms/60000), minutosCobrados: k ? k.minutosCobrados : 0, fraccionMin: k ? k.fraccion : null,
-        base: c.base, serviciosTotal: c.servTotal, subtotal: c.subtotal, ivaPct: c.ivaPct, iva: c.iva, total: c.total,
+        base: c.base, serviciosTotal: c.servTotal, ticketPerdido: c.perdido||0, topeDia: k ? (k.topeDia||0) : 0, subtotal: c.subtotal, ivaPct: c.ivaPct, iva: c.iva, total: c.total,
         serviciosNombres: c.servs.map(s=>s.nombre),
         operador: perfil.nombre, operadorId: perfil.uid,
         operadorEntrada: c.v.operador || '', operadorEntradaId: c.v.operadorId || null,
@@ -2138,6 +2321,7 @@
     if(!esSub) l.push('Tiempo cobrado: '+fmtDuracion(r.minutosCobrados!=null ? r.minutosCobrados : Math.ceil((new Date(r.salida)-new Date(r.entrada))/3600000)*60));
     if(r.empresaNombre) l.push('Convenio: '+r.empresaNombre+' -'+r.descuentoPct+'%');
     (r.serviciosNombres||[]).forEach(n=>l.push('Servicio: '+n));
+    if(r.ticketPerdido) l.push('Ticket perdido: '+money(r.ticketPerdido));
     l.push('');
     if(esSub && !r.total) l.push('Incluido en '+(r.modo==='mensual'?'mensualidad':'quincena'));
     else{
@@ -2156,6 +2340,7 @@
     if(!esSub) html += fila('Tiempo cobrado', fmtDuracion(r.minutosCobrados||0));
     if(r.empresaNombre) html += fila('Convenio', r.empresaNombre+' -'+r.descuentoPct+'%');
     (r.serviciosNombres||[]).forEach(n=>{ html += fila('Servicio', n); });
+    if(r.ticketPerdido) html += fila('Ticket perdido', money(r.ticketPerdido));
     html += '<hr>';
     if(esSub && !r.total){
       html += '<div class="t-big" style="font-size:15px;">INCLUIDO EN<br>'+(r.modo==='mensual'?'MENSUALIDAD':'QUINCENA')+'</div>';
@@ -2216,9 +2401,11 @@
     const vts = ventas.filter(v=> delOp(v) && v.fecha>=ini && v.fecha<=fin);
     const parqueo = salidas.reduce((s,h)=>s+(h.total||0),0);
     const tienda = vts.reduce((s,v)=>s+(v.total||0),0);
-    const efectivo = salidas.concat(vts).filter(x=>x.metodoPago==='efectivo').reduce((s,x)=>s+(x.total||0),0);
+    const pms = pagosMens.filter(x=> delOp(x) && x.fecha>=ini && x.fecha<=fin);
+    const mensT = pms.reduce((s,x)=>s+(x.valor||0),0);
+    const efectivo = salidas.concat(vts, pms).filter(x=>x.metodoPago==='efectivo').reduce((s,x)=>s+(x.total||0),0);
     const base = t.base||0, retiros = (t.retiros||[]).reduce((s,r)=>s+(r.valor||0),0);
-    return { ingresos, salidas: salidas.length, ventas: vts.length, parqueo, tienda, total: parqueo+tienda, efectivo, base, retiros, esperado: base+efectivo-retiros };
+    return { ingresos, salidas: salidas.length, ventas: vts.length, parqueo, tienda, mensualidades: mensT, total: parqueo+tienda+mensT, efectivo, base, retiros, esperado: base+efectivo-retiros };
   }
   function renderTurnoBar(){
     const bar = $('turnoBar');
@@ -2314,6 +2501,7 @@
       '<div class="brow"><span>Vehículos ingresados</span><span class="v">'+st.ingresos+'</span></div>'+
       '<div class="brow"><span>Salidas cobradas</span><span class="v">'+st.salidas+' · '+money(st.parqueo)+'</span></div>'+
       '<div class="brow"><span>Ventas de tienda</span><span class="v">'+st.ventas+' · '+money(st.tienda)+'</span></div>'+
+      (st.mensualidades ? '<div class="brow"><span>Mensualidades cobradas</span><span class="v">'+money(st.mensualidades)+'</span></div>' : '')+
       '<div class="brow"><span>Base de caja</span><span class="v">'+money(st.base)+'</span></div>'+
       '<div class="brow"><span>Cobrado en efectivo</span><span class="v">'+money(st.efectivo)+'</span></div>'+
       (t.retiros||[]).map(r=>'<div class="brow"><span>Retiro · '+esc(r.motivo)+'</span><span class="v">−'+money(r.valor)+'</span></div>').join('')+
@@ -2333,7 +2521,7 @@
     $('posCategorias').innerHTML = ['<button class="chip-btn'+(categoriaPOS===''?' active':'')+'" data-cat="">Todos</button>']
       .concat(cats.map(c=>'<button class="chip-btn'+(c===categoriaPOS?' active':'')+'" data-cat="'+esc(c)+'">'+esc(c)+'</button>')).join('');
     const q = $('posBuscar').value.trim().toLowerCase();
-    const lista = productos.filter(p=> (!categoriaPOS || (p.categoria||'Otros')===categoriaPOS) && (!q || (p.nombre||'').toLowerCase().includes(q)));
+    const lista = productos.filter(p=> (!categoriaPOS || (p.categoria||'Otros')===categoriaPOS) && (!q || (p.nombre||'').toLowerCase().includes(q) || (p.codigo||'')===q));
     if(productos.length===0){
       $('posProductos').innerHTML = '<div class="empty" style="grid-column:1/-1;">Todavía no hay productos. '+(esStaff()?'Agrégalos en <strong>Inventario</strong>.':'Pide al administrador que los agregue.')+'</div>';
       return;
@@ -2350,8 +2538,17 @@
   }
   $('posCategorias').addEventListener('click', e=>{ const b = e.target.closest('[data-cat]'); if(b){ categoriaPOS = b.dataset.cat; renderPOS(); } });
   $('posBuscar').addEventListener('input', renderPOS);
+  // un lector de código de barras USB escribe el código y presiona Enter
+  function venderPorCodigo(codigo){
+    const p = productos.find(x=>x.codigo && x.codigo===String(codigo).trim());
+    if(!p) return false;
+    if((p.stock||0) - (carrito[p.id]||0) <= 0){ showToast(p.nombre+' está agotado.'); return true; }
+    agregarAlCarrito(p.id); pitar(true);
+    return true;
+  }
   $('posBuscar').addEventListener('keydown', e=>{
     if(e.key!=='Enter') return;
+    if(venderPorCodigo($('posBuscar').value)){ $('posBuscar').value=''; renderPOS(); return; }
     const primero = $('posProductos').querySelector('.prod:not(:disabled)');
     if(primero){ agregarAlCarrito(primero.dataset.prod); $('posBuscar').value=''; renderPOS(); }
   });
@@ -2463,7 +2660,7 @@
     $('invTabla').innerHTML = lista.length ? lista.map(p=>{
       const st = p.stock||0;
       const chip = st<=0 ? '<span class="chip chip-red">Agotado</span>' : st<=minDe(p) ? '<span class="chip chip-amber">Por acabarse</span>' : '';
-      return '<tr><td><strong>'+esc(p.nombre)+'</strong></td><td class="muted">'+esc(p.categoria||'Otros')+'</td>'+
+      return '<tr><td><strong>'+esc(p.nombre)+'</strong>'+(p.codigo?'<div class="meta mono">'+esc(p.codigo)+'</div>':'')+'</td><td class="muted">'+esc(p.categoria||'Otros')+'</td>'+
         '<td class="num muted">'+money(p.costo||0)+'</td><td class="num">'+money(p.precio)+'</td>'+
         '<td class="num">'+gananciaHTML(p.costo||0, p.precio||0)+'</td>'+
         '<td class="num"><strong>'+st+'</strong> '+chip+'</td>'+
@@ -2475,6 +2672,7 @@
   $('invBuscar').addEventListener('input', renderInventario);
   $('btnAddProducto').addEventListener('click', ()=>{
     const nombre = $('prodNombre').value.trim().slice(0,80);
+    const codigo = $('prodCodigo').value.replace(/\s/g,'').slice(0,40);
     const categoria = ($('prodCategoria').value.trim() || 'Otros').slice(0,40);
     const precio = Math.max(0, parseInt($('prodPrecio').value,10)||0);
     const costo = Math.max(0, parseInt($('prodCosto').value,10)||0);
@@ -2485,9 +2683,10 @@
     if(!precio){ showToast('Escribe a cómo lo vende.'); $('prodPrecio').focus(); return; }
     if(precio<costo && !confirm('Lo vende más barato de lo que le costó. ¿Guardar así?')) return;
     if(productos.some(p=>p.nombre.toLowerCase()===nombre.toLowerCase())){ showToast('Ya existe un producto con ese nombre.'); return; }
+    if(codigo && productos.some(p=>p.codigo===codigo)){ showToast('Ese código de barras ya es de otro producto.'); return; }
     const id = nuevoId();
-    db.collection('productos').doc(id).set({ id, nombre, categoria, precio, costo, stock, stockMin, creado:new Date().toISOString() }).catch(errGuardar);
-    ['prodNombre','prodPrecio','prodCosto','prodStock'].forEach(k=>$(k).value='');
+    db.collection('productos').doc(id).set({ id, nombre, codigo: codigo||null, categoria, precio, costo, stock, stockMin, creado:new Date().toISOString() }).catch(errGuardar);
+    ['prodNombre','prodCodigo','prodPrecio','prodCosto','prodStock'].forEach(k=>$(k).value='');
     $('prodMin').value = umbralAviso();
     renderMargen();
     $('prodNombre').focus();
@@ -2511,6 +2710,7 @@
       $('productoTitulo').textContent = 'Editar producto';
       $('productoBody').innerHTML = '<div class="form-grid">'+
         '<div class="field full"><label for="peNombre">Nombre</label><input class="input" id="peNombre" value="'+esc(p.nombre)+'"></div>'+
+        '<div class="field"><label for="peCodigo">Código de barras</label><input class="input mono" id="peCodigo" value="'+esc(p.codigo||'')+'"></div>'+
         '<div class="field"><label for="peCat">Categoría</label><input class="input" id="peCat" list="categoriasList" value="'+esc(p.categoria||'')+'"></div>'+
         '<div class="field"><label for="pePrecio">¿A cómo lo vende?</label><input class="input mono" id="pePrecio" type="number" min="0" step="100" value="'+(p.precio||0)+'"></div>'+
         '<div class="field"><label for="peCosto2">¿Cuánto le costó?</label><input class="input mono" id="peCosto2" type="number" min="0" step="100" value="'+(p.costo||0)+'"></div>'+
@@ -2544,6 +2744,7 @@
       if(prNuevo !== (pAnt.precio||0)) bitacora('Precio cambiado', nombre+': de '+money(pAnt.precio||0)+' a '+money(prNuevo));
       ref.update({
         nombre, categoria: ($('peCat').value.trim()||'Otros').slice(0,40),
+        codigo: $('peCodigo').value.replace(/\s/g,'').slice(0,40) || null,
         precio: Math.max(0, parseInt($('pePrecio').value,10)||0),
         costo: Math.max(0, parseInt($('peCosto2').value,10)||0),
         stockMin: Math.max(0, parseInt($('peMin').value,10)||0),
@@ -2580,7 +2781,7 @@
     const periodos = { hoy:(f)=>isSameDay(f,hoy), semana:(f)=>inRange(f,sem), quincena:(f)=>inRange(f,qui), mes:(f)=>isSameMonth(f,hoy) };
     const vacio = ()=>({ hoy:0, semana:0, quincena:0, mes:0 });
     const porTipo = {}; TIPOS.forEach(t=>porTipo[t.id]=vacio());
-    const parqueo = vacio(), tienda = vacio();
+    const parqueo = vacio(), tienda = vacio(), mens = vacio();
     const pagos = { efectivo:0 }, medios = {};
     let ganancia = 0, vendidoMes = 0;
     historial.forEach(h=>{
@@ -2595,16 +2796,22 @@
       if(isSameDay(f,hoy)){ if(v.metodoPago==='transferencia'){ const m = medioLabel(v.medioTransferencia); medios[m]=(medios[m]||0)+v.total; } else pagos.efectivo += v.total; }
       if(isSameMonth(f,hoy)){ vendidoMes += v.total; ganancia += v.items.reduce((s,i)=>s+(i.precio-(i.costo||0))*i.cantidad,0); }
     });
+    pagosMens.forEach(pm=>{
+      const f = new Date(pm.fecha);
+      for(const k in periodos) if(periodos[k](f)) mens[k] += pm.valor||0;
+      if(isSameDay(f,hoy)){ if(pm.metodoPago==='transferencia'){ const m = medioLabel(pm.medioTransferencia); medios[m]=(medios[m]||0)+pm.valor; } else pagos.efectivo += pm.valor||0; }
+    });
     const ids = { hoy:'cajaHoy', semana:'cajaSemana', quincena:'cajaQuincena', mes:'cajaMes' };
     for(const k in ids){
-      $(ids[k]).textContent = money(parqueo[k]+tienda[k]);
-      $(ids[k]+'S').textContent = 'Parqueo '+money(parqueo[k])+' · Tienda '+money(tienda[k]);
+      $(ids[k]).textContent = money(parqueo[k]+tienda[k]+mens[k]);
+      $(ids[k]+'S').textContent = 'Parqueo '+money(parqueo[k])+' · Tienda '+money(tienda[k])+(mens[k]?' · Mensualidades '+money(mens[k]):'');
     }
     $('cajaSemanaS').textContent += ' · '+fmtCorto(sem.start)+'–'+fmtCorto(new Date(sem.end-86400000));
     const celdas = (o)=> '<td class="num">'+money(o.hoy)+'</td><td class="num">'+money(o.semana)+'</td><td class="num">'+money(o.quincena)+'</td><td class="num">'+money(o.mes)+'</td>';
-    const total = vacio(); for(const k in total) total[k] = parqueo[k]+tienda[k];
+    const total = vacio(); for(const k in total) total[k] = parqueo[k]+tienda[k]+mens[k];
     $('cajaTabla').innerHTML = TIPOS.map(t=>'<tr><td>'+t.nombre+'</td>'+celdas(porTipo[t.id])+'</tr>').join('') +
       '<tr><td><strong>Tienda</strong></td>'+celdas(tienda)+'</tr>'+
+      '<tr><td><strong>Mensualidades</strong></td>'+celdas(mens)+'</tr>'+
       '<tr class="tot"><td>Total</td>'+celdas(total)+'</tr>';
     let ph = '<div class="list-row"><span>Efectivo</span><span class="money">'+money(pagos.efectivo)+'</span></div>';
     const totalTrans = Object.values(medios).reduce((s,x)=>s+x,0);
@@ -2613,7 +2820,38 @@
     $('cajaPagos').innerHTML = ph;
     $('cajaGanancia').innerHTML = '<div class="list-row"><span>Vendido</span><span class="money">'+money(vendidoMes)+'</span></div>'+
       '<div class="list-row"><span>Ganancia (venta − costo)</span><span class="money green">'+money(ganancia)+'</span></div>';
+    // gastos y resultado del mes
+    if(!$('gastoFecha').value) $('gastoFecha').value = aLocal(new Date()).slice(0,10);
+    const gMes = gastos.filter(g=>isSameMonth(new Date(g.fecha+'T12:00:00'), hoy));
+    const totalG = gMes.reduce((s,g)=>s+(g.valor||0),0);
+    $('gastosMesTotal').textContent = money(totalG)+' este mes';
+    $('gastosLista').innerHTML = gMes.length ? gMes.map(g=>
+      '<div class="list-row"><div><strong>'+esc(g.concepto)+'</strong><div class="meta">'+esc(g.categoria)+' · '+fmtCorto(new Date(g.fecha+'T12:00:00'))+' · '+esc(g.operador||'')+'</div></div>'+
+      '<div class="r"><span class="money">'+money(g.valor)+'</span>'+(esAdmin()?'<button class="btn-icon" data-borrar-gasto="'+esc(g.id)+'" title="Borrar">✕</button>':'')+'</div></div>').join('')
+      : '<div class="empty">No hay gastos este mes.</div>';
+    const neta = parqueo.mes + mens.mes + ganancia - totalG;
+    $('cajaNeta').innerHTML =
+      '<div class="brow"><span>Parqueo cobrado</span><span class="v">'+money(parqueo.mes)+'</span></div>'+
+      '<div class="brow"><span>Mensualidades cobradas</span><span class="v">'+money(mens.mes)+'</span></div>'+
+      '<div class="brow"><span>Ganancia de la tienda</span><span class="v">'+money(ganancia)+'</span></div>'+
+      '<div class="brow"><span>Gastos</span><span class="v">−'+money(totalG)+'</span></div>'+
+      '<div class="brow total"><span>'+(neta>=0?'Ganancia neta':'Pérdida')+'</span><span class="v" style="color:'+(neta<0?'var(--red)':'inherit')+'">'+money(Math.abs(neta))+'</span></div>';
   }
+  $('btnAddGasto').addEventListener('click', ()=>{
+    const concepto = $('gastoConcepto').value.trim().slice(0,80), valor = Math.max(0, parseInt($('gastoValor').value,10)||0);
+    const fecha = $('gastoFecha').value || new Date().toISOString().slice(0,10);
+    if(!concepto || !valor){ showToast('Escribe el concepto y el valor del gasto.'); return; }
+    const id = nuevoId();
+    db.collection('gastos').doc(id).set({ id, concepto, categoria:$('gastoCategoria').value, valor, fecha, operador:perfil.nombre, operadorId:perfil.uid, creado:new Date().toISOString() }).catch(errGuardar);
+    $('gastoConcepto').value=''; $('gastoValor').value='';
+    showToast('Gasto de '+money(valor)+' guardado.');
+  });
+  $('gastosLista').addEventListener('click', e=>{
+    const b = e.target.closest('[data-borrar-gasto]'); if(!b) return;
+    const g = gastos.find(x=>x.id===b.dataset.borrarGasto); if(!g || !confirm('¿Borrar el gasto "'+g.concepto+'"?')) return;
+    db.collection('gastos').doc(g.id).delete().catch(errGuardar);
+    bitacora('Gasto borrado', g.concepto+' · '+money(g.valor));
+  });
 
   /* ================= HISTORIAL ================= */
   $('histSeg').addEventListener('click', e=>{
@@ -2747,7 +2985,7 @@
       const st = statusVencimiento(s.vencimiento);
       return '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(s.placa)+'</span> <span class="chip '+st.cls+'">'+st.txt+'</span>'+
         '<div class="meta">'+nombreFor(s.tipo)+' · '+esc(s.periodicidad)+(s.cliente?' · '+esc(s.cliente):'')+(s.vencimiento?' · vence '+fmtCorto(new Date(s.vencimiento+'T00:00:00')):'')+'</div></div>'+
-        '<div class="r"><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
+        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
     }).join('') : '<div class="empty">No hay abonados con mensualidad o quincena.</div>';
   }
   $('subLista').addEventListener('click', e=>{
@@ -2755,11 +2993,17 @@
     if(ren){
       const s = mensualidades.find(x=>x.id===ren.dataset.renovar); if(!s) return;
       const base = (s.vencimiento && diasHasta(s.vencimiento)>=0) ? new Date(s.vencimiento+'T00:00:00') : hoy0();
+      const desde = new Date(base);
       if(s.periodicidad==='mensual') base.setMonth(base.getMonth()+1); else base.setDate(base.getDate()+15);
       const nueva = base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0')+'-'+String(base.getDate()).padStart(2,'0');
-      if(!confirm('¿Renovar '+s.placa+' hasta el '+base.toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'})+'?')) return;
-      db.collection('mensualidades').doc(s.id).update({ vencimiento:nueva }).catch(errGuardar);
-      showToast(s.placa+' renovada.');
+      renovarActual = { s, nueva, desde: aLocal(desde).slice(0,10) };
+      $('renovarTitulo').textContent = 'Renovar '+s.placa;
+      $('renovarDetalle').innerHTML = '<div class="brow"><span>Cliente</span><span class="v">'+esc(s.cliente||'—')+'</span></div>'+
+        '<div class="brow"><span>'+(s.periodicidad==='mensual'?'Mensualidad':'Quincena')+' de '+nombreFor(s.tipo)+'</span><span class="v">'+money((cfg.rates[s.tipo]||{})[s.periodicidad]||0)+'</span></div>'+
+        '<div class="brow"><span>Nuevo vencimiento</span><span class="v">'+base.toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'})+'</span></div>';
+      $('renovarValor').value = (cfg.rates[s.tipo]||{})[s.periodicidad]||0;
+      pagoRenovar.reset();
+      abrirModal('renovarModal');
     }else if(con) abrirContrato(con.dataset.contrato);
     else if(del){
       const s = mensualidades.find(x=>x.id===del.dataset.borrarSub); if(!s) return;
@@ -2768,13 +3012,48 @@
       showToast('Abonado eliminado.');
     }
   });
+  let renovarActual = null;
+  const pagoRenovar = controlPago('renovarPago', ()=> parseInt($('renovarValor').value,10)||0);
+  $('renovarValor').addEventListener('input', ()=>{ pagoRenovar.mostrar((parseInt($('renovarValor').value,10)||0)>0); pagoRenovar.refrescar(); });
+  $('btnConfirmarRenovar').addEventListener('click', async ()=>{
+    if(!renovarActual) return;
+    const { s, nueva, desde } = renovarActual;
+    const valor = Math.max(0, parseInt($('renovarValor').value,10)||0);
+    const pago = valor>0 ? pagoRenovar.datos(valor) : { metodoPago:null, medioTransferencia:null, efectivoRecibido:null, vuelto:null, falta:false };
+    if(pago.falta){ showToast('El dinero recibido no alcanza.'); return; }
+    $('btnConfirmarRenovar').disabled = true;
+    try{
+      const n = valor>0 ? await siguienteNumero('factura') : null;
+      const r = { id:nuevoId(), fecha:new Date().toISOString(), placa:s.placa, cliente:s.cliente||'', tipo:s.tipo, periodicidad:s.periodicidad,
+        desde, hasta:nueva, valor, total:valor, numeroFactura: n ? (cfg.facturacion.prefijo||'FE')+'-'+pad(n) : null,
+        metodoPago:pago.metodoPago, medioTransferencia:pago.medioTransferencia, efectivoRecibido:pago.efectivoRecibido, vuelto:pago.vuelto,
+        operador:perfil.nombre, operadorId:perfil.uid };
+      const b = db.batch();
+      b.update(db.collection('mensualidades').doc(s.id), { vencimiento:nueva, ultimoPago:r.fecha });
+      if(valor>0) b.set(db.collection('pagosMensualidad').doc(r.id), r);
+      b.commit().catch(errGuardar);
+      cerrarModal('renovarModal');
+      showToast(s.placa+' renovada'+(valor?' · '+money(valor):'')+'.');
+      if(valor>0){
+        const lineas = ['Comprobante No.: '+r.numeroFactura, 'Fecha: '+fmtFechaHora(r.fecha), '', 'Placa: '+r.placa, 'Cliente: '+(r.cliente||'-'),
+          (r.periodicidad==='mensual'?'Mensualidad':'Quincena')+': '+nombreFor(r.tipo), 'Desde: '+fmtCorto(new Date(desde+'T12:00:00')), 'Hasta: '+fmtCorto(new Date(nueva+'T12:00:00')), '',
+          'TOTAL: '+money(valor), 'Pago: '+pagoLabel(r)];
+        if(r.efectivoRecibido!=null) lineas.push('Recibido: '+money(r.efectivoRecibido), 'Devuelta: '+money(r.vuelto||0));
+        lineas.push('Atendió: '+r.operador);
+        const html = '<div class="ticket">'+ticketCabecera()+'<div class="t-title">PAGO DE '+(r.periodicidad==='mensual'?'MENSUALIDAD':'QUINCENA')+'</div>'+
+          lineas.filter(Boolean).map(l=>{ const i = l.indexOf(': '); return i>0 ? fila(l.slice(0,i), l.slice(i+2)) : ''; }).join('')+'<hr>'+barcodeSVG(r.numeroFactura)+'<div class="t-foot">¡Gracias!</div></div>';
+        imprimirAlAbrir = true;
+        abrirTicket({ titulo:'Pago '+r.numeroFactura, html, lineas, archivo:'mensualidad-'+r.placa+'.pdf', codigo:r.numeroFactura, placa:r.placa });
+      }
+    }finally{ $('btnConfirmarRenovar').disabled = false; }
+  });
   $('btnAddSub').addEventListener('click', ()=>{
     const placa = limpiarPlaca($('subPlaca').value);
     if(placa.length<3){ showToast('Escribe la placa.'); return; }
     if(subscriberFor(placa)){ showToast('Esa placa ya está registrada.'); return; }
     const id = nuevoId();
-    db.collection('mensualidades').doc(id).set({ id, placa, tipo:$('subTipo').value, periodicidad:$('subPeriodo').value, cliente:$('subCliente').value.trim().slice(0,80), vencimiento:$('subVence').value }).catch(errGuardar);
-    $('subPlaca').value=''; $('subCliente').value=''; $('subVence').value='';
+    db.collection('mensualidades').doc(id).set({ id, placa, tipo:$('subTipo').value, periodicidad:$('subPeriodo').value, cliente:$('subCliente').value.trim().slice(0,80), telefono:$('subTelefono').value.replace(/\D/g,'').slice(0,15), vencimiento:$('subVence').value }).catch(errGuardar);
+    $('subPlaca').value=''; $('subCliente').value=''; $('subVence').value=''; $('subTelefono').value='';
     showToast(placa+' agregada.');
   });
 
@@ -2910,9 +3189,12 @@
     $('factPrefijo').value = f.prefijo||'FE'; $('factIva').value = f.ivaPct||0;
     $('cfgFraccion').value = String(cfg.cobro.fraccionMin);
     $('cfgGracia').value = cfg.cobro.graciaMin||0;
+    $('cfgPerdido').value = cfg.cobro.ticketPerdido||0;
+    renderSimulador();
     $('cfgCierre').value = String(cfg.seguridad.cierreMin);
     $('cfgUmbral').value = cfg.avisosStock.umbral;
     $('cfgFaltante').value = cfg.caja.alertaFaltante;
+    $('cfgWaDueno').value = cfg.caja.whatsappDueno||'';
     $('cfgHorasAlerta').value = cfg.parqueo.horasAlerta;
     renderPlacasAlerta();
     document.querySelectorAll('[data-rol-aviso]').forEach(c=>{ c.checked = cfg.avisosStock.roles.includes(c.dataset.rolAviso); });
@@ -2938,9 +3220,11 @@
     CONT_REF.set({ factura:n }, { merge:true }).then(()=>showToast('Consecutivo actualizado.')).catch(errGuardar);
   });
   $('cfgFraccion').addEventListener('change', ()=> guardarConfig({ cobro:{ fraccionMin: parseInt($('cfgFraccion').value,10)||30 } }, 'Forma de cobro actualizada.'));
+  $('cfgPerdido').addEventListener('change', ()=> guardarConfig({ cobro:{ ticketPerdido: Math.max(0, parseInt($('cfgPerdido').value,10)||0) } }, 'Cobro por ticket perdido actualizado.'));
   $('cfgGracia').addEventListener('change', ()=> guardarConfig({ cobro:{ graciaMin: Math.max(0, Math.min(30, parseInt($('cfgGracia').value,10)||0)) } }, 'Tolerancia actualizada.'));
   $('cfgCierre').addEventListener('change', ()=> guardarConfig({ seguridad:{ cierreMin: parseInt($('cfgCierre').value,10)||0 } }, 'Guardado.'));
   $('cfgHorasAlerta').addEventListener('change', ()=> guardarConfig({ parqueo:{ horasAlerta: Math.max(1, Math.min(720, parseInt($('cfgHorasAlerta').value,10)||12)) } }, 'Guardado.'));
+  $('cfgWaDueno').addEventListener('change', ()=> guardarConfig({ caja:{ whatsappDueno: $('cfgWaDueno').value.replace(/\D/g,'').slice(0,15) } }, 'Guardado.'));
   $('cfgFaltante').addEventListener('change', ()=> guardarConfig({ caja:{ alertaFaltante: Math.max(0, parseInt($('cfgFaltante').value,10)||0) } }, 'Guardado.'));
   $('cfgUmbral').addEventListener('change', ()=> guardarConfig({ avisosStock:{ umbral: Math.max(0, Math.min(999, parseInt($('cfgUmbral').value,10)||0)) } }, 'Aviso de inventario actualizado.'));
   document.querySelectorAll('[data-rol-aviso]').forEach(c=> c.addEventListener('change', ()=>{
@@ -2950,7 +3234,7 @@
 
   function renderRates(){
     if(!esAdmin() || enfocadoDentro('ratesTabla')) return;
-    const campos = ['hora','nocturna','quincenal','mensual','cupo'];
+    const campos = ['hora','nocturna','dia','quincenal','mensual','cupo'];
     $('ratesTabla').innerHTML = TIPOS.map(t=>{
       const r = cfg.rates[t.id];
       return '<tr><td><strong>'+t.nombre+'</strong></td>'+campos.map(c=>
@@ -3168,10 +3452,18 @@
   let scanStream = null, scanLoop = 0;
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') pararScan(); });
   function pararScan(){ cancelAnimationFrame(scanLoop); if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream = null; } }
-  $('btnEscanear').addEventListener('click', async ()=>{
+  $('btnEscanear').addEventListener('click', ()=> abrirEscaner(codigo=>{
+    $('buscarActivo').value = codigo;
+    $('buscarActivo').dispatchEvent(new KeyboardEvent('keydown', { key:'Enter' }));
+  }));
+  $('btnEscanearProd').addEventListener('click', ()=> abrirEscaner(codigo=>{
+    if(!venderPorCodigo(codigo)) showToast('No hay ningún producto con el código '+codigo+'. Agréguelo en Inventario.');
+    renderPOS();
+  }));
+  async function abrirEscaner(alLeer){
     if(!('BarcodeDetector' in window)){ showToast('Este navegador no lee códigos con la cámara. Use Chrome en Android o un lector USB.'); return; }
     try{
-      const det = new BarcodeDetector({ formats:['code_128','qr_code','code_39','ean_13'] });
+      const det = new BarcodeDetector({ formats:['code_128','qr_code','code_39','ean_13','ean_8','upc_a','upc_e'] });
       scanStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
       const vid = $('scanVideo'); vid.srcObject = scanStream; await vid.play();
       abrirModal('scanModal');
@@ -3181,8 +3473,7 @@
           const r = await det.detect(vid);
           if(r.length){
             pararScan(); cerrarModal('scanModal');
-            $('buscarActivo').value = r[0].rawValue;
-            $('buscarActivo').dispatchEvent(new KeyboardEvent('keydown', { key:'Enter' }));
+            alLeer(r[0].rawValue);
             return;
           }
         }catch(e){}
@@ -3190,8 +3481,126 @@
       };
       leer();
     }catch(e){ console.error(e); pararScan(); showToast('No se pudo abrir la cámara.'); }
-  });
+  }
   document.addEventListener('click', e=>{ if(e.target.closest('[data-close="scanModal"]') || e.target===$('scanModal')) pararScan(); });
+
+  /* ================= SIMULADOR DE COBRO Y CARTEL DE TARIFAS ================= */
+  function aLocal(d){ const z = new Date(d.getTime() - d.getTimezoneOffset()*60000); return z.toISOString().slice(0,16); }
+  function renderSimulador(){
+    if(!esAdmin()) return;
+    if(!$('simTipo').options.length){
+      $('simTipo').innerHTML = TIPOS.map(t=>'<option value="'+t.id+'"'+(t.id==='carro'?' selected':'')+'>'+t.nombre+'</option>').join('');
+      const ahora = new Date(); ahora.setSeconds(0,0);
+      $('simSalida').value = aLocal(ahora);
+      $('simEntrada').value = aLocal(new Date(ahora.getTime()-155*60000));
+    }
+    const sel = $('simEmpresa').value;
+    $('simEmpresa').innerHTML = '<option value="">Ninguno</option>'+cfg.empresas.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.nombre)+' (−'+esc(e.descuentoPct)+'%)</option>').join('');
+    $('simEmpresa').value = sel;
+    const ent = new Date($('simEntrada').value), sal = new Date($('simSalida').value);
+    if(isNaN(ent) || isNaN(sal) || sal<=ent){ $('simResultado').innerHTML = '<div class="brow"><span>Ponga una hora de salida después de la entrada.</span></div>'; return; }
+    const k = calcularCobro({ tipo:$('simTipo').value, entrada:ent.toISOString(), empresaId:$('simEmpresa').value||null }, sal-ent);
+    $('simResultado').innerHTML =
+      '<div class="brow"><span>Tiempo dentro</span><span class="v">'+fmtDuracion(k.minutos)+'</span></div>'+
+      '<div class="brow"><span>Tarifa aplicada'+(esFestivo(ent)?' (festivo)':'')+'</span><span class="v">'+money(k.tarifaHora)+'/h</span></div>'+
+      '<div class="brow"><span>'+k.fracciones+' × '+k.fraccion+' min a '+money(k.valorFraccion)+'</span><span class="v">'+money(k.bruto0)+'</span></div>'+
+      (k.topeDia ? '<div class="brow"><span>Con tope por día</span><span class="v">'+money(k.bruto)+'</span></div>' : '')+
+      (k.descuentoPct ? '<div class="brow"><span>Convenio −'+k.descuentoPct+'%</span><span class="v">−'+money(k.bruto-k.valor)+'</span></div>' : '')+
+      '<div class="brow total"><span>Pagaría</span><span class="v">'+money(k.valor)+'</span></div>';
+  }
+  ['simTipo','simEmpresa','simEntrada','simSalida'].forEach(id=> $(id).addEventListener('input', renderSimulador));
+  $('btnCartel').addEventListener('click', ()=>{
+    const filas = TIPOS.map(t=>{ const r = cfg.rates[t.id];
+      return '<tr><td>'+t.nombre+'</td><td>'+money(r.hora)+'</td><td>'+money(r.nocturna||r.hora)+'</td><td>'+(r.dia?money(r.dia):'—')+'</td><td>'+(r.mensual?money(r.mensual):'—')+'</td></tr>'; }).join('');
+    const f = cfg.facturacion, fr = cfg.cobro.fraccionMin;
+    const html = '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Tarifas</title><style>'+
+      '@page{size:letter;margin:14mm}body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}'+
+      '.top{display:flex;align-items:center;gap:18px;border-bottom:8px solid #111;padding-bottom:14px}'+
+      '.p{width:92px;height:92px;border:6px solid #111;border-radius:12px;background:#2c5d8f;color:#fff;font:bold 72px/80px Arial;text-align:center}'+
+      'h1{font-size:40px;margin:0;text-transform:uppercase}h2{font-size:20px;margin:4px 0 0;font-weight:normal}'+
+      'table{width:100%;border-collapse:collapse;margin-top:26px;font-size:24px}th{background:#111;color:#fff;text-align:left;padding:12px;font-size:17px;text-transform:uppercase}'+
+      'td{padding:14px 12px;border-bottom:2px solid #ccc}td:not(:first-child),th:not(:first-child){text-align:right}td:first-child{font-weight:bold}'+
+      '.nota{margin-top:22px;font-size:17px;line-height:1.6}.cinta{height:18px;margin-top:26px;background:repeating-linear-gradient(-45deg,#ffc800 0 18px,#111 18px 36px);-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+      '</style></head><body><div class="top"><div class="p" style="-webkit-print-color-adjust:exact;print-color-adjust:exact">P</div><div><h1>'+esc(cfg.brand)+'</h1><h2>'+esc([f.direccion,f.telefono].filter(Boolean).join(' · '))+'</h2></div></div>'+
+      '<table><tr><th>Vehículo</th><th>Hora día</th><th>Hora noche y festivos</th><th>Día completo</th><th>Mensual</th></tr>'+filas+'</table>'+
+      '<div class="nota">Se cobra por fracción de '+(fr>=60?'una hora':fr+' minutos')+(cfg.cobro.graciaMin?' con '+cfg.cobro.graciaMin+' minutos de tolerancia':'')+'. Tarifa de noche: de 6 p. m. a 6 a. m., sábados, domingos y festivos.'+
+      (cfg.cobro.ticketPerdido?' Ticket perdido: '+money(cfg.cobro.ticketPerdido)+'.':'')+'</div><div class="cinta"></div></body></html>';
+    const w = window.open('', '_blank');
+    if(!w){ showToast('El navegador bloqueó la ventana. Permita las ventanas emergentes.'); return; }
+    w.document.write(html); w.document.close(); w.focus(); setTimeout(()=>w.print(), 300);
+  });
+
+  /* ================= WHATSAPP: RECORDATORIOS Y RESUMEN ================= */
+  function abrirWhatsapp(numero, texto){
+    const n = numero ? formatearWhatsapp(numero) : '';
+    window.open('https://wa.me/'+n+'?text='+encodeURIComponent(texto), '_blank', 'noopener');
+  }
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-wa-sub]'); if(!b) return;
+    const s = mensualidades.find(x=>x.id===b.dataset.waSub); if(!s) return;
+    const cli = clientes.find(c=>c.placa===s.placa);
+    const tel = s.telefono || (cli && cli.telefono) || '';
+    const valor = (cfg.rates[s.tipo] && cfg.rates[s.tipo][s.periodicidad]) || 0;
+    const d = s.vencimiento ? diasHasta(s.vencimiento) : null;
+    const cuando = d==null ? '' : d<0 ? 'venció el '+fmtCorto(new Date(s.vencimiento+'T00:00:00')) : d===0 ? 'vence hoy' : 'vence el '+new Date(s.vencimiento+'T00:00:00').toLocaleDateString('es-CO',{weekday:'long', day:'numeric', month:'long'});
+    const texto = 'Hola'+(s.cliente?' '+s.cliente:'')+', le saludamos de '+cfg.brand+'. Le recordamos que la '+(s.periodicidad==='mensual'?'mensualidad':'quincena')+' de la placa '+s.placa+' '+cuando+'.'+
+      (valor ? ' El valor es '+money(valor)+'.' : '')+' Puede pagar en el parqueadero'+(cfg.facturacion.telefono?' o escribirnos al '+cfg.facturacion.telefono:'')+'. ¡Gracias!';
+    if(!tel) showToast('Esta placa no tiene WhatsApp guardado: elija el contacto en WhatsApp.');
+    abrirWhatsapp(tel, texto);
+  });
+  $('btnResumenWA').addEventListener('click', ()=>{
+    const hoy = new Date();
+    const sal = historial.filter(h=>isSameDay(new Date(h.salida), hoy)), vts = ventas.filter(v=>isSameDay(new Date(v.fecha), hoy));
+    const ing = activos.concat(historial).filter(v=>isSameDay(new Date(v.entrada), hoy)).length;
+    const pms = pagosMens.filter(x=>isSameDay(new Date(x.fecha), hoy));
+    const parq = sal.reduce((s,h)=>s+(h.total||0),0), tienda = vts.reduce((s,v)=>s+(v.total||0),0), mensH = pms.reduce((s,x)=>s+(x.valor||0),0);
+    const efe = sal.concat(vts, pms).filter(x=>x.metodoPago==='efectivo').reduce((s,x)=>s+(x.total||0),0);
+    const gHoy = gastos.filter(g=>g.fecha===aLocal(hoy).slice(0,10)).reduce((s,g)=>s+(g.valor||0),0);
+    const faltas = turnos.filter(t=>t.fin && t.diferencia<0 && isSameDay(new Date(t.fin), hoy));
+    const bajos = productos.filter(p=>(p.stock||0)<=minDe(p));
+    const l = ['*'+cfg.brand+'* · resumen del '+hoy.toLocaleDateString('es-CO',{weekday:'long', day:'numeric', month:'long'}), '',
+      'Vehículos que entraron: '+ing, 'Salidas cobradas: '+sal.length, 'Dentro ahora: '+activos.length, '',
+      'Parqueo: '+money(parq), 'Tienda: '+money(tienda)+' ('+vts.length+' ventas)'].concat(mensH ? ['Mensualidades: '+money(mensH)+' ('+pms.length+')'] : [],
+      ['*Total: '+money(parq+tienda+mensH)+'*', 'Efectivo: '+money(efe)+' · Transferencias: '+money(parq+tienda+mensH-efe)]);
+    if(gHoy) l.push('Gastos de hoy: '+money(gHoy));
+    if(faltas.length) l.push('', 'Faltantes de caja: '+faltas.map(t=>t.perfilNombre+' '+money(-t.diferencia)).join(', '));
+    if(bajos.length) l.push('', 'Por acabarse: '+bajos.slice(0,8).map(p=>p.nombre+' ('+(p.stock||0)+')').join(', '));
+    abrirWhatsapp(cfg.caja.whatsappDueno, l.join('\n'));
+  });
+
+  /* ================= PANTALLA DE CUPOS ================= */
+  function renderPantalla(){
+    if($('pantallaCupos').hidden) return;
+    $('pantallaMarca').textContent = cfg.brand;
+    $('pantallaHora').textContent = new Date().toLocaleTimeString('es-CO',{hour:'2-digit', minute:'2-digit', hour12:false});
+    $('pantallaZonas').innerHTML = TIPOS.map(t=>{
+      const cupo = cfg.rates[t.id].cupo||0, dentro = ocupadosPorTipo(t.id);
+      if(!cupo && !dentro) return '';
+      const libres = cupo ? Math.max(0, cupo-dentro) : null;
+      const clase = libres===null ? '' : libres===0 ? 'lleno' : 'libre';
+      return '<div class="zona '+clase+'">'+t.icon+'<div class="n">'+(libres===null ? dentro : libres===0 ? 'LLENO' : libres)+'</div><div class="l">'+t.nombre+'<br><span style="font-size:.7em;opacity:.75;">'+(libres===null?'dentro':libres===0?'sin cupo':'puestos libres')+'</span></div></div>';
+    }).join('');
+    const r = cfg.rates.carro, rm = cfg.rates.moto;
+    $('pantallaPie').textContent = 'Carro '+money(r.hora)+'/h · Moto '+money(rm.hora)+'/h · Noche, fines de semana y festivos: carro '+money(r.nocturna||r.hora)+'/h';
+  }
+  $('btnPantalla').addEventListener('click', ()=>{
+    $('pantallaCupos').hidden = false; renderPantalla();
+    try{ document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){}
+  });
+  function cerrarPantalla(){ if($('pantallaCupos').hidden) return; $('pantallaCupos').hidden = true; try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){} }
+  $('pantallaCupos').addEventListener('click', cerrarPantalla);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') cerrarPantalla(); });
+  setInterval(renderPantalla, 15000);
+
+  /* ================= COMODIDAD: LETRA GRANDE Y AYUDA ================= */
+  function aplicarLetra(g){ document.documentElement.classList.toggle('grande', !!g); $('btnLetra').textContent = g ? 'Letra normal' : 'Letra grande'; }
+  try{ aplicarLetra(localStorage.getItem('letraGrande')==='1'); }catch(e){}
+  $('btnLetra').addEventListener('click', ()=>{
+    const g = !document.documentElement.classList.contains('grande');
+    aplicarLetra(g);
+    try{ localStorage.setItem('letraGrande', g?'1':'0'); }catch(e){}
+  });
+  $('btnAyuda').addEventListener('click', ()=> abrirModal('ayudaModal'));
 
   /* ================= BITÁCORA ================= */
   function bitacora(accion, detalle){
@@ -3489,11 +3898,12 @@
     const parqHoy = salHoy.reduce((s,h)=>s+(h.total||0),0);
     const vtsHoy = ventas.filter(v=>isSameDay(new Date(v.fecha), ahora));
     const tiendaHoy = vtsHoy.reduce((s,v)=>s+(v.total||0),0);
+    const mensHoy = pagosMens.filter(x=>isSameDay(new Date(x.fecha), ahora)).reduce((s,x)=>s+(x.valor||0),0);
     const cupos = TIPOS.reduce((s,t)=>s+(cfg.rates[t.id].cupo||0),0);
     const bajos = productos.filter(p=>(p.stock||0)<=minDe(p));
     $('panelStats').innerHTML =
       statHTML('ic-azul', TIPOS[3].icon, 'Vehículos dentro', activos.length, cupos ? Math.round(activos.length*100/cupos)+'% de '+cupos+' cupos' : 'Sin límite de cupos')+
-      statHTML('ic-verde', ICONOS.dinero, 'Caja de hoy', money(parqHoy+tiendaHoy), 'Parqueo '+money(parqHoy)+' · Tienda '+money(tiendaHoy))+
+      statHTML('ic-verde', ICONOS.dinero, 'Caja de hoy', money(parqHoy+tiendaHoy+mensHoy), 'Parqueo '+money(parqHoy)+' · Tienda '+money(tiendaHoy)+(mensHoy?' · Mens. '+money(mensHoy):''))+
       statHTML('ic-amarillo', ICONOS.bolsa, 'Ventas de la tienda', vtsHoy.length, vtsHoy.length ? 'Promedio '+money(Math.round(tiendaHoy/vtsHoy.length)) : 'Aún no hay ventas hoy')+
       statHTML(bajos.length ? 'ic-rojo' : 'ic-verde', ICONOS.alerta, 'Por acabarse', bajos.length, bajos.length ? 'Productos para pedir' : 'Inventario al día');
 
@@ -3564,7 +3974,7 @@
     $('panelSubs').innerHTML = subs.length ? subs.slice(0,6).map(s=>{
       const d = diasHasta(s.vencimiento);
       return '<div class="mini-row"><span class="ic sm '+(d<0?'ic-rojo':'ic-amarillo')+'">'+ICONOS.calendario+'</span><div class="t"><span class="placa-txt" style="font-size:13px;">'+esc(s.placa)+'</span> '+esc(s.cliente||'')+
-        '<div class="meta">'+(d<0?'Vencida hace '+(-d)+' día(s)':d===0?'Vence hoy':'Vence en '+d+' día(s)')+'</div></div></div>';
+        '<div class="meta">'+(d<0?'Vencida hace '+(-d)+' día(s)':d===0?'Vence hoy':'Vence en '+d+' día(s)')+'</div></div><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button></div>';
     }).join('') : '<div class="empty">Ninguna vence esta semana.</div>';
   }
   $('panelMapa').addEventListener('click', e=>{ const b = e.target.closest('[data-spot]'); if(b) abrirSalida(b.dataset.spot); });

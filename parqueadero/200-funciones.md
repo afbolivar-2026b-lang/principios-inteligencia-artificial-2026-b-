@@ -22,7 +22,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 4. ✅ 📴 **PIN local de 4 dígitos por trabajador** para cambiar de turno sin internet. Se valida contra un hash guardado en el equipo.
 5. ✅ 📴 ⚡ **Contador de cambios pendientes por subir**, por ejemplo "12 cambios esperando internet".
 6. ✅ 📴 ⚡ **Hora de la última sincronización** visible en la barra superior.
-7. 📴 **Consecutivo de comprobante sin internet**: se reserva un bloque de números por equipo, por ejemplo del 1001 al 1100, para que no se repitan.
+7. ✅ 📴 **Consecutivo de comprobante sin internet**: se reserva un bloque de números por equipo, por ejemplo del 1001 al 1100, para que no se repitan.
 8. 📴 **Imprimir ticket y comprobante sin internet**. Ya funciona con `window.print`; solo hay que asegurar que el código de barras se genera en el equipo.
 9. 📴 **Calcular el cobro sin internet** con las tarifas guardadas en el equipo.
 10. ✅ 📴 **Respaldo automático en el equipo**: un archivo JSON diario que se descarga solo.
@@ -65,7 +65,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 45. ✅ 📴 ⚡ Atajos de teclado: F2 para entrada, F4 para salida y F8 para la tienda.
 
 ## C. Cobros y pagos (46–70)
-46. 📴 Tarifa plana por día (24 horas) con tope máximo.
+46. ✅ 📴 Tarifa plana por día (24 horas) con tope máximo.
 47. 📴 Tarifa por evento, por ejemplo un concierto con un valor fijo.
 48. 📴 Primeros X minutos gratis con compra en la tienda.
 49. 📴 Cupones de descuento con código.
@@ -73,17 +73,17 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 51. 📴 Pago dividido: parte en efectivo y parte con tarjeta.
 52. 🌐 Pago con QR de Nequi o Daviplata con el monto exacto.
 53. 🌐 Confirmación automática de pagos por transferencia (Bre-B).
-54. 📴 Calculadora de billetes: el cajero pone los billetes recibidos y la app saca la devuelta.
+54. ✅ 📴 Calculadora de billetes: el cajero pone los billetes recibidos y la app saca la devuelta.
 55. 📴 Fiado o crédito a clientes conocidos, con saldo pendiente.
 56. 📴 Abonos parciales a la deuda de un cliente.
 57. 📴 Tarjeta prepago o monedero por placa (recargas).
 58. 📴 ⚡ Redondeo automático a $100 o $50.
 59. 📴 Propina para el valet, registrada aparte.
-60. 📴 Cobro de multa por ticket perdido.
+60. ✅ 📴 Cobro de multa por ticket perdido.
 61. 📴 Cobro extra por pernoctar.
-62. 📴 Recargo en días festivos con el calendario de festivos de Colombia.
+62. ✅ 📴 Recargo en días festivos con el calendario de festivos de Colombia.
 63. 📴 Tarifas por temporada (diciembre, Semana Santa).
-64. 📴 Simulador de tarifa: "¿cuánto paga alguien que entra a las 7 pm y sale a las 2 am?".
+64. ✅ 📴 Simulador de tarifa: "¿cuánto paga alguien que entra a las 7 pm y sale a las 2 am?".
 65. 📴 Historial de cambios de tarifa con fecha.
 66. ✅ 📴 Anular un cobro con motivo y permiso del administrador.
 67. 📴 Devoluciones de la tienda que regresan el stock.
@@ -92,9 +92,9 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 70. 📴 Cotización para empresas (cuántos cupos al mes y cuánto valen).
 
 ## D. Mensualidades y clientes (71–95)
-71. 🌐 Recordatorio automático por WhatsApp 3 días antes del vencimiento.
+71. ✅ 🌐 Recordatorio automático por WhatsApp 3 días antes del vencimiento.
 72. 📴 ⚡ Lista de mensualidades vencidas hoy o esta semana.
-73. 📴 Renovar con un clic, extendiendo el mismo periodo.
+73. ✅ 📴 Renovar con un clic, extendiendo el mismo periodo.
 74. 📴 Varias placas en una sola mensualidad (familia o empresa).
 75. 📴 Mensualidad solo de día o solo de noche.
 76. 📴 Control de entradas incluidas (por ejemplo, 20 entradas al mes).
@@ -121,7 +121,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 ## E. Tienda e inventario (96–120)
 96b. 📴 ✅ **Aviso de inventario por acabarse** a administrador, secretaria y vendedor (notificación del equipo + campana), por defecto con 5 unidades.
 96c. 📴 ✅ **Costo y precio al agregar producto**, con la ganancia por unidad y total.
-96. 📴 Lector de código de barras (USB o cámara) para vender productos.
+96. ✅ 📴 Lector de código de barras (USB o cámara) para vender productos.
 97. 📴 Combos (gaseosa y papas a un precio especial).
 98. 📴 Precio por cantidad (3 por $5.000).
 99. 📴 Proveedores con teléfono y lo que se les debe.
@@ -144,8 +144,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 116. 📴 Importar productos desde Excel.
 117. 📴 Impuesto al consumo o IVA por producto.
 118. 📴 Ventas por hora del día.
-119. 📴 Gastos menores del negocio (aseo, papelería, servicios públicos).
-120. 📴 Ganancia neta: ingresos menos costos y gastos.
+119. ✅ 📴 Gastos menores del negocio (aseo, papelería, servicios públicos).
+120. ✅ 📴 Ganancia neta: ingresos menos costos y gastos.
 
 ## F. Caja, turnos y control (121–145)
 121. ✅ 📴 Base de caja al iniciar el turno.
@@ -186,7 +186,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 153. ✅ 📴 Rotación de cupos (cuántas veces se usa cada puesto al día).
 154. 📴 Horas pico para planear el personal.
 155. 📴 Reporte para el contador en un Excel organizado.
-156. 🌐 Reporte diario enviado solo por WhatsApp o correo al dueño.
+156. ✅ 🌐 Reporte diario enviado solo por WhatsApp o correo al dueño.
 157. 📴 Panel de TV para la oficina con los datos en vivo.
 158. 📴 Reporte de descuentos y convenios entregados.
 159. 📴 Reporte de anulaciones.
@@ -198,7 +198,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 165. 📴 Indicador de "días sin faltantes".
 
 ## H. Experiencia del cliente y del público (166–180)
-166. 📴 Pantalla pública de "cupos disponibles" para la entrada.
+166. ✅ 📴 Pantalla pública de "cupos disponibles" para la entrada.
 167. 🌐 Página web pública con los cupos disponibles en vivo.
 168. 🌐 Reservas en línea con pago.
 169. 🌐 El cliente consulta lo que va a pagar escaneando el QR del ticket.
@@ -210,7 +210,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 175. 🌐 Google Maps y reseñas: botón de "califíquenos".
 176. 📴 Turnos de lavado con hora estimada.
 177. 🌐 Notificación al abonado cuando su puesto fijo está ocupado.
-178. 📴 Cartel imprimible de tarifas generado desde Ajustes.
+178. ✅ 📴 Cartel imprimible de tarifas generado desde Ajustes.
 179. 📴 Avisos legales en el ticket (responsabilidad, horario).
 180. 🌐 Chat del parqueadero por WhatsApp Business.
 
@@ -233,11 +233,11 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 193. 📴 Asistente de configuración inicial paso a paso.
 194. 📴 Cambiar el logo del negocio para el ticket y el menú.
 195. ✅ 📴 Elegir uno de los 200 diseños de la galería como tema de la app.
-196. 📴 Tamaño de letra grande para personas mayores.
+196. ✅ 📴 Tamaño de letra grande para personas mayores.
 197. 📴 Modo zurdo o modo tableta con botones grandes.
 198. 📴 Idioma inglés.
 199. 📴 Tutorial interactivo para trabajadores nuevos.
-200. 📴 ⚡ Página de ayuda con preguntas frecuentes y videos cortos.
+200. ✅ 📴 ⚡ Página de ayuda con preguntas frecuentes y videos cortos.
 
 ---
 

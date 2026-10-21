@@ -83,6 +83,19 @@ service cloud.firestore {
       allow update, delete: if esAdmin();
     }
 
+    // Pagos de mensualidades y quincenas (se registran al renovar).
+    match /pagosMensualidad/{id} {
+      allow read, create: if esStaff();
+      allow update, delete: if esAdmin();
+    }
+
+    // Gastos del negocio (luz, arriendo, aseo...). Solo administrador y secretaria.
+    match /gastos/{id} {
+      allow read, create: if esStaff();
+      allow update: if false;
+      allow delete: if esAdmin();
+    }
+
     // Quién hizo cada cambio delicado. Nadie la puede editar ni borrar.
     match /bitacora/{id} {
       allow read: if esAdmin();
