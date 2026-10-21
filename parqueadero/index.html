@@ -420,6 +420,9 @@
 
   #fichaBody .stat{flex-direction:column;align-items:flex-start;gap:8px;padding:12px;}
   #fichaBody .stat .v{font-size:24px;white-space:normal;}
+  .logo-mark img{width:100%;height:100%;object-fit:contain;border-radius:inherit;background:#fff;}
+  .t-mark img{width:100%;height:100%;object-fit:contain;}
+  .espera{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
   .side-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
   .side-btns .btn{width:100%;}
   :root.grande body{zoom:1.15;}
@@ -603,7 +606,14 @@
               <img id="fotoPreview" class="foto-preview" alt="" hidden>
               <button class="btn btn-primary btn-lg" id="btnIngresar">Registrar entrada</button>
             </div>
-            <div class="field" style="margin-top:12px;"><label for="notaInput">Nota (opcional)</label><input class="input" id="notaInput" maxlength="80" placeholder="Ej. deja las llaves en el gancho 4 · rayón puerta derecha · 2 cascos"></div>
+            <div class="row" style="margin-top:12px;">
+              <div class="field" style="width:110px;"><label for="puestoInput">Puesto</label><input class="input mono upper" id="puestoInput" maxlength="8" placeholder="C-04" autocomplete="off"></div>
+              <div class="field grow"><label for="notaInput">Nota (opcional)</label><input class="input" id="notaInput" maxlength="80" placeholder="Ej. deja las llaves en el gancho 4 · rayón puerta derecha · 2 cascos"></div>
+            </div>
+            <div class="row" id="conductorRow" style="margin-top:10px;" hidden>
+              <div class="field grow"><label for="conductorNombre">Conductor</label><input class="input" id="conductorNombre" maxlength="60" placeholder="Nombre"></div>
+              <div class="field" style="width:150px;"><label for="conductorCedula">Cédula</label><input class="input mono" id="conductorCedula" maxlength="15" inputmode="numeric"></div>
+            </div>
             <div class="placa-info" id="placaInfo"></div>
             <div class="deshacer" id="deshacerBar" hidden><span id="deshacerTxt"></span><button class="btn btn-sm" id="btnDeshacer">Deshacer</button></div>
             <div class="hint">Elige el tipo de vehículo, escribe la placa y presiona <strong>Enter</strong>. Si la placa tiene mensualidad o convenio, el sistema lo detecta solo.</div>
@@ -634,7 +644,8 @@
             <div class="productos-grid" id="posProductos"></div>
           </div>
           <div class="card cart">
-            <h2 class="card-title">Venta actual<span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnVaciar">Vaciar</button></h2>
+            <h2 class="card-title">Venta actual<span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnEspera" title="Guardar esta venta y atender a otro cliente">En espera</button><button class="btn btn-ghost btn-sm" id="btnVaciar">Vaciar</button></h2>
+            <div class="espera" id="esperaLista"></div>
             <div id="cartItems"></div>
             <div class="cart-total"><span>Total</span><span class="v" id="cartTotal">$0</span></div>
             <div id="posPago"></div>
@@ -772,7 +783,11 @@
             <div class="field" style="width:150px;"><label for="clienteTelefono">WhatsApp</label><input class="input mono" id="clienteTelefono" placeholder="3001234567"></div>
             <button class="btn btn-primary" id="btnAddCliente">Guardar</button>
           </div>
-          <input type="text" class="input w100" id="clienteBuscar" placeholder="Buscar por nombre, placa o WhatsApp..." style="margin-bottom:6px;">
+          <label class="switch" style="margin-bottom:8px;"><input type="checkbox" id="clienteAutoriza"> El cliente autoriza el tratamiento de sus datos (Ley 1581 de 2012)</label>
+          <div class="filters">
+            <input type="text" class="input" id="clienteBuscar" placeholder="Buscar por nombre, placa o WhatsApp...">
+            <div class="seg" id="clienteFiltro"><button class="active" data-f="todos">Todos</button><button data-f="inactivos">No vienen hace 30 días</button></div>
+          </div>
           <div id="clientesLista"></div>
           <div class="hint">Ordenados de más a menos visitas (últimos dos meses). Se llenan solos cuando guardas el nombre o WhatsApp en el comprobante de salida.</div>
         </div>
@@ -794,6 +809,9 @@
               <div class="field full"><label for="cfgBrand">Nombre del parqueadero</label><input class="input" id="cfgBrand"></div>
               <div class="field"><label for="factNit">NIT / documento</label><input class="input" id="factNit" placeholder="900.123.456-7"></div>
               <div class="field"><label for="factTelefono">Teléfono</label><input class="input" id="factTelefono" placeholder="300 000 0000"></div>
+              <div class="field full"><label for="cfgLogo">Logo (sale en el menú y en el ticket)</label><div class="row"><input class="input" id="cfgLogo" type="file" accept="image/*" style="flex:1;"><button class="btn btn-sm" id="btnQuitarLogo" type="button">Quitar logo</button></div></div>
+              <div class="field full"><label for="cfgPie">Mensaje al pie del ticket</label><input class="input" id="cfgPie" maxlength="120" placeholder="Ej. Pregunte por nuestro lavado · Tienda abierta 24 h"></div>
+              <div class="field full"><label for="cfgLegal">Texto legal del ticket</label><input class="input" id="cfgLegal" maxlength="240" placeholder="Ej. No respondemos por objetos dejados dentro del vehículo. Horario 24 h."></div>
               <div class="field full"><label for="factDireccion">Dirección</label><input class="input" id="factDireccion" placeholder="Calle 10 # 5-20, Ciudad"></div>
               <div class="field"><label for="factPrefijo">Prefijo de comprobante</label><input class="input upper" id="factPrefijo" placeholder="FE" maxlength="6"></div>
               <div class="field"><label for="factConsecutivo">Próximo consecutivo</label><input class="input mono" id="factConsecutivo" type="number" min="1"></div>
@@ -810,7 +828,12 @@
                 <select class="select" id="cfgFraccion"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora completa</option></select></div>
               <div class="field"><label for="cfgGracia">Minutos de tolerancia</label><input class="input mono" id="cfgGracia" type="number" min="0" max="30" step="1"></div>
             </div>
-            <div class="field" style="margin-top:12px;max-width:240px;"><label for="cfgPerdido">Cobro por ticket perdido</label><input class="input mono" id="cfgPerdido" type="number" min="0" step="500"></div>
+            <div class="form-grid" style="margin-top:12px;">
+              <div class="field"><label for="cfgPerdido">Cobro por ticket perdido</label><input class="input mono" id="cfgPerdido" type="number" min="0" step="500"></div>
+              <div class="field"><label for="cfgPernocta">Recargo por pasar la noche</label><input class="input mono" id="cfgPernocta" type="number" min="0" step="500"></div>
+              <div class="field"><label for="cfgRedondeo">Redondear el cobro a</label><select class="select" id="cfgRedondeo"><option value="0">No redondear</option><option value="50">$50</option><option value="100">$100</option><option value="500">$500</option><option value="1000">$1.000</option></select></div>
+              <div class="field"><label>&nbsp;</label><label class="switch" style="padding:8px 0;"><input type="checkbox" id="cfgConductor"> Pedir nombre y cédula del conductor</label></div>
+            </div>
             <div class="disclaimer" id="cobroEjemplo"></div>
             <h2 class="card-title" style="margin-top:20px;">Simulador de cobro</h2>
             <div class="form-grid">
@@ -930,7 +953,10 @@
     <div id="salidaServicios"></div>
     <div class="breakdown" id="salidaDetalle"></div>
     <div id="salidaPago"></div>
-    <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnConfirmarSalida">Confirmar y cobrar</button>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn btn-lg" id="btnSalidaExacta" title="Pagó justo en efectivo">Pagó exacto</button>
+      <button class="btn btn-primary btn-lg" id="btnConfirmarSalida" style="flex:2;">Confirmar y cobrar</button>
+    </div>
   </div>
 </div>
 
@@ -941,6 +967,7 @@
     <div id="ticketBody"></div>
     <div class="contacto-box" id="ticketContacto" hidden>
       <div class="field"><label for="tkNombre">Nombre del cliente (opcional)</label><input class="input" id="tkNombre" placeholder="Nombre"></div>
+      <label class="switch"><input type="checkbox" id="tkAutoriza"> Autoriza el tratamiento de sus datos (Ley 1581)</label>
       <div class="field"><label for="tkTelefono">WhatsApp del cliente (opcional)</label><input class="input mono" type="tel" id="tkTelefono" placeholder="3001234567"></div>
       <button class="btn btn-sm" id="btnGuardarContacto">Guardar datos del cliente</button>
     </div>
@@ -1002,6 +1029,7 @@
     <p style="font-size:13px;margin:0 0 10px;" class="muted">Cuente los billetes y monedas que hay en la caja ahora.</p>
     <div class="form-grid" id="arqueoBilletes"></div>
     <div class="breakdown" id="arqueoResumen"></div>
+    <div class="field" style="margin-bottom:12px;"><label for="arqueoNota">Nota para el siguiente turno (opcional)</label><input class="input" id="arqueoNota" maxlength="160" placeholder="Ej. el de la placa KLM482 pagó adelantado · falta cambio de $2.000"></div>
     <button class="btn btn-danger btn-lg w100" id="btnConfirmarArqueo">Cerrar turno</button>
   </div>
 </div>
@@ -1065,6 +1093,21 @@
   </div>
 </div>
 
+<!-- ===== MODAL EDITAR VEHÍCULO ===== -->
+<div class="modal" id="editVehModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Corregir vehículo</h3><button class="modal-close" data-close="editVehModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="evPlaca">Placa</label><input class="input mono upper" id="evPlaca" maxlength="10"></div>
+      <div class="field"><label for="evTipo">Vehículo</label><select class="select" id="evTipo"></select></div>
+      <div class="field"><label for="evPuesto">Puesto</label><input class="input mono upper" id="evPuesto" maxlength="8"></div>
+      <div class="field"><label for="evNota">Nota</label><input class="input" id="evNota" maxlength="80"></div>
+    </div>
+    <div class="hint">Los cambios de placa quedan en la bitácora con su nombre.</div>
+    <button class="btn btn-primary btn-lg w100" style="margin-top:14px;" id="btnGuardarVeh">Guardar</button>
+  </div>
+</div>
+
 <!-- ===== MODAL ANULAR ===== -->
 <div class="modal" id="anularModal">
   <div class="modal-box">
@@ -1111,10 +1154,12 @@
     <div class="form-grid" style="margin-top:12px;">
       <div class="field"><label for="impAncho">Ancho del papel</label><select class="select" id="impAncho"><option value="58">58 mm</option><option value="80">80 mm</option></select></div>
       <div class="field"><label>&nbsp;</label><label class="switch" style="padding:8px 0;"><input type="checkbox" id="impAuto"> Imprimir solo, sin tocar el botón</label></div>
+      <div class="field full"><label class="switch"><input type="checkbox" id="impCajon"> Abrir el cajón de dinero al cobrar en efectivo (cajón conectado a la impresora)</label></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" id="btnBuscarImp">Buscar impresora Bluetooth</button>
       <button class="btn" id="btnProbarImp">Imprimir prueba</button>
+      <button class="btn" id="btnAbrirCajon">Abrir cajón</button>
     </div>
     <div class="hint">Funciona en Chrome o Edge de Android, Windows y Mac (no en iPhone). La impresora debe ser Bluetooth BLE (casi todas las térmicas de 58 mm lo son). Prenda la impresora, toque <strong>Buscar</strong> y elíjala de la lista.</div>
   </div>
@@ -1253,11 +1298,12 @@
       rates: JSON.parse(JSON.stringify(DEFAULT_RATES)),
       servicios: [], empresas: [],
       facturacion: { nit:'', direccion:'', telefono:'', prefijo:'FE', ivaPct:0 },
-      cobro: { fraccionMin:30, graciaMin:0, ticketPerdido:5000 },
+      cobro: { fraccionMin:30, graciaMin:0, ticketPerdido:5000, pernocta:0, redondeo:0 },
       seguridad: { cierreMin:60 },
+      ticket: { pie:'', legal:'' }, logo:null,
       avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] },
       caja: { alertaFaltante:5000, whatsappDueno:'', metaDia:0 },
-      parqueo: { horasAlerta:12 },
+      parqueo: { horasAlerta:12, pedirConductor:false },
       placasAlerta: []
     };
   }
@@ -1272,6 +1318,7 @@
     out.seguridad = Object.assign(defaultConfig().seguridad, d.seguridad||{});
     out.avisosStock = Object.assign(defaultConfig().avisosStock, d.avisosStock||{});
     out.caja = Object.assign(defaultConfig().caja, d.caja||{});
+    out.ticket = Object.assign(defaultConfig().ticket, d.ticket||{});
     out.parqueo = Object.assign(defaultConfig().parqueo, d.parqueo||{});
     out.placasAlerta = Array.isArray(d.placasAlerta) ? d.placasAlerta : [];
     out.servicios = Array.isArray(d.servicios) ? d.servicios : [];
@@ -1685,6 +1732,8 @@
     escuchar();
     irA(vistaActual);
     setTimeout(reservarBloques, 4000);
+    setTimeout(revisarEquipo, 2500);
+    renderEspera();
     renderTodo();
     if(esAdmin()) migrarDatosAntiguos();
   }
@@ -1829,7 +1878,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
+      programar(renderConductorRow, renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -1842,7 +1891,7 @@
     escuchas.push(db.collection('productos').onSnapshot(q=>{
       productos = docs(q).sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||''));
       revisarStock();
-      programar(renderPOS, renderCarrito, renderInventario, renderAlertas, renderNav, renderPanel, renderCampana);
+      programar(renderPOS, renderCarrito, renderInventario, renderAlertas, renderNav, renderPanel, renderCampana, renderEspera);
     }, errEscucha));
     escuchas.push(db.collection('mensualidades').onSnapshot(q=>{
       mensualidades = docs(q);
@@ -1880,6 +1929,8 @@
   }
 
   function renderBrand(){
+    const logo = typeof cfg.logo==='string' && cfg.logo.startsWith('data:image/') ? cfg.logo : null;
+    document.querySelectorAll('.logo-mark').forEach(m=>{ m.innerHTML = logo ? '<img src="'+logo+'" alt="">' : 'P'; });
     $('sideBrand').textContent = cfg.brand;
     $('authBrand').textContent = cfg.brand;
     document.title = cfg.brand + ' · Control';
@@ -1979,6 +2030,9 @@
     if(cupoLleno(tipo)){ showToast('No hay cupos disponibles para '+nombreFor(tipo)+'.'); return; }
     const alerta = alertaDe(placa);
     if(alerta && !confirm('ALERTA para '+placa+': '+alerta.motivo+'\n\n¿Registrar la entrada igual?')) return;
+    const puestoN = limpiarPuesto($('puestoInput').value);
+    if(puestoN && activos.some(a=>a.puesto===puestoN)){ showToast('El puesto '+puestoN+' ya está ocupado.'); return; }
+    if(cfg.parqueo.pedirConductor && (!$('conductorNombre').value.trim() || !$('conductorCedula').value.trim())){ showToast('Escriba el nombre y la cédula del conductor.'); return; }
     const emp = empresaForPlate(placa);
     ingresando = true; $('btnIngresar').disabled = true;
     try{
@@ -1992,10 +2046,15 @@
         empresaId: emp ? emp.id : null,
         vencidaAlEntrar: vencida,
         codigoIngreso: 'E-' + pad(n),
-        nota: $('notaInput').value.trim().slice(0,80) || null
+        nota: $('notaInput').value.trim().slice(0,80) || null,
+        puesto: limpiarPuesto($('puestoInput').value) || null,
+        conductor: cfg.parqueo.pedirConductor ? ($('conductorNombre').value.trim().slice(0,60) || null) : null,
+        cedula: cfg.parqueo.pedirConductor ? ($('conductorCedula').value.replace(/\D/g,'').slice(0,15) || null) : null
       };
+
       db.collection('activos').doc(v.id).set(v).catch(errGuardar);
-      $('placaInput').value = ''; $('placaInfo').innerHTML = ''; $('notaInput').value = '';
+      $('placaInput').value = ''; $('placaInfo').innerHTML = ''; $('notaInput').value = ''; $('puestoInput').value = '';
+      $('conductorNombre').value = ''; $('conductorCedula').value = '';
       fotoPendiente = null; $('fotoInput').value = ''; $('fotoPreview').hidden = true;
       showToast(placa+' registrada.');
       ofrecerDeshacer(v);
@@ -2050,7 +2109,9 @@
     }
     let descuentoPct = 0;
     if(v.empresaId){ const emp = cfg.empresas.find(e=>e.id===v.empresaId); if(emp) descuentoPct = emp.descuentoPct||0; }
-    const valor = Math.round(bruto * (1 - descuentoPct/100));
+    let valor = Math.round(bruto * (1 - descuentoPct/100));
+    const red = cfg.cobro.redondeo||0;
+    if(red>0) valor = Math.ceil(valor/red)*red;
     return { minutos, fraccion, fracciones, minutosCobrados: fracciones*fraccion, tarifaHora, valorFraccion, bruto, descuentoPct, valor, topeDia, diasTope, bruto0: fracciones*valorFraccion };
   }
 
@@ -2075,13 +2136,15 @@
       if(v.empresaId){ const e = cfg.empresas.find(x=>x.id===v.empresaId); if(e) badges += '<span class="chip chip-blue">'+esc(e.nombre)+'</span>'; }
       if(min > cfg.parqueo.horasAlerta*60) badges += '<span class="chip chip-red">+'+cfg.parqueo.horasAlerta+' h</span>';
       if(alertaDe(v.placa)) badges += '<span class="chip chip-red">ALERTA</span>';
+      if(v.puesto) badges += '<span class="chip chip-gray">'+esc(v.puesto)+'</span>';
       return '<div class="activo" data-id="'+esc(v.id)+'">'+
         '<div class="activo-l"><div class="activo-ic">'+(v.foto ? '<img src="'+esc(v.foto)+'" alt="">' : iconFor(v.tipo))+'</div>'+
           '<div style="min-width:0;"><div><span class="placa-txt">'+esc(v.placa)+'</span>'+(badges?'<span class="badges">'+badges+'</span>':'')+'</div>'+
           '<div class="meta">'+nombreFor(v.tipo)+' · '+fmtHora(v.entrada)+' · '+esc(v.codigoIngreso||'')+(v.operador?' · '+esc(v.operador):'')+'</div>'+
-          (v.nota?'<div class="meta" style="color:var(--text);">Nota: '+esc(v.nota)+'</div>':'')+'</div></div>'+
+          (v.nota?'<div class="meta" style="color:var(--text);">Nota: '+esc(v.nota)+'</div>':'')+
+          (v.conductor?'<div class="meta">Conductor: '+esc(v.conductor)+(v.cedula?' · CC '+esc(v.cedula):'')+'</div>':'')+'</div></div>'+
         '<div class="activo-r"><span class="tiempo js-tiempo">'+fmtDuracion(min)+'</span>'+costoActivoHTML(v)+
-          '<button class="btn btn-danger btn-sm" data-salida="'+esc(v.id)+'">Dar salida</button></div></div>';
+          '<div style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm" data-editar-veh="'+esc(v.id)+'" title="Corregir placa, tipo, puesto o nota">Editar</button><button class="btn btn-danger btn-sm" data-salida="'+esc(v.id)+'">Dar salida</button></div></div></div>';
     }).join('');
   }
   // cada 20 s solo se actualizan los tiempos y valores, sin redibujar toda la lista
@@ -2165,6 +2228,7 @@
     $(p+'Recibido').addEventListener('input', devuelta);
     return {
       reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; pintar(); },
+      exacto(){ metodo='efectivo'; $(p+'Recibido').value = getTotal(); pintar(); },
       refrescar: devuelta,
       mostrar(si){ box.hidden = !si; },
       datos(total){
@@ -2196,10 +2260,12 @@
     const servs = servIds.map(id=>cfg.servicios.find(s=>s.id===id)).filter(Boolean);
     const servTotal = servs.reduce((s,x)=>s+(x.precio||0),0);
     const perdido = (!esSub && $('salidaPerdido') && $('salidaPerdido').checked) ? (cfg.cobro.ticketPerdido||0) : 0;
-    const subtotal = base + servTotal + perdido;
+    const noches = esSub ? 0 : nochesEntre(new Date(v.entrada), new Date());
+    const pernocta = noches * (cfg.cobro.pernocta||0);
+    const subtotal = base + servTotal + perdido + pernocta;
     const ivaPct = cfg.facturacion.ivaPct || 0;
     const iva = Math.round(subtotal*ivaPct/100);
-    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, subtotal, ivaPct, iva, total: subtotal + iva };
+    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, subtotal, ivaPct, iva, total: subtotal + iva };
   }
 
   function abrirSalida(id){
@@ -2235,6 +2301,7 @@
       if(esFestivo(new Date(c.v.entrada))) html += '<div class="brow"><span>Entró en festivo: tarifa de noche</span><span class="v">'+money(k.tarifaHora)+'/h</span></div>';
       if(k.descuentoPct) html += '<div class="brow"><span>Convenio −'+k.descuentoPct+'%</span><span class="v">−'+money(k.bruto-k.valor)+'</span></div>';
       if(c.perdido) html += '<div class="brow"><span>Ticket perdido</span><span class="v">'+money(c.perdido)+'</span></div>';
+      if(c.pernocta) html += '<div class="brow"><span>Pasó '+c.noches+' noche(s)</span><span class="v">'+money(c.pernocta)+'</span></div>';
       if(c.servTotal) html += '<div class="brow"><span>Servicios</span><span class="v">'+money(c.servTotal)+'</span></div>';
       if(c.ivaPct) html += '<div class="brow"><span>IVA '+c.ivaPct+'%</span><span class="v">'+money(c.iva)+'</span></div>';
       html += '<div class="brow total"><span>Total a cobrar</span><span class="v">'+money(c.total)+'</span></div>';
@@ -2268,6 +2335,7 @@
         serviciosNombres: c.servs.map(s=>s.nombre),
         operador: perfil.nombre, operadorId: perfil.uid,
         operadorEntrada: c.v.operador || '', operadorEntradaId: c.v.operadorId || null,
+        puesto: c.v.puesto || null, conductor: c.v.conductor || null, cedula: c.v.cedula || null, pernocta: c.pernocta || 0,
         empresaNombre: emp ? emp.nombre : null, descuentoPct: k ? k.descuentoPct : 0,
         numeroFactura: (cfg.facturacion.prefijo||'FE') + '-' + pad(n),
         metodoPago: pago.metodoPago, medioTransferencia: pago.medioTransferencia,
@@ -2287,12 +2355,19 @@
   let ticketActual = null;
   function ticketCabecera(){
     const f = cfg.facturacion;
-    return '<div class="t-logo"><div class="t-mark">P</div><div><div class="t-brand">'+esc(cfg.brand)+'</div>'+
+    const logo = typeof cfg.logo==='string' && cfg.logo.startsWith('data:image/') ? cfg.logo : null;
+    return '<div class="t-logo"><div class="t-mark"'+(logo?' style="border:none;"':'')+'>'+(logo?'<img src="'+logo+'" alt="">':'P')+'</div><div><div class="t-brand">'+esc(cfg.brand)+'</div>'+
       (f.direccion?'<div class="t-addr">'+esc(f.direccion)+'</div>':'')+(f.nit?'<div class="t-addr">NIT '+esc(f.nit)+'</div>':'')+
       (f.telefono?'<div class="t-addr">Tel. '+esc(f.telefono)+'</div>':'')+'</div></div><hr>';
   }
   function fila(a,b){ return '<div class="t-row"><span>'+esc(a)+'</span><span>'+esc(b)+'</span></div>'; }
+  function pieTicket(){
+    const t = cfg.ticket||{};
+    return (t.pie ? '<div class="t-foot" style="text-transform:none;">'+esc(t.pie)+'</div>' : '')+(t.legal ? '<div style="font-size:8.5px;color:#555;margin-top:6px;text-align:left;">'+esc(t.legal)+'</div>' : '');
+  }
   function abrirTicket(t){
+    const tk = cfg.ticket||{};
+    if(!t.conPie && (tk.pie || tk.legal)){ t.lineas = t.lineas.concat([''], tk.pie ? [tk.pie] : [], tk.legal ? [tk.legal] : []); t.conPie = true; }
     ticketActual = t;
     $('ticketTitulo').textContent = t.titulo;
     $('ticketBody').innerHTML = t.html;
@@ -2311,6 +2386,8 @@
     const esSub = esSubModo(v.modo);
     let html = '<div class="ticket">'+ticketCabecera()+'<div class="t-title">TICKET DE INGRESO</div><div class="t-big">'+esc(v.codigoIngreso)+'</div><hr>';
     html += fila('Placa', v.placa)+fila('Vehículo', nombreFor(v.tipo))+fila('Entrada', fmtFechaHora(v.entrada));
+    if(v.puesto) html += fila('Puesto', v.puesto);
+    if(v.conductor) html += fila('Conductor', v.conductor+(v.cedula?' · CC '+v.cedula:''));
     html += fila('Modalidad', esSub ? (v.modo==='mensual'?'Mensualidad':'Quincena') : 'Por tiempo');
     if(!esSub){
       const tar = tarifaHoraAplicable(v.tipo, new Date(v.entrada));
@@ -2318,9 +2395,10 @@
       html += fila('Se cobra por', (cfg.cobro.fraccionMin==60?'hora':'fracción de '+cfg.cobro.fraccionMin+' min'));
     }
     if(v.operador) html += fila('Recibió', v.operador);
-    html += '<hr>'+barcodeSVG(v.codigoIngreso)+'<div class="t-foot">Conserve este ticket<br>para reclamar su vehículo</div></div>';
-    const lineas = ['TICKET DE INGRESO', 'Código: '+v.codigoIngreso, '', 'Placa: '+v.placa, 'Vehículo: '+nombreFor(v.tipo), 'Entrada: '+fmtFechaHora(v.entrada),
-      'Modalidad: '+(esSub ? (v.modo==='mensual'?'Mensualidad':'Quincena') : 'Por tiempo')];
+    html += '<hr>'+barcodeSVG(v.codigoIngreso)+'<div class="t-foot">Conserve este ticket<br>para reclamar su vehículo</div>'+pieTicket()+'</div>';
+    const lineas = ['TICKET DE INGRESO', 'Código: '+v.codigoIngreso, '', 'Placa: '+v.placa, 'Vehículo: '+nombreFor(v.tipo), 'Entrada: '+fmtFechaHora(v.entrada)].concat(
+      v.puesto ? ['Puesto: '+v.puesto] : [], v.conductor ? ['Conductor: '+v.conductor+(v.cedula?' CC '+v.cedula:'')] : [], [
+      'Modalidad: '+(esSub ? (v.modo==='mensual'?'Mensualidad':'Quincena') : 'Por tiempo')]);
     if(v.operador) lineas.push('Recibió: '+v.operador);
     lineas.push('', 'Conserve este ticket para reclamar su vehículo.');
     abrirTicket({ titulo:'Ticket de ingreso', html, lineas, archivo:'ticket-'+v.placa+'.pdf', codigo:v.codigoIngreso, placa:null });
@@ -2335,6 +2413,7 @@
     if(r.empresaNombre) l.push('Convenio: '+r.empresaNombre+' -'+r.descuentoPct+'%');
     (r.serviciosNombres||[]).forEach(n=>l.push('Servicio: '+n));
     if(r.ticketPerdido) l.push('Ticket perdido: '+money(r.ticketPerdido));
+    if(r.pernocta) l.push('Recargo por noche: '+money(r.pernocta));
     l.push('');
     if(esSub && !r.total) l.push('Incluido en '+(r.modo==='mensual'?'mensualidad':'quincena'));
     else{
@@ -2354,6 +2433,7 @@
     if(r.empresaNombre) html += fila('Convenio', r.empresaNombre+' -'+r.descuentoPct+'%');
     (r.serviciosNombres||[]).forEach(n=>{ html += fila('Servicio', n); });
     if(r.ticketPerdido) html += fila('Ticket perdido', money(r.ticketPerdido));
+    if(r.pernocta) html += fila('Recargo por noche', money(r.pernocta));
     html += '<hr>';
     if(esSub && !r.total){
       html += '<div class="t-big" style="font-size:15px;">INCLUIDO EN<br>'+(r.modo==='mensual'?'MENSUALIDAD':'QUINCENA')+'</div>';
@@ -2364,8 +2444,8 @@
       if(r.efectivoRecibido!=null) html += fila('Recibido', money(r.efectivoRecibido))+fila('Devuelta', money(r.vuelto||0));
     }
     if(r.operador) html += fila('Atendió', r.operador);
-    html += '<hr>'+barcodeSVG(r.numeroFactura||r.placa)+'<div class="t-foot">¡Gracias por su visita!</div></div>';
-    abrirTicket({ titulo:'Comprobante '+(r.numeroFactura||''), html, lineas:reciboLineas(r), archivo:'comprobante-'+r.placa+'-'+(r.numeroFactura||'')+'.pdf', codigo:r.numeroFactura||r.placa, placa:r.placa });
+    html += '<hr>'+barcodeSVG(r.numeroFactura||r.placa)+'<div class="t-foot">¡Gracias por su visita!</div>'+pieTicket()+'</div>';
+    abrirTicket({ titulo:'Comprobante '+(r.numeroFactura||''), html, lineas:reciboLineas(r), archivo:'comprobante-'+r.placa+'-'+(r.numeroFactura||'')+'.pdf', codigo:r.numeroFactura||r.placa, placa:r.placa, efectivo:r.metodoPago==='efectivo' });
   }
 
   function formatearWhatsapp(num){
@@ -2377,7 +2457,7 @@
     if(!ticketActual || !ticketActual.placa) return;
     const nombre = $('tkNombre').value.trim().slice(0,80), telefono = $('tkTelefono').value.trim().slice(0,20);
     if(!nombre && !telefono){ if(avisar) showToast('Escribe el nombre o el WhatsApp.'); return; }
-    upsertCliente(ticketActual.placa, nombre, telefono);
+    upsertCliente(ticketActual.placa, nombre, telefono, $('tkAutoriza').checked);
     if(avisar) showToast('Datos del cliente guardados.');
   }
   $('btnGuardarContacto').addEventListener('click', ()=>guardarContacto(true));
@@ -2478,6 +2558,7 @@
     const t = turnoAbiertoDe(perfil.uid); if(!t) return;
     $('arqueoBilletes').innerHTML = DENOMINACIONES.map(d=>'<div class="field"><label for="den'+d+'">Billetes de '+money(d)+'</label><input class="input mono" id="den'+d+'" type="number" min="0" step="1" placeholder="0"></div>').join('')+
       '<div class="field"><label for="denMonedas">Monedas (total en pesos)</label><input class="input mono" id="denMonedas" type="number" min="0" step="50" placeholder="0"></div>';
+    $('arqueoNota').value = '';
     renderArqueo();
     abrirModal('arqueoModal');
   });
@@ -2486,7 +2567,7 @@
     const t = turnoAbiertoDe(perfil.uid); if(!t) return;
     const fin = new Date().toISOString(), st = statsTurno(t, fin), contado = totalArqueo(), diferencia = contado - st.esperado;
     const billetes = {}; DENOMINACIONES.forEach(d=>{ const n = parseInt($('den'+d).value,10)||0; if(n) billetes[d] = n; });
-    const cierre = { fin, contado, esperado:st.esperado, diferencia, billetes, monedas: parseInt($('denMonedas').value,10)||0 };
+    const cierre = { fin, contado, esperado:st.esperado, diferencia, billetes, monedas: parseInt($('denMonedas').value,10)||0, nota: $('arqueoNota').value.trim().slice(0,160) || null };
     db.collection('turnos').doc(t.id).update(cierre).catch(errGuardar);
     if(diferencia) bitacora('Cierre de caja con diferencia', (diferencia<0?'Faltaron ':'Sobraron ')+money(Math.abs(diferencia))+' · '+t.perfilNombre);
     cerrarModal('arqueoModal');
@@ -2590,6 +2671,30 @@
     pagoPOS.refrescar();
   }
   $('cartItems').addEventListener('click', e=>{ const b = e.target.closest('[data-q]'); if(b) agregarAlCarrito(b.dataset.id, parseInt(b.dataset.q,10)); });
+  let ventasEspera = [];
+  try{ ventasEspera = JSON.parse(localStorage.getItem('ventasEspera')||'[]'); }catch(e){}
+  function renderEspera(){
+    try{ localStorage.setItem('ventasEspera', JSON.stringify(ventasEspera)); }catch(e){}
+    $('esperaLista').innerHTML = ventasEspera.map((v,i)=>{
+      const tot = Object.entries(v.carrito).reduce((s,[id,c])=>{ const p = productos.find(x=>x.id===id); return s + (p ? p.precio*c : 0); }, 0);
+      return '<button class="chip-btn" data-espera="'+i+'" title="Retomar esta venta">'+esc(v.nombre)+' · '+money(tot)+'</button>';
+    }).join('');
+  }
+  $('btnEspera').addEventListener('click', ()=>{
+    if(!Object.keys(carrito).length){ showToast('No hay productos en la venta.'); return; }
+    const nombre = prompt('Nombre o seña del cliente (para reconocer la venta):', 'Cliente '+(ventasEspera.length+1));
+    if(nombre===null) return;
+    ventasEspera.push({ nombre:(nombre.trim()||'Cliente').slice(0,30), carrito:Object.assign({}, carrito), fecha:new Date().toISOString() });
+    carrito = {}; renderCarrito(); renderPOS(); renderEspera();
+    showToast('Venta en espera.');
+  });
+  $('esperaLista').addEventListener('click', e=>{
+    const b = e.target.closest('[data-espera]'); if(!b) return;
+    if(Object.keys(carrito).length && !confirm('Hay una venta abierta. ¿Cambiarla por la venta en espera? La actual queda en espera.')) return;
+    const v = ventasEspera.splice(+b.dataset.espera, 1)[0];
+    if(Object.keys(carrito).length) ventasEspera.push({ nombre:'Venta '+fmtHora(new Date().toISOString()), carrito:Object.assign({}, carrito), fecha:new Date().toISOString() });
+    carrito = v.carrito; renderCarrito(); renderPOS(); renderEspera();
+  });
   $('btnVaciar').addEventListener('click', ()=>{ carrito = {}; renderCarrito(); renderPOS(); });
   const pagoPOS = controlPago('posPago', totalCarrito);
 
@@ -2637,8 +2742,8 @@
     html += '<hr><div class="t-big">'+money(v.total)+'</div>'+fila('Pago', pagoLabel(v));
     if(v.efectivoRecibido!=null) html += fila('Recibido', money(v.efectivoRecibido))+fila('Devuelta', money(v.vuelto||0));
     if(v.operador) html += fila('Atendió', v.operador);
-    html += '<hr>'+barcodeSVG(v.numero)+'<div class="t-foot">¡Gracias por su compra!</div></div>';
-    abrirTicket({ titulo:'Venta '+v.numero, html, lineas:lineasVenta(v), archivo:'venta-'+v.numero+'.pdf', codigo:v.numero, placa:null });
+    html += '<hr>'+barcodeSVG(v.numero)+'<div class="t-foot">¡Gracias por su compra!</div>'+pieTicket()+'</div>';
+    abrirTicket({ titulo:'Venta '+v.numero, html, lineas:lineasVenta(v), archivo:'venta-'+v.numero+'.pdf', codigo:v.numero, placa:null, efectivo:v.metodoPago==='efectivo' });
   }
 
   function ventaFilaHTML(v){
@@ -2673,6 +2778,7 @@
     $('invTabla').innerHTML = lista.length ? lista.map(p=>{
       const st = p.stock||0;
       let chip = st<=0 ? '<span class="chip chip-red">Agotado</span>' : st<=minDe(p) ? '<span class="chip chip-amber">Por acabarse</span>' : '';
+      if(st>0 && sinMovimiento(p)) chip += ' <span class="chip chip-gray">Sin ventas 30 d</span>';
       const dv = diasParaVencer(p);
       if(dv!=null && dv<=15) chip += ' <span class="chip '+(dv<0?'chip-red':'chip-amber')+'">'+(dv<0?'Vencido':dv===0?'Vence hoy':'Vence en '+dv+' d')+'</span>';
       return '<tr><td><strong>'+esc(p.nombre)+'</strong>'+(p.codigo?'<div class="meta mono">'+esc(p.codigo)+'</div>':'')+'</td><td class="muted">'+esc(p.categoria||'Otros')+'</td>'+
@@ -2750,6 +2856,8 @@
       if(cant<=0){ showToast('Escribe cuántas unidades llegaron.'); return; }
       const costo = Math.max(0, parseInt($('peCosto').value,10)||0);
       ref.update({ stock: FV.increment(cant), costo, vence: $('peVence2').value || null, ultimaEntrada:new Date().toISOString() }).catch(errGuardar);
+      const pE = productos.find(x=>x.id===productoAccion.id) || {};
+      if(costo !== (pE.costo||0)) bitacora('Costo cambiado', (pE.nombre||'')+': de '+money(pE.costo||0)+' a '+money(costo)+' (entrada de '+cant+')');
       showToast('+'+cant+' unidades agregadas.');
     }else{
       const nombre = $('peNombre').value.trim().slice(0,80);
@@ -2759,6 +2867,8 @@
       if(stNuevo !== (pAnt.stock||0)) bitacora('Conteo de inventario corregido', nombre+': de '+(pAnt.stock||0)+' a '+stNuevo);
       const prNuevo = Math.max(0, parseInt($('pePrecio').value,10)||0);
       if(prNuevo !== (pAnt.precio||0)) bitacora('Precio cambiado', nombre+': de '+money(pAnt.precio||0)+' a '+money(prNuevo));
+      const coNuevo = Math.max(0, parseInt($('peCosto2').value,10)||0);
+      if(coNuevo !== (pAnt.costo||0)) bitacora('Costo cambiado', nombre+': de '+money(pAnt.costo||0)+' a '+money(coNuevo));
       ref.update({
         nombre, categoria: ($('peCat').value.trim()||'Otros').slice(0,40),
         codigo: $('peCodigo').value.replace(/\s/g,'').slice(0,40) || null,
@@ -3113,9 +3223,14 @@
   /* ---------- avisos ---------- */
   function renderAlertas(){
     let html = '';
+    // nota del turno anterior (últimas 24 h)
+    const ultimo = turnos.filter(t=>t.fin && t.nota && (Date.now()-new Date(t.fin))<864e5).sort((a,b)=>b.fin.localeCompare(a.fin))[0];
+    if(ultimo) html += '<div class="alert alert-amber"><strong>Nota del turno anterior ('+esc(ultimo.perfilNombre)+', '+fmtHora(ultimo.fin)+'):</strong> '+esc(ultimo.nota)+'</div>';
+    if(horaDesfase) html += '<div class="alert alert-red"><strong>La hora de este equipo está mal:</strong> va '+Math.abs(horaDesfase)+' min '+(horaDesfase>0?'adelantada':'atrasada')+'. Corríjala en la configuración del equipo, porque los cobros dependen de la hora.</div>';
+    if(espacioLleno) html += '<div class="alert alert-red"><strong>Este equipo se está quedando sin espacio</strong> ('+espacioLleno+'% usado). Libere espacio para que la app pueda seguir guardando sin internet.</div>';
     if(!esStaff()){
       const bajosT = recibeAvisos() ? productos.filter(p=>(p.stock||0)<=minDe(p)) : [];
-      $('alertas').innerHTML = bajosT.length ? '<div class="alert alert-amber"><strong>Tienda — se está acabando:</strong> '+bajosT.slice(0,12).map(p=>esc(p.nombre)+' ('+(p.stock||0)+')').join(' · ')+'</div>' : '';
+      $('alertas').innerHTML = html + (bajosT.length ? '<div class="alert alert-amber"><strong>Tienda — se está acabando:</strong> '+bajosT.slice(0,12).map(p=>esc(p.nombre)+' ('+(p.stock||0)+')').join(' · ')+'</div>' : '');
       return;
     }
     const subs = mensualidades.filter(s=>s.vencimiento && diasHasta(s.vencimiento)<=5);
@@ -3138,9 +3253,10 @@
   }
 
   /* ================= CLIENTES ================= */
-  function upsertCliente(placa, nombre, telefono){
+  function upsertCliente(placa, nombre, telefono, autoriza){
     if(!placa || (!nombre && !telefono)) return;
     const data = { placa };
+    if(autoriza) Object.assign(data, { autorizaDatos:true, fechaAutorizacion:new Date().toISOString() });
     if(nombre) data.nombre = nombre;
     if(telefono) data.telefono = telefono;
     db.collection('clientes').doc(placa).set(data, { merge:true }).catch(errGuardar);
@@ -3150,10 +3266,13 @@
     const q = $('clienteBuscar').value.trim().toLowerCase();
     const visitas = {}, ultima = {};
     historial.forEach(h=>{ visitas[h.placa] = (visitas[h.placa]||0)+1; if(!ultima[h.placa] || h.salida>ultima[h.placa]) ultima[h.placa] = h.salida; });
-    const lista = clientes.filter(c=> !q || (c.nombre||'').toLowerCase().includes(q) || (c.placa||'').toLowerCase().includes(q) || (c.telefono||'').includes(q))
+    const hace30 = new Date(Date.now()-30*864e5).toISOString();
+    const lista = clientes.filter(c=> (!q || (c.nombre||'').toLowerCase().includes(q) || (c.placa||'').toLowerCase().includes(q) || (c.telefono||'').includes(q))
+        && (filtroClientes!=='inactivos' || !ultima[c.placa] || ultima[c.placa] < hace30))
       .sort((a,b)=>(visitas[b.placa]||0)-(visitas[a.placa]||0));
     $('clientesLista').innerHTML = lista.length ? lista.map(c=>
       '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(c.placa)+'</span>'+
+      (c.autorizaDatos?' <span class="chip chip-green">Autorizó datos</span>':'')+
       '<div class="meta">'+esc(c.nombre||'Sin nombre')+(c.telefono?' · '+esc(c.telefono):'')+' · '+(visitas[c.placa]||0)+' visita(s)'+(ultima[c.placa]?' · última '+fmtCorto(new Date(ultima[c.placa])):'')+'</div></div>'+
       '<div class="r"><button class="btn btn-ghost btn-sm" data-ficha="'+esc(c.placa)+'">Ficha</button>'+(c.telefono?'<button class="btn btn-sm btn-green" data-wa="'+esc(c.telefono)+'">WhatsApp</button>':'')+'<button class="btn-icon" data-borrar-cliente="'+esc(c.placa)+'" title="Eliminar">✕</button></div></div>'
     ).join('') : '<div class="empty">Todavía no hay clientes registrados.</div>';
@@ -3164,6 +3283,8 @@
     if(del){ db.collection('clientes').doc(del.dataset.borrarCliente).delete().catch(errGuardar); showToast('Cliente eliminado.'); }
   });
   $('clienteBuscar').addEventListener('input', renderClientes);
+  let filtroClientes = 'todos';
+  $('clienteFiltro').addEventListener('click', e=>{ const b = e.target.closest('[data-f]'); if(!b) return; filtroClientes = b.dataset.f; $('clienteFiltro').querySelectorAll('button').forEach(x=>x.classList.toggle('active', x===b)); renderClientes(); });
   document.addEventListener('click', e=>{ const b = e.target.closest('[data-ficha]'); if(b) abrirFicha(b.dataset.ficha); });
   function abrirFicha(placa){
     const c = clientes.find(x=>x.placa===placa) || { placa };
@@ -3234,11 +3355,15 @@
     if(!esAdmin() || enfocadoDentro('view-ajustes')) return;
     const f = cfg.facturacion;
     $('cfgBrand').value = cfg.brand;
+    $('cfgPie').value = cfg.ticket.pie||''; $('cfgLegal').value = cfg.ticket.legal||'';
     $('factNit').value = f.nit||''; $('factDireccion').value = f.direccion||''; $('factTelefono').value = f.telefono||'';
     $('factPrefijo').value = f.prefijo||'FE'; $('factIva').value = f.ivaPct||0;
     $('cfgFraccion').value = String(cfg.cobro.fraccionMin);
     $('cfgGracia').value = cfg.cobro.graciaMin||0;
     $('cfgPerdido').value = cfg.cobro.ticketPerdido||0;
+    $('cfgPernocta').value = cfg.cobro.pernocta||0;
+    $('cfgRedondeo').value = String(cfg.cobro.redondeo||0);
+    $('cfgConductor').checked = !!cfg.parqueo.pedirConductor;
     renderSimulador();
     $('cfgCierre').value = String(cfg.seguridad.cierreMin);
     $('cfgUmbral').value = cfg.avisosStock.umbral;
@@ -3259,6 +3384,21 @@
     $('factPreview').textContent = (cfg.facturacion.prefijo||'FE')+'-'+pad(contadores.factura||1);
     if(document.activeElement!==$('factConsecutivo')) $('factConsecutivo').value = contadores.factura||1;
   }
+  $('cfgPie').addEventListener('change', ()=> guardarConfig({ ticket:{ pie: $('cfgPie').value.trim().slice(0,120) } }, 'Mensaje del ticket guardado.'));
+  $('cfgLegal').addEventListener('change', ()=> guardarConfig({ ticket:{ legal: $('cfgLegal').value.trim().slice(0,240) } }, 'Texto legal guardado.'));
+  $('cfgLogo').addEventListener('change', e=>{
+    const file = e.target.files[0]; if(!file) return;
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = ()=>{
+      const k = Math.min(1, 160/Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      guardarConfig({ logo: c.toDataURL('image/png') }, 'Logo guardado.');
+      URL.revokeObjectURL(url); e.target.value = '';
+    };
+    img.src = url;
+  });
+  $('btnQuitarLogo').addEventListener('click', ()=> guardarConfig({ logo:null }, 'Logo quitado.'));
   $('cfgBrand').addEventListener('change', ()=> guardarConfig({ brand: $('cfgBrand').value.trim().slice(0,60) || 'Parqueadero' }, 'Nombre actualizado.'));
   [['factNit','nit'],['factDireccion','direccion'],['factTelefono','telefono']].forEach(([id,campo])=>{
     $(id).addEventListener('change', ()=> guardarConfig({ facturacion:{ [campo]: $(id).value.trim().slice(0,100) } }, 'Guardado.'));
@@ -3270,6 +3410,9 @@
     CONT_REF.set({ factura:n }, { merge:true }).then(()=>showToast('Consecutivo actualizado.')).catch(errGuardar);
   });
   $('cfgFraccion').addEventListener('change', ()=> guardarConfig({ cobro:{ fraccionMin: parseInt($('cfgFraccion').value,10)||30 } }, 'Forma de cobro actualizada.'));
+  $('cfgPernocta').addEventListener('change', ()=> guardarConfig({ cobro:{ pernocta: Math.max(0, parseInt($('cfgPernocta').value,10)||0) } }, 'Recargo por noche actualizado.'));
+  $('cfgRedondeo').addEventListener('change', ()=> guardarConfig({ cobro:{ redondeo: parseInt($('cfgRedondeo').value,10)||0 } }, 'Redondeo actualizado.'));
+  $('cfgConductor').addEventListener('change', ()=> guardarConfig({ parqueo:{ pedirConductor: $('cfgConductor').checked } }, 'Guardado.'));
   $('cfgPerdido').addEventListener('change', ()=> guardarConfig({ cobro:{ ticketPerdido: Math.max(0, parseInt($('cfgPerdido').value,10)||0) } }, 'Cobro por ticket perdido actualizado.'));
   $('cfgGracia').addEventListener('change', ()=> guardarConfig({ cobro:{ graciaMin: Math.max(0, Math.min(30, parseInt($('cfgGracia').value,10)||0)) } }, 'Tolerancia actualizada.'));
   $('cfgCierre').addEventListener('change', ()=> guardarConfig({ seguridad:{ cierreMin: parseInt($('cfgCierre').value,10)||0 } }, 'Guardado.'));
@@ -3653,6 +3796,57 @@
   });
   $('btnAyuda').addEventListener('click', ()=> abrirModal('ayudaModal'));
 
+  /* ================= PUESTOS, NOCHES, EDITAR VEHÍCULO ================= */
+  const PREFIJO = { tractomula:'TM', chiva:'CH', bus:'B', carro:'C', moto:'M' };
+  function limpiarPuesto(v){ return String(v||'').toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,8); }
+  // cuántas medianoches pasó el vehículo dentro
+  function nochesEntre(a, b){ const x = new Date(a); x.setHours(0,0,0,0); const y = new Date(b); y.setHours(0,0,0,0); return Math.max(0, Math.round((y-x)/864e5)); }
+  function renderConductorRow(){ $('conductorRow').hidden = !cfg.parqueo.pedirConductor; }
+  let vehEditando = null;
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-editar-veh]'); if(!b) return;
+    const v = activos.find(a=>a.id===b.dataset.editarVeh); if(!v) return;
+    vehEditando = v;
+    $('evTipo').innerHTML = TIPOS.map(t=>'<option value="'+t.id+'">'+t.nombre+'</option>').join('');
+    $('evPlaca').value = v.placa; $('evTipo').value = v.tipo; $('evPuesto').value = v.puesto||''; $('evNota').value = v.nota||'';
+    abrirModal('editVehModal');
+  });
+  $('btnGuardarVeh').addEventListener('click', ()=>{
+    const v = vehEditando; if(!v) return;
+    const placa = limpiarPlaca($('evPlaca').value), puesto = limpiarPuesto($('evPuesto').value) || null;
+    if(placa.length<3){ showToast('Placa no válida.'); return; }
+    if(placa!==v.placa && activos.some(a=>a.placa===placa)){ showToast('Esa placa ya está dentro.'); return; }
+    if(puesto && activos.some(a=>a.puesto===puesto && a.id!==v.id)){ showToast('Ese puesto ya está ocupado.'); return; }
+    db.collection('activos').doc(v.id).update({ placa, tipo:$('evTipo').value, puesto, nota:$('evNota').value.trim().slice(0,80)||null }).catch(errGuardar);
+    if(placa!==v.placa) bitacora('Placa corregida', v.placa+' → '+placa+' · '+v.codigoIngreso);
+    if($('evTipo').value!==v.tipo) bitacora('Tipo de vehículo corregido', placa+': '+nombreFor(v.tipo)+' → '+nombreFor($('evTipo').value));
+    cerrarModal('editVehModal');
+    showToast('Vehículo actualizado.');
+  });
+  $('btnSalidaExacta').addEventListener('click', ()=>{ pagoSalida.exacto(); $('btnConfirmarSalida').click(); });
+
+  /* ---------- hora del equipo y espacio de almacenamiento ---------- */
+  let horaDesfase = 0, espacioLleno = 0;
+  async function revisarEquipo(){
+    if(navigator.onLine && /^https?:$/.test(location.protocol)){
+      try{
+        const r = await fetch(location.href.split('#')[0], { method:'HEAD', cache:'no-store' });
+        const srv = new Date(r.headers.get('Date'));
+        if(!isNaN(srv)){ const dif = Math.round((Date.now()-srv)/60000); horaDesfase = Math.abs(dif)>=3 ? dif : 0; }
+      }catch(e){}
+    }
+    try{
+      if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+      if(navigator.storage && navigator.storage.estimate){
+        const est = await navigator.storage.estimate();
+        const pct = est.quota ? Math.round(est.usage*100/est.quota) : 0;
+        espacioLleno = pct>=80 ? pct : 0;
+      }
+    }catch(e){}
+    renderAlertas();
+  }
+  setInterval(()=>{ if(perfil) revisarEquipo(); }, 30*60000);
+
   /* ================= BITÁCORA ================= */
   function bitacora(accion, detalle){
     if(!perfil) return;
@@ -3764,6 +3958,11 @@
   });
 
   function diasParaVencer(p){ return p.vence ? diasHasta(p.vence) : null; }
+  function sinMovimiento(p){
+    const hace = new Date(Date.now()-30*864e5).toISOString();
+    if((p.creado||'') > hace) return false;
+    return !ventas.some(v=> v.fecha>=hace && v.items.some(i=>i.productoId===p.id));
+  }
 
   /* ================= INVENTARIO: GANANCIA ================= */
   function gananciaHTML(costo, precio){
@@ -3852,6 +4051,7 @@
     const linea = ()=> txt('-'.repeat(cols));
     const dos = (a,c)=>{ a=String(a); c=String(c); const esp = cols-a.length-c.length; if(esp>0) txt(a+' '.repeat(esp)+c); else{ txt(a); txt(' '.repeat(Math.max(0, cols-c.length))+c); } };
     b.push(ESC,0x40, ESC,0x74,0x02);                 // reiniciar, página 850
+    if(IMP.cfg.cajon && t.efectivo) b.push(...PULSO_CAJON);
     b.push(ESC,0x61,1, ESC,0x45,1, GS,0x21,0x11); txt(cfg.brand); b.push(GS,0x21,0, ESC,0x45,0);
     if(f.direccion) txt(f.direccion);
     if(f.nit) txt('NIT '+f.nit);
@@ -3892,7 +4092,7 @@
   }
   function renderImpresora(){
     const bt = IMP.cfg.modo==='bluetooth', con = !!IMP.car;
-    $('impModo').value = IMP.cfg.modo; $('impAncho').value = String(IMP.cfg.ancho); $('impAuto').checked = !!IMP.cfg.auto;
+    $('impModo').value = IMP.cfg.modo; $('impAncho').value = String(IMP.cfg.ancho); $('impAuto').checked = !!IMP.cfg.auto; $('impCajon').checked = !!IMP.cfg.cajon;
     $('impEstado').textContent = !bt ? 'Impresora del computador' : con ? 'Conectada: '+IMP.cfg.nombre : IMP.cfg.nombre ? IMP.cfg.nombre+' (desconectada)' : 'Sin impresora Bluetooth';
     $('impDetalle').textContent = !bt ? 'Se abre el cuadro de imprimir del navegador.' : con ? 'Papel de '+IMP.cfg.ancho+' mm'+(IMP.cfg.auto?' · imprime sola':'') : 'Toque "Buscar impresora Bluetooth".';
     $('impIc').className = 'ic ' + (!bt ? 'ic-azul' : con ? 'ic-verde' : 'ic-rojo');
@@ -3902,6 +4102,13 @@
   $('impModo').addEventListener('change', ()=>{ IMP.cfg.modo = $('impModo').value; guardarImp(); });
   $('impAncho').addEventListener('change', ()=>{ IMP.cfg.ancho = parseInt($('impAncho').value,10)||58; guardarImp(); });
   $('impAuto').addEventListener('change', ()=>{ IMP.cfg.auto = $('impAuto').checked; guardarImp(); });
+  $('impCajon').addEventListener('change', ()=>{ IMP.cfg.cajon = $('impCajon').checked; guardarImp(); });
+  // pulso ESC p: abre el cajón conectado al puerto RJ11 de la impresora
+  const PULSO_CAJON = [0x1B,0x70,0x00,0x19,0xFA];
+  $('btnAbrirCajon').addEventListener('click', async ()=>{
+    if(IMP.cfg.modo!=='bluetooth' || !(await conectarImpresora())){ showToast('El cajón se abre por la impresora Bluetooth. Conéctela primero.'); return; }
+    try{ await enviarBT(new Uint8Array(PULSO_CAJON)); }catch(e){ showToast('No se pudo abrir el cajón.'); }
+  });
   $('btnProbarImp').addEventListener('click', ()=>{
     const ahora = new Date().toISOString();
     const lineas = ['Prueba de impresión', 'Fecha: '+fmtFechaHora(ahora), 'Placa: ABC123', 'TOTAL: '+money(12500), '', 'Tildes: á é í ó ú ñ Ñ ¿?'];
@@ -3982,13 +4189,18 @@
       const total = Math.max(cupo, dentro.length);
       libres += Math.max(0, cupo-dentro.length);
       let celdas = '';
+      // los que tienen puesto van en su celda; los demás llenan las celdas libres en orden
+      const etiquetas = Array.from({length:total}, (_,i)=> PREFIJO[t.id]+'-'+String(i+1).padStart(2,'0'));
+      const enCelda = etiquetas.map(et=> dentro.find(v=>v.puesto===et) || null);
+      const sinPuesto = dentro.filter(v=> !etiquetas.includes(v.puesto));
+      for(let i=0;i<total;i++) if(!enCelda[i] && sinPuesto.length) enCelda[i] = sinPuesto.shift();
       for(let i=0;i<total;i++){
-        const v = dentro[i];
+        const v = enCelda[i];
         if(v){
           const min = (ahora - new Date(v.entrada))/60000;
           celdas += '<button class="spot ocupado'+(min>cfg.parqueo.horasAlerta*60?' largo':'')+'" data-spot="'+esc(v.id)+'" title="'+esc(v.placa)+' · entró '+fmtHora(v.entrada)+'">'+t.icon+
-            '<span class="pl">'+esc(v.placa)+'</span><span class="t">'+fmtDuracion(min)+'</span></button>';
-        }else celdas += '<div class="spot"><span class="n">'+t.nombre.slice(0,1)+'-'+String(i+1).padStart(2,'0')+'</span>Libre</div>';
+            '<span class="pl">'+esc(v.placa)+'</span><span class="t">'+(v.puesto?esc(v.puesto)+' · ':'')+fmtDuracion(min)+'</span></button>';
+        }else celdas += '<div class="spot"><span class="n">'+etiquetas[i]+'</span>Libre</div>';
       }
       mapa += '<div class="mapa-zona"><div class="z"><span class="ic sm ic-azul">'+t.icon+'</span>'+t.nombre+
         ' <span class="muted">'+dentro.length+(cupo?'/'+cupo:' dentro')+'</span></div><div class="spots">'+celdas+'</div></div>';
