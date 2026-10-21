@@ -24,7 +24,8 @@
     --accent:#ffc800; --accent-ink:#1c1b17; --accent-soft:#fff1b8; --accent-text:#8a6a00;
     --green:#2f7a4c; --green-soft:#e1efe3; --red:#b8322a; --red-soft:#f6e1dc; --blue:#2c5d8f; --blue-soft:#e0e9f2;
     --side:#e6e1d5; --side-text:#3a372f; --side-muted:#7a7465; --side-hover:#dcd6c8; --side-line:#cfc8b8;
-    --radius:4px; --shadow:none;
+    --radius:12px; --radius-sm:8px; --shadow:none;
+    --serie-1:#2266c4; --serie-2:#b8860b;
     --display:'Barlow Condensed','Arial Narrow','Roboto Condensed',sans-serif;
     --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
     --mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
@@ -36,6 +37,7 @@
       --accent-soft:#3a3010; --accent-text:#ffc800;
       --green:#6cc38d; --green-soft:#17281d; --red:#ec7b6f; --red-soft:#341a17; --blue:#86b1dc; --blue-soft:#18232f;
       --side:#0f0f0e; --side-text:#cfcabd; --side-muted:#7f7a6d; --side-hover:#1e1e1c; --side-line:#2a2926;
+      --serie-1:#3f84d6; --serie-2:#b07f00;
     }
   }
   :root[data-theme="dark"]{
@@ -44,6 +46,7 @@
     --accent-soft:#3a3010; --accent-text:#ffc800;
     --green:#6cc38d; --green-soft:#17281d; --red:#ec7b6f; --red-soft:#341a17; --blue:#86b1dc; --blue-soft:#18232f;
     --side:#0f0f0e; --side-text:#cfcabd; --side-muted:#7f7a6d; --side-hover:#1e1e1c; --side-line:#2a2926;
+    --serie-1:#3f84d6; --serie-2:#b07f00;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -55,7 +58,7 @@
   .hazard{height:6px;background:repeating-linear-gradient(-45deg,var(--accent) 0 10px,#1c1b17 10px 20px);}
 
   /* ---------- botones e inputs ---------- */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line-2);border-radius:var(--radius);padding:8px 13px;font-size:13.5px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text);transition:background .1s,border-color .1s,color .1s;white-space:nowrap;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:8px 13px;font-size:13.5px;font-weight:600;cursor:pointer;background:var(--surface);color:var(--text);transition:background .1s,border-color .1s,color .1s;white-space:nowrap;}
   .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
   .btn:hover:not(:disabled){border-color:var(--ink);}
   .btn:active:not(:disabled){transform:translateY(1px);}
@@ -74,7 +77,7 @@
   .btn-icon{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px 6px;border-radius:var(--radius);line-height:1;}
   .btn-icon:hover{color:var(--red);background:var(--red-soft);}
   .w100{width:100%;}
-  .input, .select{background:var(--surface);border:1px solid var(--line-2);color:var(--text);border-radius:var(--radius);padding:8px 10px;font-size:13.5px;font-family:inherit;min-width:0;}
+  .input, .select{background:var(--surface);border:1px solid var(--line-2);color:var(--text);border-radius:var(--radius-sm);padding:8px 10px;font-size:13.5px;font-family:inherit;min-width:0;}
   .input::placeholder{color:var(--muted);opacity:.75;}
   .input:focus, .select:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px var(--accent-soft);}
   .mono{font-family:var(--mono);}
@@ -121,7 +124,7 @@
   .side-brand{display:flex;align-items:center;gap:10px;padding:16px 16px 14px;border-bottom:1px solid var(--side-line);}
   .side-brand .name{font:600 19px/1.05 var(--display);text-transform:uppercase;letter-spacing:.01em;color:var(--text);word-break:break-word;}
   .nav{display:flex;flex-direction:column;flex:1;overflow-y:auto;padding:10px 0;}
-  .nav-btn{display:flex;align-items:center;gap:11px;background:none;border:none;border-left:3px solid transparent;color:var(--side-text);padding:9px 16px 9px 13px;font-size:14px;font-weight:500;cursor:pointer;text-align:left;}
+  .nav-btn{display:flex;align-items:center;gap:11px;background:none;border:none;border-left:3px solid transparent;color:var(--side-text);padding:9px 16px 9px 13px;margin:1px 10px 1px 0;border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:14px;font-weight:500;cursor:pointer;text-align:left;}
   .nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:.8;}
   .nav-btn:hover{background:var(--side-hover);}
   .nav-btn.active{border-left-color:var(--accent);background:var(--surface);color:var(--text);font-weight:700;}
@@ -353,6 +356,71 @@
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;animation:none !important;} }
 
+  /* ---------- panel ---------- */
+  .saludo{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .saludo h2{margin:0;font:600 30px/1.05 var(--display);text-transform:uppercase;}
+  .saludo p{margin:4px 0 0;color:var(--muted);}
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px;}
+  @media (max-width: 1000px){ .stats{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  @media (max-width: 560px){ .stat{flex-direction:column;align-items:flex-start;gap:8px;padding:12px;} .stat .v{font-size:26px;} .saludo h2{font-size:24px;} }
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;gap:14px;align-items:center;min-width:0;}
+  .ic{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ic svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .ic.sm{width:34px;height:34px;} .ic.sm svg{width:18px;height:18px;}
+  .ic-azul{background:var(--blue-soft);color:var(--blue);}
+  .ic-amarillo{background:var(--accent-soft);color:var(--accent-text);}
+  .ic-verde{background:var(--green-soft);color:var(--green);}
+  .ic-rojo{background:var(--red-soft);color:var(--red);}
+  .ic-tinta{background:var(--ink);color:var(--ink-text);}
+  .stat .l{font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+  .stat .v{font:600 30px/1.05 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .stat .s{font-size:12px;color:var(--muted);}
+  .dash{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start;}
+  .dash > .card + .card, .dash .col > .card + .card{margin-top:0;}
+  .dash .col{display:flex;flex-direction:column;gap:16px;min-width:0;}
+  @media (max-width: 1100px){ .dash{grid-template-columns:minmax(0,1fr);} }
+  .mapa-zona{margin-bottom:14px;}
+  .mapa-zona:last-child{margin-bottom:0;}
+  .mapa-zona .z{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;margin-bottom:8px;}
+  .mapa-zona .z .muted{font-weight:400;font-family:var(--mono);font-size:11.5px;}
+  .spots{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;}
+  .spot{border-radius:var(--radius-sm);border:1.5px dashed var(--line-2);min-height:64px;padding:7px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;color:var(--muted);background:transparent;font-family:inherit;}
+  .spot .n{font:500 10px var(--mono);opacity:.7;}
+  .spot.ocupado{border:1.5px solid var(--ink);background:var(--surface-2);color:var(--text);cursor:pointer;}
+  .spot.ocupado:hover{background:var(--accent-soft);}
+  .spot.ocupado svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .spot .pl{font:700 12px/1 var(--display);letter-spacing:.06em;background:#f7c600;color:#111;border:1px solid #111;border-radius:3px;padding:2px 4px 1px;}
+  .spot.largo{border-color:var(--red);}
+  .spot.largo .t{color:var(--red);font-weight:600;}
+  .leyenda{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px;}
+  .leyenda i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px;}
+  .chart{width:100%;height:auto;display:block;overflow:visible;}
+  .chart text{font-family:var(--sans);font-size:11px;fill:var(--muted);}
+  .chart .val{fill:var(--text);font-weight:600;}
+  .chart .grid{stroke:var(--line);stroke-width:1;}
+  .chart rect.bar:hover{opacity:.8;}
+  .mini-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .mini-row:last-child{border-bottom:none;}
+  .mini-row .t{flex:1;min-width:0;}
+  .mini-row .t .meta{margin-top:1px;}
+  .barra{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:5px;}
+  .barra > i{display:block;height:100%;border-radius:4px;background:var(--serie-1);}
+
+  /* ---------- campana y avisos ---------- */
+  .icon-btn{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .icon-btn:hover{border-color:var(--ink);}
+  .icon-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .icon-btn .cnt{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--red);color:#fff;font:600 10.5px/18px var(--mono);text-align:center;padding:0 4px;}
+  .icon-btn.ok::after{content:'';position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--surface);}
+  .notif-panel{position:fixed;top:64px;right:16px;width:340px;max-width:calc(100vw - 32px);max-height:70vh;overflow-y:auto;background:var(--surface);border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:0 12px 32px rgba(20,20,19,.18);z-index:300;padding:14px 16px;}
+  .notif-panel h4{margin:0 0 6px;font:600 20px/1.1 var(--display);text-transform:uppercase;}
+  .margen{margin-top:12px;font-size:13px;padding:9px 12px;border-radius:var(--radius-sm);background:var(--surface-2);}
+  .margen strong{font-family:var(--mono);}
+  .margen.mal{background:var(--red-soft);color:var(--red);}
+  .switch{display:flex;align-items:center;gap:9px;font-size:13.5px;padding:7px 0;cursor:pointer;}
+  .switch input{accent-color:#1c1b17;width:17px;height:17px;}
+  .estado-imp{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--radius-sm);background:var(--surface-2);margin-bottom:14px;}
+
   /* ---------- bloqueo con PIN ---------- */
   .lock{position:fixed;inset:0;z-index:800;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px;}
   .lock-box{width:100%;max-width:320px;text-align:center;}
@@ -435,12 +503,36 @@
       <button class="btn btn-sm menu-btn" id="btnMenu" type="button" aria-label="Abrir menú"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <h1 id="viewTitle">Parqueo</h1>
       <span class="sync" id="syncInfo"></span>
+      <button class="icon-btn" id="btnImpresora" type="button" title="Impresora" aria-label="Impresora"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg></button>
+      <button class="icon-btn" id="btnCampana" type="button" title="Avisos" aria-label="Avisos"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 20a1.9 1.9 0 0 0 3.4 0"/></svg><span class="cnt" id="campanaCnt" hidden>0</span></button>
       <span class="net" id="netStatus" hidden>Sin conexión</span>
       <div class="clock"><div class="t" id="clockTime">--:--:--</div><div class="d" id="clockDate">-</div></div>
     </header>
 
     <div class="content">
       <div id="alertas"></div>
+
+      <!-- ===== PANEL ===== -->
+      <section class="view" id="view-panel">
+        <div class="saludo"><div><h2 id="panelSaludo">Buen día</h2><p id="panelFecha"></p></div>
+          <button class="btn btn-primary" data-ir="parqueo">Registrar un vehículo</button></div>
+        <div class="stats" id="panelStats"></div>
+        <div class="dash">
+          <div class="col">
+            <div class="card"><h2 class="card-title">Mapa del parqueadero<span class="sp"></span><span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400;" id="mapaResumen"></span></h2>
+              <div id="panelMapa"></div>
+              <div class="leyenda"><span><i style="background:var(--surface-2);border:1.5px solid var(--ink);"></i>Ocupado</span><span><i style="border:1.5px dashed var(--line-2);"></i>Libre</span><span><i style="border:1.5px solid var(--red);"></i>Más de 8 horas</span></div>
+            </div>
+            <div class="card"><h2 class="card-title">Ingresos de los últimos 7 días</h2><div id="panelSemana"></div></div>
+          </div>
+          <div class="col">
+            <div class="card"><h2 class="card-title">Carros dentro por hora (hoy)</h2><div id="panelHoras"></div></div>
+            <div class="card"><h2 class="card-title">Inventario por acabarse<span class="sp"></span><button class="btn btn-ghost btn-sm" data-ir="inventario">Ver inventario</button></h2><div id="panelStock"></div></div>
+            <div class="card"><h2 class="card-title">Más vendido este mes</h2><div id="panelTop"></div></div>
+            <div class="card"><h2 class="card-title">Mensualidades por vencer</h2><div id="panelSubs"></div></div>
+          </div>
+        </div>
+      </section>
 
       <!-- ===== PARQUEO ===== -->
       <section class="view" id="view-parqueo">
@@ -519,19 +611,20 @@
           <div class="row">
             <div class="field grow"><label for="prodNombre">Nombre</label><input class="input" id="prodNombre" placeholder="Ej. Coca-Cola 400 ml"></div>
             <div class="field" style="width:150px;"><label for="prodCategoria">Categoría</label><input class="input" id="prodCategoria" list="categoriasList" placeholder="Gaseosas"></div>
-            <div class="field" style="width:120px;"><label for="prodPrecio">Precio venta</label><input class="input mono" id="prodPrecio" type="number" min="0" step="100" placeholder="3000"></div>
-            <div class="field" style="width:120px;"><label for="prodCosto">Costo</label><input class="input mono" id="prodCosto" type="number" min="0" step="100" placeholder="2000"></div>
-            <div class="field" style="width:95px;"><label for="prodStock">Stock inicial</label><input class="input mono" id="prodStock" type="number" min="0" step="1" placeholder="24"></div>
-            <div class="field" style="width:95px;"><label for="prodMin">Avisar con</label><input class="input mono" id="prodMin" type="number" min="0" step="1" placeholder="5"></div>
+            <div class="field" style="width:140px;"><label for="prodCosto">¿Cuánto le costó?</label><input class="input mono" id="prodCosto" type="number" min="0" step="100" placeholder="2000"></div>
+            <div class="field" style="width:140px;"><label for="prodPrecio">¿A cómo lo vende?</label><input class="input mono" id="prodPrecio" type="number" min="0" step="100" placeholder="3000"></div>
+            <div class="field" style="width:100px;"><label for="prodStock">Unidades</label><input class="input mono" id="prodStock" type="number" min="0" step="1" placeholder="24"></div>
+            <div class="field" style="width:130px;"><label for="prodMin">Avisar cuando queden</label><input class="input mono" id="prodMin" type="number" min="0" step="1" value="5"></div>
             <button class="btn btn-primary" id="btnAddProducto">Agregar</button>
           </div>
+          <div class="margen" id="prodMargen">Escriba cuánto le costó y a cómo lo vende para ver la ganancia.</div>
           <datalist id="categoriasList"></datalist>
         </div>
         <div class="card">
           <h2 class="card-title">Inventario<span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnInvExcel">Descargar Excel</button></h2>
           <div class="filters"><input type="text" class="input" id="invBuscar" placeholder="Buscar producto..."></div>
-          <div class="scroll-x"><table class="table" style="min-width:640px;">
-            <thead><tr><th>Producto</th><th>Categoría</th><th class="num">Precio</th><th class="num">Costo</th><th class="num">Stock</th><th></th></tr></thead>
+          <div class="scroll-x"><table class="table" style="min-width:760px;">
+            <thead><tr><th>Producto</th><th>Categoría</th><th class="num">Le costó</th><th class="num">Lo vende a</th><th class="num">Gana</th><th class="num">Quedan</th><th></th></tr></thead>
             <tbody id="invTabla"></tbody>
           </table></div>
           <div class="hint">Usa <strong>+ Entrada</strong> cuando llegue mercancía nueva. Cada venta descuenta el stock sola.</div>
@@ -650,6 +743,16 @@
             <h2 class="card-title" style="margin-top:20px;">Seguridad</h2>
             <div class="field"><label for="cfgCierre">Cerrar sesión sola si nadie usa el equipo por</label>
               <select class="select" id="cfgCierre"><option value="0">Nunca</option><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="480">8 horas</option></select></div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Avisos de inventario</h2>
+            <div class="field" style="max-width:240px;"><label for="cfgUmbral">Avisar cuando queden (unidades)</label><input class="input mono" id="cfgUmbral" type="number" min="0" max="999" step="1"></div>
+            <div class="lbl" style="margin:14px 0 4px;">¿A quién le llega el aviso?</div>
+            <label class="switch"><input type="checkbox" data-rol-aviso="admin"> Administrador</label>
+            <label class="switch"><input type="checkbox" data-rol-aviso="secretaria"> Secretaria</label>
+            <label class="switch"><input type="checkbox" data-rol-aviso="trabajador"> Trabajador (vendedor)</label>
+            <div class="hint">Aplica a los productos que no tengan su propio número de aviso. Cada persona debe tocar la campana y "Activar notificaciones" una vez en su equipo.</div>
           </div>
 
           <div class="card span2">
@@ -782,6 +885,32 @@
   </div>
 </div>
 
+<!-- ===== AVISOS (campana) ===== -->
+<div class="notif-panel" id="notifPanel" hidden>
+  <h4>Avisos</h4>
+  <div id="notifLista"></div>
+  <button class="btn btn-sm w100" id="btnPermisoNotif" style="margin-top:10px;" hidden>Activar notificaciones en este equipo</button>
+</div>
+
+<!-- ===== MODAL IMPRESORA ===== -->
+<div class="modal" id="impresoraModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Impresora</h3><button class="modal-close" data-close="impresoraModal">✕</button></div>
+    <div class="estado-imp"><div class="ic" id="impIc"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg></div><div><strong id="impEstado">Sin impresora</strong><div class="meta" id="impDetalle"></div></div></div>
+    <div class="field"><label for="impModo">Imprimir con</label>
+      <select class="select" id="impModo"><option value="navegador">Impresora del computador (cuadro de imprimir)</option><option value="bluetooth">Impresora térmica Bluetooth</option></select></div>
+    <div class="form-grid" style="margin-top:12px;">
+      <div class="field"><label for="impAncho">Ancho del papel</label><select class="select" id="impAncho"><option value="58">58 mm</option><option value="80">80 mm</option></select></div>
+      <div class="field"><label>&nbsp;</label><label class="switch" style="padding:8px 0;"><input type="checkbox" id="impAuto"> Imprimir solo, sin tocar el botón</label></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btnBuscarImp">Buscar impresora Bluetooth</button>
+      <button class="btn" id="btnProbarImp">Imprimir prueba</button>
+    </div>
+    <div class="hint">Funciona en Chrome o Edge de Android, Windows y Mac (no en iPhone). La impresora debe ser Bluetooth BLE (casi todas las térmicas de 58 mm lo son). Prenda la impresora, toque <strong>Buscar</strong> y elíjala de la lista.</div>
+  </div>
+</div>
+
 <!-- ===== PANTALLA BLOQUEADA (funciona sin internet) ===== -->
 <div class="lock" id="lockScreen" hidden>
   <div class="lock-box">
@@ -845,6 +974,13 @@
   ];
 
   const ICONOS = {
+    panel:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="2"/><rect x="13" y="3" width="8" height="6" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="15" width="8" height="6" rx="2"/></svg>',
+    dinero:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg>',
+    bolsa:'<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+    medidor:'<svg viewBox="0 0 24 24"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/></svg>',
+    alerta:'<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></svg>',
+    caja2:'<svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg>',
+    calendario:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
     parqueo:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>',
     tienda:'<svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v8h14v-8"/></svg>',
     inventario:'<svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>',
@@ -859,6 +995,7 @@
   const TODOS = ['admin','secretaria','trabajador'];
   const STAFF = ['admin','secretaria'];
   const VISTAS = [
+    { id:'panel', nombre:'Panel', roles:STAFF },
     { id:'parqueo', nombre:'Parqueo', roles:TODOS },
     { id:'tienda', nombre:'Tienda', roles:TODOS },
     { id:'inventario', nombre:'Inventario', roles:STAFF },
@@ -907,7 +1044,8 @@
       servicios: [], empresas: [],
       facturacion: { nit:'', direccion:'', telefono:'', prefijo:'FE', ivaPct:0 },
       cobro: { fraccionMin:30, graciaMin:0 },
-      seguridad: { cierreMin:60 }
+      seguridad: { cierreMin:60 },
+      avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] }
     };
   }
   function mergeConfig(d){
@@ -919,6 +1057,7 @@
     out.facturacion = Object.assign(defaultConfig().facturacion, d.facturacion||{});
     out.cobro = Object.assign(defaultConfig().cobro, d.cobro||{});
     out.seguridad = Object.assign(defaultConfig().seguridad, d.seguridad||{});
+    out.avisosStock = Object.assign(defaultConfig().avisosStock, d.avisosStock||{});
     out.servicios = Array.isArray(d.servicios) ? d.servicios : [];
     out.empresas = Array.isArray(d.empresas) ? d.empresas : [];
     return out;
@@ -936,6 +1075,7 @@
   let categoriaPOS = '';
   let histModo = 'parqueo';
   let histMesExtra = null;
+  let imprimirAlAbrir = false;
 
   /* ---------- utilidades ---------- */
   const $ = (id) => document.getElementById(id);
@@ -1152,27 +1292,29 @@
   /* ---------- navegación ---------- */
   function vistasPermitidas(){ return VISTAS.filter(v=> perfil && v.roles.includes(perfil.rol)); }
   function renderNav(){
-    const bajos = productos.filter(p=> (p.stock||0) <= (p.stockMin||0)).length;
+    const bajos = productos.filter(p=> (p.stock||0) <= minDe(p)).length;
     $('nav').innerHTML = vistasPermitidas().map((v,i)=>
       '<button class="nav-btn'+(v.id===vistaActual?' active':'')+'" data-vista="'+v.id+'">'+ICONOS[v.id]+'<span>'+v.nombre+'</span>'+
-      (v.id==='inventario' && bajos ? '<span class="dot">'+bajos+'</span>' : '')+'<kbd title="Alt + '+(i+1)+'">'+(i+1)+'</kbd></button>'
+      (v.id==='inventario' && bajos ? '<span class="dot">'+bajos+'</span>' : '')+'<kbd title="Alt + '+((i+1)%10)+'">'+((i+1)%10)+'</kbd></button>'
     ).join('');
   }
   function irA(vista){
     if(!vistasPermitidas().some(v=>v.id===vista)) vista = 'parqueo';
+    $('notifPanel').hidden = true;
     vistaActual = vista;
     document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active', s.id==='view-'+vista));
     $('viewTitle').textContent = VISTAS.find(v=>v.id===vista).nombre;
     $('app').classList.remove('menu-open');
     renderNav();
     if(vista==='parqueo') setTimeout(()=>$('placaInput').focus(), 50);
+    if(vista==='panel') renderPanel();
     if(vista==='tienda') setTimeout(()=>$('posBuscar').focus(), 50);
   }
   // Alt + número abre la sección (el mismo número que se ve en el menú)
   document.addEventListener('keydown', e=>{
     if(!perfil || !e.altKey || e.ctrlKey || e.metaKey) return;
     const n = parseInt(e.key, 10);
-    const v = vistasPermitidas()[n-1];
+    const v = isNaN(n) ? null : vistasPermitidas()[(n===0 ? 10 : n)-1];
     if(v){ e.preventDefault(); irA(v.id); }
   });
   $('nav').addEventListener('click', e=>{ const b = e.target.closest('[data-vista]'); if(b) irA(b.dataset.vista); });
@@ -1292,9 +1434,10 @@
     $('app').hidden = false;
     $('userNombre').textContent = perfil.nombre;
     $('userRol').textContent = rolLabel(perfil.rol);
-    vistaActual = 'parqueo';
+    vistaActual = esStaff() ? 'panel' : 'parqueo';
+    stockPrevio = null;
     escuchar();
-    irA('parqueo');
+    irA(vistaActual);
     renderTodo();
     if(esAdmin()) migrarDatosAntiguos();
   }
@@ -1438,7 +1581,7 @@
     const desde = inicioVentana().toISOString();
     escuchas.push(CONFIG_REF.onSnapshot(s=>{
       cfg = mergeConfig(s.exists ? s.data() : {});
-      programar(renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja);
+      programar(renderBrand, renderTipos, renderTipoSelect, renderActivos, renderRates, renderServicios, renderEmpresas, renderAjustes, renderCaja, renderPanel, renderInventario, renderAlertas, renderCampana, renderNav);
     }, errEscucha));
     escuchas.push(CONT_REF.onSnapshot(s=>{
       contadores = Object.assign({ ticket:1, factura:1, venta:1 }, s.exists ? s.data() : {});
@@ -1446,23 +1589,24 @@
     }, errEscucha));
     escuchas.push(db.collection('activos').onSnapshot(q=>{
       activos = docs(q);
-      programar(renderActivos, renderTipos, renderKpis, renderTurnoBar);
+      programar(renderActivos, renderTipos, renderKpis, renderTurnoBar, renderPanel);
     }, errEscucha));
     escuchas.push(db.collection('productos').onSnapshot(q=>{
       productos = docs(q).sort((a,b)=> (a.nombre||'').localeCompare(b.nombre||''));
-      programar(renderPOS, renderCarrito, renderInventario, renderAlertas, renderNav);
+      revisarStock();
+      programar(renderPOS, renderCarrito, renderInventario, renderAlertas, renderNav, renderPanel, renderCampana);
     }, errEscucha));
     escuchas.push(db.collection('mensualidades').onSnapshot(q=>{
       mensualidades = docs(q);
-      programar(renderSubs, renderAlertas, checkPlaca);
+      programar(renderSubs, renderAlertas, checkPlaca, renderPanel);
     }, errEscucha));
     escuchas.push(db.collection('historial').where('salida','>=',desde).onSnapshot(q=>{
       historial = docs(q).sort((a,b)=> b.salida.localeCompare(a.salida));
-      programar(renderHistorial, renderCaja, renderKpis, renderClientes, renderTurnos, renderTurnoBar);
+      programar(renderHistorial, renderCaja, renderKpis, renderClientes, renderTurnos, renderTurnoBar, renderPanel);
     }, errEscucha));
     escuchas.push(db.collection('ventas').where('fecha','>=',desde).onSnapshot(q=>{
       ventas = docs(q).sort((a,b)=> b.fecha.localeCompare(a.fecha));
-      programar(renderVentasHoy, renderHistorial, renderCaja, renderKpis, renderTurnos, renderTurnoBar);
+      programar(renderVentasHoy, renderHistorial, renderCaja, renderKpis, renderTurnos, renderTurnoBar, renderPanel);
     }, errEscucha));
     escuchas.push(db.collection('turnos').where('inicio','>=',desde).onSnapshot(q=>{
       turnos = docs(q);
@@ -1479,7 +1623,7 @@
   function renderTodo(){
     programar(renderBrand, renderNav, renderTipos, renderTipoSelect, renderActivos, renderKpis, renderTurnoBar, renderPOS, renderCarrito,
       renderVentasHoy, renderInventario, renderCaja, renderHistorial, renderSubs, renderClientes, renderTurnos, renderAlertas,
-      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed);
+      renderRates, renderServicios, renderEmpresas, renderAjustes, renderUsuarios, renderFactPreview, renderRed, renderPanel, renderCampana);
   }
 
   function renderBrand(){
@@ -1590,7 +1734,7 @@
       $('placaInput').value = ''; $('placaInfo').innerHTML = '';
       fotoPendiente = null; $('fotoInput').value = ''; $('fotoPreview').hidden = true;
       showToast(placa+' registrada.');
-      mostrarTicketIngreso(v);
+      imprimirAlAbrir = true; mostrarTicketIngreso(v);
     }finally{
       ingresando = false; $('btnIngresar').disabled = false;
     }
@@ -1815,7 +1959,7 @@
       batch.commit().catch(errGuardar);
       salidaId = null;
       cerrarModal('salidaModal');
-      mostrarRecibo(r);
+      imprimirAlAbrir = true; mostrarRecibo(r);
     }finally{ $('btnConfirmarSalida').disabled = false; }
   });
 
@@ -1839,6 +1983,8 @@
       $('tkTelefono').value = c ? (c.telefono||'') : '';
     }
     abrirModal('ticketModal');
+    const auto = imprimirAlAbrir; imprimirAlAbrir = false;
+    if(auto && IMP.cfg.auto && IMP.cfg.modo==='bluetooth') imprimirTicket(t, true);
   }
 
   function mostrarTicketIngreso(v){
@@ -1920,7 +2066,7 @@
     const num = ticketActual.placa ? formatearWhatsapp($('tkTelefono').value) : '';
     window.open('https://wa.me/'+(num||'')+'?text='+encodeURIComponent(texto), '_blank', 'noopener');
   });
-  $('btnTkImprimir').addEventListener('click', ()=>{ if(ticketActual) imprimirHTML(ticketActual.html); });
+  $('btnTkImprimir').addEventListener('click', ()=>{ if(ticketActual) imprimirTicket(ticketActual); });
   $('btnTkPDF').addEventListener('click', ()=>{ if(ticketActual) pdfTicket(cfg.brand, ticketActual.lineas, ticketActual.archivo, ticketActual.codigo); });
 
   $('btnActivosExcel').addEventListener('click', ()=>{
@@ -2005,7 +2151,7 @@
     if(lista.length===0){ $('posProductos').innerHTML = '<div class="empty" style="grid-column:1/-1;">Ningún producto coincide.</div>'; return; }
     $('posProductos').innerHTML = lista.map(p=>{
       const disp = (p.stock||0) - (carrito[p.id]||0);
-      const bajo = (p.stock||0) <= (p.stockMin||0);
+      const bajo = (p.stock||0) <= minDe(p);
       return '<button class="prod" data-prod="'+esc(p.id)+'"'+(disp<=0?' disabled':'')+'>'+
         '<span class="pn">'+esc(p.nombre)+'</span><span class="pc">'+esc(p.categoria||'Otros')+'</span>'+
         '<span class="pp">'+money(p.precio)+'</span>'+
@@ -2073,7 +2219,7 @@
       carrito = {};
       pagoPOS.reset();
       renderCarrito(); renderPOS();
-      mostrarReciboVenta(venta);
+      imprimirAlAbrir = true; mostrarReciboVenta(venta);
     }finally{ $('btnCobrarVenta').disabled = Object.keys(carrito).length===0; }
   });
 
@@ -2121,19 +2267,20 @@
     $('invProductos').textContent = productos.length;
     $('invUnidades').textContent = productos.reduce((s,p)=>s+Math.max(0,p.stock||0),0);
     $('invValor').textContent = money(productos.reduce((s,p)=>s+Math.max(0,p.stock||0)*(p.costo||0),0));
-    $('invBajos').textContent = productos.filter(p=>(p.stock||0)<=(p.stockMin||0)).length;
+    $('invBajos').textContent = productos.filter(p=>(p.stock||0)<=minDe(p)).length;
     const q = $('invBuscar').value.trim().toLowerCase();
     const lista = productos.filter(p=> !q || (p.nombre||'').toLowerCase().includes(q) || (p.categoria||'').toLowerCase().includes(q));
     $('invTabla').innerHTML = lista.length ? lista.map(p=>{
       const st = p.stock||0;
-      const chip = st<=0 ? '<span class="chip chip-red">Agotado</span>' : st<=(p.stockMin||0) ? '<span class="chip chip-amber">Bajo</span>' : '';
+      const chip = st<=0 ? '<span class="chip chip-red">Agotado</span>' : st<=minDe(p) ? '<span class="chip chip-amber">Por acabarse</span>' : '';
       return '<tr><td><strong>'+esc(p.nombre)+'</strong></td><td class="muted">'+esc(p.categoria||'Otros')+'</td>'+
-        '<td class="num">'+money(p.precio)+'</td><td class="num muted">'+money(p.costo||0)+'</td>'+
+        '<td class="num muted">'+money(p.costo||0)+'</td><td class="num">'+money(p.precio)+'</td>'+
+        '<td class="num">'+gananciaHTML(p.costo||0, p.precio||0)+'</td>'+
         '<td class="num"><strong>'+st+'</strong> '+chip+'</td>'+
         '<td style="text-align:right;white-space:nowrap;"><button class="btn btn-sm" data-entrada="'+esc(p.id)+'">+ Entrada</button> '+
         '<button class="btn btn-ghost btn-sm" data-editar="'+esc(p.id)+'">Editar</button> '+
         '<button class="btn-icon" data-borrar-prod="'+esc(p.id)+'" title="Eliminar">✕</button></td></tr>';
-    }).join('') : '<tr><td colspan="6"><div class="empty">'+(productos.length?'Ningún producto coincide.':'Agrega tu primer producto arriba (gaseosas, agua, paquetes...).')+'</div></td></tr>';
+    }).join('') : '<tr><td colspan="7"><div class="empty">'+(productos.length?'Ningún producto coincide.':'Agrega tu primer producto arriba (gaseosas, agua, paquetes...).')+'</div></td></tr>';
   }
   $('invBuscar').addEventListener('input', renderInventario);
   $('btnAddProducto').addEventListener('click', ()=>{
@@ -2144,11 +2291,15 @@
     const stock = Math.max(0, parseInt($('prodStock').value,10)||0);
     const stockMin = Math.max(0, parseInt($('prodMin').value,10)||0);
     if(!nombre){ showToast('Escribe el nombre del producto.'); return; }
-    if(!precio){ showToast('Escribe el precio de venta.'); return; }
+    if(!costo){ showToast('Escribe cuánto le costó el producto.'); $('prodCosto').focus(); return; }
+    if(!precio){ showToast('Escribe a cómo lo vende.'); $('prodPrecio').focus(); return; }
+    if(precio<costo && !confirm('Lo vende más barato de lo que le costó. ¿Guardar así?')) return;
     if(productos.some(p=>p.nombre.toLowerCase()===nombre.toLowerCase())){ showToast('Ya existe un producto con ese nombre.'); return; }
     const id = nuevoId();
     db.collection('productos').doc(id).set({ id, nombre, categoria, precio, costo, stock, stockMin, creado:new Date().toISOString() }).catch(errGuardar);
-    ['prodNombre','prodPrecio','prodCosto','prodStock','prodMin'].forEach(k=>$(k).value='');
+    ['prodNombre','prodPrecio','prodCosto','prodStock'].forEach(k=>$(k).value='');
+    $('prodMin').value = umbralAviso();
+    renderMargen();
     $('prodNombre').focus();
     showToast(nombre+' agregado al inventario.');
   });
@@ -2162,7 +2313,7 @@
       $('productoTitulo').textContent = 'Entrada de mercancía';
       $('productoBody').innerHTML = '<p style="margin:0 0 12px;"><strong>'+esc(p.nombre)+'</strong> · stock actual <strong class="mono">'+(p.stock||0)+'</strong></p>'+
         '<div class="form-grid"><div class="field"><label for="peCant">Unidades que llegaron</label><input class="input mono" id="peCant" type="number" min="1" step="1"></div>'+
-        '<div class="field"><label for="peCosto">Costo por unidad</label><input class="input mono" id="peCosto" type="number" min="0" step="100" value="'+(p.costo||0)+'"></div></div>';
+        '<div class="field"><label for="peCosto">¿Cuánto le costó cada una?</label><input class="input mono" id="peCosto" type="number" min="0" step="100" value="'+(p.costo||0)+'"></div></div>';
       abrirModal('productoModal'); setTimeout(()=>$('peCant').focus(), 50);
     }else if(ed){
       const p = productos.find(x=>x.id===ed.dataset.editar); if(!p) return;
@@ -2171,8 +2322,8 @@
       $('productoBody').innerHTML = '<div class="form-grid">'+
         '<div class="field full"><label for="peNombre">Nombre</label><input class="input" id="peNombre" value="'+esc(p.nombre)+'"></div>'+
         '<div class="field"><label for="peCat">Categoría</label><input class="input" id="peCat" list="categoriasList" value="'+esc(p.categoria||'')+'"></div>'+
-        '<div class="field"><label for="pePrecio">Precio venta</label><input class="input mono" id="pePrecio" type="number" min="0" step="100" value="'+(p.precio||0)+'"></div>'+
-        '<div class="field"><label for="peCosto2">Costo</label><input class="input mono" id="peCosto2" type="number" min="0" step="100" value="'+(p.costo||0)+'"></div>'+
+        '<div class="field"><label for="pePrecio">¿A cómo lo vende?</label><input class="input mono" id="pePrecio" type="number" min="0" step="100" value="'+(p.precio||0)+'"></div>'+
+        '<div class="field"><label for="peCosto2">¿Cuánto le costó?</label><input class="input mono" id="peCosto2" type="number" min="0" step="100" value="'+(p.costo||0)+'"></div>'+
         '<div class="field"><label for="peMin">Avisar cuando queden</label><input class="input mono" id="peMin" type="number" min="0" step="1" value="'+(p.stockMin||0)+'"></div>'+
         '<div class="field full"><label for="peStock">Stock (corregir conteo)</label><input class="input mono" id="peStock" type="number" min="0" step="1" value="'+(p.stock||0)+'"></div></div>';
       abrirModal('productoModal');
@@ -2207,8 +2358,8 @@
     cerrarModal('productoModal');
   });
   $('btnInvExcel').addEventListener('click', ()=>{
-    descargarExcel(['Producto','Categoría','Precio venta','Costo','Stock','Avisar con','Valor (costo × stock)'],
-      productos.map(p=>[p.nombre, p.categoria||'', p.precio, p.costo||0, p.stock||0, p.stockMin||0, (p.costo||0)*Math.max(0,p.stock||0)]),
+    descargarExcel(['Producto','Categoría','Le costó','Lo vende a','Ganancia por unidad','Quedan','Avisar cuando queden','Valor (costo × stock)'],
+      productos.map(p=>[p.nombre, p.categoria||'', p.costo||0, p.precio, (p.precio||0)-(p.costo||0), p.stock||0, minDe(p), (p.costo||0)*Math.max(0,p.stock||0)]),
       'inventario-tienda-'+new Date().toISOString().slice(0,10)+'.xlsx', 'Inventario');
   });
 
@@ -2462,8 +2613,12 @@
 
   /* ---------- avisos ---------- */
   function renderAlertas(){
-    if(!esStaff()){ $('alertas').innerHTML = ''; return; }
     let html = '';
+    if(!esStaff()){
+      const bajosT = recibeAvisos() ? productos.filter(p=>(p.stock||0)<=minDe(p)) : [];
+      $('alertas').innerHTML = bajosT.length ? '<div class="alert alert-amber"><strong>Tienda — se está acabando:</strong> '+bajosT.slice(0,12).map(p=>esc(p.nombre)+' ('+(p.stock||0)+')').join(' · ')+'</div>' : '';
+      return;
+    }
     const subs = mensualidades.filter(s=>s.vencimiento && diasHasta(s.vencimiento)<=5);
     if(subs.length){
       html += '<div class="alert alert-red"><strong>Mensualidades por vencer o vencidas:</strong> '+subs.map(s=>{
@@ -2471,7 +2626,7 @@
         return esc(s.placa)+(s.cliente?' ('+esc(s.cliente)+')':'')+' — '+(d<0?'vencida hace '+(-d)+' día(s)':d===0?'vence hoy':'vence en '+d+' día(s)');
       }).join(' · ')+'</div>';
     }
-    const bajos = productos.filter(p=>(p.stock||0)<=(p.stockMin||0));
+    const bajos = productos.filter(p=>(p.stock||0)<=minDe(p));
     if(bajos.length){
       html += '<div class="alert alert-amber"><strong>Tienda — pedir mercancía:</strong> '+bajos.slice(0,12).map(p=>esc(p.nombre)+' ('+(p.stock||0)+')').join(' · ')+(bajos.length>12?' …':'')+'</div>';
     }
@@ -2549,6 +2704,8 @@
     $('cfgFraccion').value = String(cfg.cobro.fraccionMin);
     $('cfgGracia').value = cfg.cobro.graciaMin||0;
     $('cfgCierre').value = String(cfg.seguridad.cierreMin);
+    $('cfgUmbral').value = cfg.avisosStock.umbral;
+    document.querySelectorAll('[data-rol-aviso]').forEach(c=>{ c.checked = cfg.avisosStock.roles.includes(c.dataset.rolAviso); });
     renderFactPreview();
     const fr = cfg.cobro.fraccionMin, h = cfg.rates.carro.hora, vf = Math.round(h*fr/60);
     $('cobroEjemplo').innerHTML = fr>=60
@@ -2573,6 +2730,11 @@
   $('cfgFraccion').addEventListener('change', ()=> guardarConfig({ cobro:{ fraccionMin: parseInt($('cfgFraccion').value,10)||30 } }, 'Forma de cobro actualizada.'));
   $('cfgGracia').addEventListener('change', ()=> guardarConfig({ cobro:{ graciaMin: Math.max(0, Math.min(30, parseInt($('cfgGracia').value,10)||0)) } }, 'Tolerancia actualizada.'));
   $('cfgCierre').addEventListener('change', ()=> guardarConfig({ seguridad:{ cierreMin: parseInt($('cfgCierre').value,10)||0 } }, 'Guardado.'));
+  $('cfgUmbral').addEventListener('change', ()=> guardarConfig({ avisosStock:{ umbral: Math.max(0, Math.min(999, parseInt($('cfgUmbral').value,10)||0)) } }, 'Aviso de inventario actualizado.'));
+  document.querySelectorAll('[data-rol-aviso]').forEach(c=> c.addEventListener('change', ()=>{
+    const roles = [...document.querySelectorAll('[data-rol-aviso]')].filter(x=>x.checked).map(x=>x.dataset.rolAviso);
+    guardarConfig({ avisosStock:{ roles } }, 'Guardado.');
+  }));
 
   function renderRates(){
     if(!esAdmin() || enfocadoDentro('ratesTabla')) return;
@@ -2743,12 +2905,336 @@
     }catch(e){ console.error(e); showToast('No se pudieron pasar los datos anteriores. Se intentará de nuevo al volver a entrar.'); }
   }
 
+  /* ================= AVISOS DE INVENTARIO ================= */
+  function umbralAviso(){ return (cfg.avisosStock && cfg.avisosStock.umbral!=null) ? cfg.avisosStock.umbral : 5; }
+  // el número propio del producto manda; si no tiene, se usa el de Ajustes
+  function minDe(p){ return p.stockMin>0 ? p.stockMin : umbralAviso(); }
+  function recibeAvisos(){ return !!(perfil && cfg.avisosStock && cfg.avisosStock.roles.includes(perfil.rol)); }
+  let stockPrevio = null;
+  function revisarStock(){
+    const nuevos = [];
+    if(stockPrevio){
+      productos.forEach(p=>{
+        const antes = stockPrevio[p.id], ahora = p.stock||0, min = minDe(p);
+        if(antes!=null && ahora<antes && (ahora<=0 ? antes>0 : (antes>min && ahora<=min))) nuevos.push(p);
+      });
+    }
+    stockPrevio = {};
+    productos.forEach(p=>{ stockPrevio[p.id] = p.stock||0; });
+    if(recibeAvisos()) nuevos.forEach(avisarProducto);
+  }
+  function textoAviso(p){ return (p.stock||0)<=0 ? 'Se acabó '+p.nombre : 'Quedan '+p.stock+' de '+p.nombre; }
+  function avisarProducto(p){
+    const titulo = textoAviso(p), cuerpo = 'Hay que pedir mercancía · '+cfg.brand;
+    showToast(titulo);
+    pitar(false);
+    if(!('Notification' in window) || Notification.permission!=='granted') return;
+    const opciones = { body:cuerpo, icon:'icono-192.png', badge:'icono-192.png', tag:'stock-'+p.id, renotify:true };
+    const directo = ()=>{ try{ new Notification(titulo, opciones); }catch(e){} };
+    if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
+      navigator.serviceWorker.getRegistration().then(r=> r ? r.showNotification(titulo, opciones) : directo()).catch(directo);
+    }else directo();
+  }
+  function renderCampana(){
+    if(!perfil) return;
+    const bajos = recibeAvisos() ? productos.filter(p=>(p.stock||0)<=minDe(p)).sort((a,b)=>(a.stock||0)-(b.stock||0)) : [];
+    $('campanaCnt').hidden = !bajos.length;
+    $('campanaCnt').textContent = bajos.length;
+    const permiso = ('Notification' in window) ? Notification.permission : 'denied';
+    $('btnCampana').classList.toggle('ok', permiso==='granted');
+    $('btnPermisoNotif').hidden = !recibeAvisos() || permiso!=='default';
+    $('notifLista').innerHTML = !recibeAvisos()
+      ? '<p class="muted" style="font-size:13px;">El administrador no activó los avisos de inventario para tu rol.</p>'
+      : bajos.length ? bajos.map(p=>
+        '<div class="mini-row"><span class="ic sm '+((p.stock||0)<=0?'ic-rojo':'ic-amarillo')+'">'+ICONOS.caja2+'</span>'+
+        '<div class="t"><strong>'+esc(p.nombre)+'</strong><div class="meta">'+((p.stock||0)<=0?'Agotado':'Quedan '+p.stock)+' · se avisa con '+minDe(p)+'</div></div></div>').join('')
+      : '<p class="muted" style="font-size:13px;">Todo el inventario está bien. Te avisamos cuando algo vaya a acabarse.</p>';
+  }
+  $('btnCampana').addEventListener('click', e=>{ e.stopPropagation(); renderCampana(); $('notifPanel').hidden = !$('notifPanel').hidden; });
+  document.addEventListener('click', e=>{ if(!$('notifPanel').hidden && !e.target.closest('#notifPanel')) $('notifPanel').hidden = true; });
+  $('btnPermisoNotif').addEventListener('click', async ()=>{
+    try{
+      const r = await Notification.requestPermission();
+      showToast(r==='granted' ? 'Listo: este equipo mostrará los avisos.' : 'No se activaron las notificaciones.');
+    }catch(e){ showToast('Este navegador no permite notificaciones.'); }
+    renderCampana();
+  });
+
+  /* ================= INVENTARIO: GANANCIA ================= */
+  function gananciaHTML(costo, precio){
+    if(!costo) return '<span class="muted">—</span>';
+    const g = precio-costo, pct = Math.round(g*100/costo);
+    return '<span style="color:'+(g<0?'var(--red)':'var(--green)')+';">'+money(g)+'</span> <span class="muted">('+pct+'%)</span>';
+  }
+  function renderMargen(){
+    const costo = parseInt($('prodCosto').value,10)||0, precio = parseInt($('prodPrecio').value,10)||0;
+    const box = $('prodMargen');
+    box.classList.toggle('mal', !!(costo && precio && precio<costo));
+    if(!costo || !precio){ box.textContent = 'Escriba cuánto le costó y a cómo lo vende para ver la ganancia.'; return; }
+    const g = precio-costo, unidades = parseInt($('prodStock').value,10)||0;
+    box.innerHTML = g<0
+      ? 'Ojo: lo vende <strong>'+money(-g)+'</strong> más barato de lo que le costó.'
+      : 'Gana <strong>'+money(g)+'</strong> por unidad ('+Math.round(g*100/costo)+'%)'+(unidades ? ' · con '+unidades+' unidades gana <strong>'+money(g*unidades)+'</strong>' : '')+'.';
+  }
+  ['prodCosto','prodPrecio','prodStock'].forEach(id=> $(id).addEventListener('input', renderMargen));
+
+  /* ================= IMPRESORA (navegador o Bluetooth) ================= */
+  // Va guardada por equipo: cada computador o celular tiene su propia impresora.
+  const IMP = { dev:null, car:null, cfg:{ modo:'navegador', ancho:58, auto:false, nombre:'' } };
+  try{ Object.assign(IMP.cfg, JSON.parse(localStorage.getItem('impresora')||'{}')); }catch(e){}
+  function guardarImp(){ try{ localStorage.setItem('impresora', JSON.stringify(IMP.cfg)); }catch(e){} renderImpresora(); }
+  // servicios BLE que usan las impresoras térmicas chinas más comunes
+  const BT_SERVICIOS = ['000018f0-0000-1000-8000-00805f9b34fb','e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455',
+    '0000ff00-0000-1000-8000-00805f9b34fb','0000fee7-0000-1000-8000-00805f9b34fb','0000ae30-0000-1000-8000-00805f9b34fb'];
+  async function caracteristicaBT(dev){
+    const server = dev.gatt.connected ? dev.gatt : await dev.gatt.connect();
+    for(const uuid of BT_SERVICIOS){
+      try{
+        const sv = await server.getPrimaryService(uuid);
+        const c = (await sv.getCharacteristics()).find(x=>x.properties.writeWithoutResponse || x.properties.write);
+        if(c) return c;
+      }catch(e){}
+    }
+    throw new Error('La impresora no tiene un canal de escritura conocido.');
+  }
+  function usarDispositivo(dev){
+    IMP.dev = dev;
+    dev.addEventListener('gattserverdisconnected', ()=>{ IMP.car = null; renderImpresora(); });
+  }
+  async function conectarImpresora(){
+    if(IMP.car) return true;
+    try{
+      if(!IMP.dev && navigator.bluetooth && navigator.bluetooth.getDevices){
+        const ds = await navigator.bluetooth.getDevices();
+        const d = ds.find(x=>x.name===IMP.cfg.nombre) || ds[0];
+        if(d) usarDispositivo(d);
+      }
+      if(IMP.dev){ IMP.car = await caracteristicaBT(IMP.dev); renderImpresora(); return true; }
+    }catch(e){ console.warn(e); }
+    return false;
+  }
+  $('btnBuscarImp').addEventListener('click', async ()=>{
+    if(!navigator.bluetooth){ showToast('Este navegador no tiene Bluetooth. Use Chrome o Edge en Android o en el computador.'); return; }
+    try{
+      const dev = await navigator.bluetooth.requestDevice({ acceptAllDevices:true, optionalServices:BT_SERVICIOS });
+      usarDispositivo(dev);
+      IMP.car = await caracteristicaBT(dev);
+      IMP.cfg.modo = 'bluetooth'; IMP.cfg.nombre = dev.name || 'Impresora Bluetooth';
+      guardarImp();
+      showToast('Impresora conectada: '+IMP.cfg.nombre);
+    }catch(e){
+      if(e && e.name==='NotFoundError') return; // cerró la lista sin elegir
+      console.error(e); showToast('No se pudo conectar. Prenda la impresora y acérquela.');
+    }
+  });
+  // texto a bytes en la página de códigos 850 (tildes y ñ en impresoras ESC/POS)
+  const CP850 = { 'á':0xA0,'é':0x82,'í':0xA1,'ó':0xA2,'ú':0xA3,'ñ':0xA4,'Ñ':0xA5,'Á':0xB5,'É':0x90,'Í':0xD6,'Ó':0xE0,'Ú':0xE9,'ü':0x81,'Ü':0x9A,'¿':0xA8,'¡':0xAD,'°':0xF8 };
+  function bytes(txt){
+    const out = [];
+    for(const ch of String(txt)){
+      const c = ch.charCodeAt(0);
+      if(c===0xA0 || c===0x202F) out.push(32);
+      else if(c<128) out.push(c);
+      else if(CP850[ch]) out.push(CP850[ch]);
+      else{ const b = ch.normalize('NFD').charCodeAt(0); out.push(b<128 ? b : 63); }
+    }
+    return out;
+  }
+  function escposTicket(t){
+    const cols = IMP.cfg.ancho==80 ? 48 : 32, f = cfg.facturacion;
+    const ESC=0x1B, GS=0x1D, LF=0x0A, b = [];
+    const txt = s=>{ b.push(...bytes(s), LF); };
+    const linea = ()=> txt('-'.repeat(cols));
+    const dos = (a,c)=>{ a=String(a); c=String(c); const esp = cols-a.length-c.length; if(esp>0) txt(a+' '.repeat(esp)+c); else{ txt(a); txt(' '.repeat(Math.max(0, cols-c.length))+c); } };
+    b.push(ESC,0x40, ESC,0x74,0x02);                 // reiniciar, página 850
+    b.push(ESC,0x61,1, ESC,0x45,1, GS,0x21,0x11); txt(cfg.brand); b.push(GS,0x21,0, ESC,0x45,0);
+    if(f.direccion) txt(f.direccion);
+    if(f.nit) txt('NIT '+f.nit);
+    if(f.telefono) txt('Tel. '+f.telefono);
+    linea();
+    b.push(ESC,0x45,1); txt(String(t.titulo).toUpperCase()); b.push(ESC,0x45,0);
+    b.push(ESC,0x61,0);
+    t.lineas.filter(l=> String(l).toUpperCase()!==String(t.titulo).toUpperCase()).forEach(l=>{
+      const m = /^([^:]{1,24}):\s(.*)$/.exec(l);
+      if(!l) txt('');
+      else if(m && /^TOTAL/i.test(m[1])){ b.push(ESC,0x45,1, GS,0x21,0x01); dos(m[1], m[2]); b.push(GS,0x21,0, ESC,0x45,0); }
+      else if(m) dos(m[1], m[2]);
+      else txt(l);
+    });
+    if(t.codigo){
+      const d = bytes(t.codigo);
+      b.push(ESC,0x61,1, LF, GS,0x68,60, GS,0x77,2, GS,0x48,2, GS,0x6B,73, d.length+2, 0x7B,0x42, ...d, LF);
+    }
+    b.push(LF,LF,LF, GS,0x56,0x42,0);                 // avanzar y cortar (si la impresora corta)
+    return new Uint8Array(b);
+  }
+  async function enviarBT(datos){
+    const c = IMP.car, sinResp = c.properties.writeWithoutResponse && c.writeValueWithoutResponse;
+    for(let i=0;i<datos.length;i+=180){
+      const parte = datos.slice(i, i+180);
+      if(sinResp){ await c.writeValueWithoutResponse(parte); await new Promise(r=>setTimeout(r, 25)); }
+      else await (c.writeValueWithResponse ? c.writeValueWithResponse(parte) : c.writeValue(parte));
+    }
+  }
+  async function imprimirTicket(t, silencioso){
+    if(IMP.cfg.modo!=='bluetooth'){ if(!silencioso) imprimirHTML(t.html); return; }
+    if(!(await conectarImpresora())){
+      showToast('La impresora Bluetooth no está conectada. Toque el ícono de impresora › Buscar.');
+      return;
+    }
+    try{ await enviarBT(escposTicket(t)); showToast('Imprimiendo…'); }
+    catch(e){ console.error(e); IMP.car = null; renderImpresora(); showToast('No se pudo imprimir. Revise que la impresora esté prendida.'); }
+  }
+  function renderImpresora(){
+    const bt = IMP.cfg.modo==='bluetooth', con = !!IMP.car;
+    $('impModo').value = IMP.cfg.modo; $('impAncho').value = String(IMP.cfg.ancho); $('impAuto').checked = !!IMP.cfg.auto;
+    $('impEstado').textContent = !bt ? 'Impresora del computador' : con ? 'Conectada: '+IMP.cfg.nombre : IMP.cfg.nombre ? IMP.cfg.nombre+' (desconectada)' : 'Sin impresora Bluetooth';
+    $('impDetalle').textContent = !bt ? 'Se abre el cuadro de imprimir del navegador.' : con ? 'Papel de '+IMP.cfg.ancho+' mm'+(IMP.cfg.auto?' · imprime sola':'') : 'Toque "Buscar impresora Bluetooth".';
+    $('impIc').className = 'ic ' + (!bt ? 'ic-azul' : con ? 'ic-verde' : 'ic-rojo');
+    $('btnImpresora').classList.toggle('ok', bt && con);
+  }
+  $('btnImpresora').addEventListener('click', ()=>{ renderImpresora(); abrirModal('impresoraModal'); if(IMP.cfg.modo==='bluetooth') conectarImpresora(); });
+  $('impModo').addEventListener('change', ()=>{ IMP.cfg.modo = $('impModo').value; guardarImp(); });
+  $('impAncho').addEventListener('change', ()=>{ IMP.cfg.ancho = parseInt($('impAncho').value,10)||58; guardarImp(); });
+  $('impAuto').addEventListener('change', ()=>{ IMP.cfg.auto = $('impAuto').checked; guardarImp(); });
+  $('btnProbarImp').addEventListener('click', ()=>{
+    const ahora = new Date().toISOString();
+    const lineas = ['Prueba de impresión', 'Fecha: '+fmtFechaHora(ahora), 'Placa: ABC123', 'TOTAL: '+money(12500), '', 'Tildes: á é í ó ú ñ Ñ ¿?'];
+    imprimirTicket({ titulo:'Prueba', lineas, codigo:'E-000001',
+      html:'<div class="ticket">'+ticketCabecera()+'<div class="t-title">PRUEBA</div>'+lineas.map(l=>'<div>'+esc(l)+'</div>').join('')+barcodeSVG('E-000001')+'</div>' });
+  });
+
+  /* ================= PANEL ================= */
+  function saludoHora(){ const h = new Date().getHours(); return h<12 ? 'Buenos días' : h<19 ? 'Buenas tardes' : 'Buenas noches'; }
+  function statHTML(color, icono, l, v, sub){
+    return '<div class="stat"><span class="ic '+color+'">'+icono+'</span><div style="min-width:0;"><div class="l">'+l+'</div><div class="v">'+v+'</div>'+(sub?'<div class="s">'+sub+'</div>':'')+'</div></div>';
+  }
+  // barras SVG simples; series: [{nombre, color, valores[]}] apiladas
+  function barrasSVG(etiquetas, series, fmt){
+    const W = 560, H = 190, izq = 4, abajo = 22, arriba = 18, n = etiquetas.length;
+    const tot = etiquetas.map((_,i)=> series.reduce((s,se)=>s+(se.valores[i]||0),0));
+    const max = Math.max(1, ...tot);
+    const paso = (W-izq)/n, ancho = Math.min(46, paso*0.62);
+    let g = '';
+    [0.5,1].forEach(f=>{ const y = arriba+(H-arriba-abajo)*(1-f); g += '<line class="grid" x1="0" x2="'+W+'" y1="'+y+'" y2="'+y+'"/>'; });
+    g += '<line class="grid" x1="0" x2="'+W+'" y1="'+(H-abajo)+'" y2="'+(H-abajo)+'" style="stroke:var(--line-2)"/>';
+    etiquetas.forEach((et,i)=>{
+      const x = izq + paso*i + (paso-ancho)/2;
+      let base = H-abajo;
+      series.forEach((se,k)=>{
+        const v = se.valores[i]||0; if(!v) return;
+        const h = Math.max(2,(H-arriba-abajo)*v/max);
+        const y = base-h;
+        const r = k===series.length-1 || series.slice(k+1).every(o=>!(o.valores[i])) ? 4 : 0;
+        g += '<path class="bar" fill="'+se.color+'" d="M'+x+','+base+'V'+(y+r)+(r?'q0,-'+r+' '+r+',-'+r+'h'+(ancho-2*r)+'q'+r+',0 '+r+','+r:'h'+ancho)+'V'+base+'z"><title>'+esc(et)+' · '+esc(se.nombre)+': '+fmt(v)+'</title></path>';
+        base = y-2;
+      });
+      if(tot[i]) g += '<text class="val" x="'+(x+ancho/2)+'" y="'+(base-4)+'" text-anchor="middle">'+fmt(tot[i])+'</text>';
+      g += '<text x="'+(x+ancho/2)+'" y="'+(H-6)+'" text-anchor="middle">'+esc(et)+'</text>';
+    });
+    return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img">'+g+'</svg>';
+  }
+  function corto(n){ return n>=1e6 ? '$'+(n/1e6).toFixed(1).replace('.0','')+'M' : n>=1000 ? '$'+Math.round(n/1000)+'k' : '$'+n; }
+  function renderPanel(){
+    if(!perfil || !esStaff() || vistaActual!=='panel') return;
+    const ahora = new Date(), hoy = hoy0();
+    $('panelSaludo').textContent = saludoHora()+', '+String(perfil.nombre||'').split(' ')[0];
+    $('panelFecha').textContent = ahora.toLocaleDateString('es-CO',{weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+    // tarjetas
+    const salHoy = historial.filter(h=>isSameDay(new Date(h.salida), ahora));
+    const parqHoy = salHoy.reduce((s,h)=>s+(h.total||0),0);
+    const vtsHoy = ventas.filter(v=>isSameDay(new Date(v.fecha), ahora));
+    const tiendaHoy = vtsHoy.reduce((s,v)=>s+(v.total||0),0);
+    const cupos = TIPOS.reduce((s,t)=>s+(cfg.rates[t.id].cupo||0),0);
+    const bajos = productos.filter(p=>(p.stock||0)<=minDe(p));
+    $('panelStats').innerHTML =
+      statHTML('ic-azul', TIPOS[3].icon, 'Vehículos dentro', activos.length, cupos ? Math.round(activos.length*100/cupos)+'% de '+cupos+' cupos' : 'Sin límite de cupos')+
+      statHTML('ic-verde', ICONOS.dinero, 'Caja de hoy', money(parqHoy+tiendaHoy), 'Parqueo '+money(parqHoy)+' · Tienda '+money(tiendaHoy))+
+      statHTML('ic-amarillo', ICONOS.bolsa, 'Ventas de la tienda', vtsHoy.length, vtsHoy.length ? 'Promedio '+money(Math.round(tiendaHoy/vtsHoy.length)) : 'Aún no hay ventas hoy')+
+      statHTML(bajos.length ? 'ic-rojo' : 'ic-verde', ICONOS.alerta, 'Por acabarse', bajos.length, bajos.length ? 'Productos para pedir' : 'Inventario al día');
+
+    // mapa
+    let mapa = '', libres = 0;
+    TIPOS.forEach(t=>{
+      const dentro = activos.filter(a=>a.tipo===t.id).sort((a,b)=>a.entrada.localeCompare(b.entrada));
+      const cupo = cfg.rates[t.id].cupo||0;
+      if(!dentro.length && !cupo) return;
+      const total = Math.max(cupo, dentro.length);
+      libres += Math.max(0, cupo-dentro.length);
+      let celdas = '';
+      for(let i=0;i<total;i++){
+        const v = dentro[i];
+        if(v){
+          const min = (ahora - new Date(v.entrada))/60000;
+          celdas += '<button class="spot ocupado'+(min>480?' largo':'')+'" data-spot="'+esc(v.id)+'" title="'+esc(v.placa)+' · entró '+fmtHora(v.entrada)+'">'+t.icon+
+            '<span class="pl">'+esc(v.placa)+'</span><span class="t">'+fmtDuracion(min)+'</span></button>';
+        }else celdas += '<div class="spot"><span class="n">'+t.nombre.slice(0,1)+'-'+String(i+1).padStart(2,'0')+'</span>Libre</div>';
+      }
+      mapa += '<div class="mapa-zona"><div class="z"><span class="ic sm ic-azul">'+t.icon+'</span>'+t.nombre+
+        ' <span class="muted">'+dentro.length+(cupo?'/'+cupo:' dentro')+'</span></div><div class="spots">'+celdas+'</div></div>';
+    });
+    $('panelMapa').innerHTML = mapa || '<div class="empty">No hay vehículos dentro. En Ajustes › Tarifas y cupos puede poner cuántos puestos tiene de cada tipo para verlos aquí.</div>';
+    $('mapaResumen').textContent = activos.length+' ocupados'+(cupos ? ' · '+libres+' libres' : '');
+
+    // 7 días
+    const dias = [], parq = [], tienda = [];
+    for(let i=6;i>=0;i--){
+      const d = new Date(hoy); d.setDate(d.getDate()-i);
+      dias.push(i===0 ? 'Hoy' : d.toLocaleDateString('es-CO',{weekday:'short'}).replace('.',''));
+      parq.push(historial.filter(h=>isSameDay(new Date(h.salida), d)).reduce((s,h)=>s+(h.total||0),0));
+      tienda.push(ventas.filter(v=>isSameDay(new Date(v.fecha), d)).reduce((s,v)=>s+(v.total||0),0));
+    }
+    $('panelSemana').innerHTML = barrasSVG(dias, [{nombre:'Parqueo', color:'var(--serie-1)', valores:parq},{nombre:'Tienda', color:'var(--serie-2)', valores:tienda}], corto)+
+      '<div class="leyenda"><span><i style="background:var(--serie-1)"></i>Parqueo '+money(parq.reduce((a,b)=>a+b,0))+'</span><span><i style="background:var(--serie-2)"></i>Tienda '+money(tienda.reduce((a,b)=>a+b,0))+'</span></div>';
+
+    // ocupación por hora de hoy (cuántos había dentro a cada hora)
+    const regs = historial.map(h=>({e:new Date(h.entrada), s:new Date(h.salida)})).concat(activos.map(a=>({e:new Date(a.entrada), s:ahora})));
+    const horas = [], cuenta = [];
+    const desde = Math.min(6, ahora.getHours());
+    for(let h=desde; h<=ahora.getHours(); h++){
+      const t = new Date(hoy); t.setHours(h, 30, 0, 0);
+      if(t>ahora) t.setTime(ahora.getTime());
+      horas.push((h%12||12)+(h<12?'a':'p'));
+      cuenta.push(regs.filter(r=>r.e<=t && r.s>=t).length);
+    }
+    $('panelHoras').innerHTML = barrasSVG(horas, [{nombre:'Dentro', color:'var(--serie-1)', valores:cuenta}], v=>String(v));
+
+    // stock
+    $('panelStock').innerHTML = bajos.length ? bajos.slice(0,6).map(p=>{
+      const pct = Math.min(100, Math.round((p.stock||0)*100/Math.max(1, minDe(p)*2)));
+      return '<div class="mini-row"><span class="ic sm '+((p.stock||0)<=0?'ic-rojo':'ic-amarillo')+'">'+ICONOS.caja2+'</span><div class="t"><strong>'+esc(p.nombre)+'</strong>'+
+        '<div class="barra"><i style="width:'+pct+'%;background:'+((p.stock||0)<=0?'var(--red)':'var(--serie-2)')+'"></i></div></div><span class="mono">'+(p.stock||0)+'</span></div>';
+    }).join('') : '<div class="empty">Nada por acabarse.</div>';
+
+    // más vendido del mes
+    const cont = {};
+    ventas.filter(v=>isSameMonth(new Date(v.fecha), ahora)).forEach(v=>v.items.forEach(i=>{ cont[i.nombre] = (cont[i.nombre]||0) + i.cantidad; }));
+    const top = Object.entries(cont).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxTop = top.length ? top[0][1] : 1;
+    $('panelTop').innerHTML = top.length ? top.map(([n,c])=>
+      '<div class="mini-row"><span class="ic sm ic-tinta">'+ICONOS.bolsa+'</span><div class="t"><strong>'+esc(n)+'</strong><div class="barra"><i style="width:'+Math.round(c*100/maxTop)+'%"></i></div></div><span class="mono">'+c+'</span></div>').join('')
+      : '<div class="empty">Aún no hay ventas este mes.</div>';
+
+    // mensualidades
+    const subs = mensualidades.filter(s=>s.vencimiento && diasHasta(s.vencimiento)<=7).sort((a,b)=>a.vencimiento.localeCompare(b.vencimiento));
+    $('panelSubs').innerHTML = subs.length ? subs.slice(0,6).map(s=>{
+      const d = diasHasta(s.vencimiento);
+      return '<div class="mini-row"><span class="ic sm '+(d<0?'ic-rojo':'ic-amarillo')+'">'+ICONOS.calendario+'</span><div class="t"><span class="placa-txt" style="font-size:13px;">'+esc(s.placa)+'</span> '+esc(s.cliente||'')+
+        '<div class="meta">'+(d<0?'Vencida hace '+(-d)+' día(s)':d===0?'Vence hoy':'Vence en '+d+' día(s)')+'</div></div></div>';
+    }).join('') : '<div class="empty">Ninguna vence esta semana.</div>';
+  }
+  $('panelMapa').addEventListener('click', e=>{ const b = e.target.closest('[data-spot]'); if(b) abrirSalida(b.dataset.spot); });
+  document.addEventListener('click', e=>{ const b = e.target.closest('[data-ir]'); if(b) irA(b.dataset.ir); });
+  setInterval(()=>{ if(perfil && vistaActual==='panel') renderPanel(); }, 60000);
+
   /* ================= INICIO ================= */
   tickClock();
   setInterval(tickClock, 1000);
   setInterval(()=>{ if(perfil){ actualizarTiempos(); renderTurnoBar(); } }, 20000);
   setInterval(()=>{ if(perfil && vistaActual==='turnos') renderTurnos(); }, 60000);
   renderRed();
+  renderImpresora();
   if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
     navigator.serviceWorker.register('sw.js').catch(e=>console.warn('No se pudo activar el modo sin internet', e));
   }

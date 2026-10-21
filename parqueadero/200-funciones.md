@@ -48,7 +48,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 28. 📴 Escanear el código de barras del ticket con la cámara del celular para dar la salida.
 29. 📴 ⚡ Botón "Salida rápida" para cobrar en efectivo justo y cerrar con un clic.
 30. 📴 Asignar puesto o celda (A-12) y verlo en el ticket.
-31. 📴 Mapa visual del parqueadero con los puestos libres y ocupados.
+31. ✅ 📴 Mapa visual del parqueadero con los puestos libres y ocupados.
 32. 📴 ⚡ Nota libre por vehículo, por ejemplo "rayón en la puerta" o "deja las llaves".
 33. 📴 Revisión de daños al entrar: dibujo del carro donde se marcan los golpes.
 34. 📴 Varias fotos por vehículo: frente, atrás y laterales.
@@ -119,6 +119,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 95. 📴 Convenios con un tope mensual de horas por empresa.
 
 ## E. Tienda e inventario (96–120)
+96b. 📴 ✅ **Aviso de inventario por acabarse** a administrador, secretaria y vendedor (notificación del equipo + campana), por defecto con 5 unidades.
+96c. 📴 ✅ **Costo y precio al agregar producto**, con la ganancia por unidad y total.
 96. 📴 Lector de código de barras (USB o cámara) para vender productos.
 97. 📴 Combos (gaseosa y papas a un precio especial).
 98. 📴 Precio por cantidad (3 por $5.000).
@@ -128,8 +130,8 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 102. 📴 Fechas de vencimiento por lote con alerta.
 103. 📴 Inventario físico: contar y ajustar, viendo las diferencias.
 104. 📴 Mermas (producto dañado o vencido) con motivo.
-105. 📴 Productos más vendidos y menos vendidos.
-106. 📴 Margen de ganancia por producto.
+105. ✅ 📴 Productos más vendidos y menos vendidos.
+106. ✅ 📴 Margen de ganancia por producto.
 107. 📴 Cambiar varios precios a la vez (por ejemplo, subir 5 %).
 108. 📴 Fotos de los productos en la tienda.
 109. 📴 Vender servicios de la tienda (recargas, minutos) sin stock.
@@ -173,14 +175,15 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 145. 🌐 Pasar abonados de una sede a otra.
 
 ## G. Reportes y estadísticas (146–165)
-146. 📴 Gráfico de ocupación por hora (cuándo se llena).
+146b. 📴 ✅ **Panel (dashboard)** con íconos redondos, mapa del parqueadero, ingresos de 7 días, carros por hora, inventario por acabarse, más vendido y mensualidades por vencer.
+146. ✅ 📴 Gráfico de ocupación por hora (cuándo se llena).
 147. 📴 Mapa de calor por día de la semana y hora.
 148. 📴 Tiempo promedio de permanencia por tipo de vehículo.
 149. 📴 Ingresos por tipo de vehículo en gráfico.
 150. 📴 Comparar este mes con el mes anterior.
 151. 📴 Comparar este año con el año anterior.
 152. 📴 Proyección de ingresos del mes.
-153. 📴 Rotación de cupos (cuántas veces se usa cada puesto al día).
+153. ✅ 📴 Rotación de cupos (cuántas veces se usa cada puesto al día).
 154. 📴 Horas pico para planear el personal.
 155. 📴 Reporte para el contador en un Excel organizado.
 156. 🌐 Reporte diario enviado solo por WhatsApp o correo al dueño.
@@ -212,6 +215,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 180. 🌐 Chat del parqueadero por WhatsApp Business.
 
 ## I. Hardware e integraciones (181–192)
+181b. 📴 ✅ **Impresora térmica Bluetooth** (ESC/POS por Web Bluetooth, 58 u 80 mm, imprime sola si se activa).
 181. 📴 Impresión directa en impresora térmica (WebUSB o ESC/POS) sin el cuadro de impresión.
 182. 📴 Abrir el cajón de dinero al cobrar.
 183. 📴 Abrir la talanquera (barrera) con un relé USB o wifi.
