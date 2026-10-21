@@ -60,17 +60,17 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 40. ✅ 📴 Corregir la placa con registro de quién la cambió.
 41. ✅ 📴 Marcar un vehículo como "No dejar salir" (por ejemplo, por deuda o por orden de la policía).
 42. ✅ 📴 Lista negra de placas con alerta al entrar.
-43. 📴 Lista VIP con tarifa especial automática.
+43. ✅ 📴 Lista VIP con tarifa especial automática.
 44. ✅ 📴 Registrar el conductor (nombre y cédula) cuando el negocio lo exige.
 45. ✅ 📴 ⚡ Atajos de teclado: F2 para entrada, F4 para salida y F8 para la tienda.
 
 ## C. Cobros y pagos (46–70)
 46. ✅ 📴 Tarifa plana por día (24 horas) con tope máximo.
-47. 📴 Tarifa por evento, por ejemplo un concierto con un valor fijo.
-48. 📴 Primeros X minutos gratis con compra en la tienda.
+47. ✅ 📴 Tarifa por evento, por ejemplo un concierto con un valor fijo.
+48. ✅ 📴 Primeros X minutos gratis con compra en la tienda.
 49. ✅ 📴 Cupones de descuento con código.
-50. 📴 Sellos de comercios aliados ("validación" de un almacén vecino).
-51. 📴 Pago dividido: parte en efectivo y parte con tarjeta.
+50. ✅ 📴 Sellos de comercios aliados ("validación" de un almacén vecino).
+51. ✅ 📴 Pago dividido: parte en efectivo y parte con tarjeta.
 52. 🌐 Pago con QR de Nequi o Daviplata con el monto exacto.
 53. 🌐 Confirmación automática de pagos por transferencia (Bre-B).
 54. ✅ 📴 Calculadora de billetes: el cajero pone los billetes recibidos y la app saca la devuelta.
@@ -78,11 +78,11 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 56. ✅ 📴 Abonos parciales a la deuda de un cliente.
 57. 📴 Tarjeta prepago o monedero por placa (recargas).
 58. ✅ 📴 ⚡ Redondeo automático a $100 o $50.
-59. 📴 Propina para el valet, registrada aparte.
+59. ✅ 📴 Propina para el valet, registrada aparte.
 60. ✅ 📴 Cobro de multa por ticket perdido.
 61. ✅ 📴 Cobro extra por pernoctar.
 62. ✅ 📴 Recargo en días festivos con el calendario de festivos de Colombia.
-63. 📴 Tarifas por temporada (diciembre, Semana Santa).
+63. ✅ 📴 Tarifas por temporada (diciembre, Semana Santa).
 64. ✅ 📴 Simulador de tarifa: "¿cuánto paga alguien que entra a las 7 pm y sale a las 2 am?".
 65. ✅ 📴 Historial de cambios de tarifa con fecha.
 66. ✅ 📴 Anular un cobro con motivo y permiso del administrador.
@@ -116,7 +116,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 92. ✅ 📴 Borrar los datos de un cliente si lo pide (derecho de supresión).
 93. 📴 Unir clientes duplicados.
 94. 📴 Importar clientes desde Excel.
-95. 📴 Convenios con un tope mensual de horas por empresa.
+95. ✅ 📴 Convenios con un tope mensual de horas por empresa.
 
 ## E. Tienda e inventario (96–120)
 96b. 📴 ✅ **Aviso de inventario por acabarse** a administrador, secretaria y vendedor (notificación del equipo + campana), por defecto con 5 unidades.
@@ -135,7 +135,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 107. ✅ 📴 Cambiar varios precios a la vez (por ejemplo, subir 5 %).
 108. 📴 Fotos de los productos en la tienda.
 109. ✅ 📴 Vender servicios de la tienda (recargas, minutos) sin stock.
-110. 📴 Agregar productos de la tienda a la cuenta del parqueo y cobrar todo junto.
+110. ✅ 📴 Agregar productos de la tienda a la cuenta del parqueo y cobrar todo junto.
 111. ✅ 📴 Venta en espera (dejar una venta abierta y atender a otro cliente).
 112. 📴 Varias bodegas o neveras.
 113. ✅ 📴 Historial de cambios de costo.

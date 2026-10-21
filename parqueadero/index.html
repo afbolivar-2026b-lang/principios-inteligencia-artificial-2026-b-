@@ -940,6 +940,34 @@
               <select class="select" id="cfgCierre"><option value="0">Nunca</option><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option><option value="480">8 horas</option></select></div>
           </div>
 
+          <div class="card span2">
+            <h2 class="card-title">Tarifas especiales</h2>
+            <div class="settings-grid">
+              <div>
+                <div class="lbl" style="margin-bottom:6px;">Clientes VIP (descuento automático por placa)</div>
+                <div class="row" style="margin-bottom:8px;"><input class="input mono upper" id="vipPlaca" placeholder="Placa" maxlength="10" style="width:110px;"><input class="input mono" id="vipPct" type="number" min="1" max="100" placeholder="% desc." style="width:90px;"><input class="input grow" id="vipNota" placeholder="Nota (ej. dueño del local)"><button class="btn btn-primary btn-sm" id="btnAddVip">Agregar</button></div>
+                <div id="vipLista"></div>
+                <div class="lbl" style="margin:16px 0 6px;">Validaciones: minutos gratis</div>
+                <div class="row" style="margin-bottom:8px;"><input class="input grow" id="valNombre" placeholder="Ej. Compró en la tienda · Almacén El Vecino"><input class="input mono" id="valMin" type="number" min="1" max="600" placeholder="Min" style="width:80px;"><button class="btn btn-primary btn-sm" id="btnAddVal">Agregar</button></div>
+                <div id="valLista"></div>
+              </div>
+              <div>
+                <div class="lbl" style="margin-bottom:6px;">Temporadas (recargo sobre la tarifa por hora)</div>
+                <div class="row" style="margin-bottom:8px;"><input class="input grow" id="tempNombre" placeholder="Ej. Diciembre"><input class="input" id="tempDesde" type="date" style="width:140px;" title="Desde"><input class="input" id="tempHasta" type="date" style="width:140px;" title="Hasta"><input class="input mono" id="tempPct" type="number" min="1" max="200" placeholder="+%" style="width:70px;"><button class="btn btn-primary btn-sm" id="btnAddTemp">Agregar</button></div>
+                <div id="tempLista"></div>
+                <div class="lbl" style="margin:16px 0 6px;">Evento (valor fijo por entrar)</div>
+                <label class="switch"><input type="checkbox" id="evActivo"> Cobrar tarifa de evento</label>
+                <div class="form-grid">
+                  <div class="field"><label for="evNombre">Evento</label><input class="input" id="evNombre" placeholder="Concierto en el estadio"></div>
+                  <div class="field"><label for="evValor">Valor fijo</label><input class="input mono" id="evValor" type="number" min="0" step="1000"></div>
+                  <div class="field"><label for="evDesde">Desde</label><input class="input" id="evDesde" type="datetime-local"></div>
+                  <div class="field"><label for="evHasta">Hasta</label><input class="input" id="evHasta" type="datetime-local"></div>
+                </div>
+              </div>
+            </div>
+            <div class="hint">Las temporadas se repiten cada año (solo cuentan el día y el mes). Si un vehículo tiene convenio y es VIP, se aplica el descuento mayor.</div>
+          </div>
+
           <div class="card">
             <h2 class="card-title">Placas con alerta</h2>
             <div class="row" style="margin-bottom:10px;">
@@ -1483,7 +1511,7 @@
       facturacion: { nit:'', direccion:'', telefono:'', prefijo:'FE', ivaPct:0 },
       cobro: { fraccionMin:30, graciaMin:0, ticketPerdido:5000, pernocta:0, redondeo:0 },
       seguridad: { cierreMin:60 },
-      ticket: { pie:'', legal:'' }, logo:null, proveedores:[], checklist:[], cupones:[],
+      ticket: { pie:'', legal:'' }, logo:null, proveedores:[], checklist:[], cupones:[], vip:[], temporadas:[], validaciones:[], evento:{ activo:false, nombre:'', valor:0, desde:'', hasta:'' },
       fidelidad: { activo:false, visitas:10 }, fiado: { activo:false, trabajador:false },
       avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] },
       caja: { alertaFaltante:5000, whatsappDueno:'', metaDia:0, comisionPct:0 },
@@ -1506,6 +1534,8 @@
     out.proveedores = Array.isArray(d.proveedores) ? d.proveedores : [];
     out.checklist = Array.isArray(d.checklist) ? d.checklist : [];
     out.cupones = Array.isArray(d.cupones) ? d.cupones : [];
+    ['vip','temporadas','validaciones'].forEach(k=>{ out[k] = Array.isArray(d[k]) ? d[k] : []; });
+    out.evento = Object.assign(defaultConfig().evento, d.evento||{});
     out.fidelidad = Object.assign(defaultConfig().fidelidad, d.fidelidad||{});
     out.fiado = Object.assign(defaultConfig().fiado, d.fiado||{});
     out.parqueo = Object.assign(defaultConfig().parqueo, d.parqueo||{});
@@ -1553,8 +1583,23 @@
   function esAdmin(){ return perfil && perfil.rol==='admin'; }
   function esStaff(){ return perfil && (perfil.rol==='admin' || perfil.rol==='secretaria'); }
   function rolLabel(rol){ return rol==='admin' ? 'Administrador' : rol==='secretaria' ? 'Secretaria' : 'Trabajador'; }
-  function medioLabel(v){ return { nequi:'Nequi', daviplata:'Daviplata', bbva:'BBVA', bancolombia:'Bancolombia', transferencia:'Transferencia' }[v] || v || ''; }
-  function pagoLabel(r){ return r.metodoPago==='transferencia' ? 'Transferencia · '+medioLabel(r.medioTransferencia) : r.metodoPago==='fiado' ? 'Fiado · '+(r.deudor||'') : 'Efectivo'; }
+  function medioLabel(v){ return { nequi:'Nequi', daviplata:'Daviplata', bbva:'BBVA', bancolombia:'Bancolombia', tarjeta:'Tarjeta', transferencia:'Transferencia' }[v] || v || ''; }
+  function pagoLabel(r){ return r.metodoPago==='transferencia' ? 'Transferencia · '+medioLabel(r.medioTransferencia) : r.metodoPago==='fiado' ? 'Fiado · '+(r.deudor||'') :
+    r.metodoPago==='mixto' ? 'Efectivo '+money(r.efectivoParte||0)+' + '+medioLabel(r.medioTransferencia) : 'Efectivo'; }
+  // cuánto de un cobro fue en efectivo, por transferencia o fiado (sirve para el pago dividido)
+  function partes(x){
+    const t = x.total!=null ? x.total : (x.valor||0);
+    if(x.metodoPago==='transferencia') return { efectivo:0, transferencia:t, medio:medioLabel(x.medioTransferencia), fiado:0 };
+    if(x.metodoPago==='fiado') return { efectivo:0, transferencia:0, medio:null, fiado:t };
+    if(x.metodoPago==='mixto'){ const e = Math.min(t, x.efectivoParte||0); return { efectivo:e, transferencia:t-e, medio:medioLabel(x.medioTransferencia), fiado:0 }; }
+    return { efectivo:t, transferencia:0, medio:null, fiado:0 };
+  }
+  function sumarPago(pagos, medios, x){
+    const q = partes(x);
+    pagos.efectivo += q.efectivo;
+    if(q.transferencia) medios[q.medio] = (medios[q.medio]||0) + q.transferencia;
+    if(q.fiado) pagos.fiado = (pagos.fiado||0) + q.fiado;
+  }
   function hoy0(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
   function isSameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
   function isSameMonth(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth(); }
@@ -2293,12 +2338,13 @@
   }
   function esFestivo(d){ return festivosDe(d.getFullYear()).has(d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()); }
   // Se cobra por fracciones: con fracción de 30 min, 30 min = media hora y 30 + 30 = 1 hora.
-  function calcularCobro(v, ms){
+  function calcularCobro(v, ms, minGratis){
     const fraccion = Math.max(1, parseInt(cfg.cobro.fraccionMin,10) || 30);
-    const gracia = Math.max(0, parseInt(cfg.cobro.graciaMin,10) || 0);
+    const gracia = Math.max(0, parseInt(cfg.cobro.graciaMin,10) || 0) + Math.max(0, minGratis||0);
     const minutos = Math.max(0, Math.floor(ms/60000));
     const fracciones = Math.max(1, Math.ceil(Math.max(0, minutos - gracia) / fraccion));
-    const tarifaHora = tarifaHoraAplicable(v.tipo, new Date(v.entrada));
+    const temporada = temporadaDe(new Date(v.entrada));
+    const tarifaHora = Math.round(tarifaHoraAplicable(v.tipo, new Date(v.entrada)) * (1 + (temporada ? temporada.pct : 0)/100));
     const valorFraccion = Math.round(tarifaHora * fraccion / 60);
     let bruto = fracciones * valorFraccion, topeDia = 0, diasTope = 0;
     const tope = (cfg.rates[v.tipo]||{}).dia||0;
@@ -2309,12 +2355,27 @@
       const conTope = dias*tope + Math.min(tope, frResto*valorFraccion);
       if(conTope < bruto){ bruto = conTope; topeDia = tope; diasTope = dias + (frResto*valorFraccion>=tope ? 1 : 0); }
     }
-    let descuentoPct = 0;
-    if(v.empresaId){ const emp = cfg.empresas.find(e=>e.id===v.empresaId); if(emp) descuentoPct = emp.descuentoPct||0; }
+    // evento: valor fijo por entrar durante el evento
+    const ev = cfg.evento, entradaD = new Date(v.entrada);
+    const enEvento = !!(ev && ev.activo && ev.valor && ev.desde && ev.hasta && entradaD >= new Date(ev.desde) && entradaD <= new Date(ev.hasta));
+    if(enEvento) bruto = ev.valor;
+    // si en esos minutos gratis cabe todo el tiempo, no se cobra
+    if(minGratis && minutos <= gracia) bruto = 0;
+    let descuentoPct = 0, descuentoNombre = '', topeConvenio = false;
+    if(v.empresaId){
+      const emp = cfg.empresas.find(e=>e.id===v.empresaId);
+      if(emp){
+        if(emp.topeHoras>0 && horasConvenioMes(emp.nombre) >= emp.topeHoras) topeConvenio = true;
+        else { descuentoPct = emp.descuentoPct||0; descuentoNombre = 'Convenio '+emp.nombre; }
+      }
+    }
+    const vip = (cfg.vip||[]).find(x=>x.placa===v.placa);
+    if(vip && (vip.pct||0) > descuentoPct){ descuentoPct = vip.pct; descuentoNombre = 'Cliente VIP'; }
     let valor = Math.round(bruto * (1 - descuentoPct/100));
     const red = cfg.cobro.redondeo||0;
     if(red>0) valor = Math.ceil(valor/red)*red;
-    return { minutos, fraccion, fracciones, minutosCobrados: fracciones*fraccion, tarifaHora, valorFraccion, bruto, descuentoPct, valor, topeDia, diasTope, bruto0: fracciones*valorFraccion };
+    return { minutos, fraccion, fracciones, minutosCobrados: fracciones*fraccion, tarifaHora, valorFraccion, bruto, descuentoPct, valor, topeDia, diasTope, bruto0: fracciones*valorFraccion,
+      temporada, enEvento, evento: enEvento ? ev.nombre : null, descuentoNombre, topeConvenio };
   }
 
   function costoActivoHTML(v){
@@ -2393,7 +2454,10 @@
     const p = contenedorId;
     $(contenedorId).innerHTML =
       '<div class="pago-box">'+
-        '<div class="seg full"><button type="button" data-m="efectivo" class="active">Efectivo</button><button type="button" data-m="transferencia">Transferencia</button>'+(conFiado?'<button type="button" data-m="fiado" class="js-fiado" hidden>Fiado</button>':'')+'</div>'+
+        '<div class="seg full"><button type="button" data-m="efectivo" class="active">Efectivo</button><button type="button" data-m="transferencia">Transferencia</button>'+'<button type="button" data-m="mixto">Dividido</button>'+(conFiado?'<button type="button" data-m="fiado" class="js-fiado" hidden>Fiado</button>':'')+'</div>'+
+        '<div class="field" id="'+p+'Mix" hidden><label for="'+p+'MixEfe">¿Cuánto paga en efectivo?</label><input class="input mono" type="number" min="0" step="500" id="'+p+'MixEfe">'+
+          '<label for="'+p+'MixMedio" style="margin-top:6px;">El resto por</label><select class="select" id="'+p+'MixMedio"><option value="nequi">Nequi</option><option value="daviplata">Daviplata</option><option value="bancolombia">Bancolombia</option><option value="bbva">BBVA</option><option value="tarjeta">Tarjeta (datáfono)</option><option value="transferencia">Otro banco</option></select>'+
+          '<div class="devuelta" id="'+p+'MixRes"></div></div>'+
         (conFiado ? '<div class="field" id="'+p+'Fia" hidden><label for="'+p+'Deudor">¿A quién se le fía?</label><input class="input" id="'+p+'Deudor" list="deudoresList" maxlength="60" placeholder="Nombre o placa"></div>' : '')+
         '<div class="field" id="'+p+'Efe"><label for="'+p+'Recibido">¿Con cuánto paga?</label><input class="input mono" type="number" min="0" step="500" id="'+p+'Recibido" placeholder="Ej. 10000">'+
           '<div class="billetes" id="'+p+'Bil"></div><div class="devuelta" id="'+p+'Dev"></div></div>'+
@@ -2406,6 +2470,7 @@
       box.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('active', b.dataset.m===metodo));
       $(p+'Efe').hidden = metodo!=='efectivo';
       $(p+'Tra').hidden = metodo!=='transferencia';
+      $(p+'Mix').hidden = metodo!=='mixto';
       if(conFiado){ $(p+'Fia').hidden = metodo!=='fiado'; box.querySelectorAll('.js-fiado').forEach(b=>{ b.hidden = !puedeFiar(); }); if(metodo==='fiado' && !puedeFiar()){ metodo='efectivo'; pintar(); return; } }
       devuelta();
     }
@@ -2418,6 +2483,7 @@
     function devuelta(){
       const total = getTotal(), el = $(p+'Dev');
       billetes(total);
+      if(metodo==='mixto'){ const e = Math.max(0, parseInt($(p+'MixEfe').value,10)||0); $(p+'MixRes').innerHTML = '<span>Por '+esc(medioLabel($(p+'MixMedio').value))+'</span><span class="mono">'+money(Math.max(0,total-e))+'</span>'; }
       const val = $(p+'Recibido').value;
       if(metodo!=='efectivo' || total<=0 || val===''){ el.innerHTML = ''; return; }
       const dif = (parseFloat(val)||0) - total;
@@ -2430,8 +2496,9 @@
       const bi = e.target.closest('[data-billete]'); if(bi){ $(p+'Recibido').value = bi.dataset.billete; devuelta(); }
     });
     $(p+'Recibido').addEventListener('input', devuelta);
+    $(p+'MixEfe').addEventListener('input', devuelta); $(p+'MixMedio').addEventListener('change', devuelta);
     return {
-      reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; if(conFiado) $(p+'Deudor').value=''; pintar(); },
+      reset(){ metodo='efectivo'; $(p+'Recibido').value=''; $(p+'Medio').value='nequi'; $(p+'MixEfe').value=''; if(conFiado) $(p+'Deudor').value=''; pintar(); },
       exacto(){ metodo='efectivo'; $(p+'Recibido').value = getTotal(); pintar(); },
       actualizarFiado(){ if(conFiado) box.querySelectorAll('.js-fiado').forEach(b=>{ b.hidden = !puedeFiar(); }); },
       refrescar: devuelta,
@@ -2440,10 +2507,13 @@
         const rec = parseFloat($(p+'Recibido').value);
         const recibido = (metodo==='efectivo' && !isNaN(rec)) ? rec : null;
         const deudor = metodo==='fiado' ? $(p+'Deudor').value.trim().slice(0,60) : null;
+        const efePart = metodo==='mixto' ? Math.max(0, parseInt($(p+'MixEfe').value,10)||0) : null;
         return {
           metodoPago: metodo, deudor,
           sinDeudor: metodo==='fiado' && !deudor,
-          medioTransferencia: metodo==='transferencia' ? $(p+'Medio').value : null,
+          mixtoMal: metodo==='mixto' && (!efePart || efePart>=total),
+          efectivoParte: efePart,
+          medioTransferencia: metodo==='transferencia' ? $(p+'Medio').value : metodo==='mixto' ? $(p+'MixMedio').value : null,
           efectivoRecibido: recibido,
           vuelto: recibido!=null ? Math.max(0, recibido-total) : null,
           falta: recibido!=null && recibido < total
@@ -2454,14 +2524,16 @@
 
   /* ---------- salida ---------- */
   let salidaId = null;
-  const pagoSalida = controlPago('salidaPago', ()=> calcularSalida().total, true);
+  const pagoSalida = controlPago('salidaPago', ()=> calcularSalida().totalCobrar||0, true);
+  let salidaTienda = {};
 
   function calcularSalida(){
     const v = activos.find(a=>a.id===salidaId);
     if(!v) return { total:0 };
     const ms = Date.now() - new Date(v.entrada);
     const esSub = esSubModo(v.modo);
-    const cobro = esSub ? null : calcularCobro(v, ms);
+    const validacion = (!esSub && $('salidaValidacion') && $('salidaValidacion').value) ? (cfg.validaciones||[])[+$('salidaValidacion').value] : null;
+    const cobro = esSub ? null : calcularCobro(v, ms, validacion ? validacion.minutos : 0);
     const base = cobro ? cobro.valor : 0;
     const servIds = Array.from(document.querySelectorAll('.salida-serv:checked')).map(c=>c.dataset.id);
     const servs = servIds.map(id=>cfg.servicios.find(s=>s.id===id)).filter(Boolean);
@@ -2476,7 +2548,12 @@
     const subtotal = base - descFid - descCupon + servTotal + perdido + pernocta;
     const ivaPct = cfg.facturacion.ivaPct || 0;
     const iva = Math.round(subtotal*ivaPct/100);
-    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, gratis, descFid, cupon, descCupon, subtotal, ivaPct, iva, total: subtotal + iva };
+    // productos de la tienda que se cobran junto con la salida
+    const tiendaItems = Object.entries(salidaTienda).map(([id,cant])=>{ const p = productos.find(x=>x.id===id); return p ? { productoId:id, nombre:p.nombre, cantidad:cant, precio:p.precio, costo:p.costo||0 } : null; }).filter(Boolean);
+    const tiendaTotal = tiendaItems.reduce((s,i)=>s+i.precio*i.cantidad,0);
+    const propina = Math.max(0, parseInt(($('salidaPropina')||{}).value,10)||0);
+    return { v, ms, esSub, cobro, base, servs, servTotal, perdido, noches, pernocta, gratis, descFid, cupon, descCupon, validacion, subtotal, ivaPct, iva, total: subtotal + iva,
+      tiendaItems, tiendaTotal, propina, totalCobrar: subtotal + iva + tiendaTotal };
   }
 
   function abrirSalida(id){
@@ -2497,10 +2574,18 @@
         ? '<label class="serv-check"><input type="checkbox" id="salidaGratis" checked> Visita gratis por fidelidad <span class="p">'+sellos+' sellos</span></label>'
         : '<div class="serv-check" style="cursor:default;">Tarjeta de sellos <span class="p">'+sellos+' de '+(meta-1)+'</span></div>';
     }
+    if(!esSubModo(v.modo) && (cfg.validaciones||[]).length)
+      $('salidaServicios').innerHTML += '<div class="field" style="margin:8px 0;"><label for="salidaValidacion">Validación (minutos gratis)</label><select class="select" id="salidaValidacion"><option value="">Ninguna</option>'+
+        cfg.validaciones.map((x,i)=>'<option value="'+i+'">'+esc(x.nombre)+' · '+x.minutos+' min</option>').join('')+'</select></div>';
     if(!esSubModo(v.modo) && (cfg.cupones||[]).length)
       $('salidaServicios').innerHTML += '<div class="field" style="margin:8px 0;"><label for="salidaCupon">Cupón de descuento</label><input class="input mono upper" id="salidaCupon" maxlength="16" placeholder="Opcional" autocomplete="off"></div>';
     if(!esSubModo(v.modo) && cfg.cobro.ticketPerdido>0)
       $('salidaServicios').innerHTML += '<label class="serv-check"><input type="checkbox" id="salidaPerdido"> Perdió el ticket <span class="p">'+money(cfg.cobro.ticketPerdido)+'</span></label>';
+    salidaTienda = {};
+    const vendibles = productos.filter(p=>p.servicio || (p.stock||0)>0);
+    $('salidaServicios').innerHTML += (vendibles.length ? '<div class="field" style="margin:8px 0;"><label for="salidaProd">Agregar de la tienda</label><div class="row" style="flex-wrap:nowrap;"><select class="select" id="salidaProd" style="flex:1;"><option value="">Elegir producto…</option>'+
+        vendibles.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.nombre)+' · '+money(p.precio)+'</option>').join('')+'</select><button class="btn btn-sm" type="button" id="btnSalidaProd">Agregar</button></div><div id="salidaProdLista"></div></div>' : '')+
+      '<div class="field" style="margin:8px 0;"><label for="salidaPropina">Propina (opcional, no suma a la caja)</label><input class="input mono" id="salidaPropina" type="number" min="0" step="500" placeholder="0"></div>';
     pagoSalida.reset();
     actualizarSalida();
     abrirModal('salidaModal');
@@ -2508,6 +2593,15 @@
   }
   $('salidaServicios').addEventListener('change', actualizarSalida);
   $('salidaServicios').addEventListener('input', e=>{ if(e.target.id==='salidaCupon') actualizarSalida(); });
+  $('salidaServicios').addEventListener('click', e=>{
+    if(e.target.id==='btnSalidaProd'){
+      const id = $('salidaProd').value, p = productos.find(x=>x.id===id); if(!p) return;
+      const n = (salidaTienda[id]||0) + 1;
+      if(!p.servicio && n > (p.stock||0)){ showToast('Solo quedan '+(p.stock||0)+' de '+p.nombre+'.'); return; }
+      salidaTienda[id] = n; actualizarSalida();
+    }
+    const q = e.target.closest('[data-quitar-st]'); if(q){ delete salidaTienda[q.dataset.quitarSt]; actualizarSalida(); }
+  });
 
   function actualizarSalida(){
     const c = calcularSalida(); if(!c.v) return;
@@ -2521,7 +2615,11 @@
       html += '<div class="brow"><span>'+k.fracciones+' × '+k.fraccion+' min a '+money(k.valorFraccion)+'</span><span class="v">'+money(k.bruto0)+'</span></div>';
       if(k.topeDia) html += '<div class="brow"><span>Tope por día ('+money(k.topeDia)+')</span><span class="v">'+money(k.bruto)+'</span></div>';
       if(esFestivo(new Date(c.v.entrada))) html += '<div class="brow"><span>Entró en festivo: tarifa de noche</span><span class="v">'+money(k.tarifaHora)+'/h</span></div>';
-      if(k.descuentoPct) html += '<div class="brow"><span>Convenio −'+k.descuentoPct+'%</span><span class="v">−'+money(k.bruto-k.valor)+'</span></div>';
+      if(k.descuentoPct) html += '<div class="brow"><span>'+esc(k.descuentoNombre||'Descuento')+' −'+k.descuentoPct+'%</span><span class="v">−'+money(k.bruto-k.valor)+'</span></div>';
+      if(k.topeConvenio) html += '<div class="brow"><span style="color:var(--red);">El convenio ya usó sus horas del mes</span><span class="v"></span></div>';
+      if(k.temporada) html += '<div class="brow"><span>Temporada '+esc(k.temporada.nombre)+' +'+k.temporada.pct+'%</span><span class="v">'+money(k.tarifaHora)+'/h</span></div>';
+      if(k.enEvento) html += '<div class="brow"><span>Tarifa del evento '+esc(k.evento||'')+'</span><span class="v">'+money(k.bruto)+'</span></div>';
+      if(c.validacion) html += '<div class="brow"><span>'+esc(c.validacion.nombre)+': '+c.validacion.minutos+' min gratis</span><span class="v"></span></div>';
       if(c.perdido) html += '<div class="brow"><span>Ticket perdido</span><span class="v">'+money(c.perdido)+'</span></div>';
       if(c.pernocta) html += '<div class="brow"><span>Pasó '+c.noches+' noche(s)</span><span class="v">'+money(c.pernocta)+'</span></div>';
       if(c.descFid) html += '<div class="brow"><span>Visita gratis (fidelidad)</span><span class="v">−'+money(c.descFid)+'</span></div>';
@@ -2531,9 +2629,14 @@
       if(c.ivaPct) html += '<div class="brow"><span>IVA '+c.ivaPct+'%</span><span class="v">'+money(c.iva)+'</span></div>';
       html += '<div class="brow total"><span>Total a cobrar</span><span class="v">'+money(c.total)+'</span></div>';
     }
+    if(c.tiendaItems.length){
+      html += c.tiendaItems.map(i=>'<div class="brow"><span>'+i.cantidad+' × '+esc(i.nombre)+'</span><span class="v">'+money(i.precio*i.cantidad)+'</span></div>').join('');
+      html += '<div class="brow total"><span>Total con la tienda</span><span class="v">'+money(c.totalCobrar)+'</span></div>';
+    }
+    if($('salidaProdLista')) $('salidaProdLista').innerHTML = c.tiendaItems.map(i=>'<span class="chip-btn" style="margin:4px 4px 0 0;display:inline-flex;gap:6px;">'+i.cantidad+'× '+esc(i.nombre)+' <span data-quitar-st="'+esc(i.productoId)+'" style="cursor:pointer;">✕</span></span>').join('');
     $('salidaDetalle').innerHTML = html;
     actualizarPantallaCliente();
-    pagoSalida.mostrar(c.total>0);
+    pagoSalida.mostrar(c.totalCobrar>0);
     pagoSalida.refrescar();
   }
 
@@ -2546,8 +2649,9 @@
       if(!confirm('Esta placa tiene orden de NO DEJAR SALIR: '+alS.motivo+'\n\n¿Autoriza la salida?')) return;
       bitacora('Salida autorizada con alerta', c.v.placa+' · '+alS.motivo);
     }
-    const pago = c.total>0 ? pagoSalida.datos(c.total) : { metodoPago:null, medioTransferencia:null, efectivoRecibido:null, vuelto:null, falta:false };
+    const pago = c.totalCobrar>0 ? pagoSalida.datos(c.totalCobrar) : { metodoPago:null, medioTransferencia:null, efectivoRecibido:null, vuelto:null, falta:false };
     if(pago.falta){ showToast('El dinero recibido no alcanza para el total.'); return; }
+    if(pago.mixtoMal){ showToast('En pago dividido escriba cuánto paga en efectivo (menos que el total).'); return; }
     if(pago.sinDeudor){ showToast('Escriba a quién se le fía.'); return; }
     $('btnConfirmarSalida').disabled = true;
     try{
@@ -2563,6 +2667,9 @@
         operador: perfil.nombre, operadorId: perfil.uid,
         operadorEntrada: c.v.operador || '', operadorEntradaId: c.v.operadorId || null,
         puesto: c.v.puesto || null, conductor: c.v.conductor || null, cedula: c.v.cedula || null, pernocta: c.pernocta || 0,
+        propina: c.propina || 0, validacion: c.validacion ? c.validacion.nombre : null, evento: k && k.enEvento ? k.evento : null, temporada: k && k.temporada ? k.temporada.nombre : null,
+        descuentoNombre: k ? (k.descuentoNombre||null) : null, efectivoParte: pago.metodoPago==='mixto' ? Math.min(c.total, pago.efectivoParte||0) : null,
+        tiendaItems: c.tiendaItems.map(i=>({ nombre:i.nombre, cantidad:i.cantidad, precio:i.precio })), tiendaTotal: c.tiendaTotal,
         fidelidad: !!c.gratis, descuentoFidelidad: c.descFid || 0, cupon: c.descCupon ? c.cupon.codigo : null, descuentoCupon: c.descCupon || 0, deudor: pago.deudor || null,
         empresaNombre: emp ? emp.nombre : null, descuentoPct: k ? k.descuentoPct : 0,
         numeroFactura: (cfg.facturacion.prefijo||'FE') + '-' + pad(n),
@@ -2575,7 +2682,18 @@
       // tarjeta de sellos: suma uno por salida cobrada y vuelve a cero cuando se usa la visita gratis
       if(cfg.fidelidad.activo && !c.esSub && clientes.some(x=>x.placa===r.placa) && (c.gratis || r.total>0))
         batch.set(db.collection('clientes').doc(r.placa), { sellos: c.gratis ? 0 : FV.increment(1) }, { merge:true });
-      if(pago.metodoPago==='fiado') cargoFiado(batch, pago.deudor, r.total, r.numeroFactura, 'Parqueo '+r.placa);
+      if(pago.metodoPago==='fiado' && r.total) cargoFiado(batch, pago.deudor, r.total, r.numeroFactura, 'Parqueo '+r.placa);
+      // los productos de la tienda quedan como una venta aparte (suman a la tienda en la caja)
+      if(c.tiendaItems.length){
+        const nv = await siguienteNumero('venta');
+        const venta = { id:nuevoId(), numero:'V-'+pad(nv), fecha:r.salida, items:c.tiendaItems, total:c.tiendaTotal, placa:r.placa, comprobante:r.numeroFactura,
+          metodoPago:pago.metodoPago, medioTransferencia:pago.medioTransferencia, efectivoRecibido:null, vuelto:null, deudor:pago.deudor||null,
+          efectivoParte: pago.metodoPago==='mixto' ? Math.max(0, (pago.efectivoParte||0) - (r.efectivoParte||0)) : null, operador:perfil.nombre, operadorId:perfil.uid };
+        batch.set(db.collection('ventas').doc(venta.id), venta);
+        c.tiendaItems.forEach(it=>{ const pr = productos.find(x=>x.id===it.productoId); if(!pr || !pr.servicio) batch.update(db.collection('productos').doc(it.productoId), { stock: FV.increment(-it.cantidad) }); });
+        if(pago.metodoPago==='fiado') cargoFiado(batch, pago.deudor, venta.total, venta.numero, 'Tienda con la salida de '+r.placa);
+        r.ventaNumero = venta.numero;
+      }
       batch.commit().catch(errGuardar);
       salidaId = null;
       cerrarModal('salidaModal');
@@ -2646,6 +2764,9 @@
     if(r.empresaNombre) l.push('Convenio: '+r.empresaNombre+' -'+r.descuentoPct+'%');
     (r.serviciosNombres||[]).forEach(n=>l.push('Servicio: '+n));
     if(r.ticketPerdido) l.push('Ticket perdido: '+money(r.ticketPerdido));
+    if(r.descuentoNombre) l.push('Descuento: '+r.descuentoNombre);
+    if(r.validacion) l.push('Validación: '+r.validacion);
+    (r.tiendaItems||[]).forEach(i=>l.push(i.cantidad+' x '+i.nombre+': '+money(i.precio*i.cantidad)));
     if(r.pernocta) l.push('Recargo por noche: '+money(r.pernocta));
     if(r.descuentoFidelidad) l.push('Visita gratis: -'+money(r.descuentoFidelidad));
     if(r.descuentoCupon) l.push('Cupón '+r.cupon+': -'+money(r.descuentoCupon));
@@ -2654,7 +2775,7 @@
     else{
       l.push('Subtotal: '+money(r.subtotal!=null?r.subtotal:r.total));
       if(r.ivaPct) l.push('IVA ('+r.ivaPct+'%): '+money(r.iva||0));
-      l.push('TOTAL: '+money(r.total), 'Pago: '+pagoLabel(r));
+      l.push('TOTAL: '+money(r.total + (r.tiendaTotal||0)), 'Pago: '+pagoLabel(r));
       if(r.efectivoRecibido!=null) l.push('Recibido: '+money(r.efectivoRecibido), 'Devuelta: '+money(r.vuelto||0));
     }
     if(r.operador) l.push('Atendió: '+r.operador);
@@ -2668,6 +2789,9 @@
     if(r.empresaNombre) html += fila('Convenio', r.empresaNombre+' -'+r.descuentoPct+'%');
     (r.serviciosNombres||[]).forEach(n=>{ html += fila('Servicio', n); });
     if(r.ticketPerdido) html += fila('Ticket perdido', money(r.ticketPerdido));
+    if(r.descuentoNombre) html += fila('Descuento', r.descuentoNombre);
+    if(r.validacion) html += fila('Validación', r.validacion);
+    (r.tiendaItems||[]).forEach(i=>{ html += fila(i.cantidad+' × '+i.nombre, money(i.precio*i.cantidad)); });
     if(r.pernocta) html += fila('Recargo por noche', money(r.pernocta));
     if(r.descuentoFidelidad) html += fila('Visita gratis', '−'+money(r.descuentoFidelidad));
     if(r.descuentoCupon) html += fila('Cupón '+r.cupon, '−'+money(r.descuentoCupon));
@@ -2677,7 +2801,7 @@
     }else{
       html += fila('Subtotal', money(r.subtotal));
       if(r.ivaPct) html += fila('IVA ('+r.ivaPct+'%)', money(r.iva||0));
-      html += '<div class="t-big">'+money(r.total)+'</div>'+fila('Pago', pagoLabel(r));
+      html += '<div class="t-big">'+money(r.total + (r.tiendaTotal||0))+'</div>'+fila('Pago', pagoLabel(r));
       if(r.efectivoRecibido!=null) html += fila('Recibido', money(r.efectivoRecibido))+fila('Devuelta', money(r.vuelto||0));
     }
     if(r.operador) html += fila('Atendió', r.operador);
@@ -2733,8 +2857,8 @@
     const tienda = vts.reduce((s,v)=>s+(v.total||0),0);
     const pms = pagosMens.filter(x=> delOp(x) && x.fecha>=ini && x.fecha<=fin);
     const mensT = pms.reduce((s,x)=>s+(x.valor||0),0);
-    const abT = fiados.filter(x=> x.tipo==='abono' && x.metodoPago==='efectivo' && x.uid===t.perfilId && x.fecha>=ini && x.fecha<=fin).reduce((s,x)=>s+(x.valor||0),0);
-    const efectivo = salidas.concat(vts, pms).filter(x=>x.metodoPago==='efectivo').reduce((s,x)=>s+(x.total||0),0) + abT;
+    const abT = fiados.filter(x=> x.tipo==='abono' && x.uid===t.perfilId && x.fecha>=ini && x.fecha<=fin).reduce((s,x)=>s+partes(x).efectivo,0);
+    const efectivo = salidas.concat(vts, pms).reduce((s,x)=>s+partes(x).efectivo,0) + abT;
     const base = t.base||0, retiros = (t.retiros||[]).reduce((s,r)=>s+(r.valor||0),0);
     return { ingresos, salidas: salidas.length, ventas: vts.length, parqueo, tienda, mensualidades: mensT, total: parqueo+tienda+mensT, efectivo, base, retiros, esperado: base+efectivo-retiros };
   }
@@ -2953,6 +3077,7 @@
     const total = items.reduce((s,i)=>s+i.precio*i.cantidad,0);
     const pago = pagoPOS.datos(total);
     if(pago.falta){ showToast('El dinero recibido no alcanza para el total.'); return; }
+    if(pago.mixtoMal){ showToast('En pago dividido escriba cuánto paga en efectivo (menos que el total).'); return; }
     if(pago.sinDeudor){ showToast('Escriba a quién se le fía.'); return; }
     $('btnCobrarVenta').disabled = true;
     try{
@@ -2960,7 +3085,7 @@
       const venta = {
         id: nuevoId(), numero: 'V-'+pad(n), fecha: new Date().toISOString(), items, total,
         metodoPago: pago.metodoPago, medioTransferencia: pago.medioTransferencia,
-        efectivoRecibido: pago.efectivoRecibido, vuelto: pago.vuelto, deudor: pago.deudor || null,
+        efectivoRecibido: pago.efectivoRecibido, vuelto: pago.vuelto, deudor: pago.deudor || null, efectivoParte: pago.efectivoParte,
         operador: perfil.nombre, operadorId: perfil.uid
       };
       const batch = db.batch();
@@ -3172,18 +3297,18 @@
       if(!h.total) return;
       const f = new Date(h.salida);
       for(const k in periodos) if(periodos[k](f)){ parqueo[k] += h.total; if(porTipo[h.tipo]) porTipo[h.tipo][k] += h.total; }
-      if(isSameDay(f,hoy)){ if(h.metodoPago==='transferencia'){ const m = medioLabel(h.medioTransferencia); medios[m]=(medios[m]||0)+h.total; } else if(h.metodoPago==='fiado') pagos.fiado = (pagos.fiado||0)+h.total; else pagos.efectivo += h.total; }
+      if(isSameDay(f,hoy)) sumarPago(pagos, medios, h);
     });
     ventas.forEach(v=>{
       const f = new Date(v.fecha);
       for(const k in periodos) if(periodos[k](f)) tienda[k] += v.total;
-      if(isSameDay(f,hoy)){ if(v.metodoPago==='transferencia'){ const m = medioLabel(v.medioTransferencia); medios[m]=(medios[m]||0)+v.total; } else if(v.metodoPago==='fiado') pagos.fiado = (pagos.fiado||0)+v.total; else pagos.efectivo += v.total; }
+      if(isSameDay(f,hoy)) sumarPago(pagos, medios, v);
       if(isSameMonth(f,hoy)){ vendidoMes += v.total; ganancia += v.items.reduce((s,i)=>s+(i.precio-(i.costo||0))*i.cantidad,0); }
     });
     pagosMens.forEach(pm=>{
       const f = new Date(pm.fecha);
       for(const k in periodos) if(periodos[k](f)) mens[k] += pm.valor||0;
-      if(isSameDay(f,hoy)){ if(pm.metodoPago==='transferencia'){ const m = medioLabel(pm.medioTransferencia); medios[m]=(medios[m]||0)+pm.valor; } else pagos.efectivo += pm.valor||0; }
+      if(isSameDay(f,hoy)) sumarPago(pagos, medios, pm);
     });
     const ids = { hoy:'cajaHoy', semana:'cajaSemana', quincena:'cajaQuincena', mes:'cajaMes' };
     for(const k in ids){
@@ -3198,8 +3323,10 @@
       '<tr><td><strong>Mensualidades</strong></td>'+celdas(mens)+'</tr>'+
       '<tr class="tot"><td>Total</td>'+celdas(total)+'</tr>';
     const abonosHoy = fiados.filter(x=>x.tipo==='abono' && isSameDay(new Date(x.fecha), hoy));
-    abonosHoy.forEach(a=>{ if(a.metodoPago==='transferencia'){ const m = medioLabel(a.medioTransferencia); medios[m]=(medios[m]||0)+a.valor; } else pagos.efectivo += a.valor; });
+    abonosHoy.forEach(a=> sumarPago(pagos, medios, a));
     let ph = '<div class="list-row"><span>Efectivo</span><span class="money">'+money(pagos.efectivo)+'</span></div>';
+    const propinas = historial.filter(h=>h.propina && isSameDay(new Date(h.salida), hoy)).reduce((s,h)=>s+h.propina,0);
+    if(propinas) ph += '<div class="list-row"><span>Propinas (para el personal)</span><span class="money muted">'+money(propinas)+'</span></div>';
     if(pagos.fiado) ph += '<div class="list-row"><span>Fiado (por cobrar)</span><span class="money" style="color:var(--red);">'+money(pagos.fiado)+'</span></div>';
     if(abonosHoy.length) ph += '<div class="list-row"><span class="muted">Incluye abonos de fiado</span><span class="money muted">'+money(abonosHoy.reduce((s,a)=>s+a.valor,0))+'</span></div>';
     const totalTrans = Object.values(medios).reduce((s,x)=>s+x,0);
@@ -3430,7 +3557,8 @@
     $('btnConfirmarRenovar').disabled = true;
     try{
       const n = valor>0 ? await siguienteNumero('factura') : null;
-      const r = { id:nuevoId(), fecha:new Date().toISOString(), placa:s.placa, cliente:s.cliente||'', tipo:s.tipo, periodicidad:s.periodicidad,
+      if(pago.mixtoMal){ showToast('En pago dividido escriba cuánto paga en efectivo (menos que el total).'); return; }
+      const r = { efectivoParte: pago.efectivoParte, id:nuevoId(), fecha:new Date().toISOString(), placa:s.placa, cliente:s.cliente||'', tipo:s.tipo, periodicidad:s.periodicidad,
         desde, hasta:nueva, valor, total:valor, numeroFactura: n ? (cfg.facturacion.prefijo||'FE')+'-'+pad(n) : null,
         metodoPago:pago.metodoPago, medioTransferencia:pago.medioTransferencia, efectivoRecibido:pago.efectivoRecibido, vuelto:pago.vuelto,
         operador:perfil.nombre, operadorId:perfil.uid };
@@ -3653,6 +3781,7 @@
     $('cfgChecklist').value = (cfg.checklist||[]).join('\n');
     $('cfgFidelidad').checked = !!cfg.fidelidad.activo; $('cfgFidVisitas').value = cfg.fidelidad.visitas||10;
     renderCupones();
+    renderTarifasEspeciales();
     $('cfgHorasAlerta').value = cfg.parqueo.horasAlerta;
     renderPlacasAlerta();
     document.querySelectorAll('[data-rol-aviso]').forEach(c=>{ c.checked = cfg.avisosStock.roles.includes(c.dataset.rolAviso); });
@@ -3752,7 +3881,8 @@
   function renderEmpresas(){
     if(!esAdmin() || enfocadoDentro('empLista')) return;
     $('empLista').innerHTML = cfg.empresas.length ? cfg.empresas.map(e=>
-      '<div class="list-row" style="border-bottom:none;padding-bottom:2px;"><strong>'+esc(e.nombre)+' <span class="chip chip-blue">−'+esc(e.descuentoPct)+'%</span></strong><button class="btn-icon" data-borrar-emp="'+esc(e.id)+'">✕</button></div>'+
+      '<div class="list-row" style="border-bottom:none;padding-bottom:2px;"><strong>'+esc(e.nombre)+' <span class="chip chip-blue">−'+esc(e.descuentoPct)+'%</span></strong>'+
+        '<span class="row" style="flex-wrap:nowrap;align-items:center;gap:6px;"><span class="meta">Tope h/mes</span><input class="input mono" style="width:70px;padding:5px 7px;" type="number" min="0" data-tope-emp="'+esc(e.id)+'" value="'+(e.topeHoras||0)+'" title="0 = sin tope"><span class="meta">usó '+horasConvenioMes(e.nombre).toFixed(1)+' h</span><button class="btn-icon" data-borrar-emp="'+esc(e.id)+'">✕</button></span></div>'+
       '<div class="plates" style="border-bottom:1px solid var(--line);padding-bottom:10px;">'+(e.placas||[]).map(p=>'<span class="plate-chip">'+esc(p)+'<button class="btn-icon" style="font-size:11px;" data-quitar-placa="'+esc(p)+'" data-emp="'+esc(e.id)+'">✕</button></span>').join('')+
       '<div class="row" style="margin-top:6px;"><input class="input mono upper" style="width:110px;padding:6px 8px;" placeholder="Placa" data-placa-emp="'+esc(e.id)+'" maxlength="10"><button class="btn btn-sm" data-add-placa="'+esc(e.id)+'">Añadir placa</button></div></div>'
     ).join('') : '<div class="empty">No hay convenios todavía.</div>';
@@ -3770,6 +3900,10 @@
       inp.value = '';
       guardarConfig({ empresas: cfg.empresas.map(x=> x.id===add.dataset.addPlaca ? Object.assign({}, x, { placas:[...new Set((x.placas||[]).concat(placa))] }) : x) }, placa+' asignada.');
     }
+  });
+  $('empLista').addEventListener('change', e=>{
+    const t = e.target.closest('[data-tope-emp]'); if(!t) return;
+    guardarConfig({ empresas: cfg.empresas.map(x=> x.id===t.dataset.topeEmp ? Object.assign({}, x, { topeHoras: Math.max(0, parseInt(t.value,10)||0) }) : x) }, 'Tope de horas guardado.');
   });
   $('btnAddEmp').addEventListener('click', ()=>{
     const nombre = $('empNombre').value.trim().slice(0,60), pct = Math.max(0, Math.min(100, parseInt($('empDescuento').value,10)||0));
@@ -3988,7 +4122,9 @@
       '<div class="brow"><span>Tarifa aplicada'+(esFestivo(ent)?' (festivo)':'')+'</span><span class="v">'+money(k.tarifaHora)+'/h</span></div>'+
       '<div class="brow"><span>'+k.fracciones+' × '+k.fraccion+' min a '+money(k.valorFraccion)+'</span><span class="v">'+money(k.bruto0)+'</span></div>'+
       (k.topeDia ? '<div class="brow"><span>Con tope por día</span><span class="v">'+money(k.bruto)+'</span></div>' : '')+
-      (k.descuentoPct ? '<div class="brow"><span>Convenio −'+k.descuentoPct+'%</span><span class="v">−'+money(k.bruto-k.valor)+'</span></div>' : '')+
+      (k.temporada ? '<div class="brow"><span>Temporada '+esc(k.temporada.nombre)+'</span><span class="v">+'+k.temporada.pct+'%</span></div>' : '')+
+      (k.enEvento ? '<div class="brow"><span>Tarifa del evento '+esc(k.evento||'')+'</span><span class="v">'+money(k.bruto)+'</span></div>' : '')+
+      (k.descuentoPct ? '<div class="brow"><span>'+esc(k.descuentoNombre||'Descuento')+' −'+k.descuentoPct+'%</span><span class="v">−'+money(k.bruto-k.valor)+'</span></div>' : '')+
       '<div class="brow total"><span>Pagaría</span><span class="v">'+money(k.valor)+'</span></div>';
   }
   ['simTipo','simEmpresa','simEntrada','simSalida'].forEach(id=> $(id).addEventListener('input', renderSimulador));
@@ -4037,14 +4173,14 @@
     const ing = activos.concat(historial).filter(v=>isSameDay(new Date(v.entrada), hoy)).length;
     const pms = pagosMens.filter(x=>isSameDay(new Date(x.fecha), hoy));
     const parq = sal.reduce((s,h)=>s+(h.total||0),0), tienda = vts.reduce((s,v)=>s+(v.total||0),0), mensH = pms.reduce((s,x)=>s+(x.valor||0),0);
-    const efe = sal.concat(vts, pms).filter(x=>x.metodoPago==='efectivo').reduce((s,x)=>s+(x.total||0),0);
+    const efe = sal.concat(vts, pms).reduce((s,x)=>s+partes(x).efectivo,0);
     const gHoy = gastos.filter(g=>g.fecha===aLocal(hoy).slice(0,10)).reduce((s,g)=>s+(g.valor||0),0);
     const faltas = turnos.filter(t=>t.fin && t.diferencia<0 && isSameDay(new Date(t.fin), hoy));
     const bajos = productos.filter(p=>(p.stock||0)<=minDe(p));
     const l = ['*'+cfg.brand+'* · resumen del '+hoy.toLocaleDateString('es-CO',{weekday:'long', day:'numeric', month:'long'}), '',
       'Vehículos que entraron: '+ing, 'Salidas cobradas: '+sal.length, 'Dentro ahora: '+activos.length, '',
       'Parqueo: '+money(parq), 'Tienda: '+money(tienda)+' ('+vts.length+' ventas)'].concat(mensH ? ['Mensualidades: '+money(mensH)+' ('+pms.length+')'] : [],
-      ['*Total: '+money(parq+tienda+mensH)+'*', 'Efectivo: '+money(efe)+' · Transferencias: '+money(sal.concat(vts, pms).filter(x=>x.metodoPago==='transferencia').reduce((s,x)=>s+(x.total||0),0))]);
+      ['*Total: '+money(parq+tienda+mensH)+'*', 'Efectivo: '+money(efe)+' · Transferencias: '+money(sal.concat(vts, pms).reduce((s,x)=>s+partes(x).transferencia,0))]);
     const fiadoHoy = sal.concat(vts).filter(x=>x.metodoPago==='fiado').reduce((s,x)=>s+(x.total||0),0);
     if(fiadoHoy) l.push('Fiado hoy: '+money(fiadoHoy));
     if(gHoy) l.push('Gastos de hoy: '+money(gHoy));
@@ -4138,6 +4274,55 @@
   }
   setInterval(()=>{ if(perfil) revisarEquipo(); }, 30*60000);
 
+  /* ================= TARIFAS ESPECIALES ================= */
+  function temporadaDe(d){
+    const md = String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return (cfg.temporadas||[]).find(t=> t.desde<=t.hasta ? (md>=t.desde && md<=t.hasta) : (md>=t.desde || md<=t.hasta)) || null;
+  }
+  function horasConvenioMes(nombre){
+    const hoy = new Date();
+    return historial.filter(h=>h.empresaNombre===nombre && isSameMonth(new Date(h.salida), hoy)).reduce((s,h)=>s+(h.minutosCobrados||h.minutos||0),0)/60;
+  }
+  function renderTarifasEspeciales(){
+    if(!esAdmin()) return;
+    const fila = (txt, attr)=> '<div class="list-row"><span>'+txt+'</span><button class="btn-icon" '+attr+'>✕</button></div>';
+    $('vipLista').innerHTML = cfg.vip.map((x,i)=>fila('<span class="placa-txt" style="font-size:13px;">'+esc(x.placa)+'</span> −'+x.pct+'% '+(x.nota?'<span class="muted">· '+esc(x.nota)+'</span>':''), 'data-quitar="vip" data-i="'+i+'"')).join('') || '<div class="empty">Sin clientes VIP.</div>';
+    $('valLista').innerHTML = cfg.validaciones.map((x,i)=>fila(esc(x.nombre)+' · <strong>'+x.minutos+' min</strong>', 'data-quitar="validaciones" data-i="'+i+'"')).join('') || '<div class="empty">Sin validaciones.</div>';
+    $('tempLista').innerHTML = cfg.temporadas.map((x,i)=>fila(esc(x.nombre)+' · '+x.desde+' a '+x.hasta+' · <strong>+'+x.pct+'%</strong>', 'data-quitar="temporadas" data-i="'+i+'"')).join('') || '<div class="empty">Sin temporadas.</div>';
+    if(!enfocadoDentro('evNombre') && document.activeElement!==$('evValor')){
+      $('evActivo').checked = !!cfg.evento.activo; $('evNombre').value = cfg.evento.nombre||''; $('evValor').value = cfg.evento.valor||'';
+      $('evDesde').value = cfg.evento.desde||''; $('evHasta').value = cfg.evento.hasta||'';
+    }
+  }
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-quitar][data-i]'); if(!b || !esAdmin()) return;
+    const k = b.dataset.quitar; if(!['vip','temporadas','validaciones'].includes(k)) return;
+    guardarConfig({ [k]: cfg[k].filter((_,i)=>i!==+b.dataset.i) }, 'Quitado.');
+  });
+  $('btnAddVip').addEventListener('click', ()=>{
+    const placa = limpiarPlaca($('vipPlaca').value), pct = Math.min(100, Math.max(1, parseInt($('vipPct').value,10)||0));
+    if(placa.length<3 || !parseInt($('vipPct').value,10)){ showToast('Escriba la placa y el % de descuento.'); return; }
+    guardarConfig({ vip: cfg.vip.filter(x=>x.placa!==placa).concat([{ placa, pct, nota:$('vipNota').value.trim().slice(0,60) }]) }, placa+' es VIP.');
+    bitacora('Cliente VIP', placa+' · −'+pct+'%');
+    ['vipPlaca','vipPct','vipNota'].forEach(k=>$(k).value='');
+  });
+  $('btnAddVal').addEventListener('click', ()=>{
+    const nombre = $('valNombre').value.trim().slice(0,60), minutos = Math.min(600, Math.max(1, parseInt($('valMin').value,10)||0));
+    if(!nombre || !parseInt($('valMin').value,10)){ showToast('Escriba el nombre y los minutos.'); return; }
+    guardarConfig({ validaciones: cfg.validaciones.concat([{ nombre, minutos }]) }, 'Validación agregada.');
+    $('valNombre').value=''; $('valMin').value='';
+  });
+  $('btnAddTemp').addEventListener('click', ()=>{
+    const nombre = $('tempNombre').value.trim().slice(0,40), d = $('tempDesde').value, h = $('tempHasta').value, pct = Math.min(200, Math.max(1, parseInt($('tempPct').value,10)||0));
+    if(!nombre || !d || !h || !parseInt($('tempPct').value,10)){ showToast('Escriba nombre, fechas y porcentaje.'); return; }
+    guardarConfig({ temporadas: cfg.temporadas.concat([{ nombre, desde:d.slice(5), hasta:h.slice(5), pct }]) }, 'Temporada agregada.');
+    bitacora('Temporada', nombre+' +'+pct+'%');
+    ['tempNombre','tempDesde','tempHasta','tempPct'].forEach(k=>$(k).value='');
+  });
+  ['evActivo','evNombre','evValor','evDesde','evHasta'].forEach(id=> $(id).addEventListener('change', ()=>{
+    guardarConfig({ evento:{ activo:$('evActivo').checked, nombre:$('evNombre').value.trim().slice(0,60), valor:Math.max(0, parseInt($('evValor').value,10)||0), desde:$('evDesde').value, hasta:$('evHasta').value } }, 'Evento guardado.');
+  }));
+
   /* ================= FIADO ================= */
   let fiados = [];
   function puedeFiar(){ return !!(cfg.fiado && cfg.fiado.activo && perfil && (esStaff() || cfg.fiado.trabajador)); }
@@ -4194,7 +4379,8 @@
     const pago = pagoAbono.datos(valor);
     if(pago.falta){ showToast('El dinero recibido no alcanza.'); return; }
     const id = nuevoId();
-    db.collection('fiados').doc(id).set({ id, fecha:new Date().toISOString(), deudor:x.deudor, clave:x.clave, tipo:'abono', valor, metodoPago:pago.metodoPago, medioTransferencia:pago.medioTransferencia, uid:perfil.uid, nombre:perfil.nombre }).catch(errGuardar);
+    if(pago.mixtoMal){ showToast('En pago dividido escriba cuánto paga en efectivo (menos que el total).'); return; }
+    db.collection('fiados').doc(id).set({ id, fecha:new Date().toISOString(), deudor:x.deudor, clave:x.clave, tipo:'abono', valor, metodoPago:pago.metodoPago, medioTransferencia:pago.medioTransferencia, efectivoParte:pago.efectivoParte, uid:perfil.uid, nombre:perfil.nombre }).catch(errGuardar);
     cerrarModal('abonoModal');
     showToast('Abono de '+money(valor)+' registrado. Debe '+money(Math.max(0, x.saldo-valor))+'.');
   });
@@ -4560,7 +4746,7 @@
 
     // medios de pago
     const medios = {};
-    d.his.concat(d.vts, d.pms).forEach(x=>{ if(!(x.total||x.valor)) return; const k = x.metodoPago==='transferencia' ? medioLabel(x.medioTransferencia) : x.metodoPago==='fiado' ? 'Fiado' : 'Efectivo'; medios[k] = (medios[k]||0) + (x.total||x.valor||0); });
+    d.his.concat(d.vts, d.pms).forEach(x=>{ const q = partes(x); if(q.efectivo) medios['Efectivo'] = (medios['Efectivo']||0)+q.efectivo; if(q.transferencia) medios[q.medio] = (medios[q.medio]||0)+q.transferencia; if(q.fiado) medios['Fiado'] = (medios['Fiado']||0)+q.fiado; });
     const ms = Object.entries(medios).sort((a,b)=>b[1]-a[1]), maxM = Math.max(1, ...ms.map(x=>x[1])), totM = ms.reduce((s,x)=>s+x[1],0);
     $('repMedios').innerHTML = ms.length ? ms.map(([k,v])=>filaBarra(esc(k), v, maxM, money(v)+' · '+Math.round(v*100/totM)+'%')).join('') : '<div class="empty">Sin pagos en '+r.nombre+'.</div>';
 
