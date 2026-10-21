@@ -627,7 +627,7 @@
           </div>
 
           <div class="card">
-            <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnPantalla" title="Para un televisor en la entrada"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Pantalla de cupos</button><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
+            <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnPantallaCliente" title="Abre una ventana para un segundo monitor que ve el cliente"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><path d="M7 10h4"/></svg>Pantalla cliente</button><button class="btn btn-ghost btn-sm" id="btnPantalla" title="Para un televisor en la entrada"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Pantalla de cupos</button><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
             <div class="row" style="flex-wrap:nowrap;">
               <input type="text" id="buscarActivo" class="input mono upper grow" style="flex:1;" placeholder="Buscar o escanear ticket / placa y Enter" autocomplete="off">
               <button class="btn" id="btnEscanear" type="button" title="Escanear el ticket con la cámara"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Escanear</button>
@@ -784,7 +784,8 @@
           <div class="card"><h2 class="card-title">Ventas de la tienda por hora</h2><div id="repTiendaHoras"></div></div>
         </div>
         <div class="grid-2" style="margin-top:16px;">
-          <div class="card"><h2 class="card-title">Turnos y caja</h2><div id="repTurnos"></div></div>
+          <div class="card"><h2 class="card-title">Turnos y caja</h2><div id="repTurnos"></div>
+            <h2 class="card-title" style="margin-top:18px;">Personal: horas y comisiones</h2><div id="repPersonal"></div></div>
           <div class="card"><h2 class="card-title">Descuentos, anulaciones y clientes</h2><div id="repOtros"></div></div>
         </div>
       </section>
@@ -959,6 +960,7 @@
             <div class="field" style="max-width:260px;"><label for="cfgFaltante">Avisar si al cerrar turno falta más de</label><input class="input mono" id="cfgFaltante" type="number" min="0" step="1000"></div>
             <label class="switch" style="margin-top:12px;"><input type="checkbox" id="cfgFiado"> Permitir fiar (cuentas por cobrar)</label>
             <label class="switch"><input type="checkbox" id="cfgFiadoTrab"> Los trabajadores también pueden fiar</label>
+            <div class="field" style="max-width:260px;margin-top:12px;"><label for="cfgComision">Comisión por ventas de la tienda (%)</label><input class="input mono" id="cfgComision" type="number" min="0" max="50" step="0.5"></div>
             <div class="field" style="max-width:260px;margin-top:12px;"><label for="cfgMeta">Meta de venta por día (parqueo + tienda)</label><input class="input mono" id="cfgMeta" type="number" min="0" step="10000"></div>
             <div class="field" style="max-width:260px;margin-top:12px;"><label for="cfgWaDueno">WhatsApp del dueño (para el resumen del día)</label><input class="input mono" id="cfgWaDueno" placeholder="3001234567"></div>
             <div class="hint">Al cerrar el turno el trabajador cuenta la caja. Si falta más de este valor, sale un aviso rojo para usted y queda en la bitácora.</div>
@@ -1026,7 +1028,9 @@
           <div class="card span2">
             <h2 class="card-title">Respaldo</h2>
             <p class="muted" style="margin:0 0 12px;font-size:13px;">Descarga una copia de todo lo que tiene este equipo (vehículos dentro, historial, ventas, productos, mensualidades, clientes, turnos y ajustes). Funciona sin internet.</p>
-            <button class="btn" id="btnRespaldo">Descargar respaldo (.json)</button>
+            <div class="actions"><button class="btn" id="btnRespaldo">Descargar respaldo (.json)</button>
+            <button class="btn" id="btnRestaurar">Restaurar desde un respaldo</button><input type="file" id="restaurarArchivo" accept=".json,application/json" hidden></div>
+            <div class="hint">Restaurar trae de vuelta productos, mensualidades, clientes, proveedores y ajustes. No borra nada ni duplica cobros: el historial y las ventas quedan como están.</div>
           </div>
           <div class="card span2">
             <h2 class="card-title">Zona de peligro</h2>
@@ -1158,6 +1162,9 @@
     <p><strong>¿Cómo cierro el turno?</strong> Parqueo › Cerrar turno y contar caja. Cuente los billetes y la app le dice si sobra o falta.</p>
     <p><strong>Me equivoqué al registrar una entrada.</strong> Durante 60 segundos sale el botón Deshacer. Si ya pasó, pídale al administrador que anule el cobro en Historial.</p>
     <p><strong>¿Cuándo se cobra la tarifa de noche?</strong> Si el vehículo entra entre 6 p. m. y 6 a. m., en sábado, domingo o festivo. El simulador de Ajustes muestra cuánto pagaría cualquier caso.</p>
+    <p><strong>¿Cómo fío?</strong> Active el fiado en Ajustes › Caja. Al cobrar elija "Fiado" y escriba a quién. Las deudas y los abonos están en Clientes › Fiados.</p>
+    <p><strong>¿Dónde veo cómo va el negocio?</strong> En Panel (hoy) y en Reportes (por semana o mes, con horas pico y Excel para el contador).</p>
+    <p><strong>Pasó algo (un choque, un objeto perdido).</strong> Regístrelo en Novedades con foto. El administrador lo marca como resuelto.</p>
     <p><strong>Olvidé mi contraseña.</strong> En la pantalla de entrada toque "¿Olvidaste tu contraseña?" y le llega un correo.</p>
   </div>
 </div>
@@ -1424,7 +1431,7 @@
       ticket: { pie:'', legal:'' }, logo:null, proveedores:[], checklist:[], cupones:[],
       fidelidad: { activo:false, visitas:10 }, fiado: { activo:false, trabajador:false },
       avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] },
-      caja: { alertaFaltante:5000, whatsappDueno:'', metaDia:0 },
+      caja: { alertaFaltante:5000, whatsappDueno:'', metaDia:0, comisionPct:0 },
       parqueo: { horasAlerta:12, pedirConductor:false },
       placasAlerta: []
     };
@@ -2104,7 +2111,9 @@
       const sub = subscriberFor(placa), emp = empresaForPlate(placa);
       const dentro = activos.find(a=>a.placa===placa);
       if(dentro) info.push('<div class="info-line info-red">Esta placa ya está dentro desde las '+fmtHora(dentro.entrada)+'.</div>');
-      if(sub && !isVencida(sub)){
+      if(sub && sub.congeladaDesde){
+        info.push('<div class="info-line info-blue">La mensualidad está congelada: se cobrará por tiempo.</div>');
+      }else if(sub && !isVencida(sub)){
         info.push('<div class="info-line info-green">Tiene '+(sub.periodicidad==='mensual'?'mensualidad':'quincena')+' al día'+(sub.cliente?' ('+esc(sub.cliente)+')':'')+': entra sin cobro por tiempo.</div>');
         if(sub.tipo!==tipoSeleccionado){ tipoSeleccionado = sub.tipo; renderTipos(); }
       }else if(sub){
@@ -2171,7 +2180,7 @@
       const n = await siguienteNumero('ticket');
       const v = {
         id: nuevoId(), placa, tipo,
-        modo: (sub && !vencida) ? sub.periodicidad : 'tiempo',
+        modo: (sub && !vencida && !sub.congeladaDesde) ? sub.periodicidad : 'tiempo',
         entrada: new Date().toISOString(),
         operador: perfil.nombre, operadorId: perfil.uid,
         foto: fotoPendiente || null,
@@ -2434,6 +2443,7 @@
     pagoSalida.reset();
     actualizarSalida();
     abrirModal('salidaModal');
+    actualizarPantallaCliente();
   }
   $('salidaServicios').addEventListener('change', actualizarSalida);
   $('salidaServicios').addEventListener('input', e=>{ if(e.target.id==='salidaCupon') actualizarSalida(); });
@@ -2461,6 +2471,7 @@
       html += '<div class="brow total"><span>Total a cobrar</span><span class="v">'+money(c.total)+'</span></div>';
     }
     $('salidaDetalle').innerHTML = html;
+    actualizarPantallaCliente();
     pagoSalida.mostrar(c.total>0);
     pagoSalida.refrescar();
   }
@@ -2507,6 +2518,7 @@
       batch.commit().catch(errGuardar);
       salidaId = null;
       cerrarModal('salidaModal');
+      graciasPantallaCliente(r.total);
       imprimirAlAbrir = true; mostrarRecibo(r);
     }finally{ $('btnConfirmarSalida').disabled = false; }
   });
@@ -2840,6 +2852,7 @@
     $('cartTotal').textContent = money(totalCarrito());
     $('btnCobrarVenta').disabled = items.length===0;
     pagoPOS.refrescar();
+    actualizarPantallaCliente();
   }
   $('cartItems').addEventListener('click', e=>{ const b = e.target.closest('[data-q]'); if(b) agregarAlCarrito(b.dataset.id, parseInt(b.dataset.q,10)); });
   let ventasEspera = [];
@@ -2896,6 +2909,7 @@
       batch.commit().catch(errGuardar);
       carrito = {};
       pagoPOS.reset();
+      graciasPantallaCliente(total);
       renderCarrito(); renderPOS();
       imprimirAlAbrir = true; mostrarReciboVenta(venta);
     }finally{ $('btnCobrarVenta').disabled = Object.keys(carrito).length===0; }
@@ -3295,10 +3309,10 @@
     $('subCount').textContent = mensualidades.length;
     const lista = mensualidades.slice().sort((a,b)=> (a.vencimiento||'9').localeCompare(b.vencimiento||'9'));
     $('subLista').innerHTML = lista.length ? lista.map(s=>{
-      const st = statusVencimiento(s.vencimiento);
+      const st = s.congeladaDesde ? { txt:'Congelada desde '+fmtCorto(new Date(s.congeladaDesde+'T12:00:00')), cls:'chip-blue' } : statusVencimiento(s.vencimiento);
       return '<div class="list-row"><div style="min-width:0;"><span class="placa-txt">'+esc(s.placa)+'</span> <span class="chip '+st.cls+'">'+st.txt+'</span>'+
         '<div class="meta">'+nombreFor(s.tipo)+' · '+esc(s.periodicidad)+(s.cliente?' · '+esc(s.cliente):'')+(s.vencimiento?' · vence '+fmtCorto(new Date(s.vencimiento+'T00:00:00')):'')+'</div></div>'+
-        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
+        '<div class="r"><button class="btn btn-sm" data-wa-sub="'+esc(s.id)+'" title="Recordar por WhatsApp">'+ICONOS.whatsapp+'</button><button class="btn btn-ghost btn-sm" data-congelar="'+esc(s.id)+'">'+(s.congeladaDesde?'Reactivar':'Congelar')+'</button><button class="btn btn-sm" data-renovar="'+esc(s.id)+'">Renovar</button><button class="btn btn-ghost btn-sm" data-contrato="'+esc(s.id)+'">Contrato</button><button class="btn-icon" data-borrar-sub="'+esc(s.id)+'" title="Eliminar">✕</button></div></div>';
     }).join('') : '<div class="empty">No hay abonados con mensualidad o quincena.</div>';
   }
   $('subLista').addEventListener('click', e=>{
@@ -3323,6 +3337,24 @@
       if(!confirm('¿Eliminar el abonado '+s.placa+'?')) return;
       db.collection('mensualidades').doc(s.id).delete().catch(errGuardar);
       showToast('Abonado eliminado.');
+    }
+  });
+  // congelar: no corre el tiempo (vacaciones); al reactivar se le suman los días que estuvo congelada
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-congelar]'); if(!b) return;
+    const s = mensualidades.find(x=>x.id===b.dataset.congelar); if(!s) return;
+    const hoyS = aLocal(new Date()).slice(0,10);
+    if(!s.congeladaDesde){
+      if(!confirm('¿Congelar la mensualidad de '+s.placa+'? Mientras esté congelada, si entra paga por tiempo.')) return;
+      db.collection('mensualidades').doc(s.id).update({ congeladaDesde:hoyS }).catch(errGuardar);
+      bitacora('Mensualidad congelada', s.placa);
+    }else{
+      const dias = Math.max(0, Math.round((new Date(hoyS+'T12:00:00') - new Date(s.congeladaDesde+'T12:00:00'))/864e5));
+      const v = new Date((s.vencimiento||hoyS)+'T12:00:00'); v.setDate(v.getDate()+dias);
+      const nueva = aLocal(v).slice(0,10);
+      db.collection('mensualidades').doc(s.id).update({ congeladaDesde:null, vencimiento:nueva }).catch(errGuardar);
+      bitacora('Mensualidad reactivada', s.placa+' · +'+dias+' día(s), vence '+nueva);
+      showToast(s.placa+' reactivada: vence el '+fmtCorto(v)+'.');
     }
   });
   let renovarActual = null;
@@ -3555,6 +3587,7 @@
     $('cfgFaltante').value = cfg.caja.alertaFaltante;
     $('cfgWaDueno').value = cfg.caja.whatsappDueno||'';
     $('cfgMeta').value = cfg.caja.metaDia||0;
+    $('cfgComision').value = cfg.caja.comisionPct||0;
     $('cfgFiado').checked = !!cfg.fiado.activo; $('cfgFiadoTrab').checked = !!cfg.fiado.trabajador;
     $('cfgChecklist').value = (cfg.checklist||[]).join('\n');
     $('cfgFidelidad').checked = !!cfg.fidelidad.activo; $('cfgFidVisitas').value = cfg.fidelidad.visitas||10;
@@ -3611,6 +3644,7 @@
   $('cfgChecklist').addEventListener('change', ()=> guardarConfig({ checklist: $('cfgChecklist').value.split('\n').map(x=>x.trim().slice(0,80)).filter(Boolean).slice(0,15) }, 'Tareas guardadas.'));
   $('cfgFidelidad').addEventListener('change', ()=> guardarConfig({ fidelidad:{ activo:$('cfgFidelidad').checked } }, 'Guardado.'));
   $('cfgFidVisitas').addEventListener('change', ()=> guardarConfig({ fidelidad:{ visitas: Math.max(2, Math.min(50, parseInt($('cfgFidVisitas').value,10)||10)) } }, 'Guardado.'));
+  $('cfgComision').addEventListener('change', ()=> guardarConfig({ caja:{ comisionPct: Math.max(0, Math.min(50, parseFloat($('cfgComision').value)||0)) } }, 'Comisión guardada.'));
   $('cfgMeta').addEventListener('change', ()=> guardarConfig({ caja:{ metaDia: Math.max(0, parseInt($('cfgMeta').value,10)||0) } }, 'Meta guardada.'));
   $('cfgWaDueno').addEventListener('change', ()=> guardarConfig({ caja:{ whatsappDueno: $('cfgWaDueno').value.replace(/\D/g,'').slice(0,15) } }, 'Guardado.'));
   $('cfgFaltante').addEventListener('change', ()=> guardarConfig({ caja:{ alertaFaltante: Math.max(0, parseInt($('cfgFaltante').value,10)||0) } }, 'Guardado.'));
@@ -4127,6 +4161,70 @@
   });
   $('cupLista').addEventListener('click', e=>{ const b = e.target.closest('[data-borrar-cupon]'); if(b) guardarConfig({ cupones:(cfg.cupones||[]).filter(c=>c.codigo!==b.dataset.borrarCupon) }, 'Cupón quitado.'); });
 
+  /* ================= RESTAURAR RESPALDO ================= */
+  $('btnRestaurar').addEventListener('click', ()=> $('restaurarArchivo').click());
+  $('restaurarArchivo').addEventListener('change', async e=>{
+    const f = e.target.files[0]; e.target.value = ''; if(!f || !esAdmin()) return;
+    let d;
+    try{ d = JSON.parse(await f.text()); }catch(err){ showToast('Ese archivo no es un respaldo válido.'); return; }
+    if(!d || d.app!=='parqueadero'){ showToast('Ese archivo no es un respaldo de esta app.'); return; }
+    const prods = Array.isArray(d.productos) ? d.productos : [], subs = Array.isArray(d.mensualidades) ? d.mensualidades : [], clis = Array.isArray(d.clientes) ? d.clientes : [];
+    if(!confirm('Respaldo del '+fmtFechaHora(d.creado)+' ('+(d.negocio||'')+')\n\nSe restauran '+prods.length+' productos, '+subs.length+' mensualidades, '+clis.length+' clientes y los ajustes.\nLo que tenga el mismo código se reemplaza. ¿Continuar?')) return;
+    try{
+      const ops = [];
+      prods.forEach(p=>{ if(p && p.id) ops.push([db.collection('productos').doc(String(p.id)), p]); });
+      subs.forEach(x=>{ if(x && x.id) ops.push([db.collection('mensualidades').doc(String(x.id)), x]); });
+      clis.forEach(x=>{ if(x && x.placa) ops.push([db.collection('clientes').doc(limpiarPlaca(x.placa)), x]); });
+      for(let i=0;i<ops.length;i+=400){ const b = db.batch(); ops.slice(i,i+400).forEach(([ref,data])=>{ const c = Object.assign({}, data); delete c.id; b.set(ref, Object.assign({ id:ref.id }, c), { merge:true }); }); await b.commit(); }
+      if(d.config && typeof d.config==='object'){ const c = Object.assign({}, d.config); await CONFIG_REF.set(c, { merge:true }); }
+      bitacora('Respaldo restaurado', prods.length+' productos, '+subs.length+' mensualidades, '+clis.length+' clientes · respaldo del '+fmtFechaHora(d.creado));
+      showToast('Respaldo restaurado.');
+    }catch(err){ errGuardar(err); }
+  });
+
+  /* ================= PANTALLA PARA EL CLIENTE (segundo monitor) ================= */
+  let pantallaCliente = null, graciasHasta = 0;
+  $('btnPantallaCliente').addEventListener('click', ()=>{
+    pantallaCliente = window.open('', 'pantallaCliente', 'width=900,height=600');
+    if(!pantallaCliente){ showToast('El navegador bloqueó la ventana. Permita las ventanas emergentes.'); return; }
+    pantallaCliente.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>'+esc(cfg.brand)+'</title><style>'+
+      'body{margin:0;background:#141413;color:#efebe2;font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column;min-height:100vh}'+
+      '.cinta{height:14px;background:repeating-linear-gradient(-45deg,#ffc800 0 14px,#1c1b17 14px 28px)}'+
+      'header{padding:22px 32px;font-size:30px;font-weight:bold;text-transform:uppercase;letter-spacing:.02em}'+
+      '#c{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px}'+
+      '.l{font-size:26px;color:#a9a393;text-transform:uppercase;letter-spacing:.06em}.v{font-size:120px;font-weight:bold;margin:8px 0}'+
+      '.pl{display:inline-block;background:#f7c600;color:#111;border:4px solid #111;border-radius:10px;padding:6px 18px;font-size:48px;font-weight:bold;letter-spacing:.1em}'+
+      '.it{font-size:24px;margin:4px 0;color:#cfcabd}.ok{color:#6cc38d}</style></head><body><div class="cinta"></div><header>'+esc(cfg.brand)+'</header><div id="c"></div></body></html>');
+    pantallaCliente.document.close();
+    actualizarPantallaCliente();
+  });
+  function actualizarPantallaCliente(){
+    const w = pantallaCliente; if(!w || w.closed) return;
+    const c = w.document.getElementById('c'); if(!c) return;
+    if(Date.now() < graciasHasta) return;
+    const salidaAbierta = $('salidaModal').classList.contains('show') && salidaId;
+    if(salidaAbierta){
+      const s = calcularSalida(); if(!s.v) return;
+      c.innerHTML = '<div class="pl">'+esc(s.v.placa)+'</div><div class="l" style="margin-top:20px;">'+fmtDuracion(s.ms/60000)+' dentro</div><div class="l" style="margin-top:20px;">Total a pagar</div><div class="v">'+money(s.total)+'</div>';
+      return;
+    }
+    const items = Object.entries(carrito);
+    if(items.length && vistaActual==='tienda'){
+      c.innerHTML = items.map(([id,n])=>{ const p = productos.find(x=>x.id===id); return p ? '<div class="it">'+n+' × '+esc(p.nombre)+' · '+money(p.precio*n)+'</div>' : ''; }).join('')+
+        '<div class="l" style="margin-top:20px;">Total</div><div class="v">'+money(totalCarrito())+'</div>';
+      return;
+    }
+    const libres = TIPOS.filter(t=>cfg.rates[t.id].cupo).map(t=>t.nombre+': '+Math.max(0, cfg.rates[t.id].cupo-ocupadosPorTipo(t.id))+' libres').join(' · ');
+    c.innerHTML = '<div class="v" style="font-size:72px;">Bienvenido</div><div class="l">'+esc(libres || 'Gracias por preferirnos')+'</div>';
+  }
+  function graciasPantallaCliente(total){
+    const w = pantallaCliente; if(!w || w.closed) return;
+    graciasHasta = Date.now()+5000;
+    w.document.getElementById('c').innerHTML = '<div class="v ok" style="font-size:80px;">¡Gracias!</div>'+(total?'<div class="l">Pagó '+money(total)+'</div>':'');
+    setTimeout(()=>{ graciasHasta = 0; actualizarPantallaCliente(); }, 5100);
+  }
+  setInterval(actualizarPantallaCliente, 5000);
+
   /* ================= NOVEDADES ================= */
   let novedades = [], novFoto = null, novFiltro = 'abiertas';
   const NOV_TIPOS = { incidente:['Choque o daño','ic-rojo'], objeto:['Objeto perdido o encontrado','ic-amarillo'], queja:['Queja de cliente','ic-rojo'], mantenimiento:['Arreglo pendiente','ic-azul'], nota:['Nota para el equipo','ic-tinta'] };
@@ -4248,6 +4346,18 @@
       '<div class="brow"><span>Con sobrante</span><span class="v">'+sobras.length+' · '+money(sobras.reduce((s,t)=>s+t.diferencia,0))+'</span></div>'+
       Object.entries(porPersona).map(([n,v])=>'<div class="brow"><span>&nbsp;&nbsp;Faltó a '+esc(n)+'</span><span class="v">'+money(v)+'</span></div>').join('')+
       '<div class="brow total"><span>Días sin faltantes</span><span class="v">'+(diasSin==null?'—':diasSin)+'</span></div>';
+
+    // horas trabajadas (por los turnos) y comisión por ventas de la tienda
+    const pers = {};
+    turnos.forEach(t=>{ const fin = t.fin ? new Date(t.fin) : new Date(), ini = new Date(t.inicio); if(fin<r.ini || ini>=r.fin) return;
+      const o = pers[t.perfilId] = pers[t.perfilId] || { nombre:t.perfilNombre || t.nombre || 'Sin nombre', horas:0, turnos:0, ventas:0 };
+      o.turnos++; o.horas += (Math.min(fin, r.fin) - Math.max(ini, r.ini))/36e5; });
+    d.vts.forEach(v=>{ if(!v.operadorId) return; const o = pers[v.operadorId] = pers[v.operadorId] || { nombre:v.operador, horas:0, turnos:0, ventas:0 }; o.ventas += v.total||0; });
+    const pct = cfg.caja.comisionPct||0;
+    const ps = Object.values(pers);
+    $('repPersonal').innerHTML = ps.length ? '<table class="table"><thead><tr><th>Persona</th><th class="num">Turnos</th><th class="num">Horas</th><th class="num">Vendió</th>'+(pct?'<th class="num">Comisión '+pct+'%</th>':'')+'</tr></thead><tbody>'+
+      ps.map(o=>'<tr><td>'+esc(o.nombre||'')+'</td><td class="num">'+o.turnos+'</td><td class="num">'+o.horas.toFixed(1)+'</td><td class="num">'+money(o.ventas)+'</td>'+(pct?'<td class="num">'+money(Math.round(o.ventas*pct/100))+'</td>':'')+'</tr>').join('')+'</tbody></table>'
+      : '<div class="empty">Sin turnos en '+r.nombre+'.</div>';
 
     // descuentos, anulaciones, clientes
     const conv = {}; d.his.filter(h=>h.descuentoPct && h.empresaNombre).forEach(h=>{ const des = Math.round((h.base||0)/(1-h.descuentoPct/100)) - (h.base||0); conv[h.empresaNombre] = (conv[h.empresaNombre]||0) + des; });

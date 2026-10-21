@@ -26,7 +26,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 8. ✅ 📴 **Imprimir ticket y comprobante sin internet**. Ya funciona con `window.print`; solo hay que asegurar que el código de barras se genera en el equipo.
 9. ✅ 📴 **Calcular el cobro sin internet** con las tarifas guardadas en el equipo.
 10. ✅ 📴 **Respaldo automático en el equipo**: un archivo JSON diario que se descarga solo.
-11. 📴 **Restaurar desde un respaldo JSON** si se daña el equipo.
+11. ✅ 📴 **Restaurar desde un respaldo JSON** si se daña el equipo.
 12. ✅ 📴 **Exportar a Excel o CSV sin internet** con lo que está guardado en el equipo.
 13. 📴 **Resolver conflictos**: si dos equipos registraron la misma placa sin internet, se muestra un aviso para elegir el registro bueno.
 14. ✅ 📴 **Cola de fotos**: las fotos de los vehículos se guardan en IndexedDB y se suben cuando vuelve la conexión.
@@ -38,7 +38,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 20. ✅ 📴 ⚡ **Hora local confiable**: avisar si la hora del equipo está mal, porque eso cambia los cobros.
 21. 📴 **Verificar la integridad de los datos** guardados en el equipo al abrir la app.
 22. ✅ 📴 **Límite de almacenamiento**: avisar cuando el equipo se está quedando sin espacio.
-23. 📴 **Copia en USB**: exportar el respaldo directamente a una memoria USB.
+23. ✅ 📴 **Copia en USB**: exportar el respaldo directamente a una memoria USB.
 24. ✅ 📴 ⚡ **Página "Estoy sin internet"** con lo que se puede y lo que no se puede hacer.
 25. ✅ 📴 **Actualizar la app sola** cuando vuelve el internet, sin perder los datos.
 
@@ -98,7 +98,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 74. 📴 Varias placas en una sola mensualidad (familia o empresa).
 75. 📴 Mensualidad solo de día o solo de noche.
 76. 📴 Control de entradas incluidas (por ejemplo, 20 entradas al mes).
-77. 📴 Congelar la mensualidad (vacaciones).
+77. ✅ 📴 Congelar la mensualidad (vacaciones).
 78. 📴 Puesto fijo reservado para el abonado.
 79. 📴 Carné digital del abonado con QR.
 80. 📴 Contrato firmado en pantalla con el dedo.
@@ -157,9 +157,9 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 127. ✅ 📴 Bitácora de todo lo que hizo cada usuario (auditoría).
 128. ✅ 📴 Avisar cuando alguien borra o anula registros.
 129. 📴 Horario permitido por trabajador.
-130. 📴 Registro de entrada y salida del personal (asistencia).
-131. 📴 Horas trabajadas para calcular el pago.
-132. 📴 Comisión por ventas de la tienda para los trabajadores.
+130. ✅ 📴 Registro de entrada y salida del personal (asistencia).
+131. ✅ 📴 Horas trabajadas para calcular el pago.
+132. ✅ 📴 Comisión por ventas de la tienda para los trabajadores.
 133. ✅ 📴 Metas diarias con barra de progreso.
 134. ✅ 📴 Notas entre turnos ("llamar al de la placa XYZ").
 135. ✅ 📴 Tareas de aseo y revisión por turno, con lista de chequeo.
@@ -220,7 +220,7 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 182. ✅ 📴 Abrir el cajón de dinero al cobrar.
 183. 📴 Abrir la talanquera (barrera) con un relé USB o wifi.
 184. 📴 Lector de tarjetas RFID o TAG para abonados.
-185. 📴 Pantalla secundaria para el cliente con el valor a pagar.
+185. ✅ 📴 Pantalla secundaria para el cliente con el valor a pagar.
 186. 🌐 Cámara IP en la entrada que toma la foto sola.
 187. 📴 Balanza para vender productos por peso.
 188. 🌐 Integración con datáfono (Bold, Wompi, SumUp).
