@@ -43,23 +43,23 @@ Ninguna repite lo que la app ya tiene: entradas y salidas, tipos de vehículo, f
 25. ✅ 📴 **Actualizar la app sola** cuando vuelve el internet, sin perder los datos.
 
 ## B. Entrada y salida de vehículos (26–45)
-26. 📴 ⚡ Reconocer el formato de placa colombiana (carro ABC123, moto ABC12D) y avisar si está mal escrita.
+26. ✅ 📴 ⚡ Reconocer el formato de placa colombiana (carro ABC123, moto ABC12D) y avisar si está mal escrita.
 27. 🌐 Leer la placa con la cámara (OCR con Tesseract.js; también puede funcionar sin internet si se guarda el modelo en el equipo).
-28. 📴 Escanear el código de barras del ticket con la cámara del celular para dar la salida.
+28. ✅ 📴 Escanear el código de barras del ticket con la cámara del celular para dar la salida.
 29. 📴 ⚡ Botón "Salida rápida" para cobrar en efectivo justo y cerrar con un clic.
 30. 📴 Asignar puesto o celda (A-12) y verlo en el ticket.
 31. ✅ 📴 Mapa visual del parqueadero con los puestos libres y ocupados.
-32. 📴 ⚡ Nota libre por vehículo, por ejemplo "rayón en la puerta" o "deja las llaves".
+32. ✅ 📴 ⚡ Nota libre por vehículo, por ejemplo "rayón en la puerta" o "deja las llaves".
 33. 📴 Revisión de daños al entrar: dibujo del carro donde se marcan los golpes.
 34. 📴 Varias fotos por vehículo: frente, atrás y laterales.
-35. 📴 Registrar las llaves entregadas (valet) con el número del gancho.
-36. 📴 ⚡ Registrar cascos y objetos guardados de las motos.
+35. ✅ 📴 Registrar las llaves entregadas (valet) con el número del gancho.
+36. ✅ 📴 ⚡ Registrar cascos y objetos guardados de las motos.
 37. 📴 Entrada por reserva: la placa ya llega con el pago adelantado.
-38. 📴 Aviso de vehículo con más de X horas dentro (posible abandono).
-39. 📴 ⚡ Deshacer la última entrada o salida durante 1 minuto.
+38. ✅ 📴 Aviso de vehículo con más de X horas dentro (posible abandono).
+39. ✅ 📴 ⚡ Deshacer la última entrada o salida durante 1 minuto.
 40. 📴 Corregir la placa con registro de quién la cambió.
-41. 📴 Marcar un vehículo como "No dejar salir" (por ejemplo, por deuda o por orden de la policía).
-42. 📴 Lista negra de placas con alerta al entrar.
+41. ✅ 📴 Marcar un vehículo como "No dejar salir" (por ejemplo, por deuda o por orden de la policía).
+42. ✅ 📴 Lista negra de placas con alerta al entrar.
 43. 📴 Lista VIP con tarifa especial automática.
 44. 📴 Registrar el conductor (nombre y cédula) cuando el negocio lo exige.
 45. ✅ 📴 ⚡ Atajos de teclado: F2 para entrada, F4 para salida y F8 para la tienda.

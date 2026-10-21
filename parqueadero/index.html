@@ -406,6 +406,13 @@
   .barra{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:5px;}
   .barra > i{display:block;height:100%;border-radius:4px;background:var(--serie-1);}
 
+  .deshacer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:9px 12px;border-radius:var(--radius-sm);background:var(--ink);color:var(--ink-text);font-size:13px;}
+  .deshacer .btn{background:transparent;color:var(--ink-text);border-color:rgba(255,255,255,.35);}
+  :root[data-theme="dark"] .deshacer .btn{border-color:rgba(0,0,0,.35);}
+  .scan-video{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-sm);background:#000;}
+  .scan-wrap{position:relative;}
+  .scan-wrap::after{content:'';position:absolute;left:10%;right:10%;top:45%;height:2px;background:var(--red);box-shadow:0 0 8px var(--red);}
+
   /* ---------- campana y avisos ---------- */
   .icon-btn{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid var(--line-2);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
   .icon-btn:hover{border-color:var(--ink);}
@@ -521,7 +528,7 @@
           <div class="col">
             <div class="card"><h2 class="card-title">Mapa del parqueadero<span class="sp"></span><span class="muted" style="text-transform:none;letter-spacing:0;font-weight:400;" id="mapaResumen"></span></h2>
               <div id="panelMapa"></div>
-              <div class="leyenda"><span><i style="background:var(--surface-2);border:1.5px solid var(--ink);"></i>Ocupado</span><span><i style="border:1.5px dashed var(--line-2);"></i>Libre</span><span><i style="border:1.5px solid var(--red);"></i>Más de 8 horas</span></div>
+              <div class="leyenda"><span><i style="background:var(--surface-2);border:1.5px solid var(--ink);"></i>Ocupado</span><span><i style="border:1.5px dashed var(--line-2);"></i>Libre</span><span><i style="border:1.5px solid var(--red);"></i>Lleva mucho tiempo</span></div>
             </div>
             <div class="card"><h2 class="card-title">Ingresos de los últimos 7 días</h2><div id="panelSemana"></div></div>
           </div>
@@ -563,13 +570,18 @@
               <img id="fotoPreview" class="foto-preview" alt="" hidden>
               <button class="btn btn-primary btn-lg" id="btnIngresar">Registrar entrada</button>
             </div>
+            <div class="field" style="margin-top:12px;"><label for="notaInput">Nota (opcional)</label><input class="input" id="notaInput" maxlength="80" placeholder="Ej. deja las llaves en el gancho 4 · rayón puerta derecha · 2 cascos"></div>
             <div class="placa-info" id="placaInfo"></div>
+            <div class="deshacer" id="deshacerBar" hidden><span id="deshacerTxt"></span><button class="btn btn-sm" id="btnDeshacer">Deshacer</button></div>
             <div class="hint">Elige el tipo de vehículo, escribe la placa y presiona <strong>Enter</strong>. Si la placa tiene mensualidad o convenio, el sistema lo detecta solo.</div>
           </div>
 
           <div class="card">
             <h2 class="card-title">En el parqueadero <span class="badge" id="activosCount">0</span><span class="sp"></span><button class="btn btn-ghost btn-sm" id="btnActivosExcel">Excel</button></h2>
-            <input type="text" id="buscarActivo" class="input mono upper w100" placeholder="Buscar o escanear ticket / placa y Enter" autocomplete="off">
+            <div class="row" style="flex-wrap:nowrap;">
+              <input type="text" id="buscarActivo" class="input mono upper grow" style="flex:1;" placeholder="Buscar o escanear ticket / placa y Enter" autocomplete="off">
+              <button class="btn" id="btnEscanear" type="button" title="Escanear el ticket con la cámara"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Escanear</button>
+            </div>
             <div class="activos-list" id="activosList"></div>
           </div>
         </div>
@@ -747,6 +759,18 @@
           </div>
 
           <div class="card">
+            <h2 class="card-title">Placas con alerta</h2>
+            <div class="row" style="margin-bottom:10px;">
+              <input class="input mono upper" id="alertaPlaca" placeholder="Placa" maxlength="10" style="width:110px;">
+              <input class="input grow" id="alertaMotivo" placeholder="Motivo (ej. debe 3 días, orden de la policía)">
+              <label class="switch" style="padding:0;"><input type="checkbox" id="alertaBloquea"> No dejar salir</label>
+              <button class="btn btn-primary" id="btnAddAlerta">Agregar</button>
+            </div>
+            <div id="alertaLista"></div>
+            <div class="field" style="max-width:260px;margin-top:14px;"><label for="cfgHorasAlerta">Marcar en rojo los vehículos con más de (horas)</label><input class="input mono" id="cfgHorasAlerta" type="number" min="1" max="720" step="1"></div>
+          </div>
+
+          <div class="card">
             <h2 class="card-title">Caja</h2>
             <div class="field" style="max-width:260px;"><label for="cfgFaltante">Avisar si al cerrar turno falta más de</label><input class="input mono" id="cfgFaltante" type="number" min="0" step="1000"></div>
             <div class="hint">Al cerrar el turno el trabajador cuenta la caja. Si falta más de este valor, sale un aviso rojo para usted y queda en la bitácora.</div>
@@ -832,6 +856,7 @@
 <div class="modal" id="salidaModal">
   <div class="modal-box">
     <div class="modal-head"><h3 id="salidaTitulo">Registrar salida</h3><button class="modal-close" data-close="salidaModal">✕</button></div>
+    <div id="salidaAvisos"></div>
     <div id="salidaServicios"></div>
     <div class="breakdown" id="salidaDetalle"></div>
     <div id="salidaPago"></div>
@@ -908,6 +933,15 @@
     <div class="form-grid" id="arqueoBilletes"></div>
     <div class="breakdown" id="arqueoResumen"></div>
     <button class="btn btn-danger btn-lg w100" id="btnConfirmarArqueo">Cerrar turno</button>
+  </div>
+</div>
+
+<!-- ===== MODAL ESCANEAR ===== -->
+<div class="modal" id="scanModal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Escanear ticket</h3><button class="modal-close" data-close="scanModal">✕</button></div>
+    <div class="scan-wrap"><video class="scan-video" id="scanVideo" playsinline muted></video></div>
+    <p class="hint" style="text-align:center;">Ponga el código de barras del ticket frente a la cámara.</p>
   </div>
 </div>
 
@@ -1101,7 +1135,9 @@
       cobro: { fraccionMin:30, graciaMin:0 },
       seguridad: { cierreMin:60 },
       avisosStock: { umbral:5, roles:['admin','secretaria','trabajador'] },
-      caja: { alertaFaltante:5000 }
+      caja: { alertaFaltante:5000 },
+      parqueo: { horasAlerta:12 },
+      placasAlerta: []
     };
   }
   function mergeConfig(d){
@@ -1115,6 +1151,8 @@
     out.seguridad = Object.assign(defaultConfig().seguridad, d.seguridad||{});
     out.avisosStock = Object.assign(defaultConfig().avisosStock, d.avisosStock||{});
     out.caja = Object.assign(defaultConfig().caja, d.caja||{});
+    out.parqueo = Object.assign(defaultConfig().parqueo, d.parqueo||{});
+    out.placasAlerta = Array.isArray(d.placasAlerta) ? d.placasAlerta : [];
     out.servicios = Array.isArray(d.servicios) ? d.servicios : [];
     out.empresas = Array.isArray(d.empresas) ? d.empresas : [];
     return out;
@@ -1738,6 +1776,14 @@
         if(sub.tipo!==tipoSeleccionado){ tipoSeleccionado = sub.tipo; renderTipos(); }
       }
       if(emp) info.push('<div class="info-line info-blue">Convenio '+esc(emp.nombre)+': '+esc(emp.descuentoPct)+'% de descuento en el cobro por tiempo.</div>');
+      const al = alertaDe(placa);
+      if(al) info.push('<div class="info-line info-red">ALERTA: '+esc(al.motivo)+(al.bloquea?' · No dejar salir sin autorización':'')+'</div>');
+      if(!sub && placa.length>=5){
+        const f = formatoPlaca(placa);
+        if(f==='moto' && tipoSeleccionado!=='moto'){ tipoSeleccionado = 'moto'; renderTipos(); info.push('<div class="info-line info-blue">Placa de moto: se eligió Moto.</div>'); }
+        else if(f==='carro' && tipoSeleccionado==='moto'){ info.push('<div class="info-line info-blue">Esa placa parece de carro y está elegida Moto. Revise el tipo.</div>'); }
+        else if(!f && placa.length>=6) info.push('<div class="info-line info-blue">La placa no tiene el formato colombiano normal (ABC123 o ABC12D). Revise que esté bien escrita.</div>');
+      }
     }
     $('placaInfo').innerHTML = info.join('');
   }
@@ -1778,6 +1824,8 @@
     const vencida = isVencida(sub);
     const tipo = sub ? sub.tipo : tipoSeleccionado;
     if(cupoLleno(tipo)){ showToast('No hay cupos disponibles para '+nombreFor(tipo)+'.'); return; }
+    const alerta = alertaDe(placa);
+    if(alerta && !confirm('ALERTA para '+placa+': '+alerta.motivo+'\n\n¿Registrar la entrada igual?')) return;
     const emp = empresaForPlate(placa);
     ingresando = true; $('btnIngresar').disabled = true;
     try{
@@ -1790,12 +1838,14 @@
         foto: fotoPendiente || null,
         empresaId: emp ? emp.id : null,
         vencidaAlEntrar: vencida,
-        codigoIngreso: 'E-' + pad(n)
+        codigoIngreso: 'E-' + pad(n),
+        nota: $('notaInput').value.trim().slice(0,80) || null
       };
       db.collection('activos').doc(v.id).set(v).catch(errGuardar);
-      $('placaInput').value = ''; $('placaInfo').innerHTML = '';
+      $('placaInput').value = ''; $('placaInfo').innerHTML = ''; $('notaInput').value = '';
       fotoPendiente = null; $('fotoInput').value = ''; $('fotoPreview').hidden = true;
       showToast(placa+' registrada.');
+      ofrecerDeshacer(v);
       imprimirAlAbrir = true; mostrarTicketIngreso(v);
     }finally{
       ingresando = false; $('btnIngresar').disabled = false;
@@ -1843,10 +1893,13 @@
       let badges = '';
       if(v.vencidaAlEntrar) badges += '<span class="chip chip-red">VENCIDA</span>';
       if(v.empresaId){ const e = cfg.empresas.find(x=>x.id===v.empresaId); if(e) badges += '<span class="chip chip-blue">'+esc(e.nombre)+'</span>'; }
+      if(min > cfg.parqueo.horasAlerta*60) badges += '<span class="chip chip-red">+'+cfg.parqueo.horasAlerta+' h</span>';
+      if(alertaDe(v.placa)) badges += '<span class="chip chip-red">ALERTA</span>';
       return '<div class="activo" data-id="'+esc(v.id)+'">'+
         '<div class="activo-l"><div class="activo-ic">'+(v.foto ? '<img src="'+esc(v.foto)+'" alt="">' : iconFor(v.tipo))+'</div>'+
           '<div style="min-width:0;"><div><span class="placa-txt">'+esc(v.placa)+'</span>'+(badges?'<span class="badges">'+badges+'</span>':'')+'</div>'+
-          '<div class="meta">'+nombreFor(v.tipo)+' · '+fmtHora(v.entrada)+' · '+esc(v.codigoIngreso||'')+(v.operador?' · '+esc(v.operador):'')+'</div></div></div>'+
+          '<div class="meta">'+nombreFor(v.tipo)+' · '+fmtHora(v.entrada)+' · '+esc(v.codigoIngreso||'')+(v.operador?' · '+esc(v.operador):'')+'</div>'+
+          (v.nota?'<div class="meta" style="color:var(--text);">Nota: '+esc(v.nota)+'</div>':'')+'</div></div>'+
         '<div class="activo-r"><span class="tiempo js-tiempo">'+fmtDuracion(min)+'</span>'+costoActivoHTML(v)+
           '<button class="btn btn-danger btn-sm" data-salida="'+esc(v.id)+'">Dar salida</button></div></div>';
     }).join('');
@@ -1962,6 +2015,9 @@
     const v = activos.find(a=>a.id===id); if(!v) return;
     salidaId = id;
     $('salidaTitulo').textContent = 'Salida · '+v.placa;
+    const al = alertaDe(v.placa);
+    $('salidaAvisos').innerHTML = (al ? '<div class="info-line info-red" style="margin-bottom:10px;">'+(al.bloquea?'NO DEJAR SALIR: ':'ALERTA: ')+esc(al.motivo)+'</div>' : '')+
+      (v.nota ? '<div class="info-line info-blue" style="margin-bottom:10px;">Nota: '+esc(v.nota)+'</div>' : '');
     $('salidaServicios').innerHTML = cfg.servicios.length
       ? '<div class="lbl" style="margin-bottom:4px;">Servicios adicionales</div>'+cfg.servicios.map(s=>
           '<label class="serv-check"><input type="checkbox" class="salida-serv" data-id="'+esc(s.id)+'"> '+esc(s.nombre)+' <span class="p">'+money(s.precio)+'</span></label>').join('')
@@ -1995,6 +2051,12 @@
   $('btnConfirmarSalida').addEventListener('click', async ()=>{
     const c = calcularSalida();
     if(!c.v){ cerrarModal('salidaModal'); showToast('Ese vehículo ya salió.'); return; }
+    const alS = alertaDe(c.v.placa);
+    if(alS && alS.bloquea){
+      if(!esStaff()){ showToast('Esta placa tiene orden de no dejar salir. Llame al administrador.'); return; }
+      if(!confirm('Esta placa tiene orden de NO DEJAR SALIR: '+alS.motivo+'\n\n¿Autoriza la salida?')) return;
+      bitacora('Salida autorizada con alerta', c.v.placa+' · '+alS.motivo);
+    }
     const pago = c.total>0 ? pagoSalida.datos(c.total) : { metodoPago:null, medioTransferencia:null, efectivoRecibido:null, vuelto:null, falta:false };
     if(pago.falta){ showToast('El dinero recibido no alcanza para el total.'); return; }
     $('btnConfirmarSalida').disabled = true;
@@ -2851,6 +2913,8 @@
     $('cfgCierre').value = String(cfg.seguridad.cierreMin);
     $('cfgUmbral').value = cfg.avisosStock.umbral;
     $('cfgFaltante').value = cfg.caja.alertaFaltante;
+    $('cfgHorasAlerta').value = cfg.parqueo.horasAlerta;
+    renderPlacasAlerta();
     document.querySelectorAll('[data-rol-aviso]').forEach(c=>{ c.checked = cfg.avisosStock.roles.includes(c.dataset.rolAviso); });
     renderFactPreview();
     const fr = cfg.cobro.fraccionMin, h = cfg.rates.carro.hora, vf = Math.round(h*fr/60);
@@ -2876,6 +2940,7 @@
   $('cfgFraccion').addEventListener('change', ()=> guardarConfig({ cobro:{ fraccionMin: parseInt($('cfgFraccion').value,10)||30 } }, 'Forma de cobro actualizada.'));
   $('cfgGracia').addEventListener('change', ()=> guardarConfig({ cobro:{ graciaMin: Math.max(0, Math.min(30, parseInt($('cfgGracia').value,10)||0)) } }, 'Tolerancia actualizada.'));
   $('cfgCierre').addEventListener('change', ()=> guardarConfig({ seguridad:{ cierreMin: parseInt($('cfgCierre').value,10)||0 } }, 'Guardado.'));
+  $('cfgHorasAlerta').addEventListener('change', ()=> guardarConfig({ parqueo:{ horasAlerta: Math.max(1, Math.min(720, parseInt($('cfgHorasAlerta').value,10)||12)) } }, 'Guardado.'));
   $('cfgFaltante').addEventListener('change', ()=> guardarConfig({ caja:{ alertaFaltante: Math.max(0, parseInt($('cfgFaltante').value,10)||0) } }, 'Guardado.'));
   $('cfgUmbral').addEventListener('change', ()=> guardarConfig({ avisosStock:{ umbral: Math.max(0, Math.min(999, parseInt($('cfgUmbral').value,10)||0)) } }, 'Aviso de inventario actualizado.'));
   document.querySelectorAll('[data-rol-aviso]').forEach(c=> c.addEventListener('change', ()=>{
@@ -3056,6 +3121,77 @@
       showToast('Listo: tus datos anteriores ya están en el nuevo sistema.');
     }catch(e){ console.error(e); showToast('No se pudieron pasar los datos anteriores. Se intentará de nuevo al volver a entrar.'); }
   }
+
+  /* ================= PARQUEO: PLACAS, NOTAS, DESHACER, ESCÁNER ================= */
+  // Colombia: carros ABC123, motos ABC12D (o ABC12 las viejas)
+  function formatoPlaca(p){ return /^[A-Z]{3}\d{3}$/.test(p) ? 'carro' : /^[A-Z]{3}\d{2}[A-Z]?$/.test(p) ? 'moto' : /^[A-Z]\d{5}$/.test(p) ? 'carro' : null; }
+  function alertaDe(placa){ return (cfg.placasAlerta||[]).find(a=>a.placa===placa); }
+  function renderPlacasAlerta(){
+    if(!esAdmin()) return;
+    $('alertaLista').innerHTML = cfg.placasAlerta.length ? cfg.placasAlerta.map(a=>
+      '<div class="list-row"><div><span class="placa-txt">'+esc(a.placa)+'</span> '+(a.bloquea?'<span class="chip chip-red">No dejar salir</span>':'<span class="chip chip-amber">Alerta</span>')+
+      '<div class="meta">'+esc(a.motivo)+'</div></div><button class="btn-icon" data-quitar-alerta="'+esc(a.placa)+'">✕</button></div>').join('')
+      : '<div class="empty">Ninguna placa con alerta.</div>';
+  }
+  $('btnAddAlerta').addEventListener('click', ()=>{
+    const placa = limpiarPlaca($('alertaPlaca').value), motivo = $('alertaMotivo').value.trim().slice(0,100);
+    if(placa.length<3 || !motivo){ showToast('Escriba la placa y el motivo.'); return; }
+    const lista = cfg.placasAlerta.filter(a=>a.placa!==placa).concat([{ placa, motivo, bloquea:$('alertaBloquea').checked, creado:new Date().toISOString() }]);
+    guardarConfig({ placasAlerta:lista }, 'Alerta guardada para '+placa+'.');
+    bitacora('Alerta de placa', placa+' · '+motivo);
+    $('alertaPlaca').value=''; $('alertaMotivo').value=''; $('alertaBloquea').checked=false;
+  });
+  $('alertaLista').addEventListener('click', e=>{
+    const b = e.target.closest('[data-quitar-alerta]'); if(!b) return;
+    guardarConfig({ placasAlerta: cfg.placasAlerta.filter(a=>a.placa!==b.dataset.quitarAlerta) }, 'Alerta quitada.');
+    bitacora('Alerta de placa quitada', b.dataset.quitarAlerta);
+  });
+
+  let deshacerTimer = 0, deshacerV = null;
+  function ofrecerDeshacer(v){
+    deshacerV = v;
+    let seg = 60;
+    const pintar = ()=>{ $('deshacerTxt').textContent = v.placa+' entró. ¿Fue un error? ('+seg+' s)'; };
+    pintar(); $('deshacerBar').hidden = false;
+    clearInterval(deshacerTimer);
+    deshacerTimer = setInterval(()=>{ seg--; if(seg<=0){ clearInterval(deshacerTimer); $('deshacerBar').hidden = true; deshacerV = null; } else pintar(); }, 1000);
+  }
+  $('btnDeshacer').addEventListener('click', ()=>{
+    if(!deshacerV) return;
+    const v = deshacerV; deshacerV = null; clearInterval(deshacerTimer); $('deshacerBar').hidden = true;
+    db.collection('activos').doc(v.id).delete().catch(errGuardar);
+    bitacora('Entrada deshecha', v.placa+' · '+v.codigoIngreso);
+    cerrarModal('ticketModal');
+    showToast('Se quitó la entrada de '+v.placa+'.');
+  });
+
+  let scanStream = null, scanLoop = 0;
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') pararScan(); });
+  function pararScan(){ cancelAnimationFrame(scanLoop); if(scanStream){ scanStream.getTracks().forEach(t=>t.stop()); scanStream = null; } }
+  $('btnEscanear').addEventListener('click', async ()=>{
+    if(!('BarcodeDetector' in window)){ showToast('Este navegador no lee códigos con la cámara. Use Chrome en Android o un lector USB.'); return; }
+    try{
+      const det = new BarcodeDetector({ formats:['code_128','qr_code','code_39','ean_13'] });
+      scanStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+      const vid = $('scanVideo'); vid.srcObject = scanStream; await vid.play();
+      abrirModal('scanModal');
+      const leer = async ()=>{
+        if(!scanStream) return;
+        try{
+          const r = await det.detect(vid);
+          if(r.length){
+            pararScan(); cerrarModal('scanModal');
+            $('buscarActivo').value = r[0].rawValue;
+            $('buscarActivo').dispatchEvent(new KeyboardEvent('keydown', { key:'Enter' }));
+            return;
+          }
+        }catch(e){}
+        scanLoop = requestAnimationFrame(leer);
+      };
+      leer();
+    }catch(e){ console.error(e); pararScan(); showToast('No se pudo abrir la cámara.'); }
+  });
+  document.addEventListener('click', e=>{ if(e.target.closest('[data-close="scanModal"]') || e.target===$('scanModal')) pararScan(); });
 
   /* ================= BITÁCORA ================= */
   function bitacora(accion, detalle){
@@ -3374,7 +3510,7 @@
         const v = dentro[i];
         if(v){
           const min = (ahora - new Date(v.entrada))/60000;
-          celdas += '<button class="spot ocupado'+(min>480?' largo':'')+'" data-spot="'+esc(v.id)+'" title="'+esc(v.placa)+' · entró '+fmtHora(v.entrada)+'">'+t.icon+
+          celdas += '<button class="spot ocupado'+(min>cfg.parqueo.horasAlerta*60?' largo':'')+'" data-spot="'+esc(v.id)+'" title="'+esc(v.placa)+' · entró '+fmtHora(v.entrada)+'">'+t.icon+
             '<span class="pl">'+esc(v.placa)+'</span><span class="t">'+fmtDuracion(min)+'</span></button>';
         }else celdas += '<div class="spot"><span class="n">'+t.nombre.slice(0,1)+'-'+String(i+1).padStart(2,'0')+'</span>Libre</div>';
       }
