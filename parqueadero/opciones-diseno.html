@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>200 diseños parqueadero</title>
+<style>
+  :root{ --bg:#f4f5f8; --surface:#fff; --text:#141922; --muted:#667085; --line:#e3e6ec; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0e1116; --surface:#161a21; --text:#eceff4; --muted:#98a1b0; --line:#272d37; } }
+  :root[data-theme="dark"]{ --bg:#0e1116; --surface:#161a21; --text:#eceff4; --muted:#98a1b0; --line:#272d37; }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:14px;}
+  header{padding:24px 16px 8px;max-width:1400px;margin:0 auto;}
+  h1{margin:0 0 4px;font-size:24px;}
+  header p{margin:0;color:var(--muted);line-height:1.5;}
+  .filtros{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;max-width:1400px;margin:0 auto;position:sticky;top:0;background:var(--bg);z-index:5;}
+  .filtros select,.filtros input{background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px 10px;font:inherit;}
+  .filtros .n{margin-left:auto;color:var(--muted);align-self:center;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;padding:8px 16px 40px;max-width:1400px;margin:0 auto;}
+  .op{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .12s,box-shadow .12s;}
+  .op:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12);}
+  .op .cap{padding:9px 11px;display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+  .op .cap b{font-size:13px;}
+  .op .cap span{color:var(--muted);font-size:11.5px;text-align:right;}
+
+  /* ---------- mini maqueta (usa variables propias de cada opción) ---------- */
+  .mock{--r:8px;height:168px;display:flex;background:var(--m-bg);color:var(--m-ink);font-family:var(--m-font);overflow:hidden;position:relative;}
+  .mock .sb{width:46px;background:var(--m-side);display:flex;flex-direction:column;gap:6px;padding:8px 7px;flex-shrink:0;}
+  .mock .sb i{display:block;height:9px;border-radius:3px;background:var(--m-side-ink);opacity:.35;}
+  .mock .sb i.logo{height:16px;width:16px;border-radius:5px;background:var(--m-acc);opacity:1;margin-bottom:4px;}
+  .mock .sb i.on{background:var(--m-acc);opacity:1;}
+  .mock .mn{flex:1;min-width:0;padding:8px;display:flex;flex-direction:column;gap:6px;}
+  .mock .tb{height:14px;display:flex;justify-content:space-between;align-items:center;font-size:8.5px;font-weight:700;}
+  .mock .tb em{font-style:normal;font-family:ui-monospace,monospace;opacity:.7;}
+  .mock .kp{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+  .mock .kp div{background:var(--m-card);border:var(--m-bw) solid var(--m-line);border-radius:var(--r);padding:4px 5px;font-size:6.5px;color:var(--m-mut);box-shadow:var(--m-sh);}
+  .mock .kp div b{display:block;font-size:10px;color:var(--m-ink);font-family:ui-monospace,monospace;}
+  .mock .kp div:nth-child(3) b{color:var(--m-acc-t);}
+  .mock .bd{display:grid;grid-template-columns:1fr 1.1fr;gap:5px;flex:1;min-height:0;}
+  .mock .cd{background:var(--m-card);border:var(--m-bw) solid var(--m-line);border-radius:var(--r);padding:5px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--m-sh);min-width:0;}
+  .mock .tp{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;}
+  .mock .tp i{height:12px;border-radius:calc(var(--r) * .5);background:var(--m-soft);border:1px solid var(--m-line);}
+  .mock .tp i:nth-child(4){background:var(--m-acc-s);border-color:var(--m-acc);}
+  .mock .pl{height:18px;border:2px solid #111;border-radius:4px;background:var(--m-plate);color:#111;font:700 9px ui-monospace,monospace;letter-spacing:1.5px;display:flex;align-items:center;justify-content:center;}
+  .mock .bt{height:13px;border-radius:calc(var(--r) * .7);background:var(--m-acc);color:var(--m-acc-ink);font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .mock .li{display:flex;justify-content:space-between;align-items:center;font-size:7.5px;padding:2px 0;border-bottom:1px solid var(--m-line);}
+  .mock .li b{font-family:ui-monospace,monospace;letter-spacing:.8px;}
+  .mock .li span{font-family:ui-monospace,monospace;color:var(--m-acc-t);font-weight:700;}
+  /* variantes de estructura */
+  .mock.top{flex-direction:column;}
+  .mock.top .sb{width:auto;height:20px;flex-direction:row;align-items:center;padding:0 8px;}
+  .mock.top .sb i{width:22px;height:7px;}
+  .mock.top .sb i.logo{width:12px;height:12px;margin:0 6px 0 0;}
+  .mock.top .kp{display:none;}
+  .mock.rail .sb{width:22px;padding:8px 5px;}
+  .mock.rail .sb i{height:10px;border-radius:50%;}
+  .mock.glass{background:linear-gradient(135deg,var(--m-acc-s),var(--m-bg) 60%);}
+  .mock.glass .cd,.mock.glass .kp div{background:color-mix(in srgb,var(--m-card) 70%,transparent);backdrop-filter:blur(6px);}
+  .mock.brut .cd,.mock.brut .kp div{box-shadow:3px 3px 0 var(--m-ink);}
+  .mock.split .bd{grid-template-columns:1fr;}
+  .mock.split .bd .cd:last-child{display:none;}
+  .mock.split .kp{grid-template-columns:repeat(2,1fr);}
+
+  dialog{border:none;border-radius:16px;padding:0;max-width:min(860px,calc(100vw - 32px));width:100%;background:var(--surface);color:var(--text);}
+  dialog::backdrop{background:rgba(0,0,0,.55);}
+  dialog .mock{height:168px;zoom:2.6;}
+  dialog .det{padding:16px 18px;line-height:1.55;}
+  dialog .det h2{margin:0 0 6px;font-size:18px;}
+  dialog .det code{font-size:12px;background:var(--bg);padding:2px 6px;border-radius:6px;}
+  dialog .det button{margin-top:10px;background:var(--text);color:var(--surface);border:none;border-radius:9px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;}
+  @media (max-width:600px){ dialog .mock{zoom:1.1;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>200 opciones de diseño — Control de Parqueadero</h1>
+  <p>20 paletas de color × 10 estilos de interfaz. Cada tarjeta es una maqueta de la pantalla <strong>Parqueo</strong> (menú, indicadores, registro de placa y vehículos dentro). Toque una para verla grande y ver sus colores.</p>
+</header>
+<div class="filtros">
+  <select id="fEstilo"><option value="">Todos los estilos</option></select>
+  <select id="fPaleta"><option value="">Todas las paletas</option></select>
+  <select id="fModo"><option value="">Claro y oscuro</option><option value="claro">Solo claros</option><option value="oscuro">Solo oscuros</option></select>
+  <span class="n" id="cuenta"></span>
+</div>
+<div class="grid" id="grid"></div>
+
+<dialog id="dlg"><div id="dlgMock"></div><div class="det" id="dlgDet"></div></dialog>
+
+<script>
+// 20 paletas: [nombre, acento, tinta sobre acento, barra lateral, color placa, idea]
+const PALETAS = [
+  ['Ámbar señal','#f5a300','#1d1500','#12161d','#ffd400','El amarillo de las señales de tránsito; el actual, refinado.'],
+  ['Azul vial','#1f6feb','#ffffff','#0b1b33','#ffd400','Azul de señal informativa; transmite orden y confianza.'],
+  ['Verde libre','#16a34a','#ffffff','#0d1f16','#ffd400','Verde de "cupo disponible"; tranquilo y positivo.'],
+  ['Rojo pare','#e5383b','#ffffff','#1c0f10','#ffd400','Enérgico, para negocios de alto movimiento.'],
+  ['Naranja cono','#f97316','#1f0d00','#1a130e','#ffd400','Color de cono vial; muy visible en pantallas al sol.'],
+  ['Turquesa','#0ea5a4','#ffffff','#0a1f1f','#ffd400','Fresco y moderno, estilo app de movilidad.'],
+  ['Índigo','#5b5bd6','#ffffff','#14142b','#ffd400','Sobrio y tecnológico.'],
+  ['Violeta','#8b5cf6','#ffffff','#1a1230','#ffd400','Diferente y llamativo para marcas jóvenes.'],
+  ['Rosa neón','#ec4899','#ffffff','#22101b','#ffd400','Atrevido, ideal para parqueaderos de centros comerciales.'],
+  ['Lima','#84cc16','#132000','#141a0b','#ffd400','Muy alto contraste en modo oscuro.'],
+  ['Cian','#06b6d4','#00222a','#0a1a20','#ffd400','Limpio, recuerda pantallas de aeropuerto.'],
+  ['Asfalto','#334155','#ffffff','#0f172a','#ffd400','Gris carretera; serio y corporativo.'],
+  ['Grafito y oro','#c9a227','#1a1400','#1b1b1b','#ffd400','Elegante, para parqueaderos de valet o premium.'],
+  ['Terracota','#c2410c','#ffffff','#24140d','#ffd400','Cálido y cercano, estilo negocio de barrio.'],
+  ['Bosque','#15803d','#ffffff','#0a1a10','#ffd400','Verde oscuro clásico, discreto.'],
+  ['Marino','#1e3a8a','#ffffff','#0a1430','#ffd400','Institucional, como un banco o una alcaldía.'],
+  ['Menta','#10b981','#00241a','#0b1d18','#ffd400','Suave y amable para uso todo el día.'],
+  ['Cereza','#be123c','#ffffff','#200a12','#ffd400','Intenso y premium.'],
+  ['Arena','#b08d57','#ffffff','#2a241b','#ffd400','Neutro y cálido, poco cansador para la vista.'],
+  ['Monocromo','#111111','#ffffff','#000000','#ffd400','Blanco y negro, máximo enfoque en los datos.']
+];
+// 10 estilos: [nombre, clase, radio, borde, sombra, modo, fondo, tarjeta, tinta, idea]
+const ESTILOS = [
+  ['Clásico claro','',10,1,'0 1px 3px rgba(0,0,0,.08)','claro','Menú lateral oscuro, tarjetas blancas. El más familiar.'],
+  ['Redondeado suave','',16,0,'0 6px 18px rgba(0,0,0,.08)','claro','Esquinas grandes y sombras suaves, estilo app móvil.'],
+  ['Compacto','',4,1,'none','claro','Bordes finos y poco espacio: cabe más información en pantallas pequeñas.'],
+  ['Oscuro nocturno','',10,1,'none','oscuro','Para turnos de noche: menos brillo y menos cansancio visual.'],
+  ['Barra superior','top',10,1,'0 1px 3px rgba(0,0,0,.08)','claro','Menú arriba en vez de al lado: más ancho para la lista de vehículos.'],
+  ['Riel de íconos','rail',12,1,'0 1px 3px rgba(0,0,0,.08)','claro','Menú lateral solo con íconos; ideal para tabletas.'],
+  ['Vidrio','glass',14,1,'0 8px 24px rgba(0,0,0,.10)','claro','Fondo degradado con tarjetas translúcidas, moderno.'],
+  ['Brutalista','brut',2,2,'none','claro','Bordes gruesos y sombra sólida: alto contraste, muy legible.'],
+  ['Kiosco táctil','split',18,1,'0 4px 12px rgba(0,0,0,.08)','claro','Una sola columna grande para registrar placas con el dedo.'],
+  ['Oscuro alto contraste','brut',8,2,'none','oscuro','Negro puro con acento brillante; se lee bien a pleno sol.']
+];
+const FUENTES = ['system-ui,sans-serif','"Segoe UI",Roboto,sans-serif','ui-rounded,"Nunito",system-ui,sans-serif','Georgia,serif','ui-monospace,monospace'];
+
+function mezclar(hex,base,p){ // p = porcentaje del acento
+  const a=parseInt(hex.slice(1),16), b=parseInt(base.slice(1),16);
+  const c=[16,8,0].map(s=>Math.round(((a>>s)&255)*p+((b>>s)&255)*(1-p)));
+  return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+const OPCIONES = [];
+ESTILOS.forEach((e,ei)=>PALETAS.forEach((p,pi)=>{
+  const oscuro = e[5]==='oscuro';
+  const alto = ei===9;
+  const bg = alto?'#000000':oscuro?'#0e1116':ei===6?'#f3f4fb':'#f3f4f7';
+  const card = alto?'#0b0b0b':oscuro?'#161a21':'#ffffff';
+  const ink = oscuro?'#eceff4':'#151a22';
+  // en oscuro, un acento muy oscuro (asfalto, marino, monocromo) se aclara para que se vea
+  const lum = (h=>{const n=parseInt(h.slice(1),16);return (0.299*(n>>16)+0.587*((n>>8)&255)+0.114*(n&255))/255;})(p[1]);
+  const acc = oscuro && lum<0.35 ? mezclar(p[1],'#ffffff',0.45) : p[1];
+  OPCIONES.push({
+    n: OPCIONES.length+1, paleta:p[0], estilo:e[0], modo:e[5], clase:e[1],
+    idea: e[6]+' '+p[5],
+    v:{ '--m-bg':bg, '--m-card':card, '--m-ink':ink, '--m-mut':oscuro?'#98a1b0':'#667085',
+        '--m-line':alto?'#ffffff':oscuro?'#272d37':(ei===7?'#151a22':'#e3e6ec'),
+        '--m-soft':oscuro?'#1c212a':'#f7f8fa', '--m-acc':acc, '--m-acc-ink':oscuro&&lum<0.35?'#111':p[2],
+        '--m-acc-t':acc, '--m-acc-s':mezclar(acc,oscuro?'#161a21':'#ffffff',0.18),
+        '--m-side':ei===4||ei===8?(oscuro?'#161a21':p[3]):p[3], '--m-side-ink':'#ffffff',
+        '--m-plate':p[4], '--m-sh':alto?'3px 3px 0 '+acc:e[4], '--m-bw':e[3]+'px', '--r':e[2]+'px',
+        '--m-font':FUENTES[(ei+pi)%FUENTES.length] }
+  });
+}));
+
+function mock(o){
+  const st = Object.entries(o.v).map(([k,v])=>k+':'+v).join(';');
+  return '<div class="mock '+o.clase+'" style="'+st+'">'+
+    '<div class="sb"><i class="logo"></i><i class="on"></i><i></i><i></i><i></i><i></i></div>'+
+    '<div class="mn"><div class="tb">Parqueo<em>14:32</em></div>'+
+    '<div class="kp"><div>Dentro<b>23</b></div><div>Ingresos<b>87</b></div><div>Parqueo<b>$412k</b></div><div>Tienda<b>$96k</b></div></div>'+
+    '<div class="bd"><div class="cd"><div class="tp"><i></i><i></i><i></i><i></i><i></i></div><div class="pl">ABC123</div><div class="bt">Registrar entrada</div></div>'+
+    '<div class="cd"><div class="li"><b>KLM482</b><span>$6.000</span></div><div class="li"><b>RTZ19F</b><span>$2.500</span></div><div class="li"><b>HJP903</b><span>$9.000</span></div><div class="li"><b>BCD771</b><span>$3.000</span></div></div></div>'+
+    '</div></div>';
+}
+const grid = document.getElementById('grid');
+function pintar(){
+  const fe=fEstilo.value, fp=fPaleta.value, fm=fModo.value;
+  const lista = OPCIONES.filter(o=>(!fe||o.estilo===fe)&&(!fp||o.paleta===fp)&&(!fm||o.modo===fm));
+  grid.innerHTML = lista.map(o=>'<div class="op" data-n="'+o.n+'">'+mock(o)+
+    '<div class="cap"><b>#'+String(o.n).padStart(3,'0')+' '+o.paleta+'</b><span>'+o.estilo+'</span></div></div>').join('');
+  cuenta.textContent = lista.length+' opciones';
+}
+ESTILOS.forEach(e=>fEstilo.add(new Option(e[0],e[0])));
+PALETAS.forEach(p=>fPaleta.add(new Option(p[0],p[0])));
+[fEstilo,fPaleta,fModo].forEach(s=>s.addEventListener('change',pintar));
+grid.addEventListener('click',ev=>{
+  const c=ev.target.closest('.op'); if(!c) return;
+  const o=OPCIONES[c.dataset.n-1];
+  dlgMock.innerHTML=mock(o);
+  dlgDet.innerHTML='<h2>#'+String(o.n).padStart(3,'0')+' · '+o.paleta+' · '+o.estilo+'</h2><p>'+o.idea+'</p>'+
+    '<p>Acento <code>'+o.v['--m-acc']+'</code> · Fondo <code>'+o.v['--m-bg']+'</code> · Menú <code>'+o.v['--m-side']+'</code> · Radio <code>'+o.v['--r']+'</code></p>'+
+    '<button onclick="dlg.close()">Cerrar</button>';
+  dlg.showModal();
+});
+dlg.addEventListener('click',e=>{ if(e.target===dlg) dlg.close(); });
+pintar();
+</script>
+</body>
+</html>
