@@ -2,7 +2,7 @@
    La página siempre se pide primero a internet (para recibir cambios) y,
    si no hay conexión, se abre la copia guardada. Los datos de Firebase
    no pasan por aquí: Firestore tiene su propia copia local. */
-const CACHE = 'turnos-v2';
+const CACHE = 'turnos-v3';
 const ARCHIVOS = [
   './',
   'index.html',
