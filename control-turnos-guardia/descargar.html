@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Descargar app — Control de turnos</title>
+<meta name="theme-color" content="#10161d">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<style>
+  :root{ --bg:#10161d; --panel:#182029; --line:#2b3742; --text:#e8ebee; --muted:#8998a8; --amber:#e6a53c; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        display:flex; align-items:center; justify-content:center; padding:24px 16px; }
+  .card{ max-width:420px; width:100%; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:26px; }
+  img{ width:72px; height:72px; border-radius:16px; display:block; margin-bottom:14px; }
+  h1{ font-size:21px; margin:0 0 6px; }
+  p{ color:var(--muted); margin:0 0 18px; line-height:1.45; font-size:15px; }
+  .btn{ display:block; text-align:center; background:var(--amber); color:#10161d; font-weight:700;
+        text-decoration:none; padding:14px; border-radius:8px; font-size:16px; }
+  ol{ color:var(--muted); padding-left:20px; margin:20px 0 0; line-height:1.55; font-size:14px; }
+  ol strong{ color:var(--text); }
+  .volver{ display:block; text-align:center; color:var(--amber); margin-top:18px; font-size:14px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="icons/icon-192.png" alt="">
+    <h1>Control de turnos para Android</h1>
+    <p>La app abre al instante, funciona sin internet y usa los mismos datos que esta página.</p>
+    <a class="btn" href="descargas/ControlTurnos.apk" download="ControlTurnos.apk">Descargar app (APK)</a>
+    <ol>
+      <li>Toca <strong>Descargar app</strong> y espera que termine.</li>
+      <li>Abre el archivo <strong>ControlTurnos.apk</strong> desde las notificaciones o Descargas.</li>
+      <li>Si el celular lo pide, permite <strong>instalar apps de esta fuente</strong> y toca <strong>Instalar</strong>.</li>
+      <li>Abre <strong>Control de turnos</strong> e inicia sesión con tu correo y contraseña de siempre.</li>
+    </ol>
+    <a class="volver" href="./">Volver a la página</a>
+  </div>
+</body>
+</html>

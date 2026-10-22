@@ -1,0 +1,7 @@
+{
+  "appId": "co.controlturnos.guardia",
+  "appName": "Control de turnos",
+  "webDir": "www",
+  "android": { "backgroundColor": "#10161d" },
+  "server": { "androidScheme": "https" }
+}

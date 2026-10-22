@@ -82,9 +82,19 @@
   #selector{
     min-height: 100vh;
     display:flex;
+    flex-direction:column;
+    gap:16px;
     align-items:center;
     justify-content:center;
     padding: 24px;
+  }
+  .link-apk{
+    color: var(--amber);
+    font-size: 14px;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 16px;
   }
   .sel-card{
     max-width: 400px;
@@ -655,6 +665,7 @@
     <h2>Cargando…</h2>
     <p>Abriendo el control de turnos. Si tu internet está lento puede tardar unos segundos.</p>
   </div>
+  <a class="link-apk" id="linkApk" href="descargar.html">Descargar la app para Android</a>
 </div>
 
 <div id="app">
@@ -679,12 +690,12 @@
       <div class="admin-row-self">
         <strong>Administrador (tu cuenta)</strong>
         <input type="email" id="adminEmail" placeholder="Correo">
-        <input type="password" id="adminPassword" placeholder="Contraseña">
+        <input type="password" id="adminPassword" autocomplete="new-password" placeholder="Nueva contraseña (vacío = igual)">
         <button class="btn-outline" id="btnGuardarAdmin">Guardar</button>
       </div>
       <div id="listaGuardias"></div>
     </div>
-    <div class="foot-note">Crea aquí el correo, la contraseña y el nombre real de cada guardia para que puedan iniciar sesión. La contraseña no queda cifrada: sirve para organizar el acceso, no como seguridad crítica.</div>
+    <div class="foot-note">Crea aquí el correo, la contraseña y el nombre real de cada guardia para que puedan iniciar sesión. Las contraseñas se guardan cifradas: nadie puede verlas, ni siquiera el administrador. Si alguien la olvida, escríbele una nueva aquí.</div>
   </section>
 
   <section id="secRespaldo" style="display:none;">
@@ -1030,9 +1041,48 @@
     return String(s || '').replace(/"/g, '&quot;');
   }
 
+  /* ---- contraseñas cifradas: nunca se guardan tal cual en Firebase ---- */
+  // PBKDF2 con sal propia por persona; en Firebase solo queda "pbkdf2$vueltas$sal$huella"
+  const VUELTAS_CLAVE = 150000;
+  const aHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const deHex = hex => new Uint8Array(hex.match(/.{2}/g).map(x => parseInt(x, 16)));
+
+  async function huellaClave(password, salHex, vueltas){
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: deHex(salHex), iterations: vueltas }, base, 256);
+    return aHex(bits);
+  }
+
+  async function cifrarClave(password){
+    const sal = aHex(crypto.getRandomValues(new Uint8Array(16)));
+    return `pbkdf2$${VUELTAS_CLAVE}$${sal}$${await huellaClave(password, sal, VUELTAS_CLAVE)}`;
+  }
+
+  async function claveCorrecta(c, password){
+    if(c.claveCifrada){
+      const [, vueltas, sal, huella] = c.claveCifrada.split('$');
+      return (await huellaClave(password, sal, parseInt(vueltas, 10))) === huella;
+    }
+    return !!c.password && c.password === password; // cuentas viejas, antes de cifrar
+  }
+
+  // Pone una contraseña nueva cifrada y borra la vieja que estaba a la vista
+  async function ponerClave(c, password){
+    c.claveCifrada = await cifrarClave(password);
+    delete c.password;
+  }
+
+  // Cifra las contraseñas que todavía estén guardadas tal cual
+  async function cifrarClavesViejas(){
+    const pendientes = Object.values(credenciales).filter(c => c && c.password);
+    if(!pendientes.length) return;
+    for(const c of pendientes) await ponerClave(c, c.password);
+    await guardarCampo('credenciales', credenciales);
+  }
+
   function credencialesPorDefecto(){
     const obj = {};
-    PERFILES.forEach(p => { obj[p.id] = { email: '', password: '', nombre: p.label }; });
+    PERFILES.forEach(p => { obj[p.id] = { email: '', nombre: p.label }; });
     return obj;
   }
 
@@ -1102,7 +1152,7 @@
         ultimoRespaldo = null;
         await docRef.set({ turnos, horasNormales, valorTurno, valorDiaAdicional, valorHoraExtra, credenciales, nombres: {}, ultimoRespaldo: null });
       }
-      PERFILES.forEach(p => { if(!credenciales[p.id]) credenciales[p.id] = { email:'', password:'', nombre:p.label }; });
+      PERFILES.forEach(p => { if(!credenciales[p.id]) credenciales[p.id] = { email:'', nombre:p.label }; });
       estadoCargado = true;
       estadoRed();
     }catch(e){
@@ -1172,7 +1222,7 @@
         const password = $('setupPassword').value;
         if(!email || !password){ alert('Completa correo y contraseña.'); return; }
         credenciales.admin.email = email;
-        credenciales.admin.password = password;
+        await ponerClave(credenciales.admin, password);
         await guardarCampo('credenciales', credenciales);
         await entrarComo('admin');
       });
@@ -1186,24 +1236,40 @@
         <div class="login-error" id="loginError"></div>
       `;
       $('btnLogin').addEventListener('click', intentarLogin);
+      $('loginPassword').addEventListener('keydown', ev => { if(ev.key === 'Enter') intentarLogin(); });
     }
   }
 
-  function intentarLogin(){
+  let intentosFallidos = 0;
+  let bloqueadoHasta = 0;
+
+  async function intentarLogin(){
     const email = $('loginEmail').value.trim().toLowerCase();
     const password = $('loginPassword').value;
     if(!email || !password){
       $('loginError').textContent = 'Completa correo y contraseña.';
       return;
     }
-    const encontrado = Object.keys(credenciales).find(id => {
+    // Después de 5 intentos malos espera un rato antes de dejar probar otra vez
+    const espera = Math.ceil((bloqueadoHasta - Date.now()) / 1000);
+    if(espera > 0){
+      $('loginError').textContent = `Demasiados intentos. Espera ${espera} segundos.`;
+      return;
+    }
+    $('btnLogin').disabled = true;
+    let encontrado = null;
+    for(const id of Object.keys(credenciales)){
       const c = credenciales[id];
-      return c.email && c.email.toLowerCase() === email && c.password === password;
-    });
+      if(c && c.email && c.email.toLowerCase() === email && await claveCorrecta(c, password)){ encontrado = id; break; }
+    }
+    $('btnLogin').disabled = false;
     if(!encontrado){
+      intentosFallidos++;
+      if(intentosFallidos >= 5){ bloqueadoHasta = Date.now() + 30000 * (intentosFallidos - 4); }
       $('loginError').textContent = 'Correo o contraseña incorrectos.';
       return;
     }
+    intentosFallidos = 0;
     entrarComo(encontrado);
   }
 
@@ -1232,7 +1298,7 @@
     sec.style.display = 'block';
 
     $('adminEmail').value = credenciales.admin.email || '';
-    $('adminPassword').value = credenciales.admin.password || '';
+    $('adminPassword').value = '';
 
     const cont = $('listaGuardias');
     cont.innerHTML = '';
@@ -1246,7 +1312,7 @@
           <span class="admin-row-id">${p.label}</span>
           <input type="text" data-field="nombre" value="${escapeAttr(c.nombre)}" placeholder="Nombre real">
           <input type="email" data-field="email" value="${escapeAttr(c.email)}" placeholder="Correo">
-          <input type="password" data-field="password" value="${escapeAttr(c.password)}" placeholder="Contraseña">
+          <input type="password" data-field="password" value="" autocomplete="new-password" placeholder="${(c.claveCifrada || c.password) ? 'Nueva contraseña (vacío = igual)' : 'Contraseña'}">
           <button class="btn-outline" data-guardar="${p.id}">Guardar</button>
         </div>
         <div class="admin-row-nomina">
@@ -1270,7 +1336,11 @@
         const auxilioTransporte = parseFloat(card.querySelector('[data-field="auxilioTransporte"]').value) || 0;
         const bonificacion = parseFloat(card.querySelector('[data-field="bonificacion"]').value) || 0;
 
-        credenciales[id] = { nombre: nombre || labelDefault(id), email, password };
+        const anterior = credenciales[id] || {};
+        credenciales[id] = { nombre: nombre || labelDefault(id), email };
+        if(password) await ponerClave(credenciales[id], password);
+        else if(anterior.claveCifrada) credenciales[id].claveCifrada = anterior.claveCifrada;
+        card.querySelector('[data-field="password"]').value = '';
         nominaPorPerfil[id] = { salario, auxilioTransporte, bonificacion };
 
         await Promise.all([
@@ -1288,9 +1358,11 @@
   $('btnGuardarAdmin').addEventListener('click', async () => {
     const email = $('adminEmail').value.trim();
     const password = $('adminPassword').value;
-    if(!email || !password){ alert('Completa correo y contraseña.'); return; }
+    if(!email){ alert('Completa el correo.'); return; }
+    if(!password && !credenciales.admin.claveCifrada){ alert('Escribe una contraseña.'); return; }
     credenciales.admin.email = email;
-    credenciales.admin.password = password;
+    if(password) await ponerClave(credenciales.admin, password);
+    $('adminPassword').value = '';
     await guardarCampo('credenciales', credenciales);
     alert('Cuenta de administrador actualizada.');
   });
@@ -2413,6 +2485,9 @@
     });
   }
 
+  // Dentro de la app de Android no hace falta el enlace para descargarla
+  if(window.Capacitor){ const l = $('linkApk'); if(l) l.remove(); }
+
   /* ---- arranque ---- */
   (async function inicio(){
     if(!FIREBASE_SDK_CARGADO || !FIREBASE_CONFIGURADO){
@@ -2430,6 +2505,7 @@
       window.addEventListener('online', () => location.reload());
       return;
     }
+    await cifrarClavesViejas().catch(e => console.warn('No se pudieron cifrar las contraseñas:', e));
     escucharCambios();
 
     let guardado = null;

@@ -11,6 +11,7 @@ const ARCHIVOS = [
   'icons/apple-touch-icon.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
+  'descargar.html',
   'libs/firebase-app-compat.js',
   'libs/firebase-firestore-compat.js',
   'libs/xlsx.full.min.js',
