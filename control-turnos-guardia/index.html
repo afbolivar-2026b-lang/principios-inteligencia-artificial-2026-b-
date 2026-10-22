@@ -1,0 +1,2592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de turnos — Guardia de seguridad</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#10161d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Turnos">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+  :root{
+    --bg: #10161d;
+    --panel: #182029;
+    --line: #2b3742;
+    --text: #e8ebee;
+    --muted: #8998a8;
+    --amber: #e6a53c;
+    --amber-dim: #b98430;
+    --red: #d97a68;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html{ max-width: 100%; overflow-x: hidden; }
+
+  body{
+    margin:0;
+    max-width: 100%;
+    overflow-x: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap{
+    max-width: 640px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 28px 20px 110px;
+  }
+
+  /* ---- aviso de configuración de Firebase ---- */
+  .config-banner{
+    min-height: 100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  .config-banner .box{
+    max-width: 460px;
+    background: var(--panel);
+    border: 1px solid var(--red);
+    border-radius: 12px;
+    padding: 26px;
+  }
+  .config-banner h2{ margin:0 0 10px; font-size:1.05rem; }
+  .config-banner p{ color: var(--muted); font-size:0.85rem; line-height:1.5; }
+  .config-banner code{
+    display:block;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    margin: 10px 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  /* ---- login / selector ---- */
+  #selector{
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+  .link-apk{
+    color: var(--amber);
+    font-size: 14px;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+  .sel-card{
+    max-width: 400px;
+    width:100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 26px;
+  }
+  .sel-card h2{
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .sel-card p{
+    margin: 0 0 20px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .login-input{
+    width:100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+  }
+  .login-input:focus{ outline:none; border-color: var(--amber-dim); }
+  .sel-admin{
+    width:100%;
+    background: var(--amber);
+    color: #1a1305;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  .sel-admin:hover{ background: #f0b354; }
+  .login-error{
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--red);
+    min-height: 1em;
+  }
+
+  #app{ display:none; }
+
+  /* ---- header ---- */
+  header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 28px;
+  }
+  .badge{
+    width:38px; height:38px;
+    flex: none;
+    color: var(--amber);
+  }
+  header h1{
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin:0;
+    letter-spacing: 0.01em;
+  }
+  header p{
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .sesion{
+    margin-top: 2px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .sesion strong{ color: var(--text); }
+  .sesion button{
+    background:none;
+    border:none;
+    color: var(--amber);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+    text-decoration: underline;
+  }
+  .guardia-input{
+    margin-top: 6px;
+    background: none;
+    border: none;
+    border-bottom: 1px dashed var(--line);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    padding: 2px 0;
+    width: 100%;
+    max-width: 220px;
+  }
+  .guardia-input::placeholder{ color: var(--muted); }
+  .guardia-input:focus{ outline:none; border-bottom-color: var(--amber-dim); }
+
+  /* ---- summary strip ---- */
+  .summary{
+    display:flex;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow:hidden;
+    margin-bottom: 26px;
+    background: var(--panel);
+  }
+  .stat{
+    flex:1;
+    padding: 16px 14px;
+    text-align:center;
+    border-right: 1px solid var(--line);
+  }
+  .stat:last-child{ border-right:none; }
+  .stat .num{
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .stat.extra .num{ color: var(--amber); }
+  .stat .label{
+    margin-top: 4px;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  /* ---- sections ---- */
+  section{ margin-bottom: 30px; }
+  section > h2{
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 0 0 12px;
+    text-transform: none;
+  }
+
+  .section-head{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .section-head h2{ margin: 0; }
+  .exports{ display:flex; gap: 8px; align-items:center; flex-wrap: wrap; }
+  .btn-outline{
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.76rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .btn-outline:hover{ border-color: var(--amber-dim); color: var(--text); }
+  select.filtro{
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 7px;
+    padding: 6px 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.76rem;
+  }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+  }
+
+  .row{
+    display:grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+  .row + .row{ margin-top: 12px; }
+  .field{ display:flex; flex-direction:column; gap:6px; min-width: 0; }
+  .field.full{ grid-column: 1 / -1; }
+  .field label{
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .field input, .field select{
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 9px 10px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.92rem;
+  }
+  .field input[type="text"]{
+    font-family: 'Space Grotesk', ui-sans-serif, sans-serif;
+  }
+  .field select{
+    font-family: 'Space Grotesk', ui-sans-serif, sans-serif;
+  }
+  .field input:focus, .field select:focus{
+    outline: none;
+    border-color: var(--amber-dim);
+  }
+
+  .config{
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+  }
+  .config-row{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .config-row + .config-row{ margin-top: 10px; }
+  .config-row label{
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .config-row input{
+    width: 100px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 7px 8px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    text-align:center;
+  }
+  .config-row input:focus{ outline:none; border-color: var(--amber-dim); }
+  .config-row input:disabled{
+    color: var(--muted);
+    border-color: var(--line);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  button.add{
+    width:100%;
+    margin-top: 16px;
+    background: var(--amber);
+    color: #1a1305;
+    border: none;
+    border-radius: 8px;
+    padding: 11px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  button.add:hover{ background: #f0b354; }
+  button.add:active{ transform: translateY(1px); }
+
+  /* ---- panel de administración de guardias ---- */
+  .admin-row-self{
+    display:grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items:center;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .admin-row-self strong{ grid-column: 1 / -1; font-size: 0.85rem; }
+  .admin-card{
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .admin-card:last-child{ border-bottom:none; }
+  .admin-row{
+    display:grid;
+    grid-template-columns: 74px 1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items:center;
+  }
+  .admin-row-nomina{
+    display:grid;
+    grid-template-columns: 74px 1fr 1fr 1fr;
+    gap: 8px;
+    align-items:center;
+    margin-top: 8px;
+  }
+  .admin-row-nomina .admin-row-id{ visibility:hidden; }
+  .mini-field{ display:flex; flex-direction:column; gap:3px; }
+  .mini-field span{
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .admin-row-id{
+    font-size: 0.76rem;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .admin-row input, .admin-row-self input, .admin-row-nomina input{
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 8px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    width: 100%;
+  }
+  .admin-row input:focus, .admin-row-self input:focus{ outline:none; border-color: var(--amber-dim); }
+
+  /* ---- resumen por guardia ---- */
+  .resumen-guardias{
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 4px 14px;
+    margin-bottom: 16px;
+    background: var(--panel);
+  }
+  .resumen-guardias-title{
+    font-size: 0.76rem;
+    color: var(--muted);
+    padding: 10px 0 6px;
+  }
+  .resumen-guardia-card{
+    padding: 9px 0;
+    border-top: 1px solid var(--line);
+  }
+  .resumen-guardia-card .fila1{
+    display:flex;
+    justify-content: space-between;
+    align-items:baseline;
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+  .resumen-guardia-card .fila1 .pago{
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--amber);
+  }
+  .resumen-guardia-card .fila2{
+    margin-top: 2px;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+
+  /* ---- saldo total ---- */
+  .saldo-row{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.86rem;
+  }
+  .saldo-row:first-child{ border-top:none; }
+  .saldo-row span:last-child{
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .saldo-row.saldo-final{
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .saldo-row.saldo-final span:last-child{ color: var(--amber); }
+
+  /* ---- ledger ---- */
+  .ledger{
+    border-top: 1px solid var(--line);
+  }
+  .entry{
+    display:grid;
+    grid-template-columns: 88px minmax(0, 1fr) auto 20px;
+    align-items:center;
+    gap: 10px;
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--line);
+  }
+  .entry.descanso{ opacity: 0.72; }
+  .entry .fecha{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .entry .rango{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .entry .rango strong{
+    display:block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+  .entry .rango .tag{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 400;
+    color: var(--amber);
+    font-size: 0.76rem;
+  }
+  .entry .rango .detalle{
+    display:block;
+    font-size: 0.82rem;
+  }
+  .entry .rango .notas, .entry .rango .pago{
+    display:block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .entry .horas{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88rem;
+    text-align:right;
+    white-space: nowrap;
+  }
+  .entry .extra{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88rem;
+    text-align:right;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+  .entry .extra.on{ color: var(--amber); font-weight: 600; }
+  /* horas del turno separadas: normales + extra = total */
+  .entry .pago-detalle{ display:block; font-size: 0.74rem; color: var(--amber); margin-top: 2px; }
+  .entry .horas .h-extra{ display:block; color: var(--amber); font-weight: 600; font-size: 0.8rem; margin-top: 2px; }
+  .entry .horas .h-total{ display:block; color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
+  .entry .del{
+    justify-self:end;
+    background:none;
+    border:none;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor:pointer;
+    padding: 2px 4px;
+  }
+  .entry .del:hover{ color: var(--red); }
+
+  .empty{
+    padding: 26px 4px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .grupo-header{
+    display:flex;
+    align-items:baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 2px 8px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .grupo-header:not(:first-child){
+    margin-top: 6px;
+    padding-top: 20px;
+  }
+  .grupo-header .grupo-nombre{
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .grupo-header .grupo-total{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .grupo-header .grupo-total strong{ color: var(--amber); }
+
+  .foot-note{
+    margin-top: 10px;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+
+  .whatsapp-iconos{
+    display:flex;
+    gap: 12px;
+  }
+  .whatsapp-icono{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 10px;
+    cursor: pointer;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    transition: border-color 0.15s ease;
+  }
+  .whatsapp-icono:hover{ border-color: #25D366; }
+  .whatsapp-icono-letra{
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #25D366;
+    color: #062f16;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight: 700;
+    font-size: 0.58rem;
+    letter-spacing: -0.02em;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .conexion{
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 20px;
+  }
+  .conexion.error{ color: var(--red); }
+
+  @media (max-width: 420px){
+    .row{ grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .entry{ grid-template-columns: 70px minmax(0, 1fr) auto 18px; }
+    .entry .extra{ display:none; }
+    .admin-row{ grid-template-columns: 1fr; }
+    .admin-row-nomina{ grid-template-columns: 1fr; }
+    .admin-row-nomina .admin-row-id{ display:none; }
+    .admin-row-self{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="configBanner" class="config-banner" style="display:none;">
+  <div class="box">
+    <h2>Falta conectar Firebase</h2>
+    <p>Esta página está lista para guardar todo en Firebase, pero primero necesita los datos de tu proyecto. Edita el archivo y reemplaza el objeto <code>firebaseConfig</code> (cerca del inicio del bloque &lt;script&gt;) con la configuración que te da Firebase al crear un proyecto Web:</p>
+    <code>const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+};</code>
+    <p>La consigues en Firebase Console → Configuración del proyecto → tus apps → SDK setup and configuration. También activa Firestore (modo producción o prueba) y configura sus reglas.</p>
+  </div>
+</div>
+
+<div id="selector">
+  <div class="sel-card" id="selCard">
+    <h2>Cargando…</h2>
+    <p>Abriendo el control de turnos. Si tu internet está lento puede tardar unos segundos.</p>
+  </div>
+  <a class="link-apk" id="linkApk" href="descargar.html">Descargar la app para Android</a>
+</div>
+
+<div id="app">
+<div class="wrap">
+
+  <header>
+    <svg class="badge" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M24 4L8 10V22C8 32.5 14.6 40.8 24 44C33.4 40.8 40 32.5 40 22V10L24 4Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M17 24L22 29L32 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <h1>Control de turnos</h1>
+      <p>Guardia de seguridad — horas, turnos y pagos</p>
+      <div class="sesion">Sesión: <strong id="sesionLabel">—</strong><button id="btnCerrarSesion">Cerrar sesión</button></div>
+      <input type="text" id="nombreGuarda" class="guardia-input" placeholder="Tu nombre (opcional)">
+    </div>
+  </header>
+
+  <section id="secAdmin" style="display:none;">
+    <h2>Gestión de guardias</h2>
+    <div class="card">
+      <div class="admin-row-self">
+        <strong>Administrador (tu cuenta)</strong>
+        <input type="email" id="adminEmail" placeholder="Correo">
+        <input type="password" id="adminPassword" autocomplete="new-password" placeholder="Nueva contraseña (vacío = igual)">
+        <button class="btn-outline" id="btnGuardarAdmin">Guardar</button>
+      </div>
+      <div id="listaGuardias"></div>
+    </div>
+    <div class="foot-note">Crea aquí el correo, la contraseña y el nombre real de cada guardia para que puedan iniciar sesión. Las contraseñas se guardan cifradas: nadie puede verlas, ni siquiera el administrador. Si alguien la olvida, escríbele una nueva aquí.</div>
+  </section>
+
+  <section id="secRespaldo" style="display:none;">
+    <h2>Respaldo automático</h2>
+    <div class="card">
+      <div class="saldo-row"><span>Último respaldo</span><span id="ultimoRespaldoTexto">Nunca</span></div>
+      <div class="foot-note" style="margin-top:6px; margin-bottom:8px;">¿En qué formato quieres el respaldo?</div>
+      <div class="whatsapp-iconos">
+        <button class="whatsapp-icono" id="btnRespaldarPdf">
+          <span class="whatsapp-icono-letra" style="background:var(--amber); color:#1a1305;">PDF</span>
+          <span>Respaldar PDF</span>
+        </button>
+        <button class="whatsapp-icono" id="btnRespaldarExcel">
+          <span class="whatsapp-icono-letra" style="background:var(--amber); color:#1a1305;">EXCEL</span>
+          <span>Respaldar Excel</span>
+        </button>
+      </div>
+    </div>
+    <div class="foot-note">Los datos ya viven en Firebase (no dependen de este navegador). Este respaldo es una copia extra de tranquilidad; la automática de una vez al día se guarda en Excel.</div>
+  </section>
+
+  <div class="summary">
+    <div class="stat">
+      <div class="num" id="statTurnos">0</div>
+      <div class="label">turnos</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statHoras">0</div>
+      <div class="label">horas trabajadas</div>
+    </div>
+    <div class="stat extra">
+      <div class="num" id="statExtra">0</div>
+      <div class="label">horas extra</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statPago">$0</div>
+      <div class="label">a pagar</div>
+    </div>
+  </div>
+
+  <section id="secSaldo">
+    <div class="section-head">
+      <h2>Saldo total</h2>
+      <div class="exports">
+        <button class="btn-outline" id="btnPdfSaldo">Descargar PDF</button>
+        <button class="btn-outline" id="btnExcelSaldo">Descargar Excel</button>
+      </div>
+    </div>
+    <div class="card" id="saldoCard"></div>
+  </section>
+
+  <section id="secVerificacion">
+    <div class="section-head">
+      <h2>Verificación de pago</h2>
+      <div class="exports">
+        <button class="btn-outline" id="btnPdfVerif">Descargar PDF</button>
+        <button class="btn-outline" id="btnExcelVerif">Descargar Excel</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="config-row">
+        <label for="verifSalario">Salario mensual ($)</label>
+        <input type="number" id="verifSalario" min="0" step="1000" value="0">
+      </div>
+      <div class="config-row">
+        <label for="verifAuxilio">Auxilio de transporte ($)</label>
+        <input type="number" id="verifAuxilio" min="0" step="1000" value="0">
+      </div>
+      <div class="config-row">
+        <label for="verifBonificacion">Bonificación ($)</label>
+        <input type="number" id="verifBonificacion" min="0" step="1000" value="0">
+      </div>
+      <div class="config-row">
+        <label for="verifDiaAdicional">Valor días adicionales ($)</label>
+        <input type="number" id="verifDiaAdicional" min="0" step="1000" value="0">
+      </div>
+      <div class="foot-note" id="verifDiaAdicionalNota"></div>
+      <div class="config-row">
+        <label for="verifHorasExtra">Valor horas extra ($)</label>
+        <input type="number" id="verifHorasExtra" min="0" step="1000" value="0">
+      </div>
+      <div class="foot-note" id="verifHorasExtraNota"></div>
+      <div class="saldo-row" style="margin-top:12px;"><span>Cálculo total (según esta página)</span><span id="verifCalculado">$0</span></div>
+      <div class="config-row" style="margin-top:14px;">
+        <label for="pagoRecibido">¿Cuánto te llegó?</label>
+        <input type="number" id="pagoRecibido" min="0" step="1000" value="0">
+      </div>
+      <div class="saldo-row saldo-final"><span>Diferencia</span><span id="verifDiferencia">$0</span></div>
+      <div class="foot-note" id="verifMensaje"></div>
+    </div>
+    <div class="foot-note">Compara por mes: elige el mes en "Registro de turnos" y luego escribe cuánto te consignaron ese mes. El salario, auxilio y bonificación de aquí los puede editar el propio guardia o el administrador.</div>
+  </section>
+
+  <section id="secRegistrar">
+    <h2>Registrar turno</h2>
+    <div class="card">
+      <div class="row">
+        <div class="field">
+          <label for="turnoNombre">Nombre del guarda</label>
+          <input type="text" id="turnoNombre" placeholder="Ej: Carlos Ramírez">
+        </div>
+        <div class="field">
+          <label for="fecha">Fecha</label>
+          <input type="date" id="fecha">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field full">
+          <label for="tipoTurno">Tipo</label>
+          <select id="tipoTurno">
+            <option value="turno_dia">Turno Día</option>
+            <option value="turno_noche">Turno Noche</option>
+            <option value="adicional">Día adicional</option>
+            <option value="descanso">Descanso</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="filaPuesto">
+        <div class="field full">
+          <label for="notas">Puesto</label>
+          <input type="text" id="notas" placeholder="Ej: Puesto Norte">
+        </div>
+      </div>
+      <div class="row" id="filaHorario">
+        <div class="field">
+          <label for="entrada">Hora de entrada</label>
+          <input type="time" id="entrada">
+        </div>
+        <div class="field">
+          <label for="salida">Hora de salida</label>
+          <input type="time" id="salida">
+        </div>
+      </div>
+
+      <div class="foot-note" id="previewTurno" style="min-height:1.1em;"></div>
+
+      <button class="add" id="btnAdd">Agregar</button>
+
+      <div class="config">
+        <div class="config-row">
+          <label for="horasNormales">Horas normales por turno</label>
+          <input type="number" id="horasNormales" min="1" max="24" step="0.5" value="12">
+        </div>
+        <div class="config-row">
+          <label for="valorTurnoDia">Valor turno día ($)</label>
+          <input type="number" id="valorTurnoDia" min="0" step="1000" value="0">
+        </div>
+        <div class="config-row">
+          <label for="valorTurnoNoche">Valor turno noche ($)</label>
+          <input type="number" id="valorTurnoNoche" min="0" step="1000" value="0">
+        </div>
+        <div class="config-row">
+          <label for="valorDiaAdicional">Valor del día adicional ($)</label>
+          <input type="number" id="valorDiaAdicional" min="0" step="1000" value="0">
+        </div>
+        <div class="config-row">
+          <label for="valorHoraExtra">Valor de la hora extra ($)</label>
+          <input type="number" id="valorHoraExtra" min="0" step="500" value="0">
+        </div>
+        <div class="foot-note" id="notaConfig" style="display:none; margin-top:10px;">Solo el administrador puede modificar estos valores.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Registro de turnos</h2>
+      <div class="exports">
+        <select class="filtro" id="filtroAdmin" style="display:none;"></select>
+        <select class="filtro" id="filtroMes"></select>
+        <button class="btn-outline" id="btnPdf">Descargar PDF</button>
+        <button class="btn-outline" id="btnExcel">Descargar Excel</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="config-row">
+        <label for="whatsappNumero">Enviar por WhatsApp — Número</label>
+        <input type="tel" id="whatsappNumero" placeholder="Ej: 573001234567" style="width:170px; text-align:left;">
+      </div>
+      <div class="foot-note" style="margin-top:6px; margin-bottom:8px;">Incluye el indicativo del país (Colombia: 57), sin espacios ni signos. ¿A este número, qué archivo le mandamos?</div>
+      <div class="whatsapp-iconos">
+        <button class="whatsapp-icono" id="btnWhatsappPdf">
+          <span class="whatsapp-icono-letra">PDF</span>
+          <span>Enviar PDF</span>
+        </button>
+        <button class="whatsapp-icono" id="btnWhatsappExcel">
+          <span class="whatsapp-icono-letra">EXCEL</span>
+          <span>Enviar Excel</span>
+        </button>
+      </div>
+      <div class="foot-note">Al tocar uno, se descarga ese archivo y se abre WhatsApp con ese número listo — solo falta que adjuntes el archivo descargado dentro del chat (WhatsApp no permite adjuntarlo automático desde una página web).</div>
+    </div>
+
+    <div class="resumen-guardias" id="resumenGuardias" style="display:none;"></div>
+    <div class="ledger" id="ledger"></div>
+    <div class="foot-note">Si la hora de salida es menor o igual a la de entrada, se cuenta como turno que cruza la medianoche. "Descanso" registra un día libre sin horas ni pago; "Día adicional" es un turno trabajado fuera de lo normal, con el mismo valor de turno.</div>
+  </section>
+
+  <div class="conexion" id="estadoConexion"></div>
+
+</div>
+</div>
+
+<script src="libs/firebase-app-compat.js"></script>
+<script src="libs/firebase-firestore-compat.js"></script>
+<script>
+  /* =====================================================================
+     CONFIGURA AQUÍ TU PROYECTO DE FIREBASE
+     Consíguelo en: Firebase Console → Configuración del proyecto →
+     tus apps → Config del SDK.
+     ===================================================================== */
+  const firebaseConfig = {
+    apiKey: "AIzaSyAPprcp49Vd0muQWV8G0u-B5L3O_NcI_YI",
+    authDomain: "horario-guarda.firebaseapp.com",
+    projectId: "horario-guarda",
+    storageBucket: "horario-guarda.firebasestorage.app",
+    messagingSenderId: "520761424901",
+    appId: "1:520761424901:web:eb6a17e79975b5742e706c"
+  };
+
+  const FIREBASE_CONFIGURADO = firebaseConfig.apiKey && firebaseConfig.apiKey !== "TU_API_KEY";
+  const FIREBASE_SDK_CARGADO = typeof firebase !== 'undefined';
+
+  let db = null;
+  let docRef = null;
+
+  if(!FIREBASE_SDK_CARGADO){
+    const banner = document.getElementById('configBanner');
+    banner.style.display = 'flex';
+    banner.querySelector('.box').innerHTML = `
+      <h2>No se pudo cargar Firebase</h2>
+      <p>Los archivos de Firebase no cargaron (puede ser un problema de conexión momentáneo). Cierra esta página y ábrela de nuevo. Si el problema sigue, avísale a quien te ayudó a configurarla.</p>
+    `;
+  } else if(FIREBASE_CONFIGURADO){
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    // Guarda una copia de los datos en el celular para poder trabajar sin internet
+    db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+      console.warn('Modo sin internet no disponible en este navegador:', err.code);
+    });
+    docRef = db.collection('turnosApp').doc('estado');
+  } else {
+    document.getElementById('configBanner').style.display = 'flex';
+  }
+
+  const PERFILES = [
+    { id: 'admin', label: 'Administrador' },
+    { id: 'g1', label: 'Guardia 1' },
+    { id: 'g2', label: 'Guardia 2' },
+    { id: 'g3', label: 'Guardia 3' },
+    { id: 'g4', label: 'Guardia 4' },
+    { id: 'g5', label: 'Guardia 5' },
+    { id: 'g6', label: 'Guardia 6' },
+    { id: 'g7', label: 'Guardia 7' },
+    { id: 'g8', label: 'Guardia 8' },
+    { id: 'g9', label: 'Guardia 9' },
+    { id: 'g10', label: 'Guardia 10' }
+  ];
+  const PERFILES_NORMALES = PERFILES.filter(p => p.id !== 'admin');
+
+  const KEY_PERFIL_LOCAL = 'perfilActivo'; // se guarda en este navegador (localStorage), no en Firebase
+
+  let turnos = [];
+  let horasNormales = 12;
+  let valorTurno = 0;
+  let valorTurnoDia = 0;
+  let valorTurnoNoche = 0;
+  let valorDiaAdicional = 0;
+  let valorHoraExtra = 0;
+  let credenciales = {};
+  let nominaPorPerfil = {};
+  let pagosRecibidos = {};
+  let overridesExtra = {};
+  let overridesAdicional = {};
+  let ultimoSaldoDetalle = null;
+  let ultimoVerifDetalle = null;
+  let whatsappPorPerfil = {};
+  let nombresPorPerfil = {};
+  let ultimoRespaldo = null;
+
+  let nombreGuarda = '';
+  let perfilActivo = null;
+  let filtroAdmin = 'todos';
+  let filtroMes = 'todos';
+
+  const $ = (id) => document.getElementById(id);
+
+  function labelDefault(id){
+    const p = PERFILES.find(p => p.id === id);
+    return p ? p.label : id;
+  }
+
+  function labelDePerfil(id){
+    const c = credenciales[id];
+    return (c && c.nombre) ? c.nombre : labelDefault(id);
+  }
+
+  // Las horas se guardan exactas (minutos/60) y siempre se redondean al minuto, nunca a 2 decimales
+  function minutesToHours(mins){
+    return mins/60;
+  }
+  function redMin(h){
+    return Math.round((h||0)*60)/60;
+  }
+
+  function calcularHoras(entrada, salida){
+    const [eh, em] = entrada.split(':').map(Number);
+    const [sh, sm] = salida.split(':').map(Number);
+    let diff = (sh*60+sm) - (eh*60+em);
+    if(diff <= 0) diff += 24*60;
+    return minutesToHours(diff);
+  }
+
+  function fmtHoras(h){
+    const tot = Math.round((h||0)*60);
+    const hh = Math.floor(tot/60), mm = tot%60;
+    if(mm === 0) return hh + 'h';
+    if(hh === 0) return mm + ' min';
+    return hh + 'h ' + mm + ' min';
+  }
+
+  function fmtFecha(f){
+    const [y,m,d] = f.split('-');
+    return `${d}/${m}/${y.slice(2)}`;
+  }
+
+  function fmtMoney(n){
+    return '$' + Math.round(n || 0).toLocaleString('es-CO');
+  }
+
+  function slug(s){
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function escapeAttr(s){
+    return String(s || '').replace(/"/g, '&quot;');
+  }
+
+  /* ---- contraseñas cifradas: nunca se guardan tal cual en Firebase ---- */
+  // PBKDF2 con sal propia por persona; en Firebase solo queda "pbkdf2$vueltas$sal$huella"
+  const VUELTAS_CLAVE = 150000;
+  const aHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const deHex = hex => new Uint8Array(hex.match(/.{2}/g).map(x => parseInt(x, 16)));
+
+  async function huellaClave(password, salHex, vueltas){
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: deHex(salHex), iterations: vueltas }, base, 256);
+    return aHex(bits);
+  }
+
+  async function cifrarClave(password){
+    const sal = aHex(crypto.getRandomValues(new Uint8Array(16)));
+    return `pbkdf2$${VUELTAS_CLAVE}$${sal}$${await huellaClave(password, sal, VUELTAS_CLAVE)}`;
+  }
+
+  async function claveCorrecta(c, password){
+    if(c.claveCifrada){
+      const [, vueltas, sal, huella] = c.claveCifrada.split('$');
+      return (await huellaClave(password, sal, parseInt(vueltas, 10))) === huella;
+    }
+    return !!c.password && c.password === password; // cuentas viejas, antes de cifrar
+  }
+
+  // Pone una contraseña nueva cifrada y borra la vieja que estaba a la vista
+  async function ponerClave(c, password){
+    c.claveCifrada = await cifrarClave(password);
+    delete c.password;
+  }
+
+  // Cifra las contraseñas que todavía estén guardadas tal cual
+  async function cifrarClavesViejas(){
+    const pendientes = Object.values(credenciales).filter(c => c && c.password);
+    if(!pendientes.length) return;
+    for(const c of pendientes) await ponerClave(c, c.password);
+    await guardarCampo('credenciales', credenciales);
+  }
+
+  function credencialesPorDefecto(){
+    const obj = {};
+    PERFILES.forEach(p => { obj[p.id] = { email: '', nombre: p.label }; });
+    return obj;
+  }
+
+  /* ---- Firebase: estado central en un solo documento ---- */
+  function mostrarConexion(msg, esError){
+    const el = $('estadoConexion');
+    el.textContent = msg;
+    el.className = 'conexion' + (esError ? ' error' : '');
+  }
+
+  let estadoCargado = false;
+
+  function estadoRed(){
+    if(navigator.onLine){
+      mostrarConexion('Conectado a Firebase (datos en tiempo real)', false);
+    }else{
+      mostrarConexion('Sin internet: puedes seguir registrando, los cambios se guardan en el celular y se sincronizan solos al volver la conexión', false);
+    }
+  }
+  window.addEventListener('online', estadoRed);
+  window.addEventListener('offline', estadoRed);
+
+  async function leerEstado(){
+    try{
+      const local = await docRef.get({ source: 'cache' });
+      if(local.exists) return local;
+    }catch(e){ /* todavía no hay copia local */ }
+    return docRef.get();
+  }
+
+  // Si la red está muy lenta, no deja la pantalla esperando para siempre
+  function conLimite(promesa, ms){
+    return Promise.race([
+      promesa,
+      new Promise((_, fallar) => setTimeout(() => fallar(new Error('la conexión tardó demasiado')), ms))
+    ]);
+  }
+
+  async function cargarEstadoInicial(){
+    try{
+      const snap = await conLimite(leerEstado(), 25000);
+      if(snap.exists){
+        const d = snap.data();
+        turnos = d.turnos || [];
+        horasNormales = (d.horasNormales !== undefined) ? d.horasNormales : 12;
+        valorTurno = d.valorTurno || 0;
+        valorTurnoDia = (d.valorTurnoDia !== undefined) ? d.valorTurnoDia : (d.valorTurno || 0);
+        valorTurnoNoche = (d.valorTurnoNoche !== undefined) ? d.valorTurnoNoche : (d.valorTurno || 0);
+        valorDiaAdicional = (d.valorDiaAdicional !== undefined) ? d.valorDiaAdicional : (d.valorTurno || 0);
+        valorHoraExtra = d.valorHoraExtra || 0;
+        credenciales = d.credenciales || credencialesPorDefecto();
+        nombresPorPerfil = d.nombres || {};
+        nominaPorPerfil = d.nomina || {};
+        pagosRecibidos = d.pagosRecibidos || {};
+        overridesExtra = d.overridesHorasExtra || {};
+        overridesAdicional = d.overridesDiasAdicionales || {};
+        whatsappPorPerfil = d.whatsapp || {};
+        ultimoRespaldo = d.ultimoRespaldo || null;
+      } else {
+        turnos = [];
+        horasNormales = 12;
+        valorTurno = 0;
+        valorDiaAdicional = 0;
+        valorHoraExtra = 0;
+        credenciales = credencialesPorDefecto();
+        nombresPorPerfil = {};
+        ultimoRespaldo = null;
+        await docRef.set({ turnos, horasNormales, valorTurno, valorDiaAdicional, valorHoraExtra, credenciales, nombres: {}, ultimoRespaldo: null });
+      }
+      PERFILES.forEach(p => { if(!credenciales[p.id]) credenciales[p.id] = { email:'', nombre:p.label }; });
+      estadoCargado = true;
+      estadoRed();
+    }catch(e){
+      console.error(e);
+      mostrarConexion('No se pudo conectar a Firebase: ' + e.message, true);
+    }
+  }
+
+  async function guardarCampo(campo, valor){
+    // Con persistencia, el cambio queda guardado en el celular al instante y
+    // Firestore lo sube solo cuando hay internet; por eso no se espera la respuesta.
+    docRef.set({ [campo]: valor }, { merge: true }).catch(e => {
+      console.error(e);
+      mostrarConexion('No se pudo guardar en Firebase: ' + e.message, true);
+    });
+  }
+
+  function escucharCambios(){
+    docRef.onSnapshot(snap => {
+      if(!snap.exists) return;
+      const d = snap.data();
+      turnos = d.turnos || [];
+      horasNormales = (d.horasNormales !== undefined) ? d.horasNormales : horasNormales;
+      valorTurno = (d.valorTurno !== undefined) ? d.valorTurno : valorTurno;
+      valorTurnoDia = (d.valorTurnoDia !== undefined) ? d.valorTurnoDia : valorTurnoDia;
+      valorTurnoNoche = (d.valorTurnoNoche !== undefined) ? d.valorTurnoNoche : valorTurnoNoche;
+      valorDiaAdicional = (d.valorDiaAdicional !== undefined) ? d.valorDiaAdicional : valorDiaAdicional;
+      valorHoraExtra = (d.valorHoraExtra !== undefined) ? d.valorHoraExtra : valorHoraExtra;
+      credenciales = d.credenciales || credenciales;
+      nombresPorPerfil = d.nombres || nombresPorPerfil;
+      nominaPorPerfil = d.nomina || nominaPorPerfil;
+      pagosRecibidos = d.pagosRecibidos || pagosRecibidos;
+      overridesExtra = d.overridesHorasExtra || overridesExtra;
+      overridesAdicional = d.overridesDiasAdicionales || overridesAdicional;
+      whatsappPorPerfil = d.whatsapp || whatsappPorPerfil;
+      ultimoRespaldo = d.ultimoRespaldo || ultimoRespaldo;
+      estadoRed();
+
+      if(perfilActivo){
+        $('horasNormales').value = horasNormales;
+        $('valorTurnoDia').value = valorTurnoDia;
+        $('valorTurnoNoche').value = valorTurnoNoche;
+        $('valorDiaAdicional').value = valorDiaAdicional;
+        $('valorHoraExtra').value = valorHoraExtra;
+        render();
+        pintarRespaldo();
+      }
+    }, err => {
+      console.error(err);
+      mostrarConexion('Se perdió la conexión con Firebase: ' + err.message, true);
+    });
+  }
+
+  /* ---- login ---- */
+  function pintarLogin(){
+    const card = $('selCard');
+    if(!credenciales.admin || !credenciales.admin.email){
+      card.innerHTML = `
+        <h2>Configura la cuenta de administrador</h2>
+        <p>Es la primera vez que se usa esta página. Crea el correo y la contraseña del administrador.</p>
+        <input type="email" id="setupEmail" class="login-input" placeholder="Correo">
+        <input type="password" id="setupPassword" class="login-input" placeholder="Contraseña">
+        <button class="sel-admin" id="btnSetupAdmin">Crear cuenta de administrador</button>
+      `;
+      $('btnSetupAdmin').addEventListener('click', async () => {
+        const email = $('setupEmail').value.trim();
+        const password = $('setupPassword').value;
+        if(!email || !password){ alert('Completa correo y contraseña.'); return; }
+        credenciales.admin.email = email;
+        await ponerClave(credenciales.admin, password);
+        await guardarCampo('credenciales', credenciales);
+        await entrarComo('admin');
+      });
+    } else {
+      card.innerHTML = `
+        <h2>Iniciar sesión</h2>
+        <p>Ingresa el correo y la contraseña de tu perfil.</p>
+        <input type="email" id="loginEmail" class="login-input" placeholder="Correo">
+        <input type="password" id="loginPassword" class="login-input" placeholder="Contraseña">
+        <button class="sel-admin" id="btnLogin">Entrar</button>
+        <div class="login-error" id="loginError"></div>
+      `;
+      $('btnLogin').addEventListener('click', intentarLogin);
+      $('loginPassword').addEventListener('keydown', ev => { if(ev.key === 'Enter') intentarLogin(); });
+    }
+  }
+
+  let intentosFallidos = 0;
+  let bloqueadoHasta = 0;
+
+  async function intentarLogin(){
+    const email = $('loginEmail').value.trim().toLowerCase();
+    const password = $('loginPassword').value;
+    if(!email || !password){
+      $('loginError').textContent = 'Completa correo y contraseña.';
+      return;
+    }
+    // Después de 5 intentos malos espera un rato antes de dejar probar otra vez
+    const espera = Math.ceil((bloqueadoHasta - Date.now()) / 1000);
+    if(espera > 0){
+      $('loginError').textContent = `Demasiados intentos. Espera ${espera} segundos.`;
+      return;
+    }
+    $('btnLogin').disabled = true;
+    let encontrado = null;
+    for(const id of Object.keys(credenciales)){
+      const c = credenciales[id];
+      if(c && c.email && c.email.toLowerCase() === email && await claveCorrecta(c, password)){ encontrado = id; break; }
+    }
+    $('btnLogin').disabled = false;
+    if(!encontrado){
+      intentosFallidos++;
+      if(intentosFallidos >= 5){ bloqueadoHasta = Date.now() + 30000 * (intentosFallidos - 4); }
+      $('loginError').textContent = 'Correo o contraseña incorrectos.';
+      return;
+    }
+    intentosFallidos = 0;
+    entrarComo(encontrado);
+  }
+
+  async function entrarComo(id){
+    perfilActivo = id;
+    try{ localStorage.setItem(KEY_PERFIL_LOCAL, id); }catch(e){}
+    $('selector').style.display = 'none';
+    $('app').style.display = 'block';
+    await cargar();
+  }
+
+  async function cerrarSesion(){
+    try{ localStorage.removeItem(KEY_PERFIL_LOCAL); }catch(e){}
+    perfilActivo = null;
+    $('app').style.display = 'none';
+    $('selector').style.display = 'flex';
+    pintarLogin();
+  }
+
+  $('btnCerrarSesion').addEventListener('click', cerrarSesion);
+
+  /* ---- panel de administración de guardias ---- */
+  function pintarPanelAdmin(){
+    const sec = $('secAdmin');
+    if(perfilActivo !== 'admin'){ sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+
+    $('adminEmail').value = credenciales.admin.email || '';
+    $('adminPassword').value = '';
+
+    const cont = $('listaGuardias');
+    cont.innerHTML = '';
+    PERFILES_NORMALES.forEach(p => {
+      const c = credenciales[p.id];
+      const n = nominaPorPerfil[p.id] || { salario: 0, auxilioTransporte: 0, bonificacion: 0 };
+      const card = document.createElement('div');
+      card.className = 'admin-card';
+      card.innerHTML = `
+        <div class="admin-row">
+          <span class="admin-row-id">${p.label}</span>
+          <input type="text" data-field="nombre" value="${escapeAttr(c.nombre)}" placeholder="Nombre real">
+          <input type="email" data-field="email" value="${escapeAttr(c.email)}" placeholder="Correo">
+          <input type="password" data-field="password" value="" autocomplete="new-password" placeholder="${(c.claveCifrada || c.password) ? 'Nueva contraseña (vacío = igual)' : 'Contraseña'}">
+          <button class="btn-outline" data-guardar="${p.id}">Guardar</button>
+        </div>
+        <div class="admin-row-nomina">
+          <span class="admin-row-id">${p.label}</span>
+          <div class="mini-field"><span>Salario mensual</span><input type="number" min="0" step="1000" data-field="salario" value="${n.salario || 0}"></div>
+          <div class="mini-field"><span>Auxilio de transporte</span><input type="number" min="0" step="1000" data-field="auxilioTransporte" value="${n.auxilioTransporte || 0}"></div>
+          <div class="mini-field"><span>Bonificación</span><input type="number" min="0" step="1000" data-field="bonificacion" value="${n.bonificacion || 0}"></div>
+        </div>
+      `;
+      cont.appendChild(card);
+    });
+
+    cont.querySelectorAll('button[data-guardar]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.guardar;
+        const card = btn.closest('.admin-card');
+        const nombre = card.querySelector('[data-field="nombre"]').value.trim();
+        const email = card.querySelector('[data-field="email"]').value.trim();
+        const password = card.querySelector('[data-field="password"]').value;
+        const salario = parseFloat(card.querySelector('[data-field="salario"]').value) || 0;
+        const auxilioTransporte = parseFloat(card.querySelector('[data-field="auxilioTransporte"]').value) || 0;
+        const bonificacion = parseFloat(card.querySelector('[data-field="bonificacion"]').value) || 0;
+
+        const anterior = credenciales[id] || {};
+        credenciales[id] = { nombre: nombre || labelDefault(id), email };
+        if(password) await ponerClave(credenciales[id], password);
+        else if(anterior.claveCifrada) credenciales[id].claveCifrada = anterior.claveCifrada;
+        card.querySelector('[data-field="password"]').value = '';
+        nominaPorPerfil[id] = { salario, auxilioTransporte, bonificacion };
+
+        await Promise.all([
+          guardarCampo('credenciales', credenciales),
+          guardarCampo('nomina', nominaPorPerfil)
+        ]);
+        render();
+        const original = btn.textContent;
+        btn.textContent = 'Guardado';
+        setTimeout(() => { btn.textContent = original; }, 1200);
+      });
+    });
+  }
+
+  $('btnGuardarAdmin').addEventListener('click', async () => {
+    const email = $('adminEmail').value.trim();
+    const password = $('adminPassword').value;
+    if(!email){ alert('Completa el correo.'); return; }
+    if(!password && !credenciales.admin.claveCifrada){ alert('Escribe una contraseña.'); return; }
+    credenciales.admin.email = email;
+    if(password) await ponerClave(credenciales.admin, password);
+    $('adminPassword').value = '';
+    await guardarCampo('credenciales', credenciales);
+    alert('Cuenta de administrador actualizada.');
+  });
+
+  /* ---- tipo de turno: mostrar/ocultar campos ---- */
+  function actualizarPreviewTurno(){
+    const prev = $('previewTurno');
+    const tipo = $('tipoTurno').value;
+    const entrada = $('entrada').value;
+    const salida = $('salida').value;
+
+    if(tipo === 'descanso' || !entrada || !salida){
+      prev.innerHTML = '';
+      return;
+    }
+
+    const horas = calcularHoras(entrada, salida);
+    const extra = Math.max(0, redMin(horas - horasNormales));
+    prev.innerHTML = `Este turno: <strong>${fmtHoras(horas)}</strong> trabajadas` +
+      (extra > 0 ? ` · <strong style="color:var(--amber)">+${fmtHoras(extra)} extra</strong>` : ' · sin horas extra');
+  }
+
+  $('tipoTurno').addEventListener('change', (e) => {
+    const esDescanso = e.target.value === 'descanso';
+    $('filaPuesto').style.display = esDescanso ? 'none' : '';
+    $('filaHorario').style.display = esDescanso ? 'none' : '';
+    actualizarPreviewTurno();
+  });
+
+  $('entrada').addEventListener('input', actualizarPreviewTurno);
+  $('salida').addEventListener('input', actualizarPreviewTurno);
+
+  /* ---- respaldo automático ---- */
+  function necesitaRespaldo(){
+    if(!ultimoRespaldo) return true;
+    const dias = (Date.now() - new Date(ultimoRespaldo).getTime()) / (1000*60*60*24);
+    return dias >= 1;
+  }
+
+  function pintarRespaldo(){
+    if(perfilActivo !== 'admin'){ $('secRespaldo').style.display = 'none'; return; }
+    $('secRespaldo').style.display = 'block';
+    $('ultimoRespaldoTexto').textContent = ultimoRespaldo
+      ? new Date(ultimoRespaldo).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })
+      : 'Nunca';
+  }
+
+  async function respaldoAutomatico(formato = 'excel', automatico = false){
+    try{ await cargarLibsExportar(); }catch(e){ return; }
+    if(turnos.length > 0){
+      soloGuardar = automatico;
+      const { filas, totalHoras, totalExtra, totalPago } = calcularResumenGlobal('asc');
+      const hoy = new Date().toISOString().slice(0,10);
+      if(formato === 'pdf'){
+        construirPdfTurnos(filas, totalHoras, totalExtra, totalPago, true, 'Todos los guardias', `respaldo-turnos-${hoy}.pdf`);
+      } else {
+        const libro = construirLibroExcel(filas, totalHoras, totalExtra, totalPago, true, true);
+        guardarExcel(libro, `respaldo-turnos-${hoy}.xlsx`);
+      }
+    }
+    ultimoRespaldo = new Date().toISOString();
+    await guardarCampo('ultimoRespaldo', ultimoRespaldo);
+    pintarRespaldo();
+  }
+
+  $('btnRespaldarPdf').addEventListener('click', () => respaldoAutomatico('pdf'));
+  $('btnRespaldarExcel').addEventListener('click', () => respaldoAutomatico('excel'));
+
+  /* ---- carga de la app tras iniciar sesión ---- */
+  async function cargar(){
+    $('sesionLabel').textContent = labelDePerfil(perfilActivo);
+    $('filtroAdmin').style.display = perfilActivo === 'admin' ? 'inline-block' : 'none';
+
+    if(perfilActivo === 'admin'){
+      const sel = $('filtroAdmin');
+      sel.innerHTML = '<option value="todos">Todos los guardias</option>' +
+        PERFILES_NORMALES.map(p => `<option value="${p.id}">${labelDePerfil(p.id)}</option>`).join('');
+      sel.value = filtroAdmin;
+    }
+
+    pintarPanelAdmin();
+
+    nombreGuarda = nombresPorPerfil[perfilActivo] || '';
+
+    $('horasNormales').value = horasNormales;
+    $('valorTurnoDia').value = valorTurnoDia;
+    $('valorTurnoNoche').value = valorTurnoNoche;
+    $('valorDiaAdicional').value = valorDiaAdicional;
+    $('valorHoraExtra').value = valorHoraExtra;
+
+    const esAdmin = perfilActivo === 'admin';
+    $('horasNormales').disabled = !esAdmin;
+    $('valorTurnoDia').disabled = !esAdmin;
+    $('valorTurnoNoche').disabled = !esAdmin;
+    $('valorDiaAdicional').disabled = !esAdmin;
+    $('valorHoraExtra').disabled = !esAdmin;
+    $('notaConfig').style.display = esAdmin ? 'none' : 'block';
+    $('nombreGuarda').value = nombreGuarda;
+    $('turnoNombre').value = nombreGuarda || labelDePerfil(perfilActivo);
+    $('whatsappNumero').value = whatsappPorPerfil[perfilActivo] || '';
+    $('tipoTurno').value = 'turno_noche';
+    $('filaPuesto').style.display = '';
+    $('filaHorario').style.display = '';
+    render();
+
+    if(esAdmin){
+      pintarRespaldo();
+      if(necesitaRespaldo()) await respaldoAutomatico('excel', true);
+    } else {
+      $('secRespaldo').style.display = 'none';
+    }
+  }
+
+  async function guardarTurnos(){ await guardarCampo('turnos', turnos); }
+  async function guardarConfig(){ await guardarCampo('horasNormales', horasNormales); }
+  async function guardarValorTurnoDia(){ await guardarCampo('valorTurnoDia', valorTurnoDia); }
+  async function guardarValorTurnoNoche(){ await guardarCampo('valorTurnoNoche', valorTurnoNoche); }
+  async function guardarValorDiaAdicional(){ await guardarCampo('valorDiaAdicional', valorDiaAdicional); }
+  async function guardarValorExtra(){ await guardarCampo('valorHoraExtra', valorHoraExtra); }
+  async function guardarNombre(){
+    nombresPorPerfil[perfilActivo] = nombreGuarda;
+    await guardarCampo('nombres', nombresPorPerfil);
+  }
+
+  const NOMBRES_MES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  function resumenMensual(filas){
+    const mapa = {};
+    filas.forEach(t => {
+      const key = t.fecha.slice(0,7);
+      if(!mapa[key]) mapa[key] = { turnos: 0, horas: 0, extra: 0, pago: 0 };
+      mapa[key].turnos += 1;
+      mapa[key].horas += t.horas;
+      mapa[key].extra += t.extra;
+      mapa[key].pago += t.pago;
+    });
+
+    return Object.keys(mapa).sort().map(key => {
+      const [y, m] = key.split('-');
+      const nombreMes = NOMBRES_MES[parseInt(m, 10) - 1];
+      return {
+        mes: `${nombreMes.charAt(0).toUpperCase()}${nombreMes.slice(1)} ${y}`,
+        turnos: mapa[key].turnos,
+        horas: redMin(mapa[key].horas),
+        extra: redMin(mapa[key].extra),
+        pago: Math.round(mapa[key].pago)
+      };
+    });
+  }
+
+  function turnosVisibles(){
+    if(perfilActivo === 'admin'){
+      return filtroAdmin === 'todos' ? turnos : turnos.filter(t => t.perfil === filtroAdmin);
+    }
+    return turnos.filter(t => t.perfil === perfilActivo);
+  }
+
+  function turnosFiltrados(){
+    const base = turnosVisibles();
+    if(filtroMes === 'todos') return base;
+    return base.filter(t => t.fecha.slice(0,7) === filtroMes);
+  }
+
+  function labelMes(key){
+    const [y, m] = key.split('-');
+    const nombre = NOMBRES_MES[parseInt(m, 10) - 1];
+    return `${nombre.charAt(0).toUpperCase()}${nombre.slice(1)} ${y}`;
+  }
+
+  function actualizarFiltroMes(){
+    const meses = Array.from(new Set(turnosVisibles().map(t => t.fecha.slice(0,7)))).sort().reverse();
+    const sel = $('filtroMes');
+    const anterior = filtroMes;
+    sel.innerHTML = '<option value="todos">Todos los meses</option>' +
+      meses.map(m => `<option value="${m}">${labelMes(m)}</option>`).join('');
+    if(meses.includes(anterior)){
+      sel.value = anterior;
+    } else {
+      filtroMes = 'todos';
+      sel.value = 'todos';
+    }
+  }
+
+  function calcularFila(t){
+    if(t.tipo === 'descanso'){
+      return { ...t, horas: 0, extra: 0, pago: 0 };
+    }
+    const horas = calcularHoras(t.entrada, t.salida);
+    const extra = Math.max(0, redMin(horas - horasNormales));
+    let pagoBase;
+    if(t.tipo === 'adicional') pagoBase = valorDiaAdicional;
+    else if(t.tipo === 'turno_dia') pagoBase = valorTurnoDia;
+    else if(t.tipo === 'turno_noche') pagoBase = valorTurnoNoche;
+    else pagoBase = valorTurno;
+    const pago = pagoBase + extra * valorHoraExtra;
+    return { ...t, horas, extra, pago, pagoBase };
+  }
+
+  function calcularResumen(orden){
+    const lista = [...turnosFiltrados()].sort((a,b) => {
+      if(a.fecha !== b.fecha) return orden === 'asc' ? a.fecha.localeCompare(b.fecha) : b.fecha.localeCompare(a.fecha);
+      return orden === 'asc' ? (a.entrada||'').localeCompare(b.entrada||'') : (b.entrada||'').localeCompare(a.entrada||'');
+    });
+
+    let totalHoras = 0, totalExtra = 0, totalPago = 0;
+    const filas = lista.map(t => {
+      const f = calcularFila(t);
+      totalHoras += f.horas;
+      totalExtra += f.extra;
+      totalPago += f.pago;
+      return f;
+    });
+
+    return {
+      filas,
+      totalHoras: redMin(totalHoras),
+      totalExtra: redMin(totalExtra),
+      totalPago: Math.round(totalPago)
+    };
+  }
+
+  function calcularResumenGlobal(orden){
+    const lista = [...turnos].sort((a,b) => {
+      if(a.fecha !== b.fecha) return orden === 'asc' ? a.fecha.localeCompare(b.fecha) : b.fecha.localeCompare(a.fecha);
+      return orden === 'asc' ? (a.entrada||'').localeCompare(b.entrada||'') : (b.entrada||'').localeCompare(a.entrada||'');
+    });
+
+    let totalHoras = 0, totalExtra = 0, totalPago = 0;
+    const filas = lista.map(t => {
+      const f = calcularFila(t);
+      totalHoras += f.horas;
+      totalExtra += f.extra;
+      totalPago += f.pago;
+      return f;
+    });
+
+    return {
+      filas,
+      totalHoras: redMin(totalHoras),
+      totalExtra: redMin(totalExtra),
+      totalPago: Math.round(totalPago)
+    };
+  }
+
+  function construirFila(t){
+    const row = document.createElement('div');
+    row.className = 'entry' + (t.tipo === 'descanso' ? ' descanso' : '');
+    const etiqueta = t.nombre || labelDePerfil(t.perfil);
+    const ETIQUETAS_TIPO = { turno_dia: 'Turno Día', turno_noche: 'Turno Noche', adicional: 'Día adicional', descanso: 'Descanso' };
+    const tag = ETIQUETAS_TIPO[t.tipo] ? `<span class="tag"> · ${ETIQUETAS_TIPO[t.tipo]}</span>` : '';
+
+    let detalle;
+    if(t.tipo === 'descanso'){
+      detalle = `<span class="detalle">Día de descanso</span>`;
+    } else {
+      detalle = `
+        <span class="detalle">Entrada ${t.entrada} · Salida ${t.salida}</span>
+        <span class="notas">Puesto: ${t.notas ? escapeHtml(t.notas) : '—'}</span>
+        <span class="pago">Pago: ${fmtMoney(t.pago)}</span>
+        ${(t.extra > 0 || t.tipo === 'adicional') ? `<span class="pago-detalle">${t.tipo === 'adicional' ? 'Día adicional' : 'Turno'} ${fmtMoney(t.pagoBase || 0)}${t.extra > 0 ? ` + ${fmtHoras(t.extra)} extra × ${fmtMoney(valorHoraExtra)}` : ''}</span>` : ''}
+      `;
+    }
+
+    row.innerHTML = `
+      <div class="fecha">${fmtFecha(t.fecha)}</div>
+      <div class="rango">
+        <strong>${escapeHtml(etiqueta)}${tag}</strong>
+        ${detalle}
+      </div>
+      <div class="horas">${t.tipo === 'descanso' ? '—' : (t.extra > 0
+        ? `${fmtHoras(t.horas - t.extra)}<span class="h-extra">+${fmtHoras(t.extra)} extra</span><span class="h-total">Total ${fmtHoras(t.horas)}</span>`
+        : fmtHoras(t.horas))}</div>
+      <button class="del" title="Eliminar" data-id="${t.id}">×</button>
+    `;
+    return row;
+  }
+
+  function agruparPorGuardia(filas){
+    const mapa = {};
+    filas.forEach(t => {
+      if(!mapa[t.perfil]) mapa[t.perfil] = [];
+      mapa[t.perfil].push(t);
+    });
+    return PERFILES_NORMALES
+      .filter(p => mapa[p.id])
+      .map(p => ({
+        perfil: p.id,
+        label: labelDePerfil(p.id),
+        turnos: mapa[p.id],
+        totalHoras: redMin(mapa[p.id].reduce((s,t) => s + t.horas, 0)),
+        totalExtra: redMin(mapa[p.id].reduce((s,t) => s + t.extra, 0)),
+        totalPago: Math.round(mapa[p.id].reduce((s,t) => s + t.pago, 0))
+      }));
+  }
+
+  function resumenGlobalPorGuardia(){
+    const filasGlobal = turnos.map(calcularFila);
+    return PERFILES_NORMALES.map(p => {
+      const propios = filasGlobal.filter(t => t.perfil === p.id);
+      return {
+        id: p.id,
+        label: labelDePerfil(p.id),
+        turnos: propios.filter(t => (t.tipo === 'turno' || t.tipo === 'turno_dia' || t.tipo === 'turno_noche')).length,
+        adicionales: propios.filter(t => t.tipo === 'adicional').length,
+        descansos: propios.filter(t => t.tipo === 'descanso').length,
+        totalExtra: redMin(propios.reduce((s,t) => s + t.extra, 0)),
+        totalPago: Math.round(propios.reduce((s,t) => s + t.pago, 0))
+      };
+    });
+  }
+
+  function pintarResumenGuardias(){
+    const cont = $('resumenGuardias');
+    if(perfilActivo !== 'admin'){ cont.style.display = 'none'; cont.innerHTML = ''; return; }
+
+    const filas = resumenGlobalPorGuardia();
+    cont.style.display = 'block';
+    cont.innerHTML = `
+      <div class="resumen-guardias-title">Resumen acumulado por guardia</div>
+      ${filas.map(f => `
+        <div class="resumen-guardia-card">
+          <div class="fila1"><span>${escapeHtml(f.label)}</span><span class="pago">${fmtMoney(f.totalPago)}</span></div>
+          <div class="fila2">${f.turnos} turnos · ${f.adicionales} adicionales · ${f.descansos} descansos · ${fmtHoras(f.totalExtra)} extra</div>
+        </div>
+      `).join('')}
+    `;
+  }
+
+  function obtenerNomina(id){
+    return nominaPorPerfil[id] || { salario: 0, auxilioTransporte: 0, bonificacion: 0 };
+  }
+
+  function nominaVisible(){
+    if(perfilActivo === 'admin'){
+      if(filtroAdmin === 'todos'){
+        return PERFILES_NORMALES.reduce((acc, p) => {
+          const n = obtenerNomina(p.id);
+          acc.salario += n.salario || 0;
+          acc.auxilioTransporte += n.auxilioTransporte || 0;
+          acc.bonificacion += n.bonificacion || 0;
+          return acc;
+        }, { salario: 0, auxilioTransporte: 0, bonificacion: 0 });
+      }
+      return obtenerNomina(filtroAdmin);
+    }
+    return obtenerNomina(perfilActivo);
+  }
+
+  function pintarSaldo(filas, totalExtra, totalPago){
+    const valorLegado = filas.filter(t => t.tipo === 'turno').length * valorTurno;
+    const valorDia = filas.filter(t => t.tipo === 'turno_dia').length * valorTurnoDia;
+    const valorNoche = filas.filter(t => t.tipo === 'turno_noche').length * valorTurnoNoche;
+    const valorAdicionalesCalculado = filas.filter(t => t.tipo === 'adicional').length * valorDiaAdicional;
+    const valorExtraCalculado = Math.round(totalExtra * valorHoraExtra);
+
+    const clave = claveVerificacion();
+    const tieneOverride = clave && overridesExtra[clave] !== undefined;
+    const valorExtra = tieneOverride ? overridesExtra[clave] : valorExtraCalculado;
+
+    const tieneOverrideAdicional = clave && overridesAdicional[clave] !== undefined;
+    const valorAdicionales = tieneOverrideAdicional ? overridesAdicional[clave] : valorAdicionalesCalculado;
+
+    const nomina = nominaVisible();
+    const totalNomina = (nomina.salario || 0) + (nomina.auxilioTransporte || 0) + (nomina.bonificacion || 0);
+    const totalPagoSinAjustes = totalPago - valorExtraCalculado - valorAdicionalesCalculado;
+    const saldoTotal = totalPagoSinAjustes + valorExtra + valorAdicionales + totalNomina;
+
+    $('saldoCard').innerHTML = `
+      <div class="saldo-row"><span>Valor turno día</span><span>${fmtMoney(valorDia)}</span></div>
+      <div class="saldo-row"><span>Valor turno noche</span><span>${fmtMoney(valorNoche)}</span></div>
+      ${valorLegado ? `<div class="saldo-row"><span>Valor turnos (registro anterior)</span><span>${fmtMoney(valorLegado)}</span></div>` : ''}
+      <div class="saldo-row"><span>Valor días adicionales${tieneOverrideAdicional ? ' (ajustado)' : ''}</span><span>${fmtMoney(valorAdicionales)}</span></div>
+      <div class="saldo-row"><span>Valor horas extra${tieneOverride ? ' (ajustado)' : ''}</span><span>${fmtMoney(valorExtra)}</span></div>
+      <div class="saldo-row"><span>Salario</span><span>${fmtMoney(nomina.salario)}</span></div>
+      <div class="saldo-row"><span>Auxilio de transporte</span><span>${fmtMoney(nomina.auxilioTransporte)}</span></div>
+      <div class="saldo-row"><span>Bonificación</span><span>${fmtMoney(nomina.bonificacion)}</span></div>
+      <div class="saldo-row saldo-final"><span>Saldo total</span><span>${fmtMoney(saldoTotal)}</span></div>
+    `;
+
+    ultimoSaldoDetalle = {
+      valorDia, valorNoche, valorLegado, valorAdicionales, tieneOverrideAdicional, valorExtra, tieneOverride,
+      salario: nomina.salario || 0, auxilio: nomina.auxilioTransporte || 0, bonificacion: nomina.bonificacion || 0,
+      saldoTotal
+    };
+
+    return { saldoTotal, valorExtra, valorExtraCalculado, valorAdicionales, valorAdicionalesCalculado, totalHorasExtra: totalExtra };
+  }
+
+  function guardIdVerificacion(){
+    if(perfilActivo === 'admin'){
+      return filtroAdmin === 'todos' ? null : filtroAdmin;
+    }
+    return perfilActivo;
+  }
+
+  function claveVerificacion(){
+    const id = guardIdVerificacion();
+    if(!id) return null;
+    return `${id}|${filtroMes}`;
+  }
+
+  async function guardarPagoRecibido(monto){
+    const clave = claveVerificacion();
+    if(!clave) return;
+    pagosRecibidos[clave] = monto;
+    await guardarCampo('pagosRecibidos', pagosRecibidos);
+  }
+
+  function actualizarVerificacion(saldoTotal, valorExtra, valorExtraCalculado, totalHorasExtra, valorAdicionales, valorAdicionalesCalculado){
+    const sec = $('secVerificacion');
+    const clave = claveVerificacion();
+    const input = $('pagoRecibido');
+
+    if(!clave){
+      sec.style.display = 'none';
+      return;
+    }
+    sec.style.display = 'block';
+
+    const id = guardIdVerificacion();
+    const nomina = obtenerNomina(id);
+    $('verifSalario').value = nomina.salario || 0;
+    $('verifAuxilio').value = nomina.auxilioTransporte || 0;
+    $('verifBonificacion').value = nomina.bonificacion || 0;
+
+    $('verifDiaAdicional').value = valorAdicionales;
+    const tieneOverrideAdicional = overridesAdicional[clave] !== undefined;
+    const notaAdicional = $('verifDiaAdicionalNota');
+    if(tieneOverrideAdicional){
+      notaAdicional.innerHTML = `Cálculo automático según turnos: ${fmtMoney(valorAdicionalesCalculado)} · <button class="btn-outline" id="btnResetAdicional" style="padding:3px 8px;">Usar cálculo automático</button>`;
+      $('btnResetAdicional').addEventListener('click', async () => {
+        delete overridesAdicional[clave];
+        await guardarCampo('overridesDiasAdicionales', overridesAdicional);
+        render();
+      });
+    } else {
+      notaAdicional.textContent = 'Calculado automáticamente según tus turnos marcados como "Día adicional". Puedes escribirlo tú mismo si necesitas ajustarlo.';
+    }
+
+    $('verifHorasExtra').value = valorExtra;
+    const tieneOverride = overridesExtra[clave] !== undefined;
+    const notaExtra = $('verifHorasExtraNota');
+    if(tieneOverride){
+      notaExtra.innerHTML = `Cálculo automático según turnos: ${fmtMoney(valorExtraCalculado)} (${fmtHoras(totalHorasExtra)}) · <button class="btn-outline" id="btnResetExtra" style="padding:3px 8px;">Usar cálculo automático</button>`;
+      $('btnResetExtra').addEventListener('click', async () => {
+        delete overridesExtra[clave];
+        await guardarCampo('overridesHorasExtra', overridesExtra);
+        render();
+      });
+    } else {
+      notaExtra.textContent = `Calculado automáticamente según tus turnos (${fmtHoras(totalHorasExtra)}). Puedes escribirlo tú mismo si necesitas ajustarlo.`;
+    }
+
+    $('verifCalculado').textContent = fmtMoney(saldoTotal);
+
+    const guardado = pagosRecibidos[clave];
+    input.value = guardado !== undefined ? guardado : 0;
+
+    const recibido = guardado !== undefined ? guardado : 0;
+    const diferencia = saldoTotal - recibido;
+
+    const diferenciaEl = $('verifDiferencia');
+    const mensajeEl = $('verifMensaje');
+    diferenciaEl.textContent = fmtMoney(Math.abs(diferencia));
+
+    if(guardado === undefined){
+      mensajeEl.textContent = 'Escribe cuánto te consignaron para comparar.';
+      diferenciaEl.style.color = '';
+    } else if(diferencia === 0){
+      mensajeEl.textContent = '✅ El pago coincide exactamente con el cálculo.';
+      diferenciaEl.style.color = '';
+    } else if(diferencia > 0){
+      mensajeEl.textContent = `⚠️ Te pagaron de menos: la empresa te debe ${fmtMoney(diferencia)}.`;
+      diferenciaEl.style.color = 'var(--red)';
+    } else {
+      mensajeEl.textContent = `Te pagaron ${fmtMoney(-diferencia)} de más sobre lo calculado.`;
+      diferenciaEl.style.color = 'var(--amber)';
+    }
+
+    ultimoVerifDetalle = {
+      salario: nomina.salario || 0,
+      auxilio: nomina.auxilioTransporte || 0,
+      bonificacion: nomina.bonificacion || 0,
+      valorAdicionales, valorAdicionalesCalculado, tieneOverrideAdicional,
+      valorExtra, valorExtraCalculado, tieneOverride,
+      calculado: saldoTotal, recibido, diferencia,
+      mensaje: mensajeEl.textContent
+    };
+  }
+
+  $('pagoRecibido').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    const monto = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = monto;
+    await guardarPagoRecibido(monto);
+    render();
+  });
+
+  async function guardarCampoNomina(campo, valor){
+    const id = guardIdVerificacion();
+    if(!id) return;
+    const actual = obtenerNomina(id);
+    nominaPorPerfil[id] = { ...actual, [campo]: valor };
+    await guardarCampo('nomina', nominaPorPerfil);
+    render();
+  }
+
+  $('verifSalario').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    const monto = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = monto;
+    await guardarCampoNomina('salario', monto);
+  });
+
+  $('verifAuxilio').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    const monto = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = monto;
+    await guardarCampoNomina('auxilioTransporte', monto);
+  });
+
+  $('verifBonificacion').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    const monto = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = monto;
+    await guardarCampoNomina('bonificacion', monto);
+  });
+
+  $('verifHorasExtra').addEventListener('change', async (e) => {
+    const clave = claveVerificacion();
+    if(!clave) return;
+    const val = parseFloat(e.target.value);
+    const monto = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = monto;
+    overridesExtra[clave] = monto;
+    await guardarCampo('overridesHorasExtra', overridesExtra);
+    render();
+  });
+
+  $('verifDiaAdicional').addEventListener('change', async (e) => {
+    const clave = claveVerificacion();
+    if(!clave) return;
+    const val = parseFloat(e.target.value);
+    const monto = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = monto;
+    overridesAdicional[clave] = monto;
+    await guardarCampo('overridesDiasAdicionales', overridesAdicional);
+    render();
+  });
+
+  function render(){
+    actualizarFiltroMes();
+    pintarResumenGuardias();
+
+    const ledger = $('ledger');
+    ledger.innerHTML = '';
+
+    const { filas, totalHoras, totalExtra, totalPago } = calcularResumen('desc');
+    const resSaldo = pintarSaldo(filas, totalExtra, totalPago);
+    actualizarVerificacion(resSaldo.saldoTotal, resSaldo.valorExtra, resSaldo.valorExtraCalculado, resSaldo.totalHorasExtra, resSaldo.valorAdicionales, resSaldo.valorAdicionalesCalculado);
+
+    if(filas.length === 0){
+      const div = document.createElement('div');
+      div.className = 'empty';
+      div.textContent = 'Aún no hay turnos registrados. Agrega el primero arriba.';
+      ledger.appendChild(div);
+    } else if(perfilActivo === 'admin'){
+      agruparPorGuardia(filas).forEach(g => {
+        const head = document.createElement('div');
+        head.className = 'grupo-header';
+        head.innerHTML = `
+          <span class="grupo-nombre">${escapeHtml(g.label)}</span>
+          <span class="grupo-total">${fmtHoras(g.totalHoras)} trabajadas · <strong>${fmtHoras(g.totalExtra)} extra</strong> · ${fmtMoney(g.totalPago)}</span>
+        `;
+        ledger.appendChild(head);
+        g.turnos.forEach(t => ledger.appendChild(construirFila(t)));
+      });
+    } else {
+      filas.forEach(t => ledger.appendChild(construirFila(t)));
+    }
+
+    $('statTurnos').textContent = filas.length;
+    $('statHoras').textContent = fmtHoras(totalHoras);
+    $('statExtra').textContent = fmtHoras(totalExtra);
+    $('statPago').textContent = fmtMoney(totalPago);
+
+    ledger.querySelectorAll('.del').forEach(btn => {
+      btn.addEventListener('click', () => eliminarTurno(btn.dataset.id));
+    });
+  }
+
+  async function eliminarTurno(id){
+    const t = turnos.find(t => String(t.id) === String(id));
+    if(!t) return;
+    if(perfilActivo !== 'admin' && t.perfil !== perfilActivo) return;
+    turnos = turnos.filter(t => String(t.id) !== String(id));
+    await guardarTurnos();
+    render();
+  }
+
+  $('btnAdd').addEventListener('click', async () => {
+    const nombreInput = $('turnoNombre').value.trim();
+    const tipo = $('tipoTurno').value;
+    const fecha = $('fecha').value;
+    const entrada = $('entrada').value;
+    const salida = $('salida').value;
+    const notas = $('notas').value.trim();
+
+    if(!fecha){
+      alert('Completa la fecha.');
+      return;
+    }
+    if(tipo !== 'descanso' && (!entrada || !salida || !notas)){
+      alert('Completa el puesto, la hora de entrada y la hora de salida.');
+      return;
+    }
+
+    turnos.push({
+      id: Date.now(),
+      perfil: perfilActivo,
+      nombre: nombreInput || labelDePerfil(perfilActivo),
+      tipo,
+      fecha,
+      entrada: tipo === 'descanso' ? '' : entrada,
+      salida: tipo === 'descanso' ? '' : salida,
+      notas: tipo === 'descanso' ? '' : notas
+    });
+
+    await guardarTurnos();
+    $('notas').value = '';
+    render();
+  });
+
+  $('horasNormales').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    horasNormales = isNaN(val) || val <= 0 ? 12 : val;
+    e.target.value = horasNormales;
+    await guardarConfig();
+    render();
+  });
+
+  $('valorTurnoDia').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    valorTurnoDia = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = valorTurnoDia;
+    await guardarValorTurnoDia();
+    render();
+  });
+
+  $('valorTurnoNoche').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    valorTurnoNoche = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = valorTurnoNoche;
+    await guardarValorTurnoNoche();
+    render();
+  });
+
+  $('valorDiaAdicional').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    valorDiaAdicional = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = valorDiaAdicional;
+    await guardarValorDiaAdicional();
+    render();
+  });
+
+  $('valorHoraExtra').addEventListener('change', async (e) => {
+    const val = parseFloat(e.target.value);
+    valorHoraExtra = isNaN(val) || val < 0 ? 0 : val;
+    e.target.value = valorHoraExtra;
+    await guardarValorExtra();
+    render();
+  });
+
+  $('nombreGuarda').addEventListener('change', async (e) => {
+    nombreGuarda = e.target.value.trim();
+    $('turnoNombre').value = nombreGuarda || labelDePerfil(perfilActivo);
+    await guardarNombre();
+  });
+
+  $('filtroAdmin').addEventListener('change', (e) => {
+    filtroAdmin = e.target.value;
+    render();
+  });
+
+  $('filtroMes').addEventListener('change', (e) => {
+    filtroMes = e.target.value;
+    render();
+  });
+
+  function nombreArchivo(ext){
+    const hoy = new Date().toISOString().slice(0,10);
+    let base;
+    if(perfilActivo === 'admin'){
+      base = filtroAdmin === 'todos' ? 'turnos-todos-los-guardias' : `turnos-${slug(labelDePerfil(filtroAdmin))}`;
+    } else {
+      base = `turnos-${slug(nombreGuarda || labelDePerfil(perfilActivo))}`;
+    }
+    if(filtroMes !== 'todos'){
+      base += `-${slug(labelMes(filtroMes))}`;
+    }
+    return `${base}-${hoy}.${ext}`;
+  }
+
+  function contextoActual(){
+    const tituloPerfil = perfilActivo === 'admin'
+      ? (filtroAdmin === 'todos' ? 'Todos los guardias' : labelDePerfil(filtroAdmin))
+      : labelDePerfil(perfilActivo);
+    const mesTexto = filtroMes === 'todos' ? 'Todos los meses' : labelMes(filtroMes);
+    const hoy = new Date().toISOString().slice(0,10);
+    return { tituloPerfil, mesTexto, hoy };
+  }
+
+  $('btnExcelSaldo').addEventListener('click', () => {
+    if(!ultimoSaldoDetalle){ alert('Aún no hay datos calculados.'); return; }
+    const d = ultimoSaldoDetalle;
+    const { tituloPerfil, mesTexto, hoy } = contextoActual();
+
+    const datos = [
+      ['Perfil', tituloPerfil],
+      ['Mes', mesTexto],
+      [],
+      ['Concepto', 'Valor'],
+      ['Valor turno día', d.valorDia],
+      ['Valor turno noche', d.valorNoche],
+      ...(d.valorLegado ? [['Valor turnos (registro anterior)', d.valorLegado]] : []),
+      [`Valor días adicionales${d.tieneOverrideAdicional ? ' (ajustado manualmente)' : ''}`, d.valorAdicionales],
+      [`Valor horas extra${d.tieneOverride ? ' (ajustado manualmente)' : ''}`, d.valorExtra],
+      ['Salario', d.salario],
+      ['Auxilio de transporte', d.auxilio],
+      ['Bonificación', d.bonificacion],
+      ['Saldo total', d.saldoTotal]
+    ];
+
+    const hoja = XLSX.utils.aoa_to_sheet(datos);
+    hoja['!cols'] = [{wch:30},{wch:18}];
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, 'Saldo total');
+    guardarExcel(libro, `saldo-total-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.xlsx`);
+  });
+
+  $('btnPdfSaldo').addEventListener('click', () => {
+    if(!ultimoSaldoDetalle){ alert('Aún no hay datos calculados.'); return; }
+    const d = ultimoSaldoDetalle;
+    const { tituloPerfil, mesTexto, hoy } = contextoActual();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text('Saldo total — guardia de seguridad', 14, 17);
+    doc.setFontSize(9);
+    doc.setTextColor(110);
+    doc.text(`Perfil: ${tituloPerfil}    Mes: ${mesTexto}`, 14, 23);
+
+    const body = [
+      ['Valor turno día', fmtMoney(d.valorDia)],
+      ['Valor turno noche', fmtMoney(d.valorNoche)]
+    ];
+    if(d.valorLegado) body.push(['Valor turnos (registro anterior)', fmtMoney(d.valorLegado)]);
+    body.push(
+      [`Valor días adicionales${d.tieneOverrideAdicional ? ' (ajustado)' : ''}`, fmtMoney(d.valorAdicionales)],
+      [`Valor horas extra${d.tieneOverride ? ' (ajustado)' : ''}`, fmtMoney(d.valorExtra)],
+      ['Salario', fmtMoney(d.salario)],
+      ['Auxilio de transporte', fmtMoney(d.auxilio)],
+      ['Bonificación', fmtMoney(d.bonificacion)],
+      ['Saldo total', fmtMoney(d.saldoTotal)]
+    );
+
+    doc.autoTable({
+      startY: 29,
+      head: [['Concepto', 'Valor']],
+      body,
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [30, 38, 47], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 246, 248] }
+    });
+
+    guardarPdf(doc, `saldo-total-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.pdf`);
+  });
+
+  $('btnExcelVerif').addEventListener('click', () => {
+    if(!ultimoVerifDetalle){ alert('Aún no hay datos calculados.'); return; }
+    const d = ultimoVerifDetalle;
+    const { tituloPerfil, mesTexto, hoy } = contextoActual();
+
+    const datos = [
+      ['Perfil', tituloPerfil],
+      ['Mes', mesTexto],
+      [],
+      ['Concepto', 'Valor'],
+      ['Salario', d.salario],
+      ['Auxilio de transporte', d.auxilio],
+      ['Bonificación', d.bonificacion],
+      [`Valor días adicionales${d.tieneOverrideAdicional ? ' (ajustado manualmente)' : ' (calculado)'}`, d.valorAdicionales],
+      [`Valor horas extra${d.tieneOverride ? ' (ajustado manualmente)' : ' (calculado)'}`, d.valorExtra],
+      ['Cálculo total', d.calculado],
+      ['Cuánto le llegó', d.recibido],
+      ['Diferencia', d.diferencia],
+      ['Resultado', d.mensaje]
+    ];
+
+    const hoja = XLSX.utils.aoa_to_sheet(datos);
+    hoja['!cols'] = [{wch:30},{wch:26}];
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, 'Verificacion pago');
+    guardarExcel(libro, `verificacion-pago-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.xlsx`);
+  });
+
+  $('btnPdfVerif').addEventListener('click', () => {
+    if(!ultimoVerifDetalle){ alert('Aún no hay datos calculados.'); return; }
+    const d = ultimoVerifDetalle;
+    const { tituloPerfil, mesTexto, hoy } = contextoActual();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text('Verificación de pago — guardia de seguridad', 14, 17);
+    doc.setFontSize(9);
+    doc.setTextColor(110);
+    doc.text(`Perfil: ${tituloPerfil}    Mes: ${mesTexto}`, 14, 23);
+
+    doc.autoTable({
+      startY: 29,
+      head: [['Concepto', 'Valor']],
+      body: [
+        ['Salario', fmtMoney(d.salario)],
+        ['Auxilio de transporte', fmtMoney(d.auxilio)],
+        ['Bonificación', fmtMoney(d.bonificacion)],
+        [`Valor días adicionales${d.tieneOverrideAdicional ? ' (ajustado)' : ' (calculado)'}`, fmtMoney(d.valorAdicionales)],
+        [`Valor horas extra${d.tieneOverride ? ' (ajustado)' : ' (calculado)'}`, fmtMoney(d.valorExtra)],
+        ['Cálculo total', fmtMoney(d.calculado)],
+        ['Cuánto le llegó', fmtMoney(d.recibido)],
+        ['Diferencia', fmtMoney(Math.abs(d.diferencia))]
+      ],
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [30, 38, 47], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 246, 248] }
+    });
+
+    doc.setFontSize(10);
+    doc.setTextColor(30);
+    doc.text(`Resultado: ${d.mensaje}`, 14, doc.lastAutoTable.finalY + 10);
+
+    guardarPdf(doc, `verificacion-pago-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.pdf`);
+  });
+
+  function construirLibroExcel(filas, totalHoras, totalExtra, totalPago, verTodos, incluirResumenGuardias){
+    const libro = XLSX.utils.book_new();
+    const tipoLabel = t => ({ turno_dia: 'Turno Día', turno_noche: 'Turno Noche', adicional: 'Día adicional', descanso: 'Descanso' }[t.tipo] || 'Normal');
+
+    const totalNormales = filas.filter(t => (t.tipo === 'turno' || t.tipo === 'turno_dia' || t.tipo === 'turno_noche')).length;
+    const totalAdicionales = filas.filter(t => t.tipo === 'adicional').length;
+    const totalDescansos = filas.filter(t => t.tipo === 'descanso').length;
+
+    let datos;
+    if(verTodos){
+      datos = [];
+      agruparPorGuardia(filas).forEach(g => {
+        datos.push([g.label]);
+        datos.push(['Fecha', 'Tipo', 'Entrada', 'Salida', 'Horas trabajadas', 'Horas extra', 'Puesto', 'Pago']);
+        g.turnos.forEach(t => datos.push([fmtFecha(t.fecha), tipoLabel(t), t.entrada, t.salida, fmtHoras(t.horas), fmtHoras(t.extra), t.notas || '', t.pago]));
+        datos.push(['Subtotal', '', '', '', fmtHoras(g.totalHoras), fmtHoras(g.totalExtra), '', g.totalPago]);
+        datos.push([]);
+      });
+      datos.push(['TOTALES GENERALES']);
+      datos.push(['Turnos normales', totalNormales]);
+      datos.push(['Días adicionales', totalAdicionales]);
+      datos.push(['Descansos', totalDescansos]);
+      datos.push(['Horas extra (total)', totalExtra]);
+      datos.push(['Total a pagar (turnos + horas extra)', totalPago]);
+    } else {
+      datos = [
+        ['Fecha', 'Nombre', 'Tipo', 'Entrada', 'Salida', 'Horas trabajadas', 'Horas extra', 'Puesto', 'Pago'],
+        ...filas.map(t => [fmtFecha(t.fecha), t.nombre || labelDePerfil(t.perfil), tipoLabel(t), t.entrada, t.salida, fmtHoras(t.horas), fmtHoras(t.extra), t.notas || '', t.pago]),
+        [],
+        ['TOTALES GENERALES'],
+        ['Turnos normales', totalNormales],
+        ['Días adicionales', totalAdicionales],
+        ['Descansos', totalDescansos],
+        ['Horas trabajadas (total)', totalHoras],
+        ['Horas extra (total)', totalExtra],
+        ['Horas normales por turno', horasNormales],
+        ['Valor turno día', valorTurnoDia],
+        ['Valor turno noche', valorTurnoNoche],
+        ['Valor del día adicional', valorDiaAdicional],
+        ['Valor de la hora extra', valorHoraExtra],
+        ['Total a pagar (turnos + horas extra)', totalPago]
+      ];
+    }
+
+    const hoja = XLSX.utils.aoa_to_sheet(datos);
+    hoja['!cols'] = [{wch:20},{wch:13},{wch:9},{wch:9},{wch:16},{wch:12},{wch:22},{wch:14}];
+    XLSX.utils.book_append_sheet(libro, hoja, 'Turnos');
+
+    const mensual = resumenMensual(filas);
+    const hojaMensual = XLSX.utils.aoa_to_sheet([
+      ['Mes', 'Turnos', 'Horas trabajadas', 'Horas extra', 'Pago total'],
+      ...mensual.map(m => [m.mes, m.turnos, fmtHoras(m.horas), fmtHoras(m.extra), m.pago])
+    ]);
+    hojaMensual['!cols'] = [{wch:18},{wch:9},{wch:16},{wch:12},{wch:14}];
+    XLSX.utils.book_append_sheet(libro, hojaMensual, 'Por mes');
+
+    if(incluirResumenGuardias){
+      const resumenGuardias = resumenGlobalPorGuardia();
+      const totalTurnosG = resumenGuardias.reduce((s,f) => s + f.turnos, 0);
+      const totalAdicionalesG = resumenGuardias.reduce((s,f) => s + f.adicionales, 0);
+      const totalDescansosG = resumenGuardias.reduce((s,f) => s + f.descansos, 0);
+      const totalExtraG = redMin(resumenGuardias.reduce((s,f) => s + f.totalExtra, 0));
+      const totalPagoG = resumenGuardias.reduce((s,f) => s + f.totalPago, 0);
+      const hojaResumen = XLSX.utils.aoa_to_sheet([
+        ['Guardia', 'Turnos', 'Días adicionales', 'Descansos', 'Horas extra', 'Total a pagar'],
+        ...resumenGuardias.map(f => [f.label, f.turnos, f.adicionales, f.descansos, fmtHoras(f.totalExtra), f.totalPago]),
+        [],
+        ['TOTAL TODOS LOS GUARDIAS', totalTurnosG, totalAdicionalesG, totalDescansosG, fmtHoras(totalExtraG), totalPagoG]
+      ]);
+      hojaResumen['!cols'] = [{wch:20},{wch:9},{wch:15},{wch:11},{wch:12},{wch:14}];
+      XLSX.utils.book_append_sheet(libro, hojaResumen, 'Resumen por guardia');
+    }
+
+    return libro;
+  }
+
+  function descargarExcelTurnos(){
+    const { filas, totalHoras, totalExtra, totalPago } = calcularResumen('asc');
+    if(filas.length === 0){ alert('No hay turnos registrados todavía.'); return false; }
+
+    const verTodos = perfilActivo === 'admin' && filtroAdmin === 'todos';
+    const libro = construirLibroExcel(filas, totalHoras, totalExtra, totalPago, verTodos, perfilActivo === 'admin');
+    guardarExcel(libro, nombreArchivo('xlsx'));
+    return true;
+  }
+
+  $('btnExcel').addEventListener('click', descargarExcelTurnos);
+
+  function construirPdfTurnos(filas, totalHoras, totalExtra, totalPago, verTodos, tituloPerfilOverride, nombreArchivoOverride){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const tipoLabel = t => ({ turno_dia: 'Turno Dia', turno_noche: 'Turno Noche', adicional: 'Adicional', descanso: 'Descanso' }[t.tipo] || 'Normal');
+
+    const totalNormales = filas.filter(t => (t.tipo === 'turno' || t.tipo === 'turno_dia' || t.tipo === 'turno_noche')).length;
+    const totalAdicionales = filas.filter(t => t.tipo === 'adicional').length;
+    const totalDescansos = filas.filter(t => t.tipo === 'descanso').length;
+
+    const tituloPerfil = tituloPerfilOverride || (perfilActivo === 'admin'
+      ? (filtroAdmin === 'todos' ? 'Todos los guardias' : labelDePerfil(filtroAdmin))
+      : labelDePerfil(perfilActivo));
+
+    doc.setFontSize(14);
+    doc.text('Control de turnos — guardia de seguridad', 14, 17);
+    doc.setFontSize(9);
+    doc.setTextColor(110);
+    doc.text(`Perfil: ${tituloPerfil}    Mes: ${filtroMes === 'todos' ? 'Todos' : labelMes(filtroMes)}`, 14, 23);
+    doc.text(`Normales: ${totalNormales}    Adicionales: ${totalAdicionales}    Descansos: ${totalDescansos}    Horas extra: ${fmtHoras(totalExtra)}    Total a pagar: ${fmtMoney(totalPago)}`, 14, 28);
+
+    let y = 34;
+
+    if(verTodos){
+      agruparPorGuardia(filas).forEach(g => {
+        if(y > 250){ doc.addPage(); y = 20; }
+        doc.setFontSize(11);
+        doc.setTextColor(20);
+        doc.text(`${g.label}  ·  ${fmtHoras(g.totalExtra)} extra  ·  ${fmtMoney(g.totalPago)}`, 14, y);
+        doc.autoTable({
+          startY: y + 4,
+          head: [['Fecha', 'Tipo', 'Entrada', 'Salida', 'Horas', 'Extra', 'Puesto', 'Pago']],
+          body: g.turnos.map(t => [fmtFecha(t.fecha), tipoLabel(t), t.entrada||'—', t.salida||'—', t.tipo==='descanso'?'—':fmtHoras(t.horas), t.extra > 0 ? '+' + fmtHoras(t.extra) : '—', t.notas || '—', fmtMoney(t.pago)]),
+          styles: { fontSize: 8, cellPadding: 2.5 },
+          headStyles: { fillColor: [30, 38, 47], textColor: 255 },
+          alternateRowStyles: { fillColor: [245, 246, 248] }
+        });
+        y = doc.lastAutoTable.finalY + 10;
+      });
+
+      if(y > 230){ doc.addPage(); y = 20; }
+      doc.setFontSize(11);
+      doc.setTextColor(30);
+      doc.text('Resumen acumulado por guardia', 14, y);
+      doc.autoTable({
+        startY: y + 4,
+        head: [['Guardia', 'Turnos', 'Adicionales', 'Descansos', 'Horas extra', 'Total a pagar']],
+        body: resumenGlobalPorGuardia().map(f => [f.label, f.turnos, f.adicionales, f.descansos, fmtHoras(f.totalExtra), fmtMoney(f.totalPago)]),
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: [30, 38, 47], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 246, 248] }
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    } else {
+      doc.autoTable({
+        startY: y,
+        head: [['Fecha', 'Nombre', 'Tipo', 'Entrada', 'Salida', 'Horas', 'Extra', 'Puesto', 'Pago']],
+        body: filas.map(t => [fmtFecha(t.fecha), t.nombre || labelDePerfil(t.perfil), tipoLabel(t), t.entrada||'—', t.salida||'—', t.tipo==='descanso'?'—':fmtHoras(t.horas), t.extra > 0 ? '+' + fmtHoras(t.extra) : '—', t.notas || '—', fmtMoney(t.pago)]),
+        styles: { fontSize: 8, cellPadding: 2.5 },
+        headStyles: { fillColor: [30, 38, 47], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 246, 248] }
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    if(y > 240){ doc.addPage(); y = 20; }
+    const mensual = resumenMensual(filas);
+    doc.setFontSize(11);
+    doc.setTextColor(30);
+    doc.text('Resumen de horas extra y pago por mes', 14, y);
+
+    doc.autoTable({
+      startY: y + 4,
+      head: [['Mes', 'Turnos', 'Horas trabajadas', 'Horas extra', 'Pago total']],
+      body: mensual.map(m => [m.mes, m.turnos, fmtHoras(m.horas), fmtHoras(m.extra), fmtMoney(m.pago)]),
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [30, 38, 47], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 246, 248] }
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+    if(y > 250){ doc.addPage(); y = 20; }
+    doc.setFontSize(11);
+    doc.setTextColor(30);
+    doc.text('Totales generales', 14, y);
+    doc.autoTable({
+      startY: y + 4,
+      body: [
+        ['Turnos normales', String(totalNormales)],
+        ['Días adicionales', String(totalAdicionales)],
+        ['Descansos', String(totalDescansos)],
+        ['Horas extra (total)', fmtHoras(totalExtra)],
+        ['Total a pagar (turnos + horas extra)', fmtMoney(totalPago)]
+      ],
+      styles: { fontSize: 9, cellPadding: 3 },
+      columnStyles: { 0: { fontStyle: 'bold' } }
+    });
+
+    guardarPdf(doc, nombreArchivoOverride || nombreArchivo('pdf'));
+    return true;
+  }
+
+  function descargarPdfTurnos(){
+    const { filas, totalHoras, totalExtra, totalPago } = calcularResumen('asc');
+    if(filas.length === 0){ alert('No hay turnos registrados todavía.'); return false; }
+    const verTodos = perfilActivo === 'admin' && filtroAdmin === 'todos';
+    return construirPdfTurnos(filas, totalHoras, totalExtra, totalPago, verTodos);
+  }
+
+  $('btnPdf').addEventListener('click', descargarPdfTurnos);
+
+  async function enviarPorWhatsapp(formato){
+    const crudo = $('whatsappNumero').value.trim();
+    const numero = crudo.replace(/[^0-9]/g, '');
+    if(!numero){
+      alert('Escribe el número de WhatsApp (con indicativo de país, ej: 57 para Colombia).');
+      return;
+    }
+
+    whatsappPorPerfil[perfilActivo] = crudo;
+    await guardarCampo('whatsapp', whatsappPorPerfil);
+
+    if(EN_APP){
+      textoCompartir = `Hola, te comparto el reporte de turnos en ${formato === 'pdf' ? 'PDF' : 'Excel'}.`;
+    }
+    const generado = formato === 'pdf' ? descargarPdfTurnos() : descargarExcelTurnos();
+    if(!generado){ textoCompartir = ''; return; }
+    if(EN_APP) return; // en la app se escoge WhatsApp en el menú Compartir, con el archivo ya adjunto
+
+    const mensaje = encodeURIComponent(
+      `Hola, te comparto el reporte de turnos en ${formato === 'pdf' ? 'PDF' : 'Excel'}. Acabo de descargarlo, lo adjunto a continuación.`
+    );
+    window.open(`https://wa.me/${numero}?text=${mensaje}`, '_blank');
+  }
+
+  $('btnWhatsappPdf').addEventListener('click', () => enviarPorWhatsapp('pdf'));
+  $('btnWhatsappExcel').addEventListener('click', () => enviarPorWhatsapp('excel'));
+
+  /* ---- guardar PDF y Excel: en la página se descarga; en la app de Android se guarda y se abre "Compartir" ---- */
+  const EN_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  let textoCompartir = '';
+  let soloGuardar = false; // respaldo automático: guarda sin abrir el menú Compartir
+
+  function blobABase64(blob){
+    return new Promise((ok, fallar) => {
+      const r = new FileReader();
+      r.onload = () => ok(String(r.result).split(',')[1]);
+      r.onerror = fallar;
+      r.readAsDataURL(blob);
+    });
+  }
+
+  async function guardarArchivo(blob, nombre){
+    if(EN_APP){
+      const { Filesystem, Share } = window.Capacitor.Plugins;
+      const texto = textoCompartir; textoCompartir = '';
+      const silencioso = soloGuardar; soloGuardar = false;
+      try{
+        const data = await blobABase64(blob);
+        let archivo;
+        try{
+          // Copia que queda en el celular: Documentos/ControlTurnos
+          archivo = await Filesystem.writeFile({ path: 'ControlTurnos/' + nombre, data, directory: 'DOCUMENTS', recursive: true });
+        }catch(e){
+          if(silencioso) return;
+          archivo = await Filesystem.writeFile({ path: nombre, data, directory: 'CACHE' });
+        }
+        if(silencioso) return;
+        await Share.share({ title: nombre, text: texto || undefined, files: [archivo.uri], dialogTitle: 'Guardar o enviar ' + nombre });
+      }catch(e){
+        const msg = (e && e.message) || String(e);
+        if(!/cancel/i.test(msg)) alert('No se pudo guardar el archivo: ' + msg);
+      }
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nombre; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  function guardarExcel(libro, nombre){
+    const datos = XLSX.write(libro, { bookType: 'xlsx', type: 'array' });
+    return guardarArchivo(new Blob([datos], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nombre);
+  }
+
+  function guardarPdf(doc, nombre){
+    return guardarArchivo(doc.output('blob'), nombre);
+  }
+
+  /* ---- librerías de PDF y Excel: se cargan en segundo plano para que la página abra rápido ---- */
+  const LIB_XLSX = ['libs/xlsx.full.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'];
+  const LIB_JSPDF = ['libs/jspdf.umd.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+  const LIB_AUTOTABLE = ['libs/jspdf.plugin.autotable.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'];
+
+  // Prueba cada dirección en orden: primero la copia local y, si no existe, internet
+  function cargarScript(rutas){
+    return new Promise((resolver, fallar) => {
+      const s = document.createElement('script');
+      s.src = rutas[0];
+      s.onload = resolver;
+      s.onerror = () => {
+        s.remove();
+        if(rutas.length > 1) cargarScript(rutas.slice(1)).then(resolver, fallar);
+        else fallar(new Error('No se pudo cargar ' + rutas[0]));
+      };
+      document.head.appendChild(s);
+    });
+  }
+
+  function libsExportarListas(){
+    return typeof XLSX !== 'undefined' && !!window.jspdf && typeof window.jspdf.jsPDF.API.autoTable === 'function';
+  }
+
+  let cargaLibsExportar = null;
+  function cargarLibsExportar(){
+    if(libsExportarListas()) return Promise.resolve();
+    if(!cargaLibsExportar){
+      cargaLibsExportar = Promise.all([
+        cargarScript(LIB_XLSX),
+        cargarScript(LIB_JSPDF).then(() => cargarScript(LIB_AUTOTABLE))
+      ]).catch(err => { cargaLibsExportar = null; throw err; });
+    }
+    return cargaLibsExportar;
+  }
+
+  // Si se toca un botón de descarga antes de que terminen de cargar, espera y lo repite solo
+  const BOTONES_DESCARGA = ['btnExcelSaldo', 'btnPdfSaldo', 'btnExcelVerif', 'btnPdfVerif',
+                            'btnExcel', 'btnPdf', 'btnWhatsappPdf', 'btnWhatsappExcel',
+                            'btnRespaldarPdf', 'btnRespaldarExcel'];
+  document.addEventListener('click', ev => {
+    const boton = ev.target.closest && ev.target.closest('button');
+    if(!boton || !BOTONES_DESCARGA.includes(boton.id) || libsExportarListas()) return;
+    ev.stopImmediatePropagation();
+    ev.preventDefault();
+    cargarLibsExportar().then(() => boton.click()).catch(() => {
+      alert('No se pudo preparar la descarga. Revisa la conexión a internet e inténtalo de nuevo.');
+    });
+  }, true);
+
+  window.addEventListener('load', () => { cargarLibsExportar().catch(() => {}); });
+
+  /* ---- instalación y modo sin internet ---- */
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.warn('No se pudo registrar el modo sin internet:', err));
+    });
+  }
+
+  // Dentro de la app de Android no hace falta el enlace para descargarla
+  if(window.Capacitor){ const l = $('linkApk'); if(l) l.remove(); }
+
+  /* ---- arranque ---- */
+  (async function inicio(){
+    if(!FIREBASE_SDK_CARGADO || !FIREBASE_CONFIGURADO){
+      return; // se muestra el banner de configuración y no se continúa
+    }
+
+    await cargarEstadoInicial();
+    if(!estadoCargado){
+      $('selCard').innerHTML = `
+        <h2>Sin conexión</h2>
+        <p>Aún no hay datos guardados en este celular. Conéctate a internet una vez para descargarlos; después podrás usar la app sin conexión.</p>
+        <button class="sel-admin" id="btnReintentar">Reintentar</button>
+      `;
+      $('btnReintentar').addEventListener('click', () => location.reload());
+      window.addEventListener('online', () => location.reload());
+      return;
+    }
+    await cifrarClavesViejas().catch(e => console.warn('No se pudieron cifrar las contraseñas:', e));
+    escucharCambios();
+
+    let guardado = null;
+    try{ guardado = localStorage.getItem(KEY_PERFIL_LOCAL); }catch(e){ guardado = null; }
+
+    const sesionValida = guardado && PERFILES.some(p => p.id === guardado) &&
+      (guardado !== 'admin' ? true : !!(credenciales.admin && credenciales.admin.email));
+
+    if(sesionValida){
+      perfilActivo = guardado;
+      $('selector').style.display = 'none';
+      $('app').style.display = 'block';
+      await cargar();
+    } else {
+      pintarLogin();
+    }
+  })();
+</script>
+</body>
+</html>
