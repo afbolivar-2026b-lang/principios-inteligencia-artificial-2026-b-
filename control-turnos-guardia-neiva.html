@@ -1425,16 +1425,17 @@
       : 'Nunca';
   }
 
-  async function respaldoAutomatico(formato = 'excel'){
+  async function respaldoAutomatico(formato = 'excel', automatico = false){
     try{ await cargarLibsExportar(); }catch(e){ return; }
     if(turnos.length > 0){
+      soloGuardar = automatico;
       const { filas, totalHoras, totalExtra, totalPago } = calcularResumenGlobal('asc');
       const hoy = new Date().toISOString().slice(0,10);
       if(formato === 'pdf'){
         construirPdfTurnos(filas, totalHoras, totalExtra, totalPago, true, 'Todos los guardias', `respaldo-turnos-${hoy}.pdf`);
       } else {
         const libro = construirLibroExcel(filas, totalHoras, totalExtra, totalPago, true, true);
-        XLSX.writeFile(libro, `respaldo-turnos-${hoy}.xlsx`);
+        guardarExcel(libro, `respaldo-turnos-${hoy}.xlsx`);
       }
     }
     ultimoRespaldo = new Date().toISOString();
@@ -1484,7 +1485,7 @@
 
     if(esAdmin){
       pintarRespaldo();
-      if(necesitaRespaldo()) await respaldoAutomatico();
+      if(necesitaRespaldo()) await respaldoAutomatico('excel', true);
     } else {
       $('secRespaldo').style.display = 'none';
     }
@@ -2114,7 +2115,7 @@
     hoja['!cols'] = [{wch:30},{wch:18}];
     const libro = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(libro, hoja, 'Saldo total');
-    XLSX.writeFile(libro, `saldo-total-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.xlsx`);
+    guardarExcel(libro, `saldo-total-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.xlsx`);
   });
 
   $('btnPdfSaldo').addEventListener('click', () => {
@@ -2153,7 +2154,7 @@
       alternateRowStyles: { fillColor: [245, 246, 248] }
     });
 
-    doc.save(`saldo-total-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.pdf`);
+    guardarPdf(doc, `saldo-total-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.pdf`);
   });
 
   $('btnExcelVerif').addEventListener('click', () => {
@@ -2181,7 +2182,7 @@
     hoja['!cols'] = [{wch:30},{wch:26}];
     const libro = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(libro, hoja, 'Verificacion pago');
-    XLSX.writeFile(libro, `verificacion-pago-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.xlsx`);
+    guardarExcel(libro, `verificacion-pago-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.xlsx`);
   });
 
   $('btnPdfVerif').addEventListener('click', () => {
@@ -2219,7 +2220,7 @@
     doc.setTextColor(30);
     doc.text(`Resultado: ${d.mensaje}`, 14, doc.lastAutoTable.finalY + 10);
 
-    doc.save(`verificacion-pago-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.pdf`);
+    guardarPdf(doc, `verificacion-pago-${slug(tituloPerfil)}-${slug(mesTexto)}-${hoy}.pdf`);
   });
 
   function construirLibroExcel(filas, totalHoras, totalExtra, totalPago, verTodos, incluirResumenGuardias){
@@ -2304,7 +2305,7 @@
 
     const verTodos = perfilActivo === 'admin' && filtroAdmin === 'todos';
     const libro = construirLibroExcel(filas, totalHoras, totalExtra, totalPago, verTodos, perfilActivo === 'admin');
-    XLSX.writeFile(libro, nombreArchivo('xlsx'));
+    guardarExcel(libro, nombreArchivo('xlsx'));
     return true;
   }
 
@@ -2407,7 +2408,7 @@
       columnStyles: { 0: { fontStyle: 'bold' } }
     });
 
-    doc.save(nombreArchivoOverride || nombreArchivo('pdf'));
+    guardarPdf(doc, nombreArchivoOverride || nombreArchivo('pdf'));
     return true;
   }
 
@@ -2431,8 +2432,12 @@
     whatsappPorPerfil[perfilActivo] = crudo;
     await guardarCampo('whatsapp', whatsappPorPerfil);
 
+    if(EN_APP){
+      textoCompartir = `Hola, te comparto el reporte de turnos en ${formato === 'pdf' ? 'PDF' : 'Excel'}.`;
+    }
     const generado = formato === 'pdf' ? descargarPdfTurnos() : descargarExcelTurnos();
-    if(!generado) return;
+    if(!generado){ textoCompartir = ''; return; }
+    if(EN_APP) return; // en la app se escoge WhatsApp en el menú Compartir, con el archivo ya adjunto
 
     const mensaje = encodeURIComponent(
       `Hola, te comparto el reporte de turnos en ${formato === 'pdf' ? 'PDF' : 'Excel'}. Acabo de descargarlo, lo adjunto a continuación.`
@@ -2442,6 +2447,59 @@
 
   $('btnWhatsappPdf').addEventListener('click', () => enviarPorWhatsapp('pdf'));
   $('btnWhatsappExcel').addEventListener('click', () => enviarPorWhatsapp('excel'));
+
+  /* ---- guardar PDF y Excel: en la página se descarga; en la app de Android se guarda y se abre "Compartir" ---- */
+  const EN_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  let textoCompartir = '';
+  let soloGuardar = false; // respaldo automático: guarda sin abrir el menú Compartir
+
+  function blobABase64(blob){
+    return new Promise((ok, fallar) => {
+      const r = new FileReader();
+      r.onload = () => ok(String(r.result).split(',')[1]);
+      r.onerror = fallar;
+      r.readAsDataURL(blob);
+    });
+  }
+
+  async function guardarArchivo(blob, nombre){
+    if(EN_APP){
+      const { Filesystem, Share } = window.Capacitor.Plugins;
+      const texto = textoCompartir; textoCompartir = '';
+      const silencioso = soloGuardar; soloGuardar = false;
+      try{
+        const data = await blobABase64(blob);
+        let archivo;
+        try{
+          // Copia que queda en el celular: Documentos/ControlTurnos
+          archivo = await Filesystem.writeFile({ path: 'ControlTurnos/' + nombre, data, directory: 'DOCUMENTS', recursive: true });
+        }catch(e){
+          if(silencioso) return;
+          archivo = await Filesystem.writeFile({ path: nombre, data, directory: 'CACHE' });
+        }
+        if(silencioso) return;
+        await Share.share({ title: nombre, text: texto || undefined, files: [archivo.uri], dialogTitle: 'Guardar o enviar ' + nombre });
+      }catch(e){
+        const msg = (e && e.message) || String(e);
+        if(!/cancel/i.test(msg)) alert('No se pudo guardar el archivo: ' + msg);
+      }
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nombre; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  function guardarExcel(libro, nombre){
+    const datos = XLSX.write(libro, { bookType: 'xlsx', type: 'array' });
+    return guardarArchivo(new Blob([datos], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), nombre);
+  }
+
+  function guardarPdf(doc, nombre){
+    return guardarArchivo(doc.output('blob'), nombre);
+  }
 
   /* ---- librerías de PDF y Excel: se cargan en segundo plano para que la página abra rápido ---- */
   const LIB_XLSX = ['libs/xlsx.full.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'];
