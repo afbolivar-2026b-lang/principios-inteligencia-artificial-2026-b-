@@ -538,6 +538,7 @@
   }
   .entry .extra.on{ color: var(--amber); font-weight: 600; }
   /* horas del turno separadas: normales + extra = total */
+  .entry .pago-detalle{ display:block; font-size: 0.74rem; color: var(--amber); margin-top: 2px; }
   .entry .horas .h-extra{ display:block; color: var(--amber); font-weight: 600; font-size: 0.8rem; margin-top: 2px; }
   .entry .horas .h-total{ display:block; color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
   .entry .del{
@@ -1571,7 +1572,7 @@
     else if(t.tipo === 'turno_noche') pagoBase = valorTurnoNoche;
     else pagoBase = valorTurno;
     const pago = pagoBase + extra * valorHoraExtra;
-    return { ...t, horas, extra, pago };
+    return { ...t, horas, extra, pago, pagoBase };
   }
 
   function calcularResumen(orden){
@@ -1635,6 +1636,7 @@
         <span class="detalle">Entrada ${t.entrada} · Salida ${t.salida}</span>
         <span class="notas">Puesto: ${t.notas ? escapeHtml(t.notas) : '—'}</span>
         <span class="pago">Pago: ${fmtMoney(t.pago)}</span>
+        ${t.extra > 0 ? `<span class="pago-detalle">Turno ${fmtMoney(t.pagoBase || 0)} + ${fmtHoras(t.extra)} extra × ${fmtMoney(valorHoraExtra)}</span>` : ''}
       `;
     }
 
