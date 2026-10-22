@@ -1625,7 +1625,7 @@
         <span class="detalle">Entrada ${t.entrada} · Salida ${t.salida}</span>
         <span class="notas">Puesto: ${t.notas ? escapeHtml(t.notas) : '—'}</span>
         <span class="pago">Pago: ${fmtMoney(t.pago)}</span>
-        ${t.extra > 0 ? `<span class="pago-detalle">Turno ${fmtMoney(t.pagoBase || 0)} + ${fmtHoras(t.extra)} extra × ${fmtMoney(valorHoraExtra)}</span>` : ''}
+        ${(t.extra > 0 || t.tipo === 'adicional') ? `<span class="pago-detalle">${t.tipo === 'adicional' ? 'Día adicional' : 'Turno'} ${fmtMoney(t.pagoBase || 0)}${t.extra > 0 ? ` + ${fmtHoras(t.extra)} extra × ${fmtMoney(valorHoraExtra)}` : ''}</span>` : ''}
       `;
     }
 
