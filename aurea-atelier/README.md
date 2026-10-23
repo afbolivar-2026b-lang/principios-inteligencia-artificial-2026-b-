@@ -1,0 +1,42 @@
+# Aurea Atelier
+
+Sistema privado de gestión para un taller de confección que vende al detal y por mayor: camisas industriales, camisas de salir, pantalones, gorras, overoles, tapabocas y dotación.
+
+## Cómo abrirlo
+
+```bash
+cd aurea-atelier
+npx http-server -p 8080
+# abrir http://localhost:8080
+```
+
+Usuarios de demostración (cámbielos en *Usuarios y roles*):
+
+| Rol | Usuario | Contraseña |
+|---|---|---|
+| Administradora | `admin` | `Aurea2026*` |
+| Secretaria | `secretaria` | `Secre2026*` |
+
+## Módulos
+
+Panel · Salón de ventas · Catálogo visual · Probador 3D (prenda en relieve, tela real en movimiento, lupa) · Cotización de lujo con logo · Cotizaciones · Facturas · Cartera · Clientes · Productos y precios (reposición, conteo físico, ajuste de precios, etiquetas) · Inventario y telas · Producción · Compras · Proveedores · Secretaría · Mensajes · Personal y destajo · Gastos de la empresa y caja · Finanzas del hogar (solo administradora) · Dashboard de ventas (8 indicadores, 12 gráficas, filtros por año, mes y vendedor) · Reportes · Usuarios y roles · Auditoría · Configuración · Funciones (lista completa de 228 funciones).
+
+## Seguridad
+
+- Contraseñas guardadas con PBKDF2-SHA256 y sal aleatoria, nunca en texto plano.
+- Bloqueo de 60 s tras 5 intentos fallidos, bloqueo por inactividad y botón de bloqueo inmediato.
+- Roles con menú filtrado, registro de auditoría y modo privado que oculta los valores.
+- Respaldo cifrado AES-256-GCM con contraseña.
+
+## Limitación actual
+
+Los datos se guardan en el navegador del equipo donde se usa. Para que la secretaria y la dueña vean la misma información desde varios equipos o celulares hace falta conectarlo a una base de datos en la nube (por ejemplo Supabase); la estructura de datos ya está separada para ese paso.
+
+Capturas en `docs/capturas/`. Documentos para el cliente:
+
+- `docs/Aurea-Atelier-Video-Guia-Completa.mp4`: video de 14 minutos con los 19 capítulos, los 80 pasos con foto y las 228 funciones, con música (escenas en `docs/video/guia-video-completa.html`, datos con `node docs/video/generar-datos-video.js`).
+- `docs/Aurea-Atelier-Video-Guia.mp4`: versión corta de 3 minutos y medio, con música (escenas en `docs/video/guia-video.html`, música original en `docs/video/musica.py`, render con `docs/video/renderizar.js`).
+- `docs/Aurea-Atelier-Guia-Completa.pdf`: guía con cada paso en foto y cada función explicada (fotos de los pasos con `node docs/guia/capturar-pasos.js`, PDF con `node docs/guia/generar-guia.js`).
+- `docs/Aurea-Atelier-Presentacion.pdf`: presentación (`node docs/brochure/generar-pdf.js`).
+- `docs/Cotizacion-COT-301-ejemplo.pdf`: cotización de muestra.
+- `docs/aurea-atelier-pelicula.mp4` y `docs/aurea-atelier-recorrido.mp4`: videos anteriores.

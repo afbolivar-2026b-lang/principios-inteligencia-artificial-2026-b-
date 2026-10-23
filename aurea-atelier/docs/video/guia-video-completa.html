@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Aurea Atelier · Video guía completa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500;600&display=swap">
+<style>
+/* Video guía completa: cada capítulo, cada paso con su foto y cada función. renderAt(t) dibuja el instante t. */
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0c0a08; color: #efe7d8; font-family: "Jost", system-ui, sans-serif; }
+#bg { position: absolute; inset: 0; background: radial-gradient(1100px 700px at 75% 45%, rgba(201,164,92,.13), transparent 65%), radial-gradient(800px 600px at 10% 90%, rgba(122,46,58,.12), transparent 60%), repeating-linear-gradient(45deg, rgba(201,164,92,.035) 0 1px, transparent 1px 16px), #0c0a08; }
+#top { position: absolute; left: 80px; right: 80px; top: 44px; display: flex; justify-content: space-between; align-items: center; }
+#top .brand { display: flex; align-items: center; gap: 14px; font-family: "Cormorant Garamond", serif; font-size: 26px; letter-spacing: .3em; }
+#top .brand small { font-family: "Jost"; font-size: 12px; letter-spacing: .35em; color: #a39782; margin-left: 8px; }
+#counter { font-size: 14px; letter-spacing: .3em; color: #a39782; text-transform: uppercase; }
+#bar { position: absolute; left: 0; top: 0; height: 3px; background: linear-gradient(90deg, #8f6a2b, #f1dca6, #c9a45c); }
+#text { position: absolute; left: 80px; top: 170px; width: 445px; height: 800px; }
+.eye { font-size: 14px; letter-spacing: .34em; text-transform: uppercase; color: #c9a45c; font-weight: 500; }
+.kind { font-size: 15px; letter-spacing: .3em; text-transform: uppercase; color: #a39782; margin-top: 34px; }
+.big { font-family: "Cormorant Garamond", serif; font-size: 128px; line-height: .9; color: #c9a45c; font-weight: 500; margin-top: 4px; }
+.big small { font-size: 40px; color: #8a7a5c; }
+h2 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 52px; line-height: 1.04; margin: 18px 0 18px; }
+.p { font-size: 24px; line-height: 1.5; color: #d9cfbd; margin: 0; }
+.dots { position: absolute; left: 0; bottom: 30px; display: flex; flex-wrap: wrap; gap: 7px; width: 440px; }
+.dots i { width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(201,164,92,.6); }
+.dots i.on { background: #c9a45c; } .dots i.cur { background: #f1dca6; box-shadow: 0 0 12px #f1dca6; }
+.win { position: absolute; left: 560px; top: 150px; width: 1280px; height: 800px; border-radius: 18px; overflow: hidden; border: 1px solid rgba(201,164,92,.35); box-shadow: 0 40px 90px rgba(0,0,0,.65); background: #110e0b; }
+.win .stage { position: absolute; inset: 0; transform-origin: 50% 50%; }
+.win img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#cap { position: absolute; left: 560px; top: 972px; font-size: 16px; letter-spacing: .12em; color: #a39782; }
+#cap b { color: #e3c98f; font-weight: 500; }
+#full { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; background: radial-gradient(900px 600px at 50% 45%, #211b13, #0c0a08 70%); }
+#full .mark { width: 240px; height: 240px; }
+#full h1 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 104px; margin: 24px 0 0; }
+#full .sub { letter-spacing: .5em; text-transform: uppercase; font-size: 17px; color: #a39782; margin-top: 14px; }
+#full .tag { font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 42px; color: #e3c98f; margin-top: 30px; }
+#full .note { font-size: 21px; color: #cfc4b0; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div id="bg"></div><div id="bar"></div>
+<div id="top"><div class="brand"><svg width="44" height="44" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="g0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dca6"/><stop offset=".55" stop-color="#c9a45c"/><stop offset="1" stop-color="#8f6a2b"/></linearGradient></defs><circle cx="32" cy="32" r="30" stroke="url(#g0)" stroke-width="1.2"/><path d="M32 12 L18 50M32 12 L46 50" stroke="url(#g0)" stroke-width="3.2" stroke-linecap="round"/><path d="M22.5 37 H41.5" stroke="url(#g0)" stroke-width="1.4" stroke-dasharray="2.4 2"/><circle cx="32" cy="12" r="2.6" fill="url(#g0)"/></svg>AUREA<small>VIDEO GUÍA COMPLETA</small></div><div id="counter"></div></div>
+<div id="text"><div class="eye" id="t-eye"></div><div class="kind" id="t-kind"></div><div class="big" id="t-big"></div><h2 id="t-title"></h2><p class="p" id="t-desc"></p><div class="dots" id="t-dots"></div></div>
+<div class="win" id="winB"><div class="stage"></div></div>
+<div class="win" id="winA"><div class="stage"></div></div>
+<div id="cap"></div>
+<div id="full"></div>
+<script src="video-datos.js"></script>
+<script>
+const C = 'capturas/', F = 'f3d/';
+const seq = (name, n) => Array.from({ length: n }, (_, i) => `${F}${name}-${String(i).padStart(4, '0')}.jpg`);
+const SEQ = { prenda: seq('prenda', 165), tela: seq('tela', 165), lupa: seq('lupa', 120) };
+const T_CAP = 3.6, T_PASO = 3.0, T_FX = 2.3, INTRO = 6, OUTRO = 6.5, X = 0.45;
+// Línea de tiempo: elementos de texto (capítulo, paso, función) y tomas de imagen.
+const ITEMS = [], SHOTS = [];
+let t = INTRO, fxN = 0;
+const TOTALFX = DATA.reduce((s, c) => s + c.fx.length, 0);
+DATA.forEach((c, ci) => {
+  const media = c.seq ? c.seq.map(s => ({ q: s })) : c.imgs.map(i => ({ i }));
+  ITEMS.push({ k: 'cap', ci, start: t, d: T_CAP }); SHOTS.push({ ...media[0], start: t, d: T_CAP, cap: c.imgsCap[0] || c.titulo, ci, z: [1, 1.08] }); t += T_CAP;
+  c.pasos.forEach((p, k) => { ITEMS.push({ k: 'paso', ci, n: k, start: t, d: T_PASO }); SHOTS.push({ i: `pasos/c${String(ci + 1).padStart(2, '0')}-p${k + 1}`, start: t, d: T_PASO, cap: 'Paso ' + (k + 1), ci, z: [1, 1.05] }); t += T_PASO; });
+  const fxStart = t;
+  c.fx.forEach((f, k) => { fxN++; ITEMS.push({ k: 'fx', ci, n: k, g: fxN, start: t, d: T_FX }); t += T_FX; });
+  // Durante las funciones rotan las imágenes del capítulo, una cada dos funciones.
+  const per = T_FX * 2, nShots = Math.max(1, Math.ceil((t - fxStart) / per));
+  for (let s = 0; s < nShots; s++) { const m = media[(s + 1) % media.length]; const st = fxStart + s * per, d = Math.min(per, t - st); SHOTS.push({ ...m, start: st, d, cap: c.imgsCap[(s + 1) % media.length] || c.titulo, ci, z: s % 2 ? [1.08, 1] : [1, 1.08] }); }
+});
+const TOTAL = t + OUTRO; window.DURATION = TOTAL;
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const $ = id => document.getElementById(id);
+const cache = {};
+const im = src => cache[src] || (cache[src] = Object.assign(new Image(), { src }));
+window.preload = async () => {
+  const all = new Set(); SHOTS.forEach(s => { if (s.i) all.add(C + s.i + '.png'); if (s.q) SEQ[s.q].forEach(x => all.add(x)); });
+  await Promise.all([...all].map(s => im(s).decode().catch(() => console.error('falta', s)))); await document.fonts.ready;
+};
+const LOGO = id => `<svg class="mark" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dca6"/><stop offset=".55" stop-color="#c9a45c"/><stop offset="1" stop-color="#8f6a2b"/></linearGradient></defs>
+  <circle id="${id}c" cx="32" cy="32" r="30" stroke="url(#${id})" stroke-width="1" stroke-dasharray="190"/><circle cx="32" cy="32" r="26.5" stroke="url(#${id})" stroke-width=".5" stroke-dasharray="1.6 2.4" class="fd"/>
+  <path id="${id}a" d="M32 12 L18 50" stroke="url(#${id})" stroke-width="3" stroke-linecap="round" stroke-dasharray="41"/><path id="${id}b" d="M32 12 L46 50" stroke="url(#${id})" stroke-width="3" stroke-linecap="round" stroke-dasharray="41"/>
+  <path id="${id}d" d="M22.5 37 H41.5" stroke="url(#${id})" stroke-width="1.3" stroke-dasharray="19"/><circle cx="32" cy="12" r="2.6" fill="url(#${id})" class="fd"/><g fill="url(#${id})" class="fd"><circle cx="30.6" cy="27.4" r=".9"/><circle cx="33.4" cy="27.4" r=".9"/><circle cx="30.6" cy="30.2" r=".9"/><circle cx="33.4" cy="30.2" r=".9"/></g></svg>`;
+function fullScene(kind, lt) {
+  const f = $('full');
+  if (f.dataset.kind !== kind) {
+    f.dataset.kind = kind;
+    f.innerHTML = kind === 'intro'
+      ? `<div><div style="display:flex;justify-content:center">${LOGO('gi')}</div><h1 id="fh">AUREA</h1><div class="sub" id="fs">Atelier · Confección · Dotación</div><div class="tag" id="ft">Video guía completa del sistema</div><div class="note" id="fn">${DATA.length} capítulos · ${DATA.reduce((s, c) => s + c.pasos.length, 0)} pasos con foto · ${TOTALFX} funciones explicadas</div></div>`
+      : `<div><div style="display:flex;justify-content:center">${LOGO('go')}</div><h1 id="fh" style="font-size:88px">AUREA</h1><div class="sub" id="fs">Atelier · Confección · Dotación</div><div class="tag" id="ft">Cada puntada, cada peso, en su lugar.</div><div class="note" id="fn">La guía completa en PDF acompaña este video</div></div>`;
+  }
+  const id = kind === 'intro' ? 'gi' : 'go';
+  const dr = (el, len, a, b) => { const e = document.getElementById(id + el); if (e) e.style.strokeDashoffset = len * (1 - ease(clamp((lt - a) / (b - a)))); };
+  dr('c', 190, .1, 1.8); dr('a', 41, .5, 1.6); dr('b', 41, .7, 1.8); dr('d', 19, 1.4, 2);
+  f.querySelectorAll('.fd').forEach(e => e.style.opacity = ease(clamp((lt - 1.8) / .8)));
+  const h = $('fh'), k = ease(clamp((lt - 1.9) / 1.6)); h.style.opacity = k; h.style.letterSpacing = (1.2 - .85 * k) + 'em'; h.style.marginLeft = (1.2 - .85 * k) + 'em'; h.style.filter = `blur(${(1 - k) * 6}px)`;
+  ['fs', 'ft', 'fn'].forEach((s, i) => { const e = $(s), q = ease(clamp((lt - 2.6 - i * .5) / 1)); e.style.opacity = q; e.style.transform = `translateY(${(1 - q) * 24}px)`; });
+}
+function setShot(win, sh, lt, alpha) {
+  const st = win.querySelector('.stage'); win.style.opacity = alpha;
+  const key = sh ? (sh.i || 'q' + sh.q) : '';
+  if (win.dataset.key !== key) { win.dataset.key = key; st.innerHTML = sh ? `<img src="${sh.i ? C + sh.i + '.png' : SEQ[sh.q][0]}">` : ''; }
+  if (!sh) return;
+  if (sh.q) { const fr = SEQ[sh.q], img = st.querySelector('img'); const nn = fr.length, i = Math.floor((lt + (sh.start % 7)) * 30) % (2 * nn - 2); const idx = i < nn ? i : 2 * nn - 2 - i; if (!img.src.endsWith(fr[idx])) img.src = fr[idx]; }
+  const z = sh.z || [1, 1.06], e = ease(clamp(lt / sh.d));
+  st.style.transform = `scale(${z[0] + (z[1] - z[0]) * e})`;
+}
+window.renderAt = (time) => {
+  $('bar').style.width = (time / TOTAL * 100) + '%';
+  const f = $('full');
+  if (time < INTRO) { fullScene('intro', time); f.style.opacity = 1 - ease(clamp((time - (INTRO - .7)) / .7)); }
+  else if (time >= TOTAL - OUTRO) { fullScene('outro', time - (TOTAL - OUTRO)); f.style.opacity = ease(clamp((time - (TOTAL - OUTRO)) / .7)); }
+  else f.style.opacity = 0;
+  f.style.display = +f.style.opacity > 0 ? 'grid' : 'none';
+  const si = SHOTS.findIndex(s => time >= s.start && time < s.start + s.d), cur = SHOTS[si], prev = si > 0 ? SHOTS[si - 1] : null;
+  const it = ITEMS.find(x => time >= x.start && time < x.start + x.d);
+  if (!cur || !it) { setShot($('winA'), null, 0, 0); setShot($('winB'), null, 0, 0); $('text').style.opacity = 0; $('cap').style.opacity = 0; $('counter').textContent = ''; return; }
+  const lt = time - cur.start, inX = clamp(lt / X);
+  setShot($('winA'), cur, lt, ease(inX));
+  if (prev && inX < 1) setShot($('winB'), prev, time - prev.start, 1); else setShot($('winB'), null, 0, 0);
+  const c = DATA[it.ci], key = it.k + it.ci + '-' + (it.n ?? '');
+  if ($('text').dataset.k !== key) {
+    $('text').dataset.k = key;
+    $('t-eye').textContent = `Capítulo ${String(it.ci + 1).padStart(2, '0')} · ${c.titulo}`;
+    if (it.k === 'cap') { $('t-kind').textContent = 'Capítulo'; $('t-big').innerHTML = String(it.ci + 1).padStart(2, '0'); $('t-title').textContent = c.titulo; $('t-desc').textContent = c.intro; }
+    if (it.k === 'paso') { $('t-kind').textContent = 'Cómo se usa'; $('t-big').innerHTML = `${it.n + 1}<small> / ${c.pasos.length}</small>`; $('t-title').textContent = 'Paso ' + (it.n + 1); $('t-desc').textContent = c.pasos[it.n]; }
+    if (it.k === 'fx') { $('t-kind').textContent = 'Función'; $('t-big').innerHTML = `${it.g}<small> / ${TOTALFX}</small>`; $('t-title').textContent = c.fx[it.n][0]; $('t-desc').textContent = c.fx[it.n][1]; }
+    $('t-dots').innerHTML = it.k === 'fx' ? c.fx.map((_, k) => `<i class="${k < it.n ? 'on' : k === it.n ? 'cur' : ''}"></i>`).join('') : it.k === 'paso' ? c.pasos.map((_, k) => `<i class="${k < it.n ? 'on' : k === it.n ? 'cur' : ''}"></i>`).join('') : '';
+  }
+  const lt2 = time - it.start, kin = clamp(lt2 / .4), kout = clamp((it.start + it.d - time) / .25);
+  ['t-kind', 't-big', 't-title', 't-desc'].forEach((id, i) => { const e = $(id), q = Math.min(ease(clamp((lt2 - i * .06) / .4)), ease(kout)); e.style.opacity = q; e.style.transform = `translateX(${(1 - q) * -26}px)`; });
+  $('t-eye').style.opacity = 1; $('text').style.opacity = 1;
+  $('cap').innerHTML = `<b>${String(it.ci + 1).padStart(2, '0')}</b> &nbsp;·&nbsp; ${cur.cap}`; $('cap').style.opacity = ease(inX);
+  $('counter').textContent = `Capítulo ${it.ci + 1} / ${DATA.length}`;
+};
+</script>
+</body>
+</html>
