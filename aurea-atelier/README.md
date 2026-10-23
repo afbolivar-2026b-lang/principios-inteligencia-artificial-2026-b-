@@ -19,7 +19,7 @@ Usuarios de demostración (cámbielos en *Usuarios y roles*):
 
 ## Módulos
 
-Panel · Salón de ventas · Cotizaciones · Facturas · Cartera · Clientes · Catálogo · Inventario y telas · Producción · Compras · Proveedores · Secretaría · Mensajes · Personal y destajo · Gastos y caja · Reportes · Usuarios y roles · Auditoría · Configuración · Funciones (lista completa de más de 150 funciones).
+Panel · Salón de ventas · Catálogo visual · Cotizaciones · Facturas · Cartera · Clientes · Productos y precios (reposición, conteo físico, ajuste de precios, etiquetas) · Inventario y telas · Producción · Compras · Proveedores · Secretaría · Mensajes · Personal y destajo · Gastos de la empresa y caja · Finanzas del hogar (solo administradora) · Reportes · Usuarios y roles · Auditoría · Configuración · Funciones (lista completa de 180 funciones).
 
 ## Seguridad
 
@@ -32,4 +32,4 @@ Panel · Salón de ventas · Cotizaciones · Facturas · Cartera · Clientes · 
 
 Los datos se guardan en el navegador del equipo donde se usa. Para que la secretaria y la dueña vean la misma información desde varios equipos o celulares hace falta conectarlo a una base de datos en la nube (por ejemplo Supabase); la estructura de datos ya está separada para ese paso.
 
-Capturas en `docs/capturas/` y video del recorrido en `docs/aurea-atelier-recorrido.mp4`.
+Capturas en `docs/capturas/`, video del recorrido en `docs/aurea-atelier-recorrido.mp4` y presentación en `docs/Aurea-Atelier-Presentacion.pdf` (se regenera con `node docs/brochure/generar-pdf.js`).
