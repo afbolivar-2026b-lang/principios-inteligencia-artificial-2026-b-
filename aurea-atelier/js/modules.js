@@ -264,7 +264,7 @@ function docEditor(kind, base) {
     $$('[data-del]', el).forEach(b => b.onclick = () => { d.items.splice(b.dataset.del, 1); draw(el); });
   };
   modal({
-    title: (base ? 'Editar ' : 'Nueva ') + (kind === 'factura' ? 'factura' : 'cotización'), wide: true,
+    title: (base?.id ? 'Editar ' : 'Nueva ') + (kind === 'factura' ? 'factura' : 'cotización'), wide: true,
     body: `<div class="form-grid">
       <label class="field">Cliente<select id="de-cli"><option value="">Consumidor final</option>${DB.data.clientes.map(c => `<option value="${c.id}" ${c.id === d.clienteId ? 'selected' : ''}>${esc(c.nombre)} · ${esc(c.tipo)}</option>`).join('')}</select></label>
       <label class="field">Descuento %<input id="de-desc" type="number" min="0" max="50" value="${d.descuento}"></label>
@@ -283,12 +283,12 @@ function docEditor(kind, base) {
         d.notas = $('#de-notas', el).value;
         if (kind === 'factura') {
           const forma = $('#de-forma', el).value, plazo = +$('#de-plazo', el).value;
-          if (base) { Object.assign(base, d, { forma, plazo, vence: addDays(plazo) }); DB.save(); audit('Editó factura ' + base.num); close(); render(); }
+          if (base?.id) { Object.assign(base, d, { forma, plazo, vence: addDays(plazo) }); DB.save(); audit('Editó factura ' + base.num); close(); render(); }
           else { if (forma === 'Crédito' && !d.clienteId) return toast('Seleccione el cliente para crédito.', true); const f = crearFactura({ ...d, forma, plazo }); close(); render(); verDocumento(f, 'factura'); }
         } else {
           d.estado = $('#de-est', el).value; d.vence = d.vence && base ? d.vence : addDays(+$('#de-val', el).value || 15);
-          if (!base) { d.id = uid('q'); d.num = DB.next('consecCot', 'COT'); d.fecha = todayISO(); }
-          DB.upsert('cotizaciones', d); audit((base ? 'Editó' : 'Creó') + ' cotización ' + d.num); close(); render(); toast('Cotización ' + d.num + ' guardada');
+          if (!d.id) { d.id = uid('q'); d.num = DB.next('consecCot', 'COT'); d.fecha = todayISO(); }
+          DB.upsert('cotizaciones', d); audit((base?.id ? 'Editó' : 'Creó') + ' cotización ' + d.num); close(); render(); toast('Cotización ' + d.num + ' guardada'); if (!base?.id) verDocumento(d, 'cotizacion');
         }
       };
     }

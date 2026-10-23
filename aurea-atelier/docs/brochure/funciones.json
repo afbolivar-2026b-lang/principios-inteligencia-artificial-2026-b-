@@ -210,5 +210,30 @@
   "Retiro de utilidades de la empresa a la casa",
   "Cuentas de la casa y la empresa sin mezclarse",
   "Gráfica de en qué se va la plata de la casa"
+ ],
+ "Probador 3D": [
+  "Vista 3D de cada prenda con relieve",
+  "Girar la prenda arrastrando con el dedo o el mouse",
+  "Giro automático de exhibición",
+  "Acercar y alejar la prenda",
+  "Luz que sigue el movimiento del dedo",
+  "Tela en 3D con el tejido real de cada tipo",
+  "Tela en movimiento para ver la caída",
+  "Cambiar la tela a los colores que hay en bodega",
+  "Metros disponibles y ubicación del color elegido",
+  "Ficha técnica: composición, gramaje, tejido y cuidado",
+  "Lupa para ver de cerca la costura y la tela",
+  "Vista con relieve en equipos sin 3D"
+ ],
+ "Cotización de lujo": [
+  "Membrete negro y dorado con el logo",
+  "Foto de cada prenda dentro de la cotización",
+  "Tela y color de cada línea",
+  "Valor total y anticipo calculados",
+  "Condiciones comerciales editables",
+  "Datos bancarios para el pago",
+  "Firma de la empresa y aceptación del cliente",
+  "Cotizar una prenda desde el catálogo o el probador 3D",
+  "Factura con el mismo membrete de lujo"
  ]
 }

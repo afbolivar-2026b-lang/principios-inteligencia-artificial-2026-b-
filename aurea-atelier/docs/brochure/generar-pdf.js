@@ -31,9 +31,13 @@ const S = [
     ['Colecciones: Dotación, Ejecutiva, Resort, Bioseguridad, Marca propia', 'Sellos de más vendido, últimas unidades y agotado', 'Fotos reales de las prendas', 'Ficha con tallas, costo, margen y kardex', 'Pedido armado desde el catálogo', 'Ficha lista para enviar por WhatsApp']],
   ['Vista para cliente y lista de precios', 'Con un botón el catálogo cambia a vista para cliente: oculta costos, márgenes y cantidades exactas, para mostrarlo sin preocupación. La lista de precios sale lista para copiar en WhatsApp o exportar a Excel.', '31-catalogo-cliente', '32-lista-precios',
     ['Vista segura para mostrar al cliente', 'Lista de precios detal y mayor', 'Copiar lista para WhatsApp', 'Exportar a Excel', 'Pedido convertido en cotización', 'Pedido enviado al salón de ventas']],
-  ['Cotizaciones', 'Las cotizaciones para empresas y mayoristas se arman en segundos, con precios, descuento, IVA y notas de bordado. Con un clic se convierten en factura o en órdenes para el taller.', '05-cotizaciones', '40-cotizacion-editor',
-    ['Consecutivo automático', 'Borrador, enviada, aprobada, rechazada, facturada', 'Notas de bordado, colores y tiempos', 'Convertir en factura', 'Generar órdenes de producción', 'Enviar por WhatsApp']],
-  ['Facturas', 'Facturas de contado o a crédito con el logo de la empresa, resolución de facturación, abonos parciales y saldo. Se imprimen, se guardan en PDF o se envían por WhatsApp.', '39-factura-documento', '06-facturas',
+  ['Probador 3D', 'Al elegir una prenda se abre el probador: la foto de estudio se convierte en una pieza con relieve que gira sola y se mueve con el dedo o el mouse. La luz sigue el movimiento y deja ver los pliegues y el volumen de la prenda.', '48-probador-3d-prenda', '49-probador-3d-girado',
+    ['Prenda con relieve en 3D', 'Giro automático de exhibición', 'Girar arrastrando con el dedo', 'Acercar y alejar', 'Luz que sigue el movimiento', 'Botón para cotizar la prenda']],
+  ['Tela real en 3D y lupa', 'La pestaña Tela en 3D muestra una foto macro real del tejido sobre una tela que ondea, para ver la textura, el brillo y la caída. Se puede cambiar a los colores de esa tela que hay en bodega, con sus metros disponibles. La lupa acerca la costura y los botones.', '52-probador-jean-tela', '51-probador-lupa',
+    ['Foto real del tejido de cada tela', 'Tela en movimiento con luz', 'Colores disponibles en bodega', 'Metros y estante de cada color', 'Ficha técnica: composición, gramaje y cuidado', 'Lupa para ver de cerca']],
+  ['Cotización de lujo', 'Cada cotización sale con membrete negro y dorado, el logo, la foto de cada prenda, la tela y el color, el valor total y el anticipo, las condiciones comerciales, los datos bancarios y los espacios de firma. Se envía por WhatsApp o se guarda en PDF.', '53-cotizacion-lujo', '40-cotizacion-editor',
+    ['Membrete con logo y fotos de las prendas', 'Anticipo y condiciones comerciales', 'Datos bancarios y firma', 'Convertir en factura con un clic', 'Generar órdenes de producción', 'Enviar por WhatsApp o guardar en PDF']],
+  ['Facturas', 'Facturas de contado o a crédito con el logo de la empresa, resolución de facturación, abonos parciales y saldo. Se imprimen, se guardan en PDF o se envían por WhatsApp.', '55-factura-lujo', '06-facturas',
     ['Contado y crédito de 15 a 90 días', 'Abonos parciales e historial de pagos', 'Anulación con devolución al inventario', 'IVA generado del mes', 'Documento elegante con logo', 'Exportar a Excel']],
   ['Cartera', 'Muestra quién debe, cuánto y desde hace cuántos días. El botón Recordar abre WhatsApp con un mensaje de cobro cordial ya escrito.', '07-cartera', null,
     ['Cuentas por cobrar con días de vencimiento', 'Saldo por cliente', 'Recordatorio de cobro por WhatsApp', 'Registro de abonos', 'Cupo de crédito disponible', 'Aviso en el menú de facturas vencidas']],
@@ -166,7 +170,7 @@ S.forEach((s, i) => {
 
 page++;
 pages.push(`<section class="page"><div class="eyebrow">Donde esté</div><h2 style="font-size:32pt;margin-top:2mm">También en el celular</h2>
-  <div class="phones"><img src="${img('44-celular-panel')}" alt=""><img src="${img('45-celular-catalogo')}" alt=""><img src="${img('46-celular-hogar')}" alt=""></div>
+  <div class="phones"><img src="${img('44-celular-panel')}" alt=""><img src="${img('45-celular-catalogo')}" alt=""><img src="${img('56-celular-probador')}" alt=""></div>
   ${foot(String(page).padStart(2, '0'))}</section>`);
 
 let n = 0;

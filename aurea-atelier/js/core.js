@@ -208,15 +208,17 @@ const icon = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="non
 
 /* Logo: monograma "A" trazado como dos hojas de tijera abiertas, con una puntada que cruza y un botón de cuatro huecos. */
 function logoSVG(size = 44) {
+  // Cada logo lleva su propio degradado: si uno queda oculto, los demás siguen pintando el dorado.
+  const g = 'lg' + (logoSVG.n = (logoSVG.n || 0) + 1);
   return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true">
-    <defs><linearGradient id="lg-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dca6"/><stop offset=".55" stop-color="#c9a45c"/><stop offset="1" stop-color="#8f6a2b"/></linearGradient></defs>
-    <circle cx="32" cy="32" r="30" fill="none" stroke="url(#lg-gold)" stroke-width="1.2"/>
-    <circle cx="32" cy="32" r="26.5" fill="none" stroke="url(#lg-gold)" stroke-width=".6" stroke-dasharray="1.6 2.4"/>
-    <path d="M32 12 L18 50" stroke="url(#lg-gold)" stroke-width="3.2" stroke-linecap="round"/>
-    <path d="M32 12 L46 50" stroke="url(#lg-gold)" stroke-width="3.2" stroke-linecap="round"/>
-    <path d="M22.5 37 H41.5" stroke="url(#lg-gold)" stroke-width="1.4" stroke-dasharray="2.4 2" stroke-linecap="round"/>
-    <circle cx="32" cy="12" r="2.6" fill="url(#lg-gold)"/>
-    <g fill="url(#lg-gold)"><circle cx="30.6" cy="27.4" r=".9"/><circle cx="33.4" cy="27.4" r=".9"/><circle cx="30.6" cy="30.2" r=".9"/><circle cx="33.4" cy="30.2" r=".9"/></g>
+    <defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dca6"/><stop offset=".55" stop-color="#c9a45c"/><stop offset="1" stop-color="#8f6a2b"/></linearGradient></defs>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="url(#${g})" stroke-width="1.2"/>
+    <circle cx="32" cy="32" r="26.5" fill="none" stroke="url(#${g})" stroke-width=".6" stroke-dasharray="1.6 2.4"/>
+    <path d="M32 12 L18 50" stroke="url(#${g})" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M32 12 L46 50" stroke="url(#${g})" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M22.5 37 H41.5" stroke="url(#${g})" stroke-width="1.4" stroke-dasharray="2.4 2" stroke-linecap="round"/>
+    <circle cx="32" cy="12" r="2.6" fill="url(#${g})"/>
+    <g fill="url(#${g})"><circle cx="30.6" cy="27.4" r=".9"/><circle cx="33.4" cy="27.4" r=".9"/><circle cx="30.6" cy="30.2" r=".9"/><circle cx="33.4" cy="30.2" r=".9"/></g>
   </svg>`;
 }
 function logoLockup(size = 44) {
