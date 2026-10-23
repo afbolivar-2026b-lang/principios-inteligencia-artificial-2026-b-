@@ -19,7 +19,7 @@ Usuarios de demostración (cámbielos en *Usuarios y roles*):
 
 ## Módulos
 
-Panel · Salón de ventas · Catálogo visual · Cotizaciones · Facturas · Cartera · Clientes · Productos y precios (reposición, conteo físico, ajuste de precios, etiquetas) · Inventario y telas · Producción · Compras · Proveedores · Secretaría · Mensajes · Personal y destajo · Gastos de la empresa y caja · Finanzas del hogar (solo administradora) · Dashboard de ventas (8 indicadores, 12 gráficas, filtros por año, mes y vendedor) · Reportes · Usuarios y roles · Auditoría · Configuración · Funciones (lista completa de 180 funciones).
+Panel · Salón de ventas · Catálogo visual · Probador 3D (prenda en relieve, tela real en movimiento, lupa) · Cotización de lujo con logo · Cotizaciones · Facturas · Cartera · Clientes · Productos y precios (reposición, conteo físico, ajuste de precios, etiquetas) · Inventario y telas · Producción · Compras · Proveedores · Secretaría · Mensajes · Personal y destajo · Gastos de la empresa y caja · Finanzas del hogar (solo administradora) · Dashboard de ventas (8 indicadores, 12 gráficas, filtros por año, mes y vendedor) · Reportes · Usuarios y roles · Auditoría · Configuración · Funciones (lista completa de 228 funciones).
 
 ## Seguridad
 
