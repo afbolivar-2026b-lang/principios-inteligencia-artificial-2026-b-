@@ -7,7 +7,7 @@ const [OUT, FROM, TO] = [process.argv[2], +(process.argv[3] || 0), process.argv[
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 1920, height: 1080 } });
   const errs = []; p.on('console', m => m.type() === 'error' && errs.push(m.text())); p.on('pageerror', e => errs.push(e.message));
-  await p.goto('http://localhost:8766/guia-video.html'); await p.evaluate(() => preload());
+  await p.goto('http://localhost:8766/' + (process.env.PAGE || 'guia-video.html')); await p.evaluate(() => preload());
   const D = await p.evaluate(() => DURATION);
   const end = TO ?? D, fps = 30, n0 = Math.round(FROM * fps), n1 = Math.round(end * fps);
   const ff = spawn('ffmpeg', ['-loglevel', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(fps), OUT], { stdio: ['pipe', 'inherit', 'inherit'] });

@@ -34,8 +34,9 @@ Los datos se guardan en el navegador del equipo donde se usa. Para que la secret
 
 Capturas en `docs/capturas/`. Documentos para el cliente:
 
-- `docs/Aurea-Atelier-Video-Guia.mp4`: video guía paso a paso con música (escenas en `docs/video/guia-video.html`, música original en `docs/video/musica.py`, render con `docs/video/renderizar.js`).
-- `docs/Aurea-Atelier-Guia-Completa.pdf`: guía con cada función explicada (`node docs/guia/generar-guia.js`).
+- `docs/Aurea-Atelier-Video-Guia-Completa.mp4`: video de 14 minutos con los 19 capítulos, los 80 pasos con foto y las 228 funciones, con música (escenas en `docs/video/guia-video-completa.html`, datos con `node docs/video/generar-datos-video.js`).
+- `docs/Aurea-Atelier-Video-Guia.mp4`: versión corta de 3 minutos y medio, con música (escenas en `docs/video/guia-video.html`, música original en `docs/video/musica.py`, render con `docs/video/renderizar.js`).
+- `docs/Aurea-Atelier-Guia-Completa.pdf`: guía con cada paso en foto y cada función explicada (fotos de los pasos con `node docs/guia/capturar-pasos.js`, PDF con `node docs/guia/generar-guia.js`).
 - `docs/Aurea-Atelier-Presentacion.pdf`: presentación (`node docs/brochure/generar-pdf.js`).
 - `docs/Cotizacion-COT-301-ejemplo.pdf`: cotización de muestra.
 - `docs/aurea-atelier-pelicula.mp4` y `docs/aurea-atelier-recorrido.mp4`: videos anteriores.

@@ -11,7 +11,15 @@ const CAPS = JSON.parse(fs.readFileSync(path.join(DIR, '..', 'brochure', 'funcio
 const GUIA = require('./guia-datos.js');
 const TOTAL = Object.values(CAPS).reduce((s, l) => s + l.length, 0);
 const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const img = (n) => `../capturas/${n}.png`;
+// Las fotos se pasan a JPEG en una carpeta temporal para que el PDF pese poco y se pueda enviar por correo.
+const TMP = path.join(DIR, '_img');
+fs.mkdirSync(path.join(TMP, 'pasos'), { recursive: true });
+const jpg = (rel) => {
+  const src = path.join(DIR, '..', 'capturas', rel + '.png'), dst = path.join(TMP, rel + '.jpg');
+  if (!fs.existsSync(dst)) execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', src, '-q:v', '4', dst]);
+  return '_img/' + rel + '.jpg';
+};
+const img = (n) => jpg(n);
 
 // Cada función de la lista del sistema debe tener su explicación en la guía.
 const faltan = [];
@@ -70,6 +78,8 @@ const caps = GUIA.map((c, i) => {
     <header class="ch"><div class="chn">Capítulo ${String(i + 1).padStart(2, '0')}</div><h2>${esc(c.titulo)}</h2><p>${esc(c.intro)}</p></header>
     <figure class="hero"><img src="${img(hero[0])}" alt=""><figcaption>${esc(hero[1])}</figcaption></figure>
     <div class="steps"><h3>Cómo se usa</h3><ol>${c.pasos.map(p => `<li>${esc(p)}</li>`).join('')}</ol></div>
+    <div class="fxh"><h3>Paso a paso con fotos</h3><span>El aro dorado marca dónde tocar</span></div>
+    <div class="pasos">${c.pasos.map((p, k) => `<figure class="paso"><img src="${jpg(`pasos/c${String(i + 1).padStart(2, '0')}-p${k + 1}`)}" alt=""><figcaption><span class="pn">Paso ${k + 1}</span>${esc(p)}</figcaption></figure>`).join('')}</div>
     ${resto.length ? `<div class="gal ${resto.length === 1 ? 'one' : ''}">${resto.map(([n, t]) => `<figure><img src="${img(n)}" alt=""><figcaption>${esc(t)}</figcaption></figure>`).join('')}</div>` : ''}
     <div class="fxh"><h3>Funciones de este módulo</h3><span>${list.length} funciones</span></div>
     <div class="fxs">${items}</div>
@@ -122,6 +132,11 @@ figcaption { font-size: 8pt; color: #8a7a5c; margin-top: 1.5mm; letter-spacing: 
 .steps h3, .fxh h3 { font-size: 17pt; margin-bottom: 2mm; }
 .steps ol { margin: 0; padding-left: 6mm; display: grid; gap: 1.5mm; }
 .steps li::marker { color: #9a7530; font-weight: 700; }
+.pasos { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm 6mm; margin-top: 4mm; }
+.paso { break-inside: avoid; text-align: left; }
+.paso img { max-height: none; width: 100%; }
+.paso figcaption { font-size: 9.2pt; color: #2e261a; letter-spacing: 0; line-height: 1.45; margin-top: 2mm; }
+.paso .pn { display: inline-block; background: #14110d; color: #e3c98f; font-size: 7.5pt; letter-spacing: .18em; text-transform: uppercase; padding: .6mm 2.2mm; border-radius: 99px; margin-right: 2mm; font-weight: 600; }
 .gal { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 6mm; }
 .gal.one { grid-template-columns: 1fr; }
 .fxh { display: flex; justify-content: space-between; align-items: baseline; margin-top: 7mm; border-bottom: 2px solid #c9a45c; padding-bottom: 1.5mm; break-after: avoid; }
@@ -137,7 +152,7 @@ figcaption { font-size: 8pt; color: #8a7a5c; margin-top: 1.5mm; letter-spacing: 
 </style></head><body>
 <section class="toc"><div class="eye">Contenido</div><h2>Índice de la guía</h2>
   <ol>${GUIA.map((c, i) => `<li><span>${String(i + 1).padStart(2, '0')}</span><b>${esc(c.titulo)}</b><i>${CAPS[c.grupo].length} funciones</i></li>`).join('')}<li><span>—</span><b>Preguntas frecuentes</b><i></i></li></ol>
-  <div class="box"><h3>Cómo leer esta guía</h3>Cada capítulo corresponde a un módulo del sistema. Empieza con una explicación corta, una imagen real de la pantalla y los pasos para usarlo. Después vienen todas sus funciones numeradas, una por una, con lo que hace cada una. En total son ${TOTAL} funciones.</div>
+  <div class="box"><h3>Cómo leer esta guía</h3>Cada capítulo corresponde a un módulo del sistema. Empieza con una explicación corta, una imagen real de la pantalla y los pasos para usarlo, cada uno con su foto: el aro dorado marca dónde hay que tocar. Después vienen todas sus funciones numeradas, una por una, con lo que hace cada una. En total son ${TOTAL} funciones.</div>
   <div class="box"><h3>Quién ve qué</h3>Cada persona entra con su usuario y el menú le muestra solo lo que su rol permite.<div class="roles">${roles.map(([r, d]) => `<div><b>${r}</b><p>${d}</p></div>`).join('')}</div></div>
 </section>
 ${caps}
@@ -162,6 +177,6 @@ ${caps}
   await b.close();
   const out = path.join(DIR, '..', 'Aurea-Atelier-Guia-Completa.pdf');
   execFileSync('pdfunite', [c1, c2, out]);
-  fs.unlinkSync(c1); fs.unlinkSync(c2);
+  fs.unlinkSync(c1); fs.unlinkSync(c2); fs.rmSync(TMP, { recursive: true, force: true });
   console.log('PDF:', out, 'funciones explicadas:', num);
 })();
