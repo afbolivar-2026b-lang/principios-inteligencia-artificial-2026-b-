@@ -37,6 +37,8 @@ window.AUREA_MIGRATE = function (data, withSeed = true) {
   };
   for (const k of Object.keys(seed)) if (!Array.isArray(data[k])) data[k] = withSeed ? seed[k] : [];
   data.config.presupuestoHogar ||= { Vivienda: 1500000, Mercado: 1300000, Servicios: 450000, Educación: 700000, Salud: 400000, Transporte: 500000, 'Internet y celular': 220000, Recreación: 300000, Ropa: 200000, Otros: 250000 };
+  // Fotos de estudio incluidas para las prendas de ejemplo; las prendas nuevas usan su ilustración o la foto que se suba.
+  data.productos.forEach(p => { if (p.imagen === undefined && /^p([1-9]|10)$/.test(p.id)) p.imagen = `img/productos/${p.id}.jpg`; });
   data.productos.forEach((p, i) => { if (p.coleccion === undefined) p.coleccion = ['Dotación 2026', 'Dotación 2026', 'Ejecutiva', 'Resort', 'Dotación 2026', 'Dotación 2026', 'Marca propia', 'Bioseguridad', 'Dotación 2026', 'Bioseguridad'][i] || 'General'; });
 };
 
@@ -62,7 +64,7 @@ function garmentSVG(p, size = 120) {
   }
   return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" aria-hidden="true">${body}</svg>`;
 }
-const prodArt = (p, size) => p.foto ? `<img src="${p.foto}" alt="${esc(p.nombre)}">` : garmentSVG(p, size);
+const prodArt = (p, size) => (p.foto || p.imagen) ? `<img src="${esc(p.foto || p.imagen)}" alt="${esc(p.nombre)}" loading="lazy">` : garmentSVG(p, size);
 
 function prodBadges(p) {
   const units = {};
