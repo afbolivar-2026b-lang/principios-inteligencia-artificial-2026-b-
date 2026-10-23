@@ -32,4 +32,4 @@ Panel · Salón de ventas · Catálogo visual · Cotizaciones · Facturas · Car
 
 Los datos se guardan en el navegador del equipo donde se usa. Para que la secretaria y la dueña vean la misma información desde varios equipos o celulares hace falta conectarlo a una base de datos en la nube (por ejemplo Supabase); la estructura de datos ya está separada para ese paso.
 
-Capturas en `docs/capturas/`, video del recorrido en `docs/aurea-atelier-recorrido.mp4` y presentación en `docs/Aurea-Atelier-Presentacion.pdf` (se regenera con `node docs/brochure/generar-pdf.js`).
+Capturas en `docs/capturas/`, video del recorrido en `docs/aurea-atelier-recorrido.mp4`, guía completa con cada función explicada en `docs/Aurea-Atelier-Guia-Completa.pdf` (se regenera con `node docs/guia/generar-guia.js`) y presentación en `docs/Aurea-Atelier-Presentacion.pdf` (se regenera con `node docs/brochure/generar-pdf.js`).
