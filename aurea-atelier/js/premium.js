@@ -223,9 +223,13 @@ function viewer3D(p, startTab = 'prenda') {
         resize();
         const loop = () => {
           if (!renderer || !renderer.domElement.isConnected) return stop();
-          const t = (performance.now() - clock0) / 1000;
-          if (auto && performance.now() - lastDrag > 1800) { tRotY = Math.sin(t * 0.55) * (mode === 'prenda' ? 0.55 : 0.3); tRotX = Math.sin(t * 0.35) * 0.08; }
-          rotX += (tRotX - rotX) * 0.08; rotY += (tRotY - rotY) * 0.08;
+          // AUREA_V3D.t permite fijar el tiempo para grabar cuadros exactos (video de presentación).
+          const fixed = window.AUREA_V3D && window.AUREA_V3D.t != null;
+          const t = fixed ? window.AUREA_V3D.t : (performance.now() - clock0) / 1000;
+          if (fixed && t === loop.lastT) { raf = requestAnimationFrame(loop); return; }
+          loop.lastT = t;
+          if (auto && (fixed || performance.now() - lastDrag > 1800)) { tRotY = Math.sin(t * 0.55) * (mode === 'prenda' ? 0.55 : 0.3); tRotX = Math.sin(t * 0.35) * 0.08; }
+          if (fixed) { rotX = tRotX; rotY = tRotY; } else { rotX += (tRotX - rotX) * 0.08; rotY += (tRotY - rotY) * 0.08; }
           mesh.rotation.y = rotY; mesh.rotation.x = (mode === 'tela' ? -0.55 : 0) + rotX;
           if (mode === 'tela') {
             const a = mesh.geometry.attributes.position, base = mesh.geometry.userData.base;
