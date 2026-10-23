@@ -67,6 +67,8 @@ const S = [
     ['Pagos fijos con día del mes', 'Avisos de vencidos y próximos', 'Pago registrado con un toque', 'Metas de ahorro', 'Abonos a las metas', 'Avance visual']],
   ['Reportes', 'La foto financiera del año: ventas netas, costo de las prendas, gastos, utilidad y margen, más los mejores clientes y las ventas por categoría y tipo de cliente.', '19-reportes', null,
     ['Ventas netas y utilidad', 'Margen del negocio', 'Ventas por categoría', 'Mejores clientes', 'Detal, mayor y empresas', 'Exportar ventas a Excel']],
+  ['Dashboard de ventas', 'Un tablero gerencial con ocho indicadores y doce gráficas: monto vendido, conversión de cotizaciones, crecimiento frente al año anterior, satisfacción, reclamos, cumplimiento de la meta, tiempo de ciclo y frecuencia de compra. Se filtra por año, por meses y por vendedor.', '57-dashboard', '58-dashboard-filtrado',
+    ['8 indicadores clave', '12 gráficas por mes, canal, categoría y vendedor', 'Filtros por año, mes y vendedor', 'Meta mensual editable', 'Resumen mensual con margen', 'Exportar a Excel']],
   ['Seguridad y privacidad', 'Nadie entra sin usuario y contraseña. Las claves se guardan cifradas, la pantalla se bloquea sola, cada rol ve solo lo suyo y el modo privado oculta los valores con un toque.', '01-ingreso', '42-modo-privado',
     ['Contraseñas cifradas', 'Bloqueo tras 5 intentos fallidos', 'Bloqueo por inactividad', 'Modo privado', 'Página oculta de buscadores', 'Respaldo cifrado AES-256']],
   ['Usuarios, roles y auditoría', 'Cuatro roles: administradora, secretaria, vendedor y jefe de taller. La auditoría registra quién hizo qué y cuándo, incluidos los intentos de entrada fallidos.', '20-usuarios', '21-auditoria',
@@ -175,12 +177,12 @@ pages.push(`<section class="page"><div class="eyebrow">Donde esté</div><h2 styl
 
 let n = 0;
 const groups = Object.entries(FUNCIONES);
-const halves = [[], []];
+const PAGS = 3, halves = Array.from({ length: PAGS }, () => []);
 let acc = 0;
-groups.forEach(g => { (acc < TOTAL / 2 ? halves[0] : halves[1]).push(g); acc += g[1].length; });
+groups.forEach(g => { halves[Math.min(PAGS - 1, Math.floor(acc / (TOTAL / PAGS)))].push(g); acc += g[1].length; });
 halves.forEach((h, k) => {
   page++;
-  pages.push(`<section class="page"><div class="eyebrow">Todo lo que incluye · ${k + 1} de 2</div><h2 style="font-size:30pt;margin-top:2mm">${TOTAL} funciones</h2>
+  pages.push(`<section class="page"><div class="eyebrow">Todo lo que incluye · ${k + 1} de ${PAGS}</div><h2 style="font-size:30pt;margin-top:2mm">${TOTAL} funciones</h2>
   <div class="flist">${h.map(([g, list]) => `<div class="g"><h3>${esc(g)}</h3><ol start="${n + 1}">${list.map(x => { n++; return `<li>${esc(x)}</li>`; }).join('')}</ol></div>`).join('')}</div>
   ${foot(String(page).padStart(2, '0'))}</section>`);
 });
