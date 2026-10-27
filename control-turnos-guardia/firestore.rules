@@ -1,0 +1,21 @@
+rules_version = '2';
+// Reglas para Firebase Console → Firestore Database → Reglas.
+// Solo deja usar el documento de la app (turnosApp/estado) y bloquea todo lo demás,
+// para que nadie pueda crear otras colecciones ni llenar la base con basura.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /turnosApp/estado {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasOnly([
+        'turnos', 'horasNormales', 'valorTurno', 'valorTurnoDia', 'valorTurnoNoche',
+        'valorDiaAdicional', 'valorHoraExtra', 'credenciales', 'nombres', 'nomina',
+        'pagosRecibidos', 'overridesHorasExtra', 'overridesDiasAdicionales',
+        'whatsapp', 'ultimoRespaldo'
+      ]);
+      allow delete: if false;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
