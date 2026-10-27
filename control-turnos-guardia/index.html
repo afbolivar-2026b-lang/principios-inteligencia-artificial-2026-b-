@@ -814,6 +814,7 @@
             <option value="turno_noche">Turno Noche</option>
             <option value="adicional">Día adicional</option>
             <option value="descanso">Descanso</option>
+            <option value="incapacidad">Incapacidad</option>
           </select>
         </div>
       </div>
@@ -896,7 +897,7 @@
 
     <div class="resumen-guardias" id="resumenGuardias" style="display:none;"></div>
     <div class="ledger" id="ledger"></div>
-    <div class="foot-note">Si la hora de salida es menor o igual a la de entrada, se cuenta como turno que cruza la medianoche. "Descanso" registra un día libre sin horas ni pago; "Día adicional" es un turno trabajado fuera de lo normal, con el mismo valor de turno.</div>
+    <div class="foot-note">Si la hora de salida es menor o igual a la de entrada, se cuenta como turno que cruza la medianoche. "Descanso" registra un día libre sin horas ni pago; "Incapacidad" registra un día de incapacidad médica, también sin horas ni pago de turno; "Día adicional" es un turno trabajado fuera de lo normal, con el mismo valor de turno.</div>
   </section>
 
   <div class="conexion" id="estadoConexion"></div>
@@ -960,6 +961,9 @@
     { id: 'g10', label: 'Guardia 10' }
   ];
   const PERFILES_NORMALES = PERFILES.filter(p => p.id !== 'admin');
+
+  // Descanso e incapacidad no tienen horario, horas ni pago de turno
+  const sinHorario = tipo => tipo === 'descanso' || tipo === 'incapacidad';
 
   const KEY_PERFIL_LOCAL = 'perfilActivo'; // se guarda en este navegador (localStorage), no en Firebase
 
@@ -1378,7 +1382,7 @@
     const entrada = $('entrada').value;
     const salida = $('salida').value;
 
-    if(tipo === 'descanso' || !entrada || !salida){
+    if(sinHorario(tipo) || !entrada || !salida){
       prev.innerHTML = '';
       return;
     }
@@ -1390,7 +1394,7 @@
   }
 
   $('tipoTurno').addEventListener('change', (e) => {
-    const esDescanso = e.target.value === 'descanso';
+    const esDescanso = sinHorario(e.target.value);
     $('filaPuesto').style.display = esDescanso ? 'none' : '';
     $('filaHorario').style.display = esDescanso ? 'none' : '';
     actualizarPreviewTurno();
@@ -1551,7 +1555,7 @@
   }
 
   function calcularFila(t){
-    if(t.tipo === 'descanso'){
+    if(sinHorario(t.tipo)){
       return { ...t, horas: 0, extra: 0, pago: 0 };
     }
     const horas = calcularHoras(t.entrada, t.salida);
@@ -1613,14 +1617,14 @@
 
   function construirFila(t){
     const row = document.createElement('div');
-    row.className = 'entry' + (t.tipo === 'descanso' ? ' descanso' : '');
+    row.className = 'entry' + (sinHorario(t.tipo) ? ' descanso' : '');
     const etiqueta = t.nombre || labelDePerfil(t.perfil);
-    const ETIQUETAS_TIPO = { turno_dia: 'Turno Día', turno_noche: 'Turno Noche', adicional: 'Día adicional', descanso: 'Descanso' };
+    const ETIQUETAS_TIPO = { turno_dia: 'Turno Día', turno_noche: 'Turno Noche', adicional: 'Día adicional', descanso: 'Descanso', incapacidad: 'Incapacidad' };
     const tag = ETIQUETAS_TIPO[t.tipo] ? `<span class="tag"> · ${ETIQUETAS_TIPO[t.tipo]}</span>` : '';
 
     let detalle;
-    if(t.tipo === 'descanso'){
-      detalle = `<span class="detalle">Día de descanso</span>`;
+    if(sinHorario(t.tipo)){
+      detalle = `<span class="detalle">${t.tipo === 'incapacidad' ? 'Día de incapacidad' : 'Día de descanso'}</span>`;
     } else {
       detalle = `
         <span class="detalle">Entrada ${t.entrada} · Salida ${t.salida}</span>
@@ -1636,7 +1640,7 @@
         <strong>${escapeHtml(etiqueta)}${tag}</strong>
         ${detalle}
       </div>
-      <div class="horas">${t.tipo === 'descanso' ? '—' : (t.extra > 0
+      <div class="horas">${sinHorario(t.tipo) ? '—' : (t.extra > 0
         ? `${fmtHoras(t.horas - t.extra)}<span class="h-extra">+${fmtHoras(t.extra)} extra</span><span class="h-total">Total ${fmtHoras(t.horas)}</span>`
         : fmtHoras(t.horas))}</div>
       <button class="del" title="Eliminar" data-id="${t.id}">×</button>
@@ -1672,6 +1676,7 @@
         turnos: propios.filter(t => (t.tipo === 'turno' || t.tipo === 'turno_dia' || t.tipo === 'turno_noche')).length,
         adicionales: propios.filter(t => t.tipo === 'adicional').length,
         descansos: propios.filter(t => t.tipo === 'descanso').length,
+        incapacidades: propios.filter(t => t.tipo === 'incapacidad').length,
         totalExtra: redMin(propios.reduce((s,t) => s + t.extra, 0)),
         totalPago: Math.round(propios.reduce((s,t) => s + t.pago, 0))
       };
@@ -1689,7 +1694,7 @@
       ${filas.map(f => `
         <div class="resumen-guardia-card">
           <div class="fila1"><span>${escapeHtml(f.label)}</span><span class="pago">${fmtMoney(f.totalPago)}</span></div>
-          <div class="fila2">${f.turnos} turnos · ${f.adicionales} adicionales · ${f.descansos} descansos · ${fmtHoras(f.totalExtra)} extra</div>
+          <div class="fila2">${f.turnos} turnos · ${f.adicionales} adicionales · ${f.descansos} descansos${f.incapacidades ? ` · ${f.incapacidades} incapacidades` : ''} · ${fmtHoras(f.totalExtra)} extra</div>
         </div>
       `).join('')}
     `;
@@ -1979,7 +1984,7 @@
       alert('Completa la fecha.');
       return;
     }
-    if(tipo !== 'descanso' && (!entrada || !salida || !notas)){
+    if(!sinHorario(tipo) && (!entrada || !salida || !notas)){
       alert('Completa el puesto, la hora de entrada y la hora de salida.');
       return;
     }
@@ -1990,9 +1995,9 @@
       nombre: nombreInput || labelDePerfil(perfilActivo),
       tipo,
       fecha,
-      entrada: tipo === 'descanso' ? '' : entrada,
-      salida: tipo === 'descanso' ? '' : salida,
-      notas: tipo === 'descanso' ? '' : notas
+      entrada: sinHorario(tipo) ? '' : entrada,
+      salida: sinHorario(tipo) ? '' : salida,
+      notas: sinHorario(tipo) ? '' : notas
     });
 
     await guardarTurnos();
@@ -2214,11 +2219,12 @@
 
   function construirLibroExcel(filas, totalHoras, totalExtra, totalPago, verTodos, incluirResumenGuardias){
     const libro = XLSX.utils.book_new();
-    const tipoLabel = t => ({ turno_dia: 'Turno Día', turno_noche: 'Turno Noche', adicional: 'Día adicional', descanso: 'Descanso' }[t.tipo] || 'Normal');
+    const tipoLabel = t => ({ turno_dia: 'Turno Día', turno_noche: 'Turno Noche', adicional: 'Día adicional', descanso: 'Descanso', incapacidad: 'Incapacidad' }[t.tipo] || 'Normal');
 
     const totalNormales = filas.filter(t => (t.tipo === 'turno' || t.tipo === 'turno_dia' || t.tipo === 'turno_noche')).length;
     const totalAdicionales = filas.filter(t => t.tipo === 'adicional').length;
     const totalDescansos = filas.filter(t => t.tipo === 'descanso').length;
+    const totalIncapacidades = filas.filter(t => t.tipo === 'incapacidad').length;
 
     let datos;
     if(verTodos){
@@ -2234,6 +2240,7 @@
       datos.push(['Turnos normales', totalNormales]);
       datos.push(['Días adicionales', totalAdicionales]);
       datos.push(['Descansos', totalDescansos]);
+      datos.push(['Incapacidades', totalIncapacidades]);
       datos.push(['Horas extra (total)', totalExtra]);
       datos.push(['Total a pagar (turnos + horas extra)', totalPago]);
     } else {
@@ -2245,6 +2252,7 @@
         ['Turnos normales', totalNormales],
         ['Días adicionales', totalAdicionales],
         ['Descansos', totalDescansos],
+        ['Incapacidades', totalIncapacidades],
         ['Horas trabajadas (total)', totalHoras],
         ['Horas extra (total)', totalExtra],
         ['Horas normales por turno', horasNormales],
@@ -2273,15 +2281,16 @@
       const totalTurnosG = resumenGuardias.reduce((s,f) => s + f.turnos, 0);
       const totalAdicionalesG = resumenGuardias.reduce((s,f) => s + f.adicionales, 0);
       const totalDescansosG = resumenGuardias.reduce((s,f) => s + f.descansos, 0);
+      const totalIncapacidadesG = resumenGuardias.reduce((s,f) => s + f.incapacidades, 0);
       const totalExtraG = redMin(resumenGuardias.reduce((s,f) => s + f.totalExtra, 0));
       const totalPagoG = resumenGuardias.reduce((s,f) => s + f.totalPago, 0);
       const hojaResumen = XLSX.utils.aoa_to_sheet([
-        ['Guardia', 'Turnos', 'Días adicionales', 'Descansos', 'Horas extra', 'Total a pagar'],
-        ...resumenGuardias.map(f => [f.label, f.turnos, f.adicionales, f.descansos, fmtHoras(f.totalExtra), f.totalPago]),
+        ['Guardia', 'Turnos', 'Días adicionales', 'Descansos', 'Incapacidades', 'Horas extra', 'Total a pagar'],
+        ...resumenGuardias.map(f => [f.label, f.turnos, f.adicionales, f.descansos, f.incapacidades, fmtHoras(f.totalExtra), f.totalPago]),
         [],
-        ['TOTAL TODOS LOS GUARDIAS', totalTurnosG, totalAdicionalesG, totalDescansosG, fmtHoras(totalExtraG), totalPagoG]
+        ['TOTAL TODOS LOS GUARDIAS', totalTurnosG, totalAdicionalesG, totalDescansosG, totalIncapacidadesG, fmtHoras(totalExtraG), totalPagoG]
       ]);
-      hojaResumen['!cols'] = [{wch:20},{wch:9},{wch:15},{wch:11},{wch:12},{wch:14}];
+      hojaResumen['!cols'] = [{wch:20},{wch:9},{wch:15},{wch:11},{wch:13},{wch:12},{wch:14}];
       XLSX.utils.book_append_sheet(libro, hojaResumen, 'Resumen por guardia');
     }
 
@@ -2303,11 +2312,12 @@
   function construirPdfTurnos(filas, totalHoras, totalExtra, totalPago, verTodos, tituloPerfilOverride, nombreArchivoOverride){
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const tipoLabel = t => ({ turno_dia: 'Turno Dia', turno_noche: 'Turno Noche', adicional: 'Adicional', descanso: 'Descanso' }[t.tipo] || 'Normal');
+    const tipoLabel = t => ({ turno_dia: 'Turno Dia', turno_noche: 'Turno Noche', adicional: 'Adicional', descanso: 'Descanso', incapacidad: 'Incapacidad' }[t.tipo] || 'Normal');
 
     const totalNormales = filas.filter(t => (t.tipo === 'turno' || t.tipo === 'turno_dia' || t.tipo === 'turno_noche')).length;
     const totalAdicionales = filas.filter(t => t.tipo === 'adicional').length;
     const totalDescansos = filas.filter(t => t.tipo === 'descanso').length;
+    const totalIncapacidades = filas.filter(t => t.tipo === 'incapacidad').length;
 
     const tituloPerfil = tituloPerfilOverride || (perfilActivo === 'admin'
       ? (filtroAdmin === 'todos' ? 'Todos los guardias' : labelDePerfil(filtroAdmin))
@@ -2318,7 +2328,7 @@
     doc.setFontSize(9);
     doc.setTextColor(110);
     doc.text(`Perfil: ${tituloPerfil}    Mes: ${filtroMes === 'todos' ? 'Todos' : labelMes(filtroMes)}`, 14, 23);
-    doc.text(`Normales: ${totalNormales}    Adicionales: ${totalAdicionales}    Descansos: ${totalDescansos}    Horas extra: ${fmtHoras(totalExtra)}    Total a pagar: ${fmtMoney(totalPago)}`, 14, 28);
+    doc.text(`Normales: ${totalNormales}    Adicionales: ${totalAdicionales}    Descansos: ${totalDescansos}    Incapacidades: ${totalIncapacidades}    Horas extra: ${fmtHoras(totalExtra)}    Total a pagar: ${fmtMoney(totalPago)}`, 14, 28);
 
     let y = 34;
 
@@ -2331,7 +2341,7 @@
         doc.autoTable({
           startY: y + 4,
           head: [['Fecha', 'Tipo', 'Entrada', 'Salida', 'Horas', 'Extra', 'Puesto', 'Pago']],
-          body: g.turnos.map(t => [fmtFecha(t.fecha), tipoLabel(t), t.entrada||'—', t.salida||'—', t.tipo==='descanso'?'—':fmtHoras(t.horas), t.extra > 0 ? '+' + fmtHoras(t.extra) : '—', t.notas || '—', fmtMoney(t.pago)]),
+          body: g.turnos.map(t => [fmtFecha(t.fecha), tipoLabel(t), t.entrada||'—', t.salida||'—', sinHorario(t.tipo)?'—':fmtHoras(t.horas), t.extra > 0 ? '+' + fmtHoras(t.extra) : '—', t.notas || '—', fmtMoney(t.pago)]),
           styles: { fontSize: 8, cellPadding: 2.5 },
           headStyles: { fillColor: [30, 38, 47], textColor: 255 },
           alternateRowStyles: { fillColor: [245, 246, 248] }
@@ -2345,8 +2355,8 @@
       doc.text('Resumen acumulado por guardia', 14, y);
       doc.autoTable({
         startY: y + 4,
-        head: [['Guardia', 'Turnos', 'Adicionales', 'Descansos', 'Horas extra', 'Total a pagar']],
-        body: resumenGlobalPorGuardia().map(f => [f.label, f.turnos, f.adicionales, f.descansos, fmtHoras(f.totalExtra), fmtMoney(f.totalPago)]),
+        head: [['Guardia', 'Turnos', 'Adicionales', 'Descansos', 'Incapacidades', 'Horas extra', 'Total a pagar']],
+        body: resumenGlobalPorGuardia().map(f => [f.label, f.turnos, f.adicionales, f.descansos, f.incapacidades, fmtHoras(f.totalExtra), fmtMoney(f.totalPago)]),
         styles: { fontSize: 9, cellPadding: 3 },
         headStyles: { fillColor: [30, 38, 47], textColor: 255 },
         alternateRowStyles: { fillColor: [245, 246, 248] }
@@ -2356,7 +2366,7 @@
       doc.autoTable({
         startY: y,
         head: [['Fecha', 'Nombre', 'Tipo', 'Entrada', 'Salida', 'Horas', 'Extra', 'Puesto', 'Pago']],
-        body: filas.map(t => [fmtFecha(t.fecha), t.nombre || labelDePerfil(t.perfil), tipoLabel(t), t.entrada||'—', t.salida||'—', t.tipo==='descanso'?'—':fmtHoras(t.horas), t.extra > 0 ? '+' + fmtHoras(t.extra) : '—', t.notas || '—', fmtMoney(t.pago)]),
+        body: filas.map(t => [fmtFecha(t.fecha), t.nombre || labelDePerfil(t.perfil), tipoLabel(t), t.entrada||'—', t.salida||'—', sinHorario(t.tipo)?'—':fmtHoras(t.horas), t.extra > 0 ? '+' + fmtHoras(t.extra) : '—', t.notas || '—', fmtMoney(t.pago)]),
         styles: { fontSize: 8, cellPadding: 2.5 },
         headStyles: { fillColor: [30, 38, 47], textColor: 255 },
         alternateRowStyles: { fillColor: [245, 246, 248] }
@@ -2390,6 +2400,7 @@
         ['Turnos normales', String(totalNormales)],
         ['Días adicionales', String(totalAdicionales)],
         ['Descansos', String(totalDescansos)],
+        ['Incapacidades', String(totalIncapacidades)],
         ['Horas extra (total)', fmtHoras(totalExtra)],
         ['Total a pagar (turnos + horas extra)', fmtMoney(totalPago)]
       ],
