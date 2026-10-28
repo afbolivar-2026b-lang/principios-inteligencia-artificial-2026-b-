@@ -17,9 +17,15 @@ export default {
         'focus': 'var(--color-focus)',
         'danger': 'var(--color-danger)',
         'success': 'var(--color-success)',
-        'warning': 'var(--color-warning)'
+        'warning': 'var(--color-warning)',
+        'hero-from': 'var(--color-hero-from)',
+        'hero-mid': 'var(--color-hero-mid)',
+        'hero-to': 'var(--color-hero-to)',
+        'on-hero': 'var(--color-on-hero)',
+        'hero-border': 'var(--color-hero-border)',
+        'brand': 'var(--color-brand)'
       },
-      fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'] },
+      fontFamily: { sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'] },
       fontSize: {
         xs: ['12px', { lineHeight: '16px', fontWeight: '500' }],
         sm: ['14px', { lineHeight: '20px', fontWeight: '400' }],

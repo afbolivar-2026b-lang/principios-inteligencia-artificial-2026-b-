@@ -1,19 +1,27 @@
 {
   "_about": "Modo oscuro: mismos roles, otros valores.",
   "color": {
-    "bg": "#121417",
-    "surface": "#1c1f24",
-    "border": "#2c3037",
-    "border-input": "#7e8794",
-    "text": "#eef0f3",
-    "text-muted": "#a3abb6",
-    "accent": "#9aa6ff",
-    "accent-soft": "#262b4a",
-    "on-accent": "#11142e",
-    "focus": "#9aa6ff",
+    "bg": "#0f0f0f",
+    "surface": "#1a1b1c",
+    "border": "#3b3b3d",
+    "border-input": "#8a8a90",
+    "text": "#ffffff",
+    "text-muted": "#a9a9b0",
+    "accent": "#4ad18e",
+    "accent-soft": "#13291d",
+    "on-accent": "#04291a",
+    "focus": "#4ad18e",
     "danger": "#ff8a80",
-    "success": "#6fd49b",
-    "warning": "#f2b85b"
+    "success": "#4ad18e",
+    "warning": "#f2b85b",
+    "hero-from": "#1d2a23",
+    "hero-mid": "#171b19",
+    "hero-to": "#101211",
+    "on-hero": "#ffffff",
+    "brand": "#4ad18e"
+  },
+  "colorExtra": {
+    "hero-border": "rgba(74,209,142,.55)"
   },
   "pairs": [
     [
@@ -45,6 +53,14 @@
       "surface"
     ],
     [
+      "accent",
+      "accent-soft"
+    ],
+    [
+      "text",
+      "accent-soft"
+    ],
+    [
       "danger",
       "bg"
     ],
@@ -73,31 +89,40 @@
       "danger"
     ],
     [
-      "text",
-      "accent-soft"
+      "on-hero",
+      "hero-from"
+    ],
+    [
+      "on-hero",
+      "hero-to"
+    ],
+    [
+      "on-hero",
+      "hero-mid"
+    ],
+    [
+      "border-input",
+      "bg",
+      "ui"
+    ],
+    [
+      "border-input",
+      "surface",
+      "ui"
+    ],
+    [
+      "focus",
+      "bg",
+      "ui"
+    ],
+    [
+      "focus",
+      "surface",
+      "ui"
     ],
     [
       "accent",
-      "accent-soft"
-    ],
-    [
-      "border-input",
       "bg",
-      "ui"
-    ],
-    [
-      "border-input",
-      "surface",
-      "ui"
-    ],
-    [
-      "focus",
-      "bg",
-      "ui"
-    ],
-    [
-      "focus",
-      "surface",
       "ui"
     ]
   ]

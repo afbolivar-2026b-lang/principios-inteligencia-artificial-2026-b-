@@ -134,3 +134,29 @@ BarraPestanas
   a11y       <nav> con aria-current="page"
   se usa en  todas las pantallas principales
 ```
+
+## Cambios por la imagen de referencia "NOVA" (2026-10-28)
+
+El usuario pidió este estilo (`clonar/design/referencia/`). Los colores se midieron de la imagen y están en `tokens.json` y `tokens-oscuro.json` (0 fallas AA en los dos modos).
+
+```
+TarjetaBalance (reemplaza TarjetaResumen)
+  variantes  claro: degradado verde (hero-from, hero-mid, hero-to), texto on-hero
+             oscuro: vidrio oscuro, borde verde neón y brillo suave
+  contenido  "Balance de {mes}" · monto grande · chips Ingresos y Gastos
+  tokens     radius lg, padding 20, clases .hero y .hero-pill
+
+TarjetaMini
+  variantes  Metas (ícono Target) · Gasto semanal (ícono tarjeta, barra y variación vs semana pasada)
+  estados    sin metas, con datos, sin semana pasada para comparar
+
+GraficoSemana
+  7 barras de lunes a domingo; hoy resaltado; días sin gasto son una raya; tabla oculta con los mismos datos para lectores de pantalla
+
+IconoCategoria (.cat-ico)
+  claro: círculo verde lleno con ícono blanco · oscuro: círculo con borde verde neón
+  íconos genéricos de Lucide; nunca logos de marcas
+
+BarraPestanas
+  Inicio, Análisis, Presupuestos, Metas, Ajustes; barra flotante con borde, como en la imagen
+```
