@@ -1,9 +1,9 @@
 feature,area,priority,original,clone,notes
 Registrar gasto o ingreso escribiendo monto categoría fecha y descripción,registro,must,yes,yes,"S03+S06 hoja única con monto, categoría, fecha, medio de pago y descripción"
-"Escribir el gasto en una frase (""almuerzo 18 mil"") y que se llene solo",registro,must,yes,no,lenguaje natural; S06
-Dictar el gasto por voz,registro,should,yes,no,S04; necesita servicio de IA
-Leer el monto de una foto del recibo,registro,should,yes,no,S05; necesita servicio de IA
-Revisar y corregir lo detectado antes de guardar,registro,must,yes,no,S06
+"Escribir el gasto en una frase (""almuerzo 18 mil"") y que se llene solo",registro,must,yes,yes,"con IA si hay código; sin IA entiende monto, categoría, medio de pago y fecha (src/entenderLocal.ts)"
+Dictar el gasto por voz,registro,should,yes,yes,"botón Hablar (voz de Chrome, es-CO); necesita internet y permiso del micrófono; la frase pasa por el mismo lector"
+Leer el monto de una foto del recibo,registro,should,yes,yes,solo con IA: la foto se reduce a 1280 px y se manda a /api/recibo
+Revisar y corregir lo detectado antes de guardar,registro,must,yes,yes,todo lo que entiende la IA o el lector local llena el formulario; nada se guarda solo
 Lista de movimientos por día con filtro por mes y categoría,movimientos,must,yes,yes,"S07: por mes, tipo, categoría y búsqueda, agrupada por día"
 Editar y borrar un movimiento,movimientos,must,yes,yes,S08: se toca el movimiento; borrar pide confirmación y tiene Deshacer
 Categorías propias con ícono y color,categorías,must,yes,yes,"S12: crear, renombrar y archivar con 20 íconos; sin color propio (todas usan el verde del tema)"

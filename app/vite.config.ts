@@ -24,8 +24,8 @@ export default defineConfig({
           { src: 'pwa-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2,woff}'] },
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2,woff}'], navigateFallbackDenylist: [/^\/api\//] },
     }),
   ],
-  test: { environment: 'node', include: ['src/**/*.test.ts'] },
+  test: { environment: 'node', include: ['src/**/*.test.ts', 'server/**/*.test.ts', 'api/**/*.test.ts'] },
 })

@@ -2,12 +2,16 @@ import { useId, useState, type FormEvent } from 'react'
 import { sumarDias } from '../dates'
 import { db, actualizarMovimiento, ErrorDeDatos, guardarMovimiento, MEDIOS_PAGO, type Categoria, type MedioPago, type Movimiento, type TipoMov } from '../db'
 import { formatoDigitos, soloDigitos } from '../money'
+import type { Propuesta } from '../entenderLocal'
 import { Chip, Segmentos } from './Chip'
+import { EntradaInteligente, type OrigenEntrada } from './EntradaInteligente'
 import { Hoja } from './Hoja'
 
 interface Props {
   categorias: Categoria[]
   hoy: string
+  /** código de la IA; vacío si no está activada */
+  codigoIA: string
   /** Si viene un movimiento, la hoja sirve para editarlo o borrarlo */
   editando: Movimiento | null
   onCerrar: () => void
@@ -17,7 +21,7 @@ interface Props {
 
 type Cuando = 'hoy' | 'ayer' | 'otra'
 
-export function HojaMovimiento({ categorias, hoy, editando, onCerrar, onGuardado, onBorrar }: Props) {
+export function HojaMovimiento({ categorias, hoy, codigoIA, editando, onCerrar, onGuardado, onBorrar }: Props) {
   const errMonto = useId()
   const errCat = useId()
   const [tipo, setTipo] = useState<TipoMov>(editando?.tipo ?? 'gasto')
@@ -30,6 +34,7 @@ export function HojaMovimiento({ categorias, hoy, editando, onCerrar, onGuardado
   const [errores, setErrores] = useState<{ monto?: string; categoria?: string; general?: string }>({})
   const [guardando, setGuardando] = useState(false)
   const [confirmaBorrar, setConfirmaBorrar] = useState(false)
+  const [origen, setOrigen] = useState<'manual' | OrigenEntrada>('manual')
 
   const fecha = cuando === 'hoy' ? hoy : cuando === 'ayer' ? sumarDias(hoy, -1) : fechaOtra
   // en edición se muestran también las categorías archivadas, solo si es la que ya tiene el movimiento
@@ -37,6 +42,19 @@ export function HojaMovimiento({ categorias, hoy, editando, onCerrar, onGuardado
 
   function cambiarTipo(t: TipoMov) {
     setTipo(t); setCategoriaId(''); setErrores({})
+  }
+
+  /** Llena el formulario con lo que entendió la IA o el lector local. El usuario siempre revisa antes de guardar. */
+  function aplicar(p: Propuesta, desde: OrigenEntrada) {
+    setTipo(p.tipo)
+    setDigitos(String(p.monto))
+    setCategoriaId(categorias.find((c) => !c.archivada && c.tipo === p.tipo && c.nombre === p.categoria)?.id ?? '')
+    setDescripcion(p.descripcion)
+    setMedio(p.medio_pago ?? '')
+    setCuando(p.fecha === hoy ? 'hoy' : p.fecha === sumarDias(hoy, -1) ? 'ayer' : 'otra')
+    setFechaOtra(p.fecha)
+    setOrigen(desde)
+    setErrores({})
   }
 
   async function enviar(e: FormEvent) {
@@ -52,7 +70,7 @@ export function HojaMovimiento({ categorias, hoy, editando, onCerrar, onGuardado
     try {
       const mov = editando
         ? await actualizarMovimiento(db, editando.id, { monto, categoria_id: categoriaId, fecha, descripcion, medio_pago: medio || null })
-        : await guardarMovimiento(db, { tipo, monto, categoria_id: categoriaId, fecha, descripcion, ...(medio ? { medio_pago: medio } : {}) })
+        : await guardarMovimiento(db, { tipo, monto, categoria_id: categoriaId, fecha, descripcion, origen, ...(medio ? { medio_pago: medio } : {}) })
       onGuardado(mov, !editando)
     } catch (err) {
       setErrores({ general: err instanceof ErrorDeDatos ? err.message : 'No se pudo guardar. Intenta de nuevo.' })
@@ -84,6 +102,7 @@ export function HojaMovimiento({ categorias, hoy, editando, onCerrar, onGuardado
   return (
     <Hoja titulo={titulo} onCerrar={onCerrar} pie={pie}>
       <form id="form-movimiento" onSubmit={enviar} noValidate className="flex flex-col gap-5">
+        {editando ? null : <EntradaInteligente categorias={categorias} hoy={hoy} codigoIA={codigoIA} onPropuesta={aplicar} />}
         {editando ? null : (
           <Segmentos etiqueta="Tipo de movimiento" valor={tipo} onCambiar={cambiarTipo} opciones={[{ id: 'gasto', nombre: 'Gasto' }, { id: 'ingreso', nombre: 'Ingreso' }]} />
         )}

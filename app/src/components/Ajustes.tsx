@@ -1,7 +1,8 @@
-import { ChevronRight, Download, ShieldCheck, Share2, Tags, Upload } from 'lucide-react'
+import { ChevronRight, Download, Share2, ShieldCheck, Sparkles, Tags, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { diasDesde } from '../avisos'
 import { db, guardarAjustes, type Ajustes as DatosAjustes, type Tema } from '../db'
+import { ErrorIA, probarConexion } from '../ia'
 import { crearRespaldo, ErrorRespaldo, estaCifrado, importarRespaldo, respaldoATexto, textoARespaldo, type Respaldo } from '../respaldo'
 import { Chip, Segmentos } from './Chip'
 import { Hoja } from './Hoja'
@@ -29,12 +30,33 @@ function descargar(nombre: string, texto: string) {
 
 export function Ajustes({ ajustes, onCategorias, onAviso }: Props) {
   const [clave, setClave] = useState('')
+  const [codigo, setCodigo] = useState(ajustes.codigo_ia ?? '')
+  const [estadoIA, setEstadoIA] = useState<{ ok: boolean; texto: string } | null>(null)
+  const [probando, setProbando] = useState(false)
   const [trabajando, setTrabajando] = useState(false)
   const [archivo, setArchivo] = useState<{ nombre: string; texto: string } | null>(null)
   const entrada = useRef<HTMLInputElement>(null)
   const dias = diasDesde(ajustes.ultimo_respaldo)
   const nombreArchivo = () => `nova-respaldo-${new Date().toISOString().slice(0, 10)}${clave ? '-con-clave' : ''}.json`
   const puedeCompartir = typeof navigator !== 'undefined' && typeof navigator.canShare === 'function' && typeof File !== 'undefined' && navigator.canShare({ files: [new File(['{}'], 'a.json', { type: 'application/json' })] })
+
+  async function probarIA() {
+    setProbando(true)
+    setEstadoIA(null)
+    try {
+      await probarConexion(codigo.trim())
+      setEstadoIA({ ok: true, texto: 'La IA está lista. Ya puedes usarla al anotar un gasto.' })
+    } catch (e) {
+      setEstadoIA({ ok: false, texto: e instanceof ErrorIA ? e.message : 'No pude probar la conexión' })
+    } finally {
+      setProbando(false)
+    }
+  }
+
+  async function guardarCodigo() {
+    await guardarAjustes(db, { codigo_ia: codigo.trim() || undefined })
+    onAviso(codigo.trim() ? 'Código de la IA guardado en este celular' : 'Quitaste el código de la IA')
+  }
 
   async function armar(): Promise<string> {
     return respaldoATexto(await crearRespaldo(db), clave || undefined)
@@ -90,6 +112,23 @@ export function Ajustes({ ajustes, onCategorias, onAviso }: Props) {
           <ChevronRight aria-hidden="true" className="size-5 text-text-muted" />
         </button>
 
+        <section aria-labelledby="t-ia" className="rounded-lg border border-border bg-surface p-4 shadow-card">
+          <h2 id="t-ia" className="flex items-center gap-2 text-lg font-semibold"><Sparkles aria-hidden="true" className="size-5 text-accent" /> Inteligencia artificial</h2>
+          <p className="mt-1 text-sm text-text-muted">
+            Con la IA, Nova entiende frases como «almuerzo 18 mil en Nequi» y lee fotos de recibos. Cuesta unos centavos de dólar al mes, que se pagan a Anthropic con tu propia llave.
+            Sin la IA, Nova igual entiende lo básico de una frase, gratis y sin internet.
+          </p>
+          <label htmlFor="codigo-ia" className="mt-3 block text-sm font-medium text-text-muted">Código de acceso</label>
+          <input id="codigo-ia" type="password" autoComplete="off" value={codigo} onChange={(e) => { setCodigo(e.target.value); setEstadoIA(null) }}
+            className="mt-1 h-11 w-full rounded-md border border-border-input bg-bg px-4" />
+          <p className="mt-1 text-xs text-text-muted">Es el código que tú eliges al activar la IA en el servidor. Se guarda solo en este celular y no sale en los respaldos.</p>
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={guardarCodigo} className="h-11 flex-1 rounded-md bg-accent font-semibold text-on-accent">Guardar código</button>
+            <button type="button" onClick={probarIA} disabled={probando || !codigo.trim()} className="h-11 flex-1 rounded-md border border-border-input font-semibold disabled:opacity-45">{probando ? 'Probando…' : 'Probar conexión'}</button>
+          </div>
+          <p role="status" aria-live="polite" className={`mt-2 min-h-[1.25rem] text-sm font-medium ${estadoIA ? (estadoIA.ok ? 'text-success' : 'text-danger') : ''}`}>{estadoIA?.texto ?? ''}</p>
+        </section>
+
         <section aria-labelledby="t-resp" className="rounded-lg border border-border bg-surface p-4 shadow-card">
           <h2 id="t-resp" className="text-lg font-semibold">Respaldo</h2>
           <p className="mt-1 text-sm text-text-muted">
@@ -114,7 +153,7 @@ export function Ajustes({ ajustes, onCategorias, onAviso }: Props) {
             <button type="button" onClick={() => entrada.current?.click()} className="flex h-[52px] items-center justify-center gap-2 rounded-md border border-border-input font-semibold">
               <Upload aria-hidden="true" className="size-5" /> Recuperar un respaldo
             </button>
-            <input ref={entrada} type="file" accept=".json,application/json" className="sr-only" aria-label="Archivo de respaldo" tabIndex={-1}
+            <input ref={entrada} type="file" accept=".json,application/json" hidden
               onChange={(e) => { void alElegirArchivo(e.target.files?.[0]); e.target.value = '' }} />
           </div>
         </section>

@@ -180,7 +180,7 @@ export default function App() {
       <BarraPestanas activa={pestana} onCambiar={irA} />
       <Aviso aviso={aviso} onCerrar={cerrarAviso} />
       {hoja ? (
-        <HojaMovimiento key={hoja.editando?.id ?? 'nuevo'} categorias={cats} hoy={hoy} editando={hoja.editando}
+        <HojaMovimiento key={hoja.editando?.id ?? 'nuevo'} categorias={cats} hoy={hoy} codigoIA={ajustes?.codigo_ia ?? ''} editando={hoja.editando}
           onCerrar={() => setHoja(null)} onGuardado={alGuardar} onBorrar={alBorrar} />
       ) : null}
     </div>

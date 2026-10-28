@@ -46,6 +46,8 @@ export interface Ajustes {
   id: 1
   tema: Tema
   ultimo_respaldo?: string
+  /** código para usar la IA del servidor; vive solo en este celular y no sale en los respaldos */
+  codigo_ia?: string
   editado_en: string
 }
 
