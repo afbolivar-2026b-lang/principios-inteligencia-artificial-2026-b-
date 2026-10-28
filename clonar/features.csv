@@ -1,0 +1,34 @@
+feature,area,priority,original,clone,notes
+Registrar gasto o ingreso escribiendo monto categoría fecha y descripción,registro,must,yes,no,S06
+Escribir el gasto en una frase ("almuerzo 18 mil") y que se llene solo,registro,must,yes,no,lenguaje natural; S06
+Dictar el gasto por voz,registro,should,yes,no,S04; necesita servicio de IA
+Leer el monto de una foto del recibo,registro,should,yes,no,S05; necesita servicio de IA
+Revisar y corregir lo detectado antes de guardar,registro,must,yes,no,S06
+Lista de movimientos por día con filtro por mes y categoría,movimientos,must,yes,no,S07
+Editar y borrar un movimiento,movimientos,must,yes,no,S08
+Categorías propias con ícono y color,categorías,must,yes,no,S12
+Resumen del mes en la pantalla de inicio,inicio,must,yes,no,S02
+Presupuesto mensual por categoría,presupuestos,must,yes,no,S09
+Alerta antes de pasarse del presupuesto,presupuestos,must,yes,no,S09
+Cuánto puedo gastar este mes,presupuestos,should,yes,no,"Safe to Spend" en la ficha de Play
+Metas de ahorro con avance,metas,should,yes,no,S10
+Gráficos por categoría y por mes,reportes,must,yes,no,S11
+Exportar reporte en PDF,reportes,could,yes,no,S11
+Funciona sin internet,datos,must,yes,no,local primero
+Usar sin crear cuenta,datos,must,yes,no,modo invitado
+Respaldo y recuperación en otro celular,datos,must,yes,no,queja de la categoría (Monefy Wallet Money Manager)
+Sincronización cifrada opcional entre equipos,datos,could,yes,no,
+Modo privacidad que oculta los montos,seguridad,should,yes,no,S02 S07
+Bloqueo con huella o PIN,seguridad,should,yes,no,S14
+Modo oscuro,ajustes,should,yes,no,S13
+Pesos colombianos sin centavos como moneda principal,ajustes,must,partial,no,el original tiene 50+ monedas
+Varias monedas con tasa de cambio,ajustes,could,yes,no,
+La IA aprende de las correcciones,registro,could,yes,no,suposición
+Sin anuncios en ninguna parte,general,must,no,no,pedido del usuario; queja de la categoría
+Tutorial de 1 minuto al empezar,general,should,no,no,queja de la categoría (Monefy Money Manager)
+Recordatorio de pagos fijos (arriendo servicios),recordatorios,should,no,no,queja de la categoría (Money Manager)
+Gastos repetidos automáticos cada mes,recordatorios,should,no,no,queja de la categoría (Monefy)
+Medios de pago de Colombia (efectivo Nequi Daviplata tarjeta),registro,could,no,no,hecho para Colombia
+Anuncios,general,could,yes,skip,el usuario no los quiere
+Plan Pro con cuota de IA y compras en la app,general,could,yes,skip,es para uso personal
+Nombre logo y textos de Lukas,marca,could,yes,skip,pertenecen a Jotatech
