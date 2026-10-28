@@ -23,7 +23,13 @@ export default {
         'hero-to': 'var(--color-hero-to)',
         'on-hero': 'var(--color-on-hero)',
         'hero-border': 'var(--color-hero-border)',
-        'brand': 'var(--color-brand)'
+        'brand': 'var(--color-brand)',
+        'chart-1': 'var(--color-chart-1)',
+        'chart-2': 'var(--color-chart-2)',
+        'chart-3': 'var(--color-chart-3)',
+        'chart-4': 'var(--color-chart-4)',
+        'chart-5': 'var(--color-chart-5)',
+        'chart-6': 'var(--color-chart-6)'
       },
       fontFamily: { sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'] },
       fontSize: {

@@ -7,29 +7,32 @@ interface Props {
   mov: Movimiento
   categoria?: Categoria
   hoy: string
+  onAbrir: (mov: Movimiento) => void
+  /** En la lista agrupada por día, la fecha ya está en el encabezado */
+  sinFecha?: boolean
 }
 
-export function FilaMovimiento({ mov, categoria, hoy }: Props) {
+export function FilaMovimiento({ mov, categoria, hoy, onAbrir, sinFecha }: Props) {
   const ingreso = mov.tipo === 'ingreso'
   const medio = MEDIOS_PAGO.find((m) => m.id === mov.medio_pago)?.nombre
   const nombreCat = categoria?.nombre ?? 'Sin categoría'
-  const cuando = `${etiquetaDia(mov.fecha, hoy)} · ${horaLocal(mov.creado_en)}`
+  const cuando = sinFecha ? horaLocal(mov.creado_en) : `${etiquetaDia(mov.fecha, hoy)} · ${horaLocal(mov.creado_en)}`
   return (
-    <li className="flex min-h-[56px] items-center gap-3 rounded-lg border border-border bg-surface p-3 shadow-card">
-      <IconoCategoria nombre={categoria?.icono ?? 'tag'} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold">{mov.descripcion || nombreCat}</p>
-        <p className={`truncate text-xs ${ingreso ? 'font-medium text-success' : 'text-text-muted'}`}>
-          • {nombreCat}{medio ? ` · ${medio}` : ''}
-        </p>
-      </div>
-      <div className="text-right">
-        <p className={`font-bold ${ingreso ? 'text-success' : ''}`}>
-          <span className="sr-only">{ingreso ? 'Ingreso de ' : 'Gasto de '}</span>
-          {ingreso ? '+' : '-'}{formatoCOP(mov.monto)}
-        </p>
-        <p className="text-xs text-text-muted">{cuando}</p>
-      </div>
+    <li>
+      <button type="button" onClick={() => onAbrir(mov)} aria-label={`Editar: ${mov.descripcion || nombreCat}, ${ingreso ? 'ingreso' : 'gasto'} de ${mov.monto} pesos`}
+        className="flex min-h-[56px] w-full items-center gap-3 rounded-lg border border-border bg-surface p-3 text-left shadow-card">
+        <IconoCategoria nombre={categoria?.icono ?? 'tag'} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold">{mov.descripcion || nombreCat}</p>
+          <p className={`truncate text-xs ${ingreso ? 'font-medium text-success' : 'text-text-muted'}`}>
+            • {nombreCat}{medio ? ` · ${medio}` : ''}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className={`font-bold ${ingreso ? 'text-success' : ''}`}>{ingreso ? '+' : '-'}{formatoCOP(mov.monto)}</p>
+          <p className="text-xs text-text-muted">{cuando}</p>
+        </div>
+      </button>
     </li>
   )
 }

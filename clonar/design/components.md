@@ -160,3 +160,27 @@ IconoCategoria (.cat-ico)
 BarraPestanas
   Inicio, Análisis, Presupuestos, Metas, Ajustes; barra flotante con borde, como en la imagen
 ```
+
+## Componentes agregados en lo imprescindible (2026-10-28)
+
+```
+Hoja (ventana desde abajo, genérica)
+  la usan: movimiento (S03/S06/S08), límite de presupuesto (S09), categoría (S12) y recuperar respaldo (S13)
+  se cierra con Escape, con el fondo o con la X; el cursor queda atrapado adentro y vuelve al botón que la abrió
+  el pie (botones) queda fijo abajo; cada botón del pie lleva clave propia para que el navegador no los mezcle
+
+Chip / Segmentos
+  opciones de elegir una (radiogroup): categoría, fecha, medio de pago, tipo, tema; seleccionado con ✓ y borde verde
+
+BarraProgreso
+  normal (verde) · alerta (ámbar, ícono y texto "Vas en el 82 %") · excedido (rojo, ícono y "Te pasaste por $X")
+  role="progressbar" y siempre con texto; el color nunca es la única señal
+
+SelectorMes · SubPantalla · AvisosInicio
+  mes anterior y siguiente (no pasa del mes actual) · encabezado con botón Volver · alertas de presupuesto y recordatorio de respaldo
+
+Dona + leyenda (Análisis)
+  hasta 6 grupos con los colores chart-1 a chart-6 (todos pasan AA) y "Otras" en gris; cada grupo tiene nombre, porcentaje y monto
+Barras mes a mes
+  ingresos (verde) y gastos (ámbar, chart-3); tabla oculta con los mismos datos
+```

@@ -30,6 +30,12 @@
   --motion-ease: cubic-bezier(.2,.8,.2,1);
   --font-sans: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   --hero-glow: none;
+  --color-chart-1: #18613b;
+  --color-chart-2: #2563a8;
+  --color-chart-3: #b45309;
+  --color-chart-4: #7c3aab;
+  --color-chart-5: #0f766e;
+  --color-chart-6: #a3243b;
   --hero-blob: radial-gradient(55% 70% at 85% 95%, rgba(0,80,40,.20), transparent);
   --ico-bg: var(--color-accent);
   --ico-fg: var(--color-on-accent);
@@ -62,6 +68,12 @@
     --shadow-card: 0 1px 0 rgba(255,255,255,.04);
     --shadow-pop: 0 14px 36px rgba(0,0,0,.6);
     --hero-glow: 0 0 28px rgba(74,209,142,.25);
+    --color-chart-1: #4ad18e;
+    --color-chart-2: #6cb4ff;
+    --color-chart-3: #f2b85b;
+    --color-chart-4: #c49bff;
+    --color-chart-5: #4fd1c5;
+    --color-chart-6: #ff8a9a;
     --hero-blob: radial-gradient(60% 75% at 85% 100%, rgba(74,209,142,.24), transparent);
     --ico-bg: var(--color-accent-soft);
     --ico-fg: var(--color-accent);
@@ -94,6 +106,12 @@
   --shadow-card: 0 1px 0 rgba(255,255,255,.04);
   --shadow-pop: 0 14px 36px rgba(0,0,0,.6);
   --hero-glow: 0 0 28px rgba(74,209,142,.25);
+  --color-chart-1: #4ad18e;
+  --color-chart-2: #6cb4ff;
+  --color-chart-3: #f2b85b;
+  --color-chart-4: #c49bff;
+  --color-chart-5: #4fd1c5;
+  --color-chart-6: #ff8a9a;
   --hero-blob: radial-gradient(60% 75% at 85% 100%, rgba(74,209,142,.24), transparent);
   --ico-bg: var(--color-accent-soft);
   --ico-fg: var(--color-accent);

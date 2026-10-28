@@ -18,7 +18,13 @@
     "hero-mid": "#171b19",
     "hero-to": "#101211",
     "on-hero": "#ffffff",
-    "brand": "#4ad18e"
+    "brand": "#4ad18e",
+    "chart-1": "#4ad18e",
+    "chart-2": "#6cb4ff",
+    "chart-3": "#f2b85b",
+    "chart-4": "#c49bff",
+    "chart-5": "#4fd1c5",
+    "chart-6": "#ff8a9a"
   },
   "colorExtra": {
     "hero-border": "rgba(74,209,142,.55)"
@@ -123,6 +129,66 @@
     [
       "accent",
       "bg",
+      "ui"
+    ],
+    [
+      "chart-1",
+      "bg",
+      "ui"
+    ],
+    [
+      "chart-1",
+      "surface",
+      "ui"
+    ],
+    [
+      "chart-2",
+      "bg",
+      "ui"
+    ],
+    [
+      "chart-2",
+      "surface",
+      "ui"
+    ],
+    [
+      "chart-3",
+      "bg",
+      "ui"
+    ],
+    [
+      "chart-3",
+      "surface",
+      "ui"
+    ],
+    [
+      "chart-4",
+      "bg",
+      "ui"
+    ],
+    [
+      "chart-4",
+      "surface",
+      "ui"
+    ],
+    [
+      "chart-5",
+      "bg",
+      "ui"
+    ],
+    [
+      "chart-5",
+      "surface",
+      "ui"
+    ],
+    [
+      "chart-6",
+      "bg",
+      "ui"
+    ],
+    [
+      "chart-6",
+      "surface",
       "ui"
     ]
   ]

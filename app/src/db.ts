@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import { fechaValida, sumarDias } from './dates'
+import { fechaValida, mesDe, sumarDias } from './dates'
 
 export type TipoMov = 'gasto' | 'ingreso'
 export type MedioPago = 'efectivo' | 'tarjeta' | 'nequi' | 'daviplata' | 'pse' | 'transferencia' | 'otro'
@@ -27,6 +27,25 @@ export interface Movimiento {
   medio_pago?: MedioPago
   origen: Origen
   creado_en: string
+  editado_en: string
+}
+
+export interface Presupuesto {
+  id: string
+  categoria_id: string
+  mes: string // AAAA-MM: desde este mes rige el límite, hasta que se cambie
+  limite: number // pesos enteros
+  umbral_alerta: number // 1 a 100
+  creado_en: string
+  editado_en: string
+}
+
+export type Tema = 'sistema' | 'claro' | 'oscuro'
+
+export interface Ajustes {
+  id: 1
+  tema: Tema
+  ultimo_respaldo?: string
   editado_en: string
 }
 
@@ -61,12 +80,18 @@ const CATEGORIAS_BASE: Pick<Categoria, 'nombre' | 'icono' | 'tipo'>[] = [
 export class NovaDB extends Dexie {
   categorias!: Table<Categoria, string>
   movimientos!: Table<Movimiento, string>
+  presupuestos!: Table<Presupuesto, string>
+  ajustes!: Table<Ajustes, number>
 
   constructor(nombre: string) {
     super(nombre)
     this.version(1).stores({
       categorias: 'id, tipo, orden',
       movimientos: 'id, fecha, categoria_id, [categoria_id+fecha]',
+    })
+    this.version(2).stores({
+      presupuestos: 'id, categoria_id, &[categoria_id+mes]',
+      ajustes: 'id',
     })
   }
 }
@@ -90,12 +115,16 @@ export async function asegurarCategorias(d: NovaDB = db): Promise<void> {
 
 export class ErrorDeDatos extends Error {}
 
-export async function guardarMovimiento(d: NovaDB, entrada: NuevoMovimiento): Promise<Movimiento> {
-  if (!Number.isSafeInteger(entrada.monto) || entrada.monto <= 0) throw new ErrorDeDatos('Escribe un monto mayor a 0')
-  if (!fechaValida(entrada.fecha)) throw new ErrorDeDatos('La fecha no es válida')
-  const cat = await d.categorias.get(entrada.categoria_id)
+async function validarMovimiento(d: NovaDB, m: Pick<Movimiento, 'tipo' | 'monto' | 'categoria_id' | 'fecha'>): Promise<void> {
+  if (!Number.isSafeInteger(m.monto) || m.monto <= 0) throw new ErrorDeDatos('Escribe un monto mayor a 0')
+  if (!fechaValida(m.fecha)) throw new ErrorDeDatos('La fecha no es válida')
+  const cat = await d.categorias.get(m.categoria_id)
   if (!cat) throw new ErrorDeDatos('Elige una categoría')
-  if (cat.tipo !== entrada.tipo) throw new ErrorDeDatos('La categoría no corresponde al tipo de movimiento')
+  if (cat.tipo !== m.tipo) throw new ErrorDeDatos('La categoría no corresponde al tipo de movimiento')
+}
+
+export async function guardarMovimiento(d: NovaDB, entrada: NuevoMovimiento): Promise<Movimiento> {
+  await validarMovimiento(d, entrada)
   const t = ahora()
   const mov: Movimiento = {
     id: crypto.randomUUID(),
@@ -112,6 +141,26 @@ export async function guardarMovimiento(d: NovaDB, entrada: NuevoMovimiento): Pr
   }
   await d.movimientos.add(mov)
   return mov
+}
+
+export type CambiosMovimiento = Partial<Pick<Movimiento, 'tipo' | 'monto' | 'categoria_id' | 'fecha' | 'descripcion'>> & { medio_pago?: MedioPago | null }
+
+export async function actualizarMovimiento(d: NovaDB, id: string, cambios: CambiosMovimiento): Promise<Movimiento> {
+  const actual = await d.movimientos.get(id)
+  if (!actual) throw new ErrorDeDatos('Ese movimiento ya no existe')
+  const { medio_pago, ...resto } = cambios
+  const mov: Movimiento = { ...actual, ...resto, editado_en: ahora() }
+  mov.descripcion = mov.descripcion.trim().slice(0, 120)
+  if (medio_pago === null) delete mov.medio_pago
+  else if (medio_pago) mov.medio_pago = medio_pago
+  await validarMovimiento(d, mov)
+  await d.movimientos.put(mov)
+  return mov
+}
+
+/** Vuelve a poner un movimiento tal cual estaba (para "Deshacer" después de borrar). */
+export async function restaurarMovimiento(d: NovaDB, mov: Movimiento): Promise<void> {
+  await d.movimientos.put(mov)
 }
 
 export async function borrarMovimiento(d: NovaDB, id: string): Promise<void> {
@@ -138,7 +187,24 @@ export async function cargarDemo(d: NovaDB, hoy: string): Promise<void> {
     ['gasto', 78000, 'Mercado', 'Mercado', dia(9), 'tarjeta', 15],
     ['gasto', 22000, 'Transporte', 'Taxi', dia(10), 'nequi', 21],
   ]
+  // meses anteriores, para que se vea el "mes a mes"
+  const mes = mesDe(hoy)
+  const [a, m] = mes.split('-').map(Number)
+  const mesAtras = (n: number) => { const t = a * 12 + (m - 1) - n; return `${Math.floor(t / 12)}-${String((t % 12) + 1).padStart(2, '0')}` }
+  const historial: [number, number][] = [[1, 880_000], [2, 950_000], [3, 790_000], [4, 1_020_000]]
+  for (const [n, gasto] of historial) {
+    ejemplos.push(['ingreso', 1_300_000, 'Salario', 'Pago quincena', `${mesAtras(n)}-05`, 'transferencia', 10])
+    ejemplos.push(['gasto', Math.round(gasto * 0.45), 'Mercado', 'Mercado del mes', `${mesAtras(n)}-12`, 'tarjeta', 16])
+    ejemplos.push(['gasto', Math.round(gasto * 0.35), 'Hogar', 'Arriendo y servicios', `${mesAtras(n)}-03`, 'transferencia', 9])
+    ejemplos.push(['gasto', Math.round(gasto * 0.2), 'Entretenimiento', 'Salidas', `${mesAtras(n)}-20`, 'efectivo', 19])
+  }
   const base = new Date()
+  const t0 = ahora()
+  await d.presupuestos.bulkAdd(
+    [['Mercado', 150_000], ['Transporte', 20_000], ['Comida', 60_000], ['Hogar', 200_000]].map(([nombre, limite]) => ({
+      id: crypto.randomUUID(), categoria_id: id(nombre as string), mes, limite: limite as number, umbral_alerta: 80, creado_en: t0, editado_en: t0,
+    })),
+  )
   await d.movimientos.bulkAdd(
     ejemplos.map(([tipo, monto, cat, descripcion, fecha, medio, hora = 12], i) => {
       const marca = new Date(base)
@@ -149,4 +215,83 @@ export async function cargarDemo(d: NovaDB, hoy: string): Promise<void> {
       }
     }),
   )
+}
+
+// ---------- Categorías ----------
+
+export function normalizar(texto: string): string {
+  return texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
+}
+
+export const ICONOS_CATEGORIA = [
+  'utensils', 'cart', 'bus', 'home', 'zap', 'heart', 'shirt', 'school', 'ticket', 'tag', 'banknote', 'wallet',
+  'coffee', 'gift', 'paw', 'phone', 'gym', 'plane', 'car', 'book',
+] as const
+
+export async function guardarCategoria(d: NovaDB, datos: { id?: string; nombre: string; icono: string; tipo: TipoMov }): Promise<Categoria> {
+  const nombre = datos.nombre.trim()
+  if (nombre.length < 1 || nombre.length > 30) throw new ErrorDeDatos('El nombre debe tener entre 1 y 30 letras')
+  if (!(ICONOS_CATEGORIA as readonly string[]).includes(datos.icono)) throw new ErrorDeDatos('Elige un ícono')
+  const todas = await d.categorias.toArray()
+  const repetida = todas.find((c) => c.id !== datos.id && !c.archivada && c.tipo === datos.tipo && normalizar(c.nombre) === normalizar(nombre))
+  if (repetida) throw new ErrorDeDatos('Ya tienes una categoría con ese nombre')
+  const t = ahora()
+  if (datos.id) {
+    const actual = todas.find((c) => c.id === datos.id)
+    if (!actual) throw new ErrorDeDatos('Esa categoría ya no existe')
+    const nueva = { ...actual, nombre, icono: datos.icono, editado_en: t }
+    await d.categorias.put(nueva)
+    return nueva
+  }
+  const nueva: Categoria = {
+    id: crypto.randomUUID(), nombre, icono: datos.icono, tipo: datos.tipo,
+    orden: todas.reduce((m, c) => Math.max(m, c.orden), -1) + 1, archivada: false, creado_en: t, editado_en: t,
+  }
+  await d.categorias.add(nueva)
+  return nueva
+}
+
+/** Archivar oculta la categoría de los formularios pero conserva el historial. */
+export async function archivarCategoria(d: NovaDB, id: string, archivada: boolean): Promise<void> {
+  const cat = await d.categorias.get(id)
+  if (!cat) throw new ErrorDeDatos('Esa categoría ya no existe')
+  if (archivada) {
+    const activas = (await d.categorias.toArray()).filter((c) => c.tipo === cat.tipo && !c.archivada)
+    if (activas.length <= 1) throw new ErrorDeDatos('Debe quedar al menos una categoría de este tipo')
+  } else {
+    const todas = await d.categorias.toArray()
+    if (todas.some((c) => c.id !== id && !c.archivada && c.tipo === cat.tipo && normalizar(c.nombre) === normalizar(cat.nombre))) {
+      throw new ErrorDeDatos('Ya hay otra categoría activa con ese nombre')
+    }
+  }
+  await d.categorias.put({ ...cat, archivada, editado_en: ahora() })
+}
+
+// ---------- Presupuestos ----------
+
+export async function fijarPresupuesto(d: NovaDB, datos: { categoria_id: string; mes: string; limite: number; umbral_alerta: number }): Promise<Presupuesto> {
+  if (!Number.isSafeInteger(datos.limite) || datos.limite <= 0) throw new ErrorDeDatos('Escribe un límite mayor a 0')
+  if (!Number.isInteger(datos.umbral_alerta) || datos.umbral_alerta < 1 || datos.umbral_alerta > 100) throw new ErrorDeDatos('El aviso debe estar entre 1 y 100 %')
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(datos.mes)) throw new ErrorDeDatos('El mes no es válido')
+  const cat = await d.categorias.get(datos.categoria_id)
+  if (!cat || cat.tipo !== 'gasto') throw new ErrorDeDatos('Solo se pone presupuesto a categorías de gasto')
+  const t = ahora()
+  const existente = await d.presupuestos.where('[categoria_id+mes]').equals([datos.categoria_id, datos.mes]).first()
+  const p: Presupuesto = { id: existente?.id ?? crypto.randomUUID(), ...datos, creado_en: existente?.creado_en ?? t, editado_en: t }
+  await d.presupuestos.put(p)
+  return p
+}
+
+export async function quitarPresupuesto(d: NovaDB, categoria_id: string): Promise<void> {
+  await d.presupuestos.where('categoria_id').equals(categoria_id).delete()
+}
+
+// ---------- Ajustes ----------
+
+export async function leerAjustes(d: NovaDB): Promise<Ajustes> {
+  return (await d.ajustes.get(1)) ?? { id: 1, tema: 'sistema', editado_en: ahora() }
+}
+
+export async function guardarAjustes(d: NovaDB, cambios: Partial<Omit<Ajustes, 'id'>>): Promise<void> {
+  await d.ajustes.put({ ...(await leerAjustes(d)), ...cambios, id: 1, editado_en: ahora() })
 }
