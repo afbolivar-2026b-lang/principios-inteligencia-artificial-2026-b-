@@ -21,6 +21,9 @@ describe('fechas en hora de Colombia', () => {
     expect(fechaValida('2026-02-29')).toBe(false)
     expect(fechaValida('2028-02-29')).toBe(true)
     expect(fechaValida('28/10/2026')).toBe(false)
+    expect(fechaValida('2026-13-45')).toBe(false) // antes lanzaba un error
+    expect(fechaValida('2026-00-10')).toBe(false)
+    expect(fechaValida('')).toBe(false)
     expect(mesDe('2026-10-28')).toBe('2026-10')
   })
   it('etiquetas', () => {

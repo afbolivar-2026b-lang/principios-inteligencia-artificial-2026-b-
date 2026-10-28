@@ -1,6 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Plus, Receipt } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { registrarAtras } from './atras'
+import { descargarDatosCrudos } from './crudo'
+import { categoriaValida, movimientoValido } from './validacion'
 import { diasDesde, textoAvisoPresupuesto } from './avisos'
 import { hoyISO, mesDe, nombreMes } from './dates'
 import { asegurarCategorias, borrarMovimiento, cargarDemo, db, esDemo, leerAjustes, restaurarMovimiento, type Movimiento } from './db'
@@ -64,8 +67,9 @@ export default function App() {
     else document.documentElement.dataset.theme = tema
   }, [tema])
 
-  const cats = useMemo(() => categorias ?? [], [categorias])
-  const movs = useMemo(() => movimientos ?? [], [movimientos])
+  const cats = useMemo(() => (categorias ?? []).filter(categoriaValida), [categorias])
+  const movs = useMemo(() => (movimientos ?? []).filter(movimientoValido), [movimientos])
+  const danados = (movimientos?.length ?? 0) - movs.length + ((categorias?.length ?? 0) - cats.length)
   const pres = useMemo(() => presupuestos ?? [], [presupuestos])
   const ordenados = useMemo(
     () => [...movs].sort((a, b) => (a.fecha === b.fecha ? b.creado_en.localeCompare(a.creado_en) : b.fecha.localeCompare(a.fecha))),
@@ -75,6 +79,11 @@ export default function App() {
   const semana = useMemo(() => gastoSemana(movs, hoy), [movs, hoy])
   const filas = useMemo(() => filasPresupuesto(cats, pres, movs, mesDe(hoy)), [cats, pres, movs, hoy])
   const porId = useMemo(() => new Map(cats.map((c) => [c.id, c])), [cats])
+
+  useEffect(() => {
+    if (vista === null) return
+    return registrarAtras(() => setVista(null))
+  }, [vista])
 
   const cerrarAviso = useCallback(() => setAviso(null), [])
   const avisar = useCallback((texto: string) => setAviso({ texto }), [])
@@ -121,7 +130,7 @@ export default function App() {
           ) : (
             <>
               <TarjetaBalance mes={nombreMes(hoy)} resumen={resumen} />
-              <AvisosInicio filas={filas} diasSinRespaldo={diasDesde(ajustes?.ultimo_respaldo)} cantidadMovimientos={movs.length}
+              <AvisosInicio filas={filas} diasSinRespaldo={diasDesde(ajustes?.ultimo_respaldo)} cantidadMovimientos={movs.length} danados={danados} onDescargarCrudos={() => void descargarDatosCrudos()}
                 onPresupuestos={() => irA('presupuestos')} onRespaldo={() => irA('ajustes')} />
               <MiniTarjetas semana={semana} onMetas={() => irA('metas')} />
               <GraficoSemana dias={semana.dias} hoy={hoy} />

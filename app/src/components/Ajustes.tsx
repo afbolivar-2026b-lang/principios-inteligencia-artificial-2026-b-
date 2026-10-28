@@ -1,6 +1,7 @@
 import { ChevronRight, Download, Share2, ShieldCheck, Sparkles, Tags, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { diasDesde } from '../avisos'
+import { descargar } from '../descarga'
 import { db, guardarAjustes, type Ajustes as DatosAjustes, type Tema } from '../db'
 import { ErrorIA, probarConexion } from '../ia'
 import { crearRespaldo, ErrorRespaldo, estaCifrado, importarRespaldo, respaldoATexto, textoARespaldo, type Respaldo } from '../respaldo'
@@ -15,17 +16,6 @@ interface Props {
 
 function guardarTema(tema: Tema) {
   try { localStorage.setItem('nova-tema', tema) } catch { /* sin almacenamiento: no pasa nada */ }
-}
-
-function descargar(nombre: string, texto: string) {
-  const url = URL.createObjectURL(new Blob([texto], { type: 'application/json' }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = nombre
-  document.body.append(a)
-  a.click()
-  a.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
 
 export function Ajustes({ ajustes, onCategorias, onAviso }: Props) {

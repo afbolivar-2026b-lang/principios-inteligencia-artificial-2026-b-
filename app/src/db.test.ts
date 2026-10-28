@@ -50,6 +50,24 @@ describe('guardarMovimiento', () => {
   })
 })
 
+describe('fechas con sentido', () => {
+  it('no deja guardar fechas del futuro ni anteriores al año 2000', async () => {
+    const base = { tipo: 'gasto' as const, monto: 1000, categoria_id: comida }
+    await expect(guardarMovimiento(d, { ...base, fecha: '2099-12-31' })).rejects.toThrow('futura')
+    await expect(guardarMovimiento(d, { ...base, fecha: '2026-10-29' })).rejects.toThrow('futura') // mañana
+    await expect(guardarMovimiento(d, { ...base, fecha: '1900-01-01' })).rejects.toThrow('no es válida')
+    await expect(guardarMovimiento(d, { ...base, fecha: '1999-12-31' })).rejects.toThrow('no es válida')
+    expect((await guardarMovimiento(d, { ...base, fecha: '2026-10-28' })).fecha).toBe('2026-10-28') // hoy
+    expect((await guardarMovimiento(d, { ...base, fecha: '2000-01-01' })).fecha).toBe('2000-01-01')
+    expect(await d.movimientos.count()).toBe(2)
+  })
+  it('editar tampoco permite dejarlo en el futuro', async () => {
+    const m = await guardarMovimiento(d, { tipo: 'gasto', monto: 1000, categoria_id: comida, fecha: '2026-10-28' })
+    await expect(actualizarMovimiento(d, m.id, { fecha: '2099-01-01' })).rejects.toThrow('futura')
+    expect((await d.movimientos.get(m.id))?.fecha).toBe('2026-10-28')
+  })
+})
+
 describe('editar y restaurar', () => {
   it('cambia lo pedido, valida igual que al crear y actualiza la hora de edición', async () => {
     const m = await guardarMovimiento(d, { tipo: 'gasto', monto: 18000, categoria_id: comida, fecha: '2026-10-28', descripcion: 'Almuerzo', medio_pago: 'nequi' })

@@ -27,5 +27,5 @@ export default defineConfig({
       workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2,woff}'], navigateFallbackDenylist: [/^\/api\//] },
     }),
   ],
-  test: { environment: 'node', include: ['src/**/*.test.ts', 'server/**/*.test.ts', 'api/**/*.test.ts'] },
+  test: { environment: 'node', setupFiles: ['src/reloj-de-prueba.ts'], include: ['src/**/*.test.ts', 'server/**/*.test.ts', 'api/**/*.test.ts'] },
 })

@@ -21,7 +21,7 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   await p.getByText('Actividad reciente').waitFor()
 
   // ---------- editar y borrar ----------
-  await p.getByRole('button', { name: /Editar: Almuerzo/ }).click()
+  await p.getByRole('button', { name: /Editar (gasto|ingreso)\. Almuerzo/ }).click()
   await p.getByRole('dialog', { name: 'Editar gasto' }).waitFor()
   assert.equal(await p.locator('#monto').inputValue(), '$18.000')
   assert.equal(await p.locator('#descripcion').inputValue(), 'Almuerzo')
@@ -29,12 +29,12 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   await p.locator('#monto').fill('20000')
   await p.getByRole('button', { name: 'Guardar cambios' }).click()
   await p.getByRole('status').getByText('Cambios guardados').waitFor()
-  await p.getByRole('button', { name: /Editar: Almuerzo.*20000/ }).waitFor()
+  await p.getByRole('button', { name: /Editar (gasto|ingreso)\. Almuerzo.*20\.000/ }).waitFor()
   await p.getByRole('button', { name: 'Deshacer' }).click()
-  await p.getByRole('button', { name: /Editar: Almuerzo.*18000/ }).waitFor()
+  await p.getByRole('button', { name: /Editar (gasto|ingreso)\. Almuerzo.*18\.000/ }).waitFor()
   paso('editar un gasto y deshacer la edición')
 
-  await p.getByRole('button', { name: /Editar: Bus/ }).click()
+  await p.getByRole('button', { name: /Editar (gasto|ingreso)\. Bus/ }).click()
   await p.getByRole('button', { name: 'Borrar', exact: true }).click()
   await p.getByText('¿Borrar este gasto?').waitFor()
   await p.getByRole('button', { name: 'No', exact: true }).click()
@@ -42,9 +42,9 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   await p.getByRole('button', { name: 'Borrar', exact: true }).click()
   await p.getByRole('button', { name: 'Sí, borrar' }).click()
   await p.getByRole('status').getByText('Movimiento borrado').waitFor()
-  assert.equal(await p.getByRole('button', { name: /Editar: Bus/ }).count(), 0)
+  assert.equal(await p.getByRole('button', { name: /Editar (gasto|ingreso)\. Bus/ }).count(), 0)
   await p.getByRole('button', { name: 'Deshacer' }).click()
-  await p.getByRole('button', { name: /Editar: Bus/ }).waitFor()
+  await p.getByRole('button', { name: /Editar (gasto|ingreso)\. Bus/ }).waitFor()
   paso('borrar pide confirmación, "No" cancela, y "Deshacer" lo trae de vuelta')
 
   // ---------- lista completa y filtros ----------
@@ -83,7 +83,7 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   await p.getByText(/presupuestados en 4 categorías/).waitFor()
   await p.getByText('Te pasaste por $5.200').first().waitFor()
   await p.getByText('Vas en el 95 % · te quedan $7.500').waitFor()
-  await p.getByRole('button', { name: /^Salud: sin límite/ }).click()
+  await p.getByRole('button', { name: /Cambiar límite\. Salud/ }).click()
   await p.getByRole('button', { name: 'Guardar límite' }).click()
   await p.getByText('Escribe un límite mayor a 0').waitFor()
   await p.getByLabel('Cuánto quieres gastar al mes').fill('50000')
@@ -91,7 +91,7 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   await p.getByRole('button', { name: 'Guardar límite' }).click()
   await p.getByRole('status').getByText('Límite de Salud: $50.000 al mes').waitFor()
   await p.getByText(/presupuestados en 5 categorías/).waitFor()
-  await p.getByRole('button', { name: /^Salud: límite/ }).click()
+  await p.getByRole('button', { name: /Cambiar límite\. Salud/ }).click()
   await p.getByRole('button', { name: 'Quitar', exact: true }).click()
   await p.getByRole('button', { name: 'No', exact: true }).click()
   await p.getByRole('button', { name: 'Guardar límite' }).waitFor()
@@ -200,7 +200,7 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   await p.reload()
   await p.getByText('Actividad reciente').waitFor()
   await p.getByRole('button', { name: 'Presupuestos', exact: true }).click()
-  await p.getByRole('button', { name: /^Comida: límite/ }).waitFor()
+  await p.getByRole('button', { name: /Cambiar límite\. Comida/ }).waitFor()
   await p.getByRole('button', { name: 'Análisis', exact: true }).click()
   await p.getByRole('img', { name: /^Gastos de/ }).waitFor()
   paso('SIN INTERNET: presupuestos y análisis funcionan')
@@ -214,7 +214,7 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   await q.getByText('Todavía no has anotado nada').waitFor()
   await q.getByRole('button', { name: 'Ajustes', exact: true }).last().click()
 
-  await q.getByLabel('Archivo de respaldo').setInputFiles('respaldo-con-clave.json')
+  await q.locator('input[type=file]').setInputFiles('respaldo-con-clave.json')
   await q.getByText('Este respaldo tiene clave').waitFor()
   await q.getByLabel('Este respaldo tiene clave').fill('mala-clave')
   await q.getByRole('button', { name: 'Abrir' }).click()
@@ -226,7 +226,7 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   await q.getByRole('status').getByText(/Se sumaron \d+ movimientos nuevos/).waitFor()
   paso('celular nuevo: clave mala se rechaza, clave buena abre, y "Sumar" trae los datos')
 
-  await q.getByLabel('Archivo de respaldo').setInputFiles('respaldo-sin-clave.json')
+  await q.locator('input[type=file]').setInputFiles('respaldo-sin-clave.json')
   await q.getByText(/^Respaldo del/).waitFor()
   await q.getByRole('radio', { name: 'Reemplazar todo lo que tengo' }).click()
   await q.getByText('Esto borra tus datos actuales').waitFor()
@@ -235,13 +235,13 @@ const sinDesborde = (p) => p.evaluate(() => document.documentElement.scrollWidth
   paso('"Reemplazar" avisa que borra lo actual y lo hace solo tras confirmar')
 
   fs.writeFileSync('basura.json', '{"app":"otra-cosa"}')
-  await q.getByLabel('Archivo de respaldo').setInputFiles('basura.json')
+  await q.locator('input[type=file]').setInputFiles('basura.json')
   await q.getByText('El archivo no es un respaldo de Nova').waitFor()
   await q.getByRole('button', { name: 'Cerrar' }).click()
   paso('un archivo que no es de Nova se rechaza con un mensaje claro')
 
   await q.getByRole('button', { name: 'Inicio', exact: true }).click()
-  await q.getByRole('button', { name: /Editar: Almuerzo/ }).waitFor()
+  await q.getByRole('button', { name: /Editar (gasto|ingreso)\. Almuerzo/ }).waitFor()
   await q.getByText('Haz un respaldo.').waitFor()
   paso('en el celular nuevo se ven los datos y la app recuerda hacer un respaldo')
 

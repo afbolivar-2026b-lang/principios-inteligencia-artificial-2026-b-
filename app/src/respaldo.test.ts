@@ -60,6 +60,8 @@ describe('archivos dañados o hechos a mano', () => {
     expect(con((r) => { r.movimientos[0].monto = -5 })).toThrow(ErrorRespaldo)
     expect(con((r) => { r.movimientos[0].monto = 12.5 })).toThrow(ErrorRespaldo)
     expect(con((r) => { r.movimientos[0].fecha = '2026-02-30' })).toThrow(ErrorRespaldo)
+    expect(con((r) => { r.movimientos[0].fecha = '1900-01-01' })).toThrow(ErrorRespaldo)
+    expect(con((r) => { r.movimientos[0].fecha = '2150-01-01' })).toThrow(ErrorRespaldo)
     expect(con((r) => { r.movimientos[0].categoria_id = crypto.randomUUID() })).toThrow(ErrorRespaldo)
     expect(con((r) => { r.movimientos[0].id = 'no-es-uuid' })).toThrow(ErrorRespaldo)
     expect(con((r) => { r.movimientos.find((m) => m.tipo === 'gasto')!.tipo = 'ingreso' })).toThrow(ErrorRespaldo) // su categoría es de gasto

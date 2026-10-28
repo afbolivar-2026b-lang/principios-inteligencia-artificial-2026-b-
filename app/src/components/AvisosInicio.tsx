@@ -1,4 +1,4 @@
-import { ArchiveRestore, OctagonAlert, TriangleAlert } from 'lucide-react'
+import { ArchiveRestore, DatabaseBackup, OctagonAlert, TriangleAlert } from 'lucide-react'
 import { formatoCOP } from '../money'
 import type { FilaPresupuesto } from '../presupuestos'
 
@@ -7,18 +7,30 @@ interface Props {
   /** días desde el último respaldo; null si nunca se hizo */
   diasSinRespaldo: number | null
   cantidadMovimientos: number
+  /** cuántos datos guardados están dañados y se dejaron fuera */
+  danados: number
+  onDescargarCrudos: () => void
   onPresupuestos: () => void
   onRespaldo: () => void
 }
 
-export function AvisosInicio({ filas, diasSinRespaldo, cantidadMovimientos, onPresupuestos, onRespaldo }: Props) {
+export function AvisosInicio({ filas, diasSinRespaldo, cantidadMovimientos, danados, onDescargarCrudos, onPresupuestos, onRespaldo }: Props) {
   const todas = filas.filter((f) => f.estado && f.estado.nivel !== 'normal')
   const enRiesgo = todas.slice(0, 2)
   const ocultas = todas.length - enRiesgo.length
   const pedirRespaldo = cantidadMovimientos >= 3 && (diasSinRespaldo === null || diasSinRespaldo > 7)
-  if (enRiesgo.length === 0 && !pedirRespaldo) return null
+  if (enRiesgo.length === 0 && !pedirRespaldo && danados === 0) return null
   return (
     <div className="flex flex-col gap-2">
+      {danados > 0 ? (
+        <button type="button" onClick={onDescargarCrudos} className="flex items-center gap-3 rounded-lg border border-danger bg-surface p-3 text-left">
+          <DatabaseBackup aria-hidden="true" className="size-6 flex-none text-danger" />
+          <span className="text-sm">
+            <span className="font-semibold">{danados} {danados === 1 ? 'dato dañado' : 'datos dañados'}. </span>
+            No se muestran, pero tampoco se borraron. Toca para guardar una copia sin revisar.
+          </span>
+        </button>
+      ) : null}
       {enRiesgo.map((f) => {
         const e = f.estado!
         const excedido = e.nivel === 'excedido'

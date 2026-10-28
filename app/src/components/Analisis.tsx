@@ -54,7 +54,7 @@ export function Analisis({ movs, cats, hoy }: { movs: Movimiento[]; cats: Catego
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                   <span className="text-xs text-text-muted">Gastaste</span>
-                  <span className="text-lg font-extrabold">{formatoCOP(total)}</span>
+                  <span className={`font-extrabold ${formatoCOP(total).length <= 8 ? 'text-lg' : formatoCOP(total).length <= 11 ? 'text-base' : formatoCOP(total).length <= 14 ? 'text-sm' : 'text-xs'}`}>{formatoCOP(total)}</span>
                 </div>
               </div>
               <ul className="flex w-full flex-col gap-1">
@@ -93,13 +93,15 @@ export function Analisis({ movs, cats, hoy }: { movs: Movimiento[]; cats: Catego
             <span className="flex items-center gap-1"><span aria-hidden="true" className="size-3 rounded-sm bg-success" /> Ingresos</span>
             <span className="flex items-center gap-1"><span aria-hidden="true" className="size-3 rounded-sm bg-chart-3" /> Gastos</span>
           </div>
-          <table className="sr-only">
+          <div className="sr-only">
+          <table>
             <caption>Ingresos y gastos de los últimos 6 meses</caption>
             <thead><tr><th>Mes</th><th>Ingresos</th><th>Gastos</th></tr></thead>
             <tbody>
               {serie.map((p) => <tr key={p.mes}><th scope="row">{nombreMes(`${p.mes}-01`)}</th><td>{formatoCOP(p.ingresos)}</td><td>{formatoCOP(p.gastos)}</td></tr>)}
             </tbody>
           </table>
+          </div>
         </section>
       </main>
     </>

@@ -27,7 +27,8 @@ export function mesDe(iso: string): string {
 }
 
 export function fechaValida(iso: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(iso) && sumarDias(iso, 0) === iso
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || Number.isNaN(Date.parse(`${iso}T00:00:00Z`))) return false // por ejemplo 2026-13-45
+  return sumarDias(iso, 0) === iso // por ejemplo 2026-02-30 se corre a marzo y no coincide
 }
 
 export function nombreMes(iso: string): string {

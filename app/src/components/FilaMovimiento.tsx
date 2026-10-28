@@ -19,8 +19,9 @@ export function FilaMovimiento({ mov, categoria, hoy, onAbrir, sinFecha }: Props
   const cuando = sinFecha ? horaLocal(mov.creado_en) : `${etiquetaDia(mov.fecha, hoy)} · ${horaLocal(mov.creado_en)}`
   return (
     <li>
-      <button type="button" onClick={() => onAbrir(mov)} aria-label={`Editar: ${mov.descripcion || nombreCat}, ${ingreso ? 'ingreso' : 'gasto'} de ${mov.monto} pesos`}
+      <button type="button" onClick={() => onAbrir(mov)}
         className="flex min-h-[56px] w-full items-center gap-3 rounded-lg border border-border bg-surface p-3 text-left shadow-card">
+        <span className="sr-only">Editar {ingreso ? 'ingreso' : 'gasto'}. </span>
         <IconoCategoria nombre={categoria?.icono ?? 'tag'} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">{mov.descripcion || nombreCat}</p>

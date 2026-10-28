@@ -58,7 +58,7 @@ const paso = (t) => console.log('✔', t)
   paso('SIN IA: "almuerzo 18 mil en nequi" llena monto, categoría, medio de pago y descripción; Enter no guarda')
   await p.getByRole('button', { name: 'Guardar', exact: true }).click()
   await p.getByRole('dialog').waitFor({ state: 'detached' })
-  await p.getByRole('button', { name: /Editar: Almuerzo/ }).waitFor()
+  await p.getByRole('button', { name: /Editar (gasto|ingreso)\. Almuerzo/ }).waitFor()
   assert.equal((await estadoIA()).llamadasIA.length, 0)
   paso('se guarda, y no se llamó a ninguna IA (costo: $0)')
 
@@ -107,7 +107,7 @@ const paso = (t) => console.log('✔', t)
   paso('CON IA: la frase pasa por el servidor, que usa la llave y el modelo; el formulario queda para revisar')
   await p.getByRole('button', { name: 'Guardar', exact: true }).click()
   await p.getByRole('dialog').waitFor({ state: 'detached' })
-  await p.getByRole('button', { name: /Editar: Almuerzo \(IA\)/ }).waitFor()
+  await p.getByRole('button', { name: /Editar (gasto|ingreso)\. Almuerzo \(IA\)/ }).waitFor()
 
   // ---------- voz ----------
   await abrirHoja()

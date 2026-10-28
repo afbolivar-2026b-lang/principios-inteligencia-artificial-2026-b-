@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import { fechaValida, mesDe, sumarDias } from './dates'
+import { fechaValida, hoyISO, mesDe, sumarDias } from './dates'
 
 export type TipoMov = 'gasto' | 'ingreso'
 export type MedioPago = 'efectivo' | 'tarjeta' | 'nequi' | 'daviplata' | 'pse' | 'transferencia' | 'otro'
@@ -117,9 +117,12 @@ export async function asegurarCategorias(d: NovaDB = db): Promise<void> {
 
 export class ErrorDeDatos extends Error {}
 
+export const FECHA_MINIMA = '2000-01-01'
+
 async function validarMovimiento(d: NovaDB, m: Pick<Movimiento, 'tipo' | 'monto' | 'categoria_id' | 'fecha'>): Promise<void> {
   if (!Number.isSafeInteger(m.monto) || m.monto <= 0) throw new ErrorDeDatos('Escribe un monto mayor a 0')
-  if (!fechaValida(m.fecha)) throw new ErrorDeDatos('La fecha no es válida')
+  if (!fechaValida(m.fecha) || m.fecha < FECHA_MINIMA) throw new ErrorDeDatos('La fecha no es válida')
+  if (m.fecha > hoyISO()) throw new ErrorDeDatos('La fecha no puede ser futura')
   const cat = await d.categorias.get(m.categoria_id)
   if (!cat) throw new ErrorDeDatos('Elige una categoría')
   if (cat.tipo !== m.tipo) throw new ErrorDeDatos('La categoría no corresponde al tipo de movimiento')

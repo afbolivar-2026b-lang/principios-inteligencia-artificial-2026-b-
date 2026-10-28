@@ -1,7 +1,8 @@
 import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { etiquetaDia, mesDe } from '../dates'
-import { normalizar, type Categoria, type Movimiento } from '../db'
+import { coincide } from '../busqueda'
+import type { Categoria, Movimiento } from '../db'
 import { formatoCOP } from '../money'
 import { FilaMovimiento } from './FilaMovimiento'
 import { SelectorMes } from './SelectorMes'
@@ -26,10 +27,9 @@ export function Movimientos({ movs, cats, hoy, onAbrir, onVolver }: Props) {
   const porId = useMemo(() => new Map(cats.map((c) => [c.id, c])), [cats])
 
   const lista = useMemo(() => {
-    const q = normalizar(busqueda)
     return movs
       .filter((m) => mesDe(m.fecha) === mes && (tipo === 'todos' || m.tipo === tipo) && (!categoria || m.categoria_id === categoria))
-      .filter((m) => !q || normalizar(`${m.descripcion} ${porId.get(m.categoria_id)?.nombre ?? ''}`).includes(q))
+      .filter((m) => coincide(`${m.descripcion} ${porId.get(m.categoria_id)?.nombre ?? ''}`, busqueda))
       .sort((a, b) => (a.fecha === b.fecha ? b.creado_en.localeCompare(a.creado_en) : b.fecha.localeCompare(a.fecha)))
   }, [movs, mes, tipo, categoria, busqueda, porId])
 

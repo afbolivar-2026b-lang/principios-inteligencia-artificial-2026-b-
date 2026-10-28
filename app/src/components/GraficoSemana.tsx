@@ -28,7 +28,8 @@ export function GraficoSemana({ dias, hoy }: { dias: number[]; hoy: string }) {
           )
         })}
       </div>
-      <table className="sr-only">
+      <div className="sr-only">
+      <table>
         <caption>Gasto por día de esta semana</caption>
         <tbody>
           {DIAS.map((d, i) => (
@@ -36,6 +37,7 @@ export function GraficoSemana({ dias, hoy }: { dias: number[]; hoy: string }) {
           ))}
         </tbody>
       </table>
+      </div>
     </section>
   )
 }

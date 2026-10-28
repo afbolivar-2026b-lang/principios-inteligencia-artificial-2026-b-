@@ -20,7 +20,7 @@ export function Categorias({ cats, onVolver, onAviso }: { cats: Categoria[]; onV
             <li key={c.id}>
               <button type="button" onClick={() => setHoja({ editando: c })} className={`flex min-h-[56px] w-full items-center gap-3 rounded-lg border border-border bg-surface p-3 text-left shadow-card ${c.archivada ? 'opacity-70' : ''}`}>
                 <IconoCategoria nombre={c.icono} />
-                <span className="flex-1 font-semibold">{c.nombre}</span>
+                <span className="min-w-0 flex-1 truncate font-semibold">{c.nombre}</span>
                 {c.archivada ? <span className="rounded-pill border border-border-input px-2 py-0.5 text-xs text-text-muted">Archivada</span> : null}
               </button>
             </li>

@@ -1,6 +1,6 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { sumarDias } from '../dates'
-import { db, actualizarMovimiento, ErrorDeDatos, guardarMovimiento, MEDIOS_PAGO, type Categoria, type MedioPago, type Movimiento, type TipoMov } from '../db'
+import { db, actualizarMovimiento, ErrorDeDatos, FECHA_MINIMA, guardarMovimiento, MEDIOS_PAGO, type Categoria, type MedioPago, type Movimiento, type TipoMov } from '../db'
 import { formatoDigitos, soloDigitos } from '../money'
 import type { Propuesta } from '../entenderLocal'
 import { Chip, Segmentos } from './Chip'
@@ -34,7 +34,12 @@ export function HojaMovimiento({ categorias, hoy, codigoIA, editando, onCerrar, 
   const [errores, setErrores] = useState<{ monto?: string; categoria?: string; general?: string }>({})
   const [guardando, setGuardando] = useState(false)
   const [confirmaBorrar, setConfirmaBorrar] = useState(false)
+  const enviando = useRef(false) // seguro contra dos envíos en el mismo instante (el estado se actualiza un poco tarde)
+  const errorGeneral = useRef<HTMLParagraphElement>(null)
   const [origen, setOrigen] = useState<'manual' | OrigenEntrada>('manual')
+
+  // si hay un error general, que se vea aunque el formulario sea largo
+  useEffect(() => { if (errores.general) errorGeneral.current?.scrollIntoView({ block: 'center' }) }, [errores.general])
 
   const fecha = cuando === 'hoy' ? hoy : cuando === 'ayer' ? sumarDias(hoy, -1) : fechaOtra
   // en edición se muestran también las categorías archivadas, solo si es la que ya tiene el movimiento
@@ -59,13 +64,14 @@ export function HojaMovimiento({ categorias, hoy, codigoIA, editando, onCerrar, 
 
   async function enviar(e: FormEvent) {
     e.preventDefault()
-    if (guardando) return
+    if (enviando.current) return
     const monto = soloDigitos(digitos)
     const nuevos: typeof errores = {}
     if (monto <= 0) nuevos.monto = 'Escribe un monto mayor a 0'
     if (!categoriaId) nuevos.categoria = 'Elige una categoría'
     setErrores(nuevos)
     if (nuevos.monto || nuevos.categoria) { if (nuevos.monto) document.getElementById('monto')?.focus(); return }
+    enviando.current = true
     setGuardando(true)
     try {
       const mov = editando
@@ -74,6 +80,7 @@ export function HojaMovimiento({ categorias, hoy, codigoIA, editando, onCerrar, 
       onGuardado(mov, !editando)
     } catch (err) {
       setErrores({ general: err instanceof ErrorDeDatos ? err.message : 'No se pudo guardar. Intenta de nuevo.' })
+      enviando.current = false
       setGuardando(false)
     }
   }
@@ -141,7 +148,7 @@ export function HojaMovimiento({ categorias, hoy, codigoIA, editando, onCerrar, 
             <Chip activo={cuando === 'otra'} onClick={() => setCuando('otra')}>Otra fecha</Chip>
           </div>
           {cuando === 'otra' ? (
-            <input type="date" aria-label="Fecha del movimiento" max={hoy} value={fechaOtra} onChange={(e) => setFechaOtra(e.target.value || hoy)}
+            <input type="date" aria-label="Fecha del movimiento" min={FECHA_MINIMA} max={hoy} value={fechaOtra} onChange={(e) => setFechaOtra(e.target.value || hoy)}
               className="mt-2 h-11 w-full rounded-md border border-border-input bg-bg px-4" />
           ) : null}
         </div>
@@ -155,7 +162,7 @@ export function HojaMovimiento({ categorias, hoy, codigoIA, editando, onCerrar, 
           </div>
         </div>
 
-        {errores.general ? <p role="alert" className="text-sm text-danger">{errores.general}</p> : null}
+        {errores.general ? <p ref={errorGeneral} role="alert" className="text-sm font-medium text-danger">{errores.general}</p> : null}
       </form>
     </Hoja>
   )

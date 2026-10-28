@@ -5,11 +5,14 @@ import '@fontsource-variable/inter'
 import './tokens.css'
 import './index.css'
 import App from './App'
+import { LimiteDeError } from './components/LimiteDeError'
 
 registerSW({ immediate: true })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <LimiteDeError>
+      <App />
+    </LimiteDeError>
   </StrictMode>,
 )

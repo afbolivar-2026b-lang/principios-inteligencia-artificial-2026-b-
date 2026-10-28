@@ -49,8 +49,9 @@ export function Presupuestos({ cats, pres, movs, hoy, onAviso }: Props) {
         <ul className="flex flex-col gap-2">
           {filas.map((f) => (
             <li key={f.categoria.id}>
-              <button type="button" onClick={() => setEditando(f)} aria-label={`${f.categoria.nombre}: ${f.presupuesto ? `límite ${f.presupuesto.limite} pesos, gastado ${f.gastado}` : `sin límite, gastado ${f.gastado}`}. Tocar para cambiar`}
+              <button type="button" onClick={() => setEditando(f)}
                 className="flex w-full flex-col gap-2 rounded-lg border border-border bg-surface p-3 text-left shadow-card">
+                <span className="sr-only">Cambiar límite. </span>
                 <span className="flex items-center gap-3">
                   <IconoCategoria nombre={f.categoria.icono} />
                   <span className="min-w-0 flex-1">

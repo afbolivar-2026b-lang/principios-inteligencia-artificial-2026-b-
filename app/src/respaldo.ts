@@ -124,7 +124,7 @@ export function validarRespaldo(crudo: unknown): Respaldo {
     if (!esObjeto(m) || typeof m.id !== 'string' || !UUID.test(m.id) || vistos.has(m.id)) malo('movimiento')
     if (!TIPOS.includes(m.tipo as TipoMov) || !entero(m.monto) || m.monto <= 0 || m.moneda !== 'COP') malo('movimiento')
     if (typeof m.categoria_id !== 'string' || tipoDe.get(m.categoria_id) !== m.tipo) malo('movimiento sin categoría')
-    if (typeof m.fecha !== 'string' || !fechaValida(m.fecha) || !texto(m.descripcion, 120)) malo('movimiento')
+    if (typeof m.fecha !== 'string' || !fechaValida(m.fecha) || m.fecha < '2000-01-01' || m.fecha > '2100-12-31' || !texto(m.descripcion, 120)) malo('movimiento')
     if (m.medio_pago !== undefined && !MEDIOS_PAGO.some((x) => x.id === m.medio_pago)) malo('medio de pago')
     if (!ORIGENES.includes(m.origen as Origen) || !texto(m.creado_en, 40) || !texto(m.editado_en, 40)) malo('movimiento')
     vistos.add(m.id)

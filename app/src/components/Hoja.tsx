@@ -1,5 +1,7 @@
 import { X } from 'lucide-react'
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+import { registrarAtras } from '../atras'
 
 interface Props {
   titulo: string
@@ -22,12 +24,24 @@ export function Hoja({ titulo, onCerrar, children, pie }: Props) {
 
   useEffect(() => {
     const quienAbrio = document.activeElement as HTMLElement | null
+    // la app de atrás queda "inerte": ni el teclado, ni el toque, ni el lector de pantalla pueden llegar a ella
+    const raiz = document.getElementById('root')
+    raiz?.setAttribute('inert', '')
+    const soltarAtras = registrarAtras(() => cerrarRef.current())
     const primero = caja.current?.querySelector<HTMLElement>('[data-foco]') ?? caja.current?.querySelector<HTMLElement>('input, button')
     primero?.focus({ preventScroll: true })
     const alPresionar = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape') cerrarRef.current() }
     document.addEventListener('keydown', alPresionar)
     return () => {
       document.removeEventListener('keydown', alPresionar)
+      raiz?.removeAttribute('inert')
+      soltarAtras()
+      // un segundo toque rápido (doble toque) no debe caer sobre lo que queda debajo cuando la ventana se cierra
+      const escudo = document.createElement('div')
+      escudo.setAttribute('aria-hidden', 'true')
+      escudo.style.cssText = 'position:fixed;inset:0;z-index:60;background:transparent'
+      document.body.append(escudo)
+      setTimeout(() => escudo.remove(), 350)
       quienAbrio?.focus?.()
     }
   }, [])
@@ -42,7 +56,7 @@ export function Hoja({ titulo, onCerrar, children, pie }: Props) {
     else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus() }
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-30 flex items-end justify-center" onKeyDown={atrapar}>
       <div className="scrim absolute inset-0" onClick={onCerrar} aria-hidden="true" />
       <div ref={caja} role="dialog" aria-modal="true" aria-labelledby={idTitulo}
@@ -56,6 +70,7 @@ export function Hoja({ titulo, onCerrar, children, pie }: Props) {
         <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2">{children}</div>
         {pie ? <div className="flex gap-3 border-t border-border bg-bg px-4 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3">{pie}</div> : null}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
