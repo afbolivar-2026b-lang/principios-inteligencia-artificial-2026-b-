@@ -4,3 +4,15 @@
 [submodule "awesome-design-md"]
 	path = awesome-design-md
 	url = https://github.com/VoltAgent/awesome-design-md.git
+[submodule "jev-experiments/jev-playground"]
+	path = jev-experiments/jev-playground
+	url = https://github.com/deepdave98/jev-playground.git
+[submodule "jev-experiments/jev-demo-router"]
+	path = jev-experiments/jev-demo-router
+	url = https://github.com/Zafer-Liu/jev-demo-router.git
+[submodule "jev-experiments/jev-doc-classification"]
+	path = jev-experiments/jev-doc-classification
+	url = https://github.com/lucassarcanjo/jev-doc-classification.git
+[submodule "jev-experiments/jev-clerk"]
+	path = jev-experiments/jev-clerk
+	url = https://github.com/stas4000/jev-clerk.git
