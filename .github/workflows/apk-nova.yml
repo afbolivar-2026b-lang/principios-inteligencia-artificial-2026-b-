@@ -1,0 +1,80 @@
+# Arma la app de NOVA para Android (APK) a partir de app-finanzas y la deja en
+# app-finanzas/descargas/NOVA.apk, para descargarla desde la pantalla de inicio de la app.
+name: NOVA Android (APK)
+
+on:
+  push:
+    paths:
+      - "app-finanzas/**"
+      - "!app-finanzas/descargas/**"
+      - "app-android-nova/**"
+      - ".github/workflows/apk-nova.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-nova-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Preparar el proyecto de Android
+        working-directory: app-android-nova
+        run: |
+          npm ci --no-audit --no-fund
+          node preparar.mjs
+          npx cap add android
+          # Ícono y pantalla de inicio con el logo de NOVA
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          cp -r recursos/res/* android/app/src/main/res/
+          # Permiso de ubicación (función Pro: guardar dónde se hizo cada pago)
+          sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />#' android/app/src/main/AndroidManifest.xml
+          grep -q ACCESS_FINE_LOCATION android/app/src/main/AndroidManifest.xml
+          # Número de versión: uno más en cada armado
+          sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -E "versionCode|versionName" android/app/build.gradle
+          # Firma fija: así cada versión nueva se instala encima de la anterior
+          mkdir -p ~/.android
+          cp firma/debug.keystore ~/.android/debug.keystore
+
+      - name: Armar la APK
+        working-directory: app-android-nova/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Guardar la APK en la app
+        run: |
+          mkdir -p app-finanzas/descargas
+          cp app-android-nova/android/app/build/outputs/apk/debug/app-debug.apk app-finanzas/descargas/NOVA.apk
+          ls -la app-finanzas/descargas
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NOVA-apk
+          path: app-finanzas/descargas/NOVA.apk
+
+      - name: Subir la APK al repositorio
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app-finanzas/descargas/NOVA.apk
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "APK de NOVA actualizada (versión 1.${{ github.run_number }})"
+          git pull --no-rebase --no-edit origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

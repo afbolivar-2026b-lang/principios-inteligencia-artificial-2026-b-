@@ -72,6 +72,31 @@ no pueden leer nada. En el primer inicio de sesión la app crea la cuenta
 En `config.js` va solo la clave **publicable**. La clave `service_role` nunca
 debe ir en el navegador.
 
+## Inicio de sesión
+
+- **Candado** en el campo de contraseña para verla u ocultarla.
+- **¿Olvidaste tu contraseña?** envía un correo con un enlace. Ese enlace abre
+  la app en `sitioUrl` (de `config.js`) y pide la contraseña nueva dos veces.
+  Si el enlace venció, la app lo dice y deja pedir otro.
+- Supabase manda pocos correos por hora con su servidor de correo gratuito.
+
+## App para Android (APK)
+
+Cada vez que cambia `app-finanzas/` o `app-android-nova/`, el flujo de GitHub Actions
+`.github/workflows/apk-nova.yml` arma la APK con Capacitor y la guarda en
+`app-finanzas/descargas/NOVA.apk`. La pantalla de inicio y el Perfil muestran
+"Descargar la app para Android" cuando el archivo existe. Dentro de la app
+instalada no se muestra.
+
+- **Ícono y pantalla de inicio:** el logo de NOVA en `app-android-nova/recursos/res/`.
+  Se generan desde un dibujo, así que cambiarlos es cambiar esas imágenes.
+- **Firma:** `app-android-nova/firma/debug.keystore` es una firma de depuración
+  (contraseña `android`, la estándar). Se guarda en el repositorio para que cada
+  versión nueva se instale encima de la anterior. Para publicar en Google Play
+  hace falta una firma propia y secreta.
+- **Diferencias con la web:** dentro de la APK el dictado por voz no está
+  disponible, porque el navegador interno de Android no lo trae. Escribir sí funciona.
+
 ## Probar en tu ordenador
 
 ```

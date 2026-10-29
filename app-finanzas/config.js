@@ -8,4 +8,7 @@ window.NOVA_CONFIG = {
   nombre: "NOVA",
   supabaseUrl: "https://bldimtnnvumcjakbgqta.supabase.co",
   supabaseKey: "sb_publishable_4sx5ZQwhC1WDEXAqy_NYYQ_wKJ7MgHl",
+  // Dirección pública de la app: a ella lleva el enlace del correo para
+  // cambiar la contraseña (también cuando se pide desde la app de Android).
+  sitioUrl: "https://nova-finanzas.vercel.app",
 };

@@ -706,7 +706,91 @@
   });
 
   // ---------- Sesión ----------
+  // El enlace del correo para cambiar la contraseña llega con "type=recovery" (o con un
+  // error si venció). Se lee antes de crear el cliente, porque este limpia la dirección.
+  var hashInicial = new URLSearchParams(location.hash.replace(/^#/, ""));
+  var esRecuperacion = hashInicial.get("type") === "recovery";
+  var errorEnlace = hashInicial.get("error_description");
+  var enApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
   var cliente = window.supabase && cfg.supabaseUrl ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey) : null;
+
+  // Candado para ver u ocultar la contraseña.
+  var CANDADO_CERRADO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1.2"/></svg>';
+  var CANDADO_ABIERTO = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.7"/><circle cx="12" cy="16" r="1.2"/></svg>';
+  document.querySelectorAll("[data-ver-clave]").forEach(function (b) {
+    var input = $(b.dataset.verClave);
+    function pintarCandado() {
+      var visible = input.type === "text";
+      b.innerHTML = visible ? CANDADO_ABIERTO : CANDADO_CERRADO;
+      b.setAttribute("aria-pressed", String(visible));
+      b.setAttribute("aria-label", visible ? "Ocultar la contraseña" : "Mostrar la contraseña");
+    }
+    b.addEventListener("click", function () {
+      input.type = input.type === "password" ? "text" : "password";
+      pintarCandado();
+      input.focus();
+    });
+    pintarCandado();
+  });
+
+  // ¿Olvidaste tu contraseña?
+  $("btn-olvide").addEventListener("click", function () {
+    var email = $("auth-email").value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      $("auth-email").focus();
+      return mensaje("auth-mensaje", "Escribe arriba el correo de tu cuenta y vuelve a tocar «¿Olvidaste tu contraseña?».", true);
+    }
+    if (!cliente) return mensaje("auth-mensaje", "No hay conexión con el servidor. Intenta más tarde.", true);
+    var b = $("btn-olvide");
+    b.disabled = true;
+    mensaje("auth-mensaje", "Enviando el correo…");
+    cliente.auth.resetPasswordForEmail(email, { redirectTo: cfg.sitioUrl || location.origin }).then(function (r) {
+      if (r.error) throw r.error;
+      mensaje("auth-mensaje", "Listo. Si " + email + " tiene cuenta, te llegará un correo con un enlace para crear una contraseña nueva. Revisa también Spam.");
+    }).catch(function (err) {
+      mensaje("auth-mensaje", /rate limit|too many/i.test(err.message)
+        ? "Ya se enviaron varios correos. Espera unos minutos y vuelve a intentarlo."
+        : "No se pudo enviar el correo: " + err.message, true);
+    }).finally(function () { b.disabled = false; });
+  });
+
+  function pedirNuevaClave() {
+    mostrar("auth");
+    $("form-auth").hidden = true;
+    $("btn-demo").hidden = true;
+    $("form-nueva-clave").hidden = false;
+    $("nueva-clave").focus();
+  }
+
+  $("form-nueva-clave").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var c1 = $("nueva-clave").value, c2 = $("nueva-clave-2").value;
+    if (c1.length < 6) return mensaje("nueva-clave-mensaje", "La contraseña debe tener al menos 6 caracteres.", true);
+    if (c1 !== c2) return mensaje("nueva-clave-mensaje", "Las dos contraseñas no coinciden.", true);
+    var btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true;
+    cliente.auth.updateUser({ password: c1 }).then(function (r) {
+      if (r.error) throw r.error;
+      history.replaceState(null, "", location.pathname);
+      $("form-nueva-clave").hidden = true;
+      $("form-auth").hidden = false;
+      $("btn-demo").hidden = false;
+      return entrar(fuenteSupabase(cliente, r.data.user));
+    }).catch(function (err) {
+      mensaje("nueva-clave-mensaje", /different from the old/i.test(err.message)
+        ? "La nueva contraseña debe ser distinta de la anterior." : err.message, true);
+    }).finally(function () { btn.disabled = false; });
+  });
+
+  // Botón para descargar la APK: solo en el navegador y solo si el archivo ya existe.
+  if (!enApp) {
+    fetch("descargas/NOVA.apk", { method: "HEAD" }).then(function (r) {
+      var hay = r.ok && !/text\/html/.test(r.headers.get("content-type") || "");
+      $("btn-apk").hidden = !hay;
+      $("perfil-apk").hidden = !hay;
+    }).catch(function () { /* sin APK publicada todavía */ });
+  }
 
   function mostrar(pantalla) {
     $("cargando").hidden = true;
@@ -766,7 +850,15 @@
   if (cliente) {
     cliente.auth.getSession().then(function (r) {
       var s = r.data && r.data.session;
-      if (s) entrar(fuenteSupabase(cliente, s.user)); else mostrar("auth");
+      if (s && esRecuperacion) return pedirNuevaClave();
+      if (s) return entrar(fuenteSupabase(cliente, s.user));
+      mostrar("auth");
+      if (errorEnlace) {
+        history.replaceState(null, "", location.pathname);
+        mensaje("auth-mensaje", /expired|invalid/i.test(errorEnlace)
+          ? "El enlace del correo ya venció o ya se usó. Pide uno nuevo con «¿Olvidaste tu contraseña?»."
+          : "No se pudo abrir el enlace del correo: " + errorEnlace, true);
+      }
     }).catch(function () { mostrar("auth"); });
   } else {
     mostrar("auth");

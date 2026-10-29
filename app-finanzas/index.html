@@ -9,6 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="estilos.css">
+<link rel="icon" type="image/png" href="iconos/favicon.png">
+<link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 
@@ -20,14 +23,40 @@
     <label for="auth-email">Correo</label>
     <input id="auth-email" type="email" autocomplete="email" required>
     <label for="auth-clave">Contraseña</label>
-    <input id="auth-clave" type="password" autocomplete="current-password" minlength="6" required>
+    <div class="campo-clave">
+      <input id="auth-clave" type="password" autocomplete="current-password" minlength="6" required>
+      <button type="button" class="ver-clave" data-ver-clave="auth-clave" aria-label="Mostrar la contraseña" aria-pressed="false"></button>
+    </div>
+    <button type="button" id="btn-olvide" class="enlace olvide">¿Olvidaste tu contraseña?</button>
     <div class="fila-botones">
       <button type="submit" class="primario" data-accion="entrar">Entrar</button>
       <button type="submit" data-accion="registrar">Crear cuenta</button>
     </div>
     <p id="auth-mensaje" class="mensaje" role="status"></p>
   </form>
+
+  <!-- Al abrir el enlace del correo para cambiar la contraseña -->
+  <form id="form-nueva-clave" class="tarjeta auth-form" novalidate hidden>
+    <h2 class="titulo-tarjeta">Crea tu nueva contraseña</h2>
+    <label for="nueva-clave">Nueva contraseña</label>
+    <div class="campo-clave">
+      <input id="nueva-clave" type="password" autocomplete="new-password" minlength="6" required>
+      <button type="button" class="ver-clave" data-ver-clave="nueva-clave" aria-label="Mostrar la contraseña" aria-pressed="false"></button>
+    </div>
+    <label for="nueva-clave-2">Repítela</label>
+    <div class="campo-clave">
+      <input id="nueva-clave-2" type="password" autocomplete="new-password" minlength="6" required>
+      <button type="button" class="ver-clave" data-ver-clave="nueva-clave-2" aria-label="Mostrar la contraseña" aria-pressed="false"></button>
+    </div>
+    <button type="submit" class="primario">Guardar contraseña</button>
+    <p id="nueva-clave-mensaje" class="mensaje" role="status"></p>
+  </form>
+
   <button type="button" id="btn-demo" class="enlace">Ver la demostración sin cuenta</button>
+  <a id="btn-apk" class="boton-apk" href="descargas/NOVA.apk" download="NOVA.apk" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+    <span><strong>Descargar la app para Android</strong><small>Archivo APK con el ícono de NOVA</small></span>
+  </a>
 </section>
 
 <!-- App -->
@@ -197,6 +226,10 @@
           <button type="button" role="radio" data-tema="claro">Claro</button>
         </div>
       </article>
+      <a id="perfil-apk" class="boton-apk" href="descargas/NOVA.apk" download="NOVA.apk" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+        <span><strong>Descargar la app para Android</strong><small>Ábrela y toca Instalar. Si Android pregunta, permite instalar desde esta fuente.</small></span>
+      </a>
       <button type="button" id="btn-salir" class="peligro">Cerrar sesión</button>
     </section>
 
