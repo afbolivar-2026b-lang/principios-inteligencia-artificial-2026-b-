@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070908">
+<title>NOVA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+<!-- Inicio de sesión -->
+<section id="pantalla-auth" class="auth" hidden>
+  <div class="logo grande"><span>NOVA</span><svg class="chispa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></div>
+  <p class="auth-lema">Anota tus gastos escribiendo o hablando. NOVA hace las cuentas.</p>
+  <form id="form-auth" class="tarjeta auth-form" novalidate>
+    <label for="auth-email">Correo</label>
+    <input id="auth-email" type="email" autocomplete="email" required>
+    <label for="auth-clave">Contraseña</label>
+    <input id="auth-clave" type="password" autocomplete="current-password" minlength="6" required>
+    <div class="fila-botones">
+      <button type="submit" class="primario" data-accion="entrar">Entrar</button>
+      <button type="submit" data-accion="registrar">Crear cuenta</button>
+    </div>
+    <p id="auth-mensaje" class="mensaje" role="status"></p>
+  </form>
+  <button type="button" id="btn-demo" class="enlace">Ver la demostración sin cuenta</button>
+</section>
+
+<!-- App -->
+<div id="pantalla-app" class="app" hidden>
+  <p id="aviso-demo" class="aviso-demo" hidden>Modo demostración: los datos son de ejemplo y no se guardan.</p>
+
+  <header class="cabecera">
+    <div class="logo"><span>NOVA</span><svg class="chispa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></div>
+    <button type="button" class="icono-btn" data-ir="perfil" aria-label="Ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <button type="button" class="avatar" id="avatar" data-ir="perfil" aria-label="Perfil"></button>
+  </header>
+
+  <main>
+    <!-- INICIO -->
+    <section class="vista" data-vista="inicio">
+      <article class="tarjeta saldo">
+        <span class="etiqueta">Balance disponible</span>
+        <strong id="saldo-total" class="saldo-valor"></strong>
+        <span id="saldo-mes" class="pildora"></span>
+      </article>
+
+      <form id="form-rapido" class="tarjeta rapido" autocomplete="off">
+        <label for="entrada-rapida" class="etiqueta">¿Qué gastaste o recibiste?</label>
+        <div class="rapido-fila">
+          <input id="entrada-rapida" type="text" placeholder="gasté 20 mil en almuerzo" enterkeyhint="send">
+          <button type="button" id="btn-voz" class="icono-btn redondo" aria-label="Dictar" hidden><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+          <button type="submit" class="icono-btn redondo primario" aria-label="Interpretar"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+        <div id="vista-previa" class="vista-previa" hidden>
+          <div class="previa-datos">
+            <span id="previa-tipo" class="chip"></span>
+            <strong id="previa-monto"></strong>
+            <span id="previa-desc"></span>
+          </div>
+          <div class="previa-controles">
+            <label for="previa-categoria" class="sr">Categoría</label>
+            <select id="previa-categoria"></select>
+            <button type="button" id="btn-cancelar">Cancelar</button>
+            <button type="button" id="btn-guardar" class="primario">Guardar</button>
+          </div>
+        </div>
+        <p id="rapido-mensaje" class="mensaje" role="status"></p>
+      </form>
+
+      <div class="dos-col">
+        <article class="tarjeta mini" id="tarjeta-meta">
+          <svg class="mini-icono" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
+          <span class="etiqueta">Ahorro</span>
+          <strong id="meta-valor"></strong>
+          <div class="barra"><span id="meta-barra"></span></div>
+          <span id="meta-nota" class="nota"></span>
+        </article>
+        <article class="tarjeta mini">
+          <svg class="mini-icono" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
+          <span class="etiqueta">Gastos de la semana</span>
+          <strong id="semana-valor"></strong>
+          <div class="barra"><span id="semana-barra"></span></div>
+          <span id="semana-nota" class="nota"></span>
+        </article>
+      </div>
+
+      <article class="tarjeta">
+        <h2 class="titulo-tarjeta">Gastos de esta semana</h2>
+        <div id="grafico-semana" class="grafico" role="img"></div>
+      </article>
+
+      <div class="seccion-cabecera">
+        <h2>Actividad reciente</h2>
+        <button type="button" class="enlace" data-ir="analisis">Ver todo</button>
+      </div>
+      <ul id="lista-reciente" class="lista-mov"></ul>
+    </section>
+
+    <!-- ANÁLISIS -->
+    <section class="vista" data-vista="analisis" hidden>
+      <h1 class="titulo-vista">Análisis del mes</h1>
+      <div class="dos-col">
+        <article class="tarjeta mini"><span class="etiqueta">Ingresos</span><strong id="mes-ingresos" class="positivo"></strong></article>
+        <article class="tarjeta mini"><span class="etiqueta">Gastos</span><strong id="mes-gastos"></strong></article>
+      </div>
+      <article class="tarjeta">
+        <h2 class="titulo-tarjeta">Gastos por categoría</h2>
+        <ul id="por-categoria" class="por-categoria"></ul>
+      </article>
+      <h2 class="seccion-cabecera">Todos los movimientos</h2>
+      <ul id="lista-todos" class="lista-mov"></ul>
+    </section>
+
+    <!-- CUENTAS -->
+    <section class="vista" data-vista="cuentas" hidden>
+      <h1 class="titulo-vista">Cuentas</h1>
+      <ul id="lista-cuentas" class="lista-simple"></ul>
+      <form id="form-cuenta" class="tarjeta formulario">
+        <h2 class="titulo-tarjeta">Agregar cuenta</h2>
+        <label for="cuenta-nombre">Nombre</label>
+        <input id="cuenta-nombre" required placeholder="Nequi, Bancolombia, Efectivo…">
+        <label for="cuenta-tipo">Tipo</label>
+        <select id="cuenta-tipo"><option value="debito">Débito</option><option value="ahorro">Ahorros</option><option value="efectivo">Efectivo</option><option value="credito">Crédito</option></select>
+        <label for="cuenta-saldo">Saldo actual</label>
+        <input id="cuenta-saldo" inputmode="numeric" placeholder="0">
+        <button type="submit" class="primario">Agregar cuenta</button>
+        <p class="mensaje" id="cuenta-mensaje" role="status"></p>
+      </form>
+    </section>
+
+    <!-- METAS -->
+    <section class="vista" data-vista="metas" hidden>
+      <h1 class="titulo-vista">Metas de ahorro</h1>
+      <ul id="lista-metas" class="lista-metas"></ul>
+      <form id="form-meta" class="tarjeta formulario">
+        <h2 class="titulo-tarjeta">Nueva meta</h2>
+        <label for="meta-nombre">¿Para qué ahorras?</label>
+        <input id="meta-nombre" required placeholder="Audífonos nuevos">
+        <label for="meta-objetivo">¿Cuánto necesitas?</label>
+        <input id="meta-objetivo" required inputmode="numeric" placeholder="2 millones">
+        <button type="submit" class="primario">Crear meta</button>
+        <p class="mensaje" id="meta-mensaje" role="status"></p>
+      </form>
+    </section>
+
+    <!-- PERFIL -->
+    <section class="vista" data-vista="perfil" hidden>
+      <h1 class="titulo-vista">Perfil</h1>
+      <article class="tarjeta formulario">
+        <span class="etiqueta">Sesión</span>
+        <strong id="perfil-email"></strong>
+      </article>
+      <article class="tarjeta formulario">
+        <span class="etiqueta">Apariencia</span>
+        <div class="segmentado" role="radiogroup" aria-label="Tema">
+          <button type="button" role="radio" data-tema="sistema">Automático</button>
+          <button type="button" role="radio" data-tema="oscuro">Oscuro</button>
+          <button type="button" role="radio" data-tema="claro">Claro</button>
+        </div>
+      </article>
+      <button type="button" id="btn-salir" class="peligro">Cerrar sesión</button>
+    </section>
+  </main>
+
+  <nav class="nav-inferior" aria-label="Secciones">
+    <button type="button" data-ir="inicio"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
+    <button type="button" data-ir="analisis"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Análisis</button>
+    <button type="button" data-ir="cuentas"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Cuentas</button>
+    <button type="button" data-ir="metas"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Metas</button>
+    <button type="button" data-ir="perfil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </nav>
+</div>
+
+<p id="cargando" class="cargando">Cargando…</p>
+
+<script src="config.js"></script>
+<script src="parser.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
