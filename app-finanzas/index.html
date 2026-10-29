@@ -430,7 +430,7 @@
           <li>Registros comunes y programados ilimitados</li>
           <li>Etiquetas ilimitadas para filtrar y analizar por contexto</li>
           <li>Mapa y otros pagos en el mismo lugar para cada pago</li>
-          <li>Exportar a CSV y reporte PDF</li>
+          <li>Informes en PDF y Excel con gráficos, CSV y respaldo</li>
         </ul>
       </article>
 
@@ -461,7 +461,7 @@
 
       <h2 class="grupo-ajustes">Datos</h2>
       <div class="menu">
-        <button type="button" data-ir="ajustes-exportar"><span class="menu-icono">⬇</span><span><strong>Exportar datos</strong><small>CSV, reporte PDF y respaldo</small></span></button>
+        <button type="button" data-ir="ajustes-exportar"><span class="menu-icono">⬇</span><span><strong>Exportar datos</strong><small>Informe PDF, Excel con dashboard, CSV y respaldo</small></span></button>
       </div>
 
       <h2 class="grupo-ajustes">Apariencia</h2>
@@ -578,13 +578,17 @@
     <!-- Configuración: exportar -->
     <section class="vista" data-vista="ajustes-exportar" hidden>
       <div class="sub-cabecera"><button type="button" class="icono-btn" data-ir="ajustes" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Exportar datos</h1></div>
-      <article class="tarjeta"><strong>Exportar a CSV</strong><p class="nota">Los archivos CSV se pueden abrir en Excel, Google Sheets y otras hojas de cálculo. En la app de Android se abre el menú para guardarlos o enviarlos.</p></article>
+      <article class="tarjeta"><strong>Informes completos</strong><p class="nota">Con tu nombre, cifras, gráficos y todos tus movimientos, listos para guardar, imprimir o enviar. Salen del periodo que ves en Inicio.</p></article>
+      <div class="menu">
+        <button type="button" data-exportar="excel"><span class="menu-icono">📗</span><span><strong>Excel con dashboard</strong><small>Hoja de resumen con gráficos, transacciones, categorías, cuentas y límites</small></span></button>
+        <button type="button" data-exportar="pdf"><span class="menu-icono">📕</span><span><strong>Informe PDF</strong><small>Documento con tus cifras, gráficos y movimientos</small></span></button>
+      </div>
+      <article class="tarjeta"><strong>Datos en CSV y respaldo</strong><p class="nota">Los archivos CSV se pueden abrir en Excel, Google Sheets y otras hojas de cálculo. En la app de Android se abre el menú para guardarlos o enviarlos.</p></article>
       <div class="menu">
         <button type="button" data-exportar="movimientos"><span class="menu-icono">📄</span><span><strong>Transacciones</strong><small id="exp-movimientos"></small></span></button>
         <button type="button" data-exportar="categorias"><span class="menu-icono">🗂</span><span><strong>Categorías</strong><small id="exp-categorias"></small></span></button>
         <button type="button" data-exportar="limites"><span class="menu-icono">🎯</span><span><strong>Presupuestos y límites</strong><small id="exp-limites"></small></span></button>
         <button type="button" data-exportar="respaldo"><span class="menu-icono">💾</span><span><strong>Todo (respaldo)</strong><small>Un archivo con todos tus datos</small></span></button>
-        <button type="button" data-exportar="pdf"><span class="menu-icono">📊</span><span><strong>Reporte PDF</strong><small>Resumen del periodo con categorías y movimientos</small></span></button>
       </div>
       <p class="mensaje" id="exportar-mensaje" role="status"></p>
       <p class="nota">Tus datos ya se guardan en la nube con tu cuenta: si cambias de celular, solo entra con tu correo.</p>
@@ -818,7 +822,7 @@
 </div>
 
 <div id="toast" class="toast" role="status" hidden></div>
-<section id="reporte" class="reporte" aria-hidden="true"></section>
+
 
 <p id="cargando" class="cargando">Cargando…</p>
 
@@ -828,6 +832,7 @@
 <script src="analisis.js"></script>
 <script src="monedas.js"></script>
 <script src="recibo.js"></script>
+<script src="informes.js"></script>
 <script src="vendor/supabase.js"></script>
 <script src="app.js"></script>
 </body>

@@ -445,15 +445,6 @@ body.con-capa { overflow: hidden; }
 .asis-fila .chip { border: 0; padding: 8px 10px; flex: none; }
 #asis-dictar.escuchando { color: var(--danger); border-color: var(--danger); }
 
-/* Reporte PDF (solo al imprimir) */
-.reporte { display: none; }
-@media print {
-  body > *:not(.reporte) { display: none !important; }
-  .reporte { display: block; color: #000; background: #fff; font: 12px/1.4 var(--font); }
-  .reporte h1 { font-size: 20px; } .reporte h2 { font-size: 15px; margin-top: 18px; }
-  .reporte table { width: 100%; border-collapse: collapse; }
-  .reporte th, .reporte td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #ddd; }
-}
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 

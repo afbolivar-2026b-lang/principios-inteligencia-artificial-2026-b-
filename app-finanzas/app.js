@@ -133,6 +133,7 @@
     return {
       demo: false,
       email: usuario.email,
+      nombre: (usuario.user_metadata && (usuario.user_metadata.full_name || usuario.user_metadata.name)) || "",
       cargar: function () {
         return Promise.all([
           q(t("cuentas").select("*").order("id")),
@@ -230,6 +231,7 @@
     return {
       demo: true,
       email: "Demostración",
+      nombre: "Persona de demostración",
       cargar: function () { var d = copia(tabla); d.perfil = copia(perfil); return Promise.resolve(d); },
       crear: function (nombre, fila) { return Promise.resolve(nueva(nombre, fila)); },
       crearVarios: function (nombre, filas) { return Promise.resolve(filas.map(function (f) { return nueva(nombre, f); })); },
@@ -1544,7 +1546,14 @@
   }
 
   // ---------- Exportar ----------
+  function aBase64(bytes) {
+    var s = "";
+    for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
   function descargar(nombre, contenido, tipo) {
+    var binario = typeof contenido !== "string";
+    if (!binario && /^text\/csv/.test(tipo) && contenido.charAt(0) !== "\ufeff") contenido = "\ufeff" + contenido; // para que Excel lea bien las tildes
     if (enApp) {
       // En la app: se guarda en una carpeta temporal y se abre el menú de compartir de Android
       // (Guardar en Drive, WhatsApp, correo, Archivos...).
@@ -1554,8 +1563,10 @@
         return;
       }
       mensaje("exportar-mensaje", "Preparando " + nombre + "…");
-      P.Filesystem.writeFile({ path: nombre, data: contenido, directory: "CACHE", encoding: "utf8" })
-        .then(function (r) { return P.Share.share({ title: nombre, text: "Archivo de NOVA · OPITA-DIGITAL", url: r.uri, dialogTitle: "Guardar o enviar " + nombre }); })
+      var archivo = { path: nombre, data: binario ? aBase64(contenido) : contenido, directory: "CACHE" };
+      if (!binario) archivo.encoding = "utf8";
+      P.Filesystem.writeFile(archivo)
+        .then(function (r) { return P.Share.share({ title: nombre, text: "Informe de NOVA · OPITA-DIGITAL", url: r.uri, dialogTitle: "Guardar o enviar " + nombre }); })
         .then(function () { mensaje("exportar-mensaje", "Listo: elige dónde guardar " + nombre + "."); })
         .catch(function (e) {
           if (e && /cancel/i.test(String(e.message || e))) return mensaje("exportar-mensaje", "");
@@ -1611,44 +1622,71 @@
         TABLAS.forEach(function (t) { copia[t] = datos[t]; });
         return descargar("nova-respaldo-" + hoyArchivo() + ".json", JSON.stringify(copia, null, 2), "application/json");
       }
-      if (que === "pdf") return reportePDF();
+      if (que === "pdf" || que === "excel") return exportarInforme(que);
     });
   });
 
-  // Reporte para imprimir o guardar como PDF desde el navegador.
-  function reportePDF() {
+  // Informe completo (PDF o Excel con gráficos): aquí se calculan las cifras y informes.js arma el archivo.
+  var DIAS_CORTOS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+  function nombreDePersona() {
+    if (fuente.nombre) return fuente.nombre;
+    var local = String(fuente.email || "").split("@")[0].replace(/[._-]+/g, " ").replace(/\d+/g, "").trim();
+    return local ? local.replace(/\b\w/g, function (l) { return l.toUpperCase(); }) : "Usuario de NOVA";
+  }
+  function construirInforme() {
     var ciclo = cicloEfectivo(), rango = rangoInicio(), movs = A.enRango(datos.movimientos, rango), t = A.totales(movs);
-    var r = $("reporte");
-    r.replaceChildren();
-    r.append(el("h1", null, "NOVA · Reporte " + A.nombrePeriodo(ciclo, rango)), el("p", null, fuente.email + " · generado el " + fechaLarga.format(new Date())));
-    var res = el("table");
-    [["Ingresos", pesos.format(t.ingresos)], ["Gastos", pesos.format(t.gastos)], ["Balance", pesos.format(t.neto)], ["Saldo en cuentas", pesos.format(saldoTotal())]]
-      .forEach(function (f) { var tr = el("tr"); tr.append(el("th", null, f[0]), el("td", null, f[1])); res.append(tr); });
-    r.append(el("h2", null, "Resumen"), res, el("h2", null, "Gastos por categoría"));
-    var cats = el("table");
-    A.porCategoria(movs).forEach(function (f) {
-      var tr = el("tr"); tr.append(el("td", null, nombreCategoria(f.id)), el("td", null, pesos.format(f.total)), el("td", null, Math.round((f.total / (t.gastos || 1)) * 100) + "%")); cats.append(tr);
+    var cuentaNombre = function (id) { var c = datos.cuentas.find(function (x) { return x.id === id; }); return c ? c.nombre : ""; };
+    var rapida = A.vistaRapida(datos.movimientos, ciclo, rango.desde);
+    var gastos = movs.filter(function (m) { return m.tipo === "gasto"; });
+    var mayor = gastos.reduce(function (mx, m) { return !mx || num(m.monto) > num(mx.monto) ? m : mx; }, null);
+    var semana = DIAS_CORTOS.map(function (d) { return { dia: d, total: 0 }; });
+    gastos.forEach(function (m) { semana[(new Date(m.fecha).getDay() + 6) % 7].total += num(m.monto); });
+    var forma = function (m) {
+      return { fecha: new Date(m.fecha), tipo: m.tipo, descripcion: m.descripcion || "", categoria: nombreCategoria(m.categoria_id), monto: Math.abs(num(m.monto)),
+        cuenta: cuentaNombre(m.cuenta_id), estado: m.estado || "pagado", etiquetas: m.etiquetas || [], nota: m.nota || "" };
+    };
+    var presupuestos = datos.limites.map(function (l) {
+      var e = estadoLimite(l);
+      return { nombre: l.categoria_id != null ? nombreCategoria(l.categoria_id) : "Todas las categorías", ciclo: Periodos.CICLOS[l.ciclo] || l.ciclo, limite: num(l.monto), gastado: e.gastado };
     });
-    r.append(cats, el("h2", null, "Movimientos"));
-    var tabla = el("table"), cab = el("tr");
-    ["Fecha", "Descripción", "Categoría", "Valor"].forEach(function (h) { cab.append(el("th", null, h)); });
-    tabla.append(cab);
-    movs.forEach(function (m) {
-      var tr = el("tr");
-      tr.append(el("td", null, fechaCorta.format(new Date(m.fecha))), el("td", null, m.descripcion), el("td", null, nombreCategoria(m.categoria_id)),
-        el("td", null, (m.tipo === "ingreso" ? "+" : "−") + pesos.format(num(m.monto))));
-      tabla.append(tr);
-    });
-    r.append(tabla, el("p", null, "Creada por OPITA-DIGITAL · NOVA"));
-    if (enApp) {
-      // La app no puede imprimir: se comparte el reporte como página (.html) que se abre en el
-      // navegador y se guarda como PDF desde ahí (menú ⋮ → Imprimir → Guardar como PDF).
-      var css = "body{font:14px/1.4 sans-serif;color:#000;margin:16px}h1{font-size:20px}h2{font-size:16px;margin-top:18px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:4px 6px;border-bottom:1px solid #ddd}";
-      var html = "<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"author\" content=\"OPITA-DIGITAL\"><title>Reporte NOVA</title><style>" + css + "</style></head><body>" + r.innerHTML + "</body></html>";
-      return descargar("nova-reporte-" + hoyArchivo() + ".html", html, "text/html;charset=utf-8");
+    if (datos.perfil.presupuesto_monto) {
+      presupuestos.unshift({ nombre: "Presupuesto general", ciclo: Periodos.CICLOS[ciclo], limite: num(datos.perfil.presupuesto_monto), gastado: gastadoEn(Periodos.periodo(ciclo)) });
     }
-    mensaje("exportar-mensaje", "En la ventana de impresión elige «Guardar como PDF».");
-    setTimeout(function () { window.print(); }, 50);
+    var inf = {
+      persona: { nombre: nombreDePersona(), email: fuente.email }, generado: new Date(), periodoNombre: A.nombrePeriodo(ciclo, rango),
+      ciclo: ciclo, cicloNombre: Periodos.CICLOS[ciclo], desde: rango.desde, hasta: new Date(rango.hasta.getTime() - 1),
+      kpis: {
+        ingresos: t.ingresos, gastos: t.gastos, balance: t.neto, saldoTotal: saldoTotal(), promedioDiario: rapida.promedioDiario, movimientos: movs.length,
+        ahorroPct: t.ingresos > 0 ? (t.neto / t.ingresos) * 100 : null, mayorGasto: mayor ? { descripcion: mayor.descripcion || nombreCategoria(mayor.categoria_id), monto: num(mayor.monto) } : null
+      },
+      categorias: A.porCategoria(movs).map(function (f) {
+        return { nombre: nombreCategoria(f.id), total: f.total, pct: t.gastos > 0 ? (f.total / t.gastos) * 100 : 0,
+          cantidad: gastos.filter(function (m) { return (m.categoria_id == null ? null : m.categoria_id) === f.id; }).length };
+      }),
+      serie: A.serie(datos.movimientos, ciclo, rango.desde, 6), semana: semana,
+      cuentas: datos.cuentas.map(function (c) { return { nombre: c.nombre, tipo: c.tipo ? String(c.tipo).charAt(0).toUpperCase() + String(c.tipo).slice(1) : "Cuenta", saldo: saldoCuenta(c) }; }),
+      presupuestos: presupuestos, movimientos: movs.map(forma), todos: datos.movimientos.map(forma), conductor: null
+    };
+    if (conductor()) {
+      var r = A.resumenTrabajo(datos.movimientos, datos.categorias, rango);
+      inf.conductor = { vehiculo: datos.perfil.vehiculo || "", ingresos: r.ingresos, gastos: r.gastos, neto: r.neto, operacion: r.operacion, fijos: r.fijos, netoOperativo: r.netoOperativo, viajes: r.viajes, porViaje: r.porViaje,
+        plataformas: r.porPlataforma.map(function (p) { return { nombre: nombreCategoria(p.id), total: p.total, viajes: p.viajes }; }) };
+    }
+    return inf;
+  }
+  var generandoInforme = false;
+  function exportarInforme(tipo) {
+    if (generandoInforme) return;
+    if (!window.NovaInformes) return mensaje("exportar-mensaje", "No se pudo preparar el informe. Actualiza NOVA.", true);
+    generandoInforme = true;
+    mensaje("exportar-mensaje", "Preparando tu informe " + (tipo === "pdf" ? "en PDF" : "en Excel") + "… puede tardar unos segundos.");
+    setTimeout(function () {
+      var listo;
+      try { listo = window.NovaInformes[tipo](construirInforme()); } catch (e) { listo = Promise.reject(e); }
+      listo.then(function (r) { descargar(r.nombre, r.bytes, r.tipo); })
+        .catch(function (e) { mensaje("exportar-mensaje", "No se pudo crear el informe: " + (e && e.message ? e.message : e), true); })
+        .then(function () { generandoInforme = false; });
+    }, 30);
   }
 
   // ---------- Pintar todo ----------

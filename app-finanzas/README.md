@@ -199,3 +199,17 @@ vercel --prod   # producción
 Después de publicar, abre Supabase → Authentication → URL Configuration y pon
 la dirección de Vercel en **Site URL**. Así el enlace del correo de
 confirmación lleva a tu app.
+
+
+## Informes (PDF y Excel)
+
+En Ajustes → Exportar datos hay dos informes completos del periodo que se ve en Inicio:
+
+- **Informe PDF**: encabezado con el nombre y el correo de la persona, cifras clave, gráficos (dona por categoría,
+  ingresos contra gastos, gasto por día de la semana), tablas de categorías, presupuestos, cuentas, trabajo como
+  conductor (si está activo) y todos los movimientos, con número de página.
+- **Excel con dashboard** (.xlsx): hoja Dashboard con cifras y gráficos, y hojas de Transacciones (todo el historial,
+  con filtros y total), Por categoría, Evolución, Cuentas y límites y Mi trabajo. Los gráficos van como imágenes.
+
+Se arman en el celular con jsPDF y ExcelJS (`vendor/informes/`, se cargan solo al exportar) y `informes.js`.
+En la app de Android el archivo se guarda en la caché y se abre el menú de compartir.
