@@ -134,6 +134,7 @@
       demo: false,
       email: usuario.email,
       nombre: (usuario.user_metadata && (usuario.user_metadata.full_name || usuario.user_metadata.name)) || "",
+      creado: usuario.created_at || null,
       cargar: function () {
         return Promise.all([
           q(t("cuentas").select("*").order("id")),
@@ -1667,6 +1668,17 @@
       cuentas: datos.cuentas.map(function (c) { return { nombre: c.nombre, tipo: c.tipo ? String(c.tipo).charAt(0).toUpperCase() + String(c.tipo).slice(1) : "Cuenta", saldo: saldoCuenta(c) }; }),
       presupuestos: presupuestos, movimientos: movs.map(forma), todos: datos.movimientos.map(forma), conductor: null
     };
+    var ant = A.desplazar(ciclo, rango.desde, -1), tAnt = A.totales(A.enRango(datos.movimientos, ant));
+    var cambio = function (a, b) { return b > 0 ? ((a - b) / b) * 100 : null; };
+    inf.anterior = { nombre: A.nombrePeriodo(ciclo, ant), ingresos: tAnt.ingresos, gastos: tAnt.gastos, balance: tAnt.neto, cambioIngresos: cambio(t.ingresos, tAnt.ingresos), cambioGastos: cambio(t.gastos, tAnt.gastos) };
+    inf.ingresosCat = A.porCategoria(movs, "ingreso").map(function (f) { return { nombre: nombreCategoria(f.id), total: f.total, pct: t.ingresos > 0 ? (f.total / t.ingresos) * 100 : 0 }; });
+    inf.topGastos = gastos.slice().sort(function (a, b) { return num(b.monto) - num(a.monto); }).slice(0, 5).map(forma);
+    inf.metas = datos.metas.map(function (m) { return { nombre: m.nombre, objetivo: num(m.objetivo), ahorrado: num(m.ahorrado) }; });
+    inf.documentos = datos.documentos.map(function (d) { var e = A.estadoDocumento(d); return { nombre: d.nombre, vence: d.vence, estado: e.estado, texto: e.texto, costo: d.costo ? num(d.costo) : null }; });
+    var primero = datos.movimientos.reduce(function (mn, m) { var f = new Date(m.fecha); return !mn || f < mn ? f : mn; }, null);
+    inf.perfil = { presupuesto: num(datos.perfil.presupuesto_monto), cuentas: datos.cuentas.length, categorias: datos.categorias.length, movimientosTotal: datos.movimientos.length, primerRegistro: primero,
+      clienteDesde: fuente.creado ? new Date(fuente.creado) : null, modoConductor: conductor(), vehiculo: datos.perfil.vehiculo || "", metaDiaria: num(datos.perfil.meta_diaria) };
+    inf.proyeccion30 = A.proyeccion(datos.movimientos, saldoTotal())[1].saldo;
     if (conductor()) {
       var r = A.resumenTrabajo(datos.movimientos, datos.categorias, rango);
       inf.conductor = { vehiculo: datos.perfil.vehiculo || "", ingresos: r.ingresos, gastos: r.gastos, neto: r.neto, operacion: r.operacion, fijos: r.fijos, netoOperativo: r.netoOperativo, viajes: r.viajes, porViaje: r.porViaje,

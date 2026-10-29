@@ -134,6 +134,54 @@
     return { dona: graficoDona(cats, cop(inf.kpis.gastos)), serie: graficoSerie(inf.serie), semana: graficoSemana(inf.semana) };
   }
 
+  // ---------- Textos explicados ----------
+  function signo(v) { return (v > 0 ? "+" : v < 0 ? "-" : "") + fmtDec.format(Math.abs(v)) + " %"; }
+  // Frases que explican las cifras con palabras sencillas: { titulo, texto, tono: "ok" | "alerta" | "info" }.
+  function hallazgos(inf) {
+    var K = inf.kpis, L = [], P = inf.periodoNombre;
+    if (!K.movimientos) return [{ titulo: "Aún no hay movimientos", texto: "En " + P + " no se registró ningún ingreso ni gasto. Cuando anotes movimientos, este resumen se llena solo.", tono: "info" }];
+    L.push(K.balance >= 0
+      ? { titulo: "Te sobró dinero", texto: "En " + P + " entraron " + cop(K.ingresos) + " y salieron " + cop(K.gastos) + ". Te quedaron " + cop(K.balance) + (K.ahorroPct != null ? ", el " + pct(K.ahorroPct) + " de lo que ganaste." : "."), tono: "ok" }
+      : { titulo: "Gastaste más de lo que entró", texto: "En " + P + " entraron " + cop(K.ingresos) + " y salieron " + cop(K.gastos) + ". Faltaron " + cop(-K.balance) + ": conviene revisar los gastos más grandes.", tono: "alerta" });
+    if (inf.categorias.length) {
+      var c = inf.categorias[0];
+      L.push({ titulo: "Tu mayor gasto: " + c.nombre, texto: "Se llevó " + cop(c.total) + ", el " + pct(c.pct) + " de todo lo que gastaste" + (inf.categorias[1] ? ". Le sigue " + inf.categorias[1].nombre + " con " + cop(inf.categorias[1].total) + "." : "."), tono: c.pct > 50 ? "alerta" : "info" });
+    }
+    if (inf.anterior && inf.anterior.cambioGastos != null) {
+      var ch = inf.anterior.cambioGastos;
+      L.push({ titulo: ch > 0 ? "Gastaste más que el periodo anterior" : ch < 0 ? "Gastaste menos que el periodo anterior" : "Gastaste igual que el periodo anterior",
+        texto: "Comparado con " + inf.anterior.nombre + " (" + cop(inf.anterior.gastos) + "), tus gastos cambiaron " + signo(ch) + ".", tono: ch > 10 ? "alerta" : ch < 0 ? "ok" : "info" });
+    }
+    var dia = inf.semana.reduce(function (m, d) { return d.total > m.total ? d : m; }, { total: 0 });
+    if (dia.total > 0) L.push({ titulo: "Tu día de más gasto: " + dia.dia, texto: "Ese día de la semana sumaste " + cop(dia.total) + ". Tu gasto promedio es de " + cop(K.promedioDiario) + " por día.", tono: "info" });
+    var gen = inf.presupuestos[0];
+    if (gen && gen.limite > 0) {
+      var u = (gen.gastado / gen.limite) * 100;
+      L.push({ titulo: u > 100 ? "Te pasaste del presupuesto" : u >= 80 ? "Estás cerca del límite" : "Vas bien con el presupuesto", texto: "Llevas " + cop(gen.gastado) + " de " + cop(gen.limite) + " en " + gen.nombre.toLowerCase() + " (" + pct(u) + ").", tono: u > 100 ? "alerta" : u >= 80 ? "alerta" : "ok" });
+    }
+    if (K.ahorroPct != null && K.ahorroPct < 10 && K.ahorroPct >= 0) L.push({ titulo: "Una meta sencilla", texto: "Guardar al menos el 10 % de lo que ganas (" + cop(K.ingresos * 0.1) + " este periodo) te ayuda a tener un colchón para imprevistos.", tono: "info" });
+    L.push({ titulo: "Hacia dónde vas", texto: "Si sigues con el ritmo de los últimos 90 días, en 30 días tendrías " + cop(inf.proyeccion30) + " en tus cuentas.", tono: inf.proyeccion30 >= 0 ? "info" : "alerta" });
+    return L;
+  }
+  var GUIA = [
+    ["Ingresos", "Todo el dinero que entró: salario, ventas, viajes, regalos."],
+    ["Gastos", "Todo el dinero que salió, de cualquier categoría."],
+    ["Balance del periodo", "Ingresos menos gastos. Si es positivo, te sobró; si es negativo, gastaste más de lo que entró."],
+    ["Saldo en cuentas", "Lo que tienes hoy sumando todas tus cuentas (incluye lo de periodos anteriores)."],
+    ["Ahorro del periodo", "Qué parte de tus ingresos no gastaste. Más de 10 % es una buena señal."],
+    ["Gasto promedio por día", "Lo gastado en el periodo dividido entre los días que han pasado."],
+    ["Presupuesto y límites", "Lo que decidiste no pasar de gastar. 'Cuidado' avisa al llegar al 80 %."]
+  ];
+  var VARIAS = [
+    ["Portada y resumen", "Quién es la persona, qué dice el periodo con palabras sencillas y un índice."],
+    ["Dashboard", "Las cifras clave y tres gráficos: a dónde se fue el dinero, ingresos contra gastos y día de más gasto."],
+    ["Transacciones", "Cada movimiento con fecha, categoría y cuenta. Se puede filtrar y ordenar."],
+    ["Por categoría", "Cuánto se gastó en cada categoría y qué porcentaje del total."],
+    ["Evolución", "Ingresos, gastos y balance de los últimos periodos."],
+    ["Cuentas y límites", "Saldo de cada cuenta y cómo van los presupuestos."],
+    ["Metas y vencimientos", "Avance de tus metas de ahorro y fechas de SOAT, tecnomecánica y otros."]
+  ];
+
   // ---------- PDF ----------
   function generarPDF(inf) {
     return cargar("pdf", ["jspdf.umd.min.js", "jspdf.plugin.autotable.min.js"]).then(function () {
@@ -158,54 +206,97 @@
         y += 7;
       }
 
-      // Encabezado
-      doc.setFillColor.apply(doc, hex(VERDE_OSC)); doc.rect(0, 0, W, 36, "F");
-      doc.setFillColor.apply(doc, hex(VERDE)); doc.rect(0, 36, W, 1.6, "F");
-      doc.setTextColor(255); doc.setFont("helvetica", "bold"); doc.setFontSize(26); doc.text("NOVA", M, 17);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.text("Informe financiero personal", M, 25);
-      doc.setFontSize(8.5); doc.text("Creada por OPITA-DIGITAL", M, 31);
-      doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.text(inf.periodoNombre, W - M, 16, { align: "right" });
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
-      doc.text("Generado el " + fechaTxt(inf.generado) + ", " + horaTxt(inf.generado), W - M, 23, { align: "right" });
-      doc.text("Ciclo: " + inf.cicloNombre, W - M, 29, { align: "right" });
+      var K = inf.kpis, P = inf.perfil, MENTA = "#2ee06f";
+      function gs(o) { return new doc.GState({ opacity: o }); }
 
-      // Quién es la persona
-      y = 46;
-      doc.setFillColor.apply(doc, hex(CLARO)); doc.setDrawColor(220, 226, 222); doc.roundedRect(M, y, ANCHO, 22, 2, 2, "FD");
-      doc.setTextColor.apply(doc, hex(GRIS)); doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
-      doc.text("INFORME DE", M + 5, y + 6); doc.text("PERIODO ANALIZADO", M + 112, y + 6);
-      doc.setTextColor(21, 32, 26); doc.setFontSize(13); doc.text(inf.persona.nombre, M + 5, y + 13);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(inf.persona.email, M + 5, y + 19);
-      doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(21, 32, 26);
-      doc.text("Del " + fechaCortaTxt(inf.desde) + " al " + fechaCortaTxt(inf.hasta), M + 112, y + 13);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(inf.kpis.movimientos + " movimientos registrados", M + 112, y + 19);
+      // ---- Portada ----
+      doc.setFillColor.apply(doc, hex(VERDE_OSC)); doc.rect(0, 0, W, H, "F");
+      doc.setGState(gs(0.09)); doc.setFillColor(255, 255, 255); doc.circle(W - 5, 38, 78, "F"); doc.circle(10, H - 25, 60, "F"); doc.setGState(gs(1));
+      doc.setFillColor.apply(doc, hex(MENTA)); doc.rect(M, 62, 24, 1.8, "F");
+      doc.setTextColor(255); doc.setFont("helvetica", "bold"); doc.setFontSize(58); doc.text("NOVA", M, 52);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(17); doc.text("Informe financiero personal", M, 76);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(32); doc.text(inf.periodoNombre, M, 96);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(200, 232, 214);
+      doc.text("Del " + fechaTxt(inf.desde) + " al " + fechaTxt(inf.hasta), M, 105);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor.apply(doc, hex(MENTA)); doc.text("PREPARADO PARA", M, 140);
+      doc.setTextColor(255); doc.setFontSize(25); doc.text(inf.persona.nombre, M, 151, { maxWidth: ANCHO });
+      doc.setFont("helvetica", "normal"); doc.setFontSize(12); doc.setTextColor(200, 232, 214); doc.text(inf.persona.email, M, 160);
+      if (P.clienteDesde) doc.text("Usa NOVA desde el " + fechaTxt(P.clienteDesde), M, 167);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor.apply(doc, hex(MENTA)); doc.text("QUÉ ENCONTRARÁS EN ESTE INFORME", M, 192);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.setTextColor(255);
+      ["Ficha del cliente y resumen explicado con palabras sencillas", "Cifras clave comparadas con el periodo anterior", "Gráficos: en qué gastas, cuánto entra y sale, y qué día gastas más",
+        "Detalle por categoría, presupuestos, cuentas, metas y vencimientos", "Todos los movimientos del periodo"].forEach(function (t, i) { doc.text((i + 1) + ".  " + t, M, 200 + i * 7); });
+      doc.setDrawColor(70, 130, 95); doc.setLineWidth(0.3); doc.line(M, H - 32, W - M, H - 32);
+      doc.setFontSize(8.5); doc.setTextColor(200, 232, 214);
+      doc.text("Generado el " + fechaTxt(inf.generado) + ", " + horaTxt(inf.generado), M, H - 24);
+      doc.text("Documento confidencial: contiene información financiera personal.", M, H - 18.5);
+      doc.setFont("helvetica", "bold"); doc.text("Creada por OPITA-DIGITAL", W - M, H - 24, { align: "right" });
+      doc.setFont("helvetica", "normal"); doc.text("© 2026. Todos los derechos reservados.", W - M, H - 18.5, { align: "right" });
 
-      // Tarjetas de cifras
-      y = 74;
+      // ---- Ficha del cliente ----
+      doc.addPage(); y = 20;
+      titulo("Ficha del cliente", 60);
+      var ficha = [["Nombre", inf.persona.nombre], ["Correo", inf.persona.email]];
+      if (P.clienteDesde) ficha.push(["Usa NOVA desde", fechaTxt(P.clienteDesde)]);
+      ficha.push(["Periodo analizado", inf.periodoNombre + " (del " + fechaCortaTxt(inf.desde) + " al " + fechaCortaTxt(inf.hasta) + ")"], ["Ciclo de presupuesto", inf.cicloNombre + (P.presupuesto ? ", con un presupuesto de " + cop(P.presupuesto) : "")],
+        ["Cuentas registradas", String(P.cuentas)], ["Movimientos guardados", P.movimientosTotal + (P.primerRegistro ? " (desde el " + fechaCortaTxt(P.primerRegistro) + ")" : "")]);
+      if (P.modoConductor) ficha.push(["Modo conductor", "Activo" + (P.vehiculo ? " · " + P.vehiculo : "") + (P.metaDiaria ? ", meta diaria " + cop(P.metaDiaria) : "")]);
+      y = tabla({ startY: y, body: ficha, theme: "grid", columnStyles: { 0: { fontStyle: "bold", fillColor: [236, 243, 239], textColor: [60, 80, 68], cellWidth: 46 } }, styles: { fontSize: 9.5, cellPadding: 2.6, lineColor: [220, 228, 223], lineWidth: 0.1, font: "helvetica" } }) + 9;
+
+      // ---- Resumen explicado ----
+      titulo("Resumen explicado", 40);
+      hallazgos(inf).forEach(function (h) {
+        var col = h.tono === "ok" ? VERDE : h.tono === "alerta" ? ROJO : "#2a7de1", fondo = h.tono === "ok" ? [240, 249, 244] : h.tono === "alerta" ? [253, 242, 240] : [240, 246, 253];
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9.5);
+        var lineas = doc.splitTextToSize(h.texto, ANCHO - 12), alto = 9 + lineas.length * 4.6;
+        espacio(alto + 3);
+        doc.setFillColor.apply(doc, fondo); doc.roundedRect(M, y, ANCHO, alto, 1.5, 1.5, "F");
+        doc.setFillColor.apply(doc, hex(col)); doc.rect(M, y, 1.6, alto, "F");
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor.apply(doc, hex(col)); doc.text(h.titulo, M + 6, y + 5.6);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(40, 52, 45); doc.text(lineas, M + 6, y + 10.6);
+        y += alto + 3;
+      });
+      y += 5;
+
+      // ---- Cifras clave ----
+      titulo("Tus cifras clave", 50);
       function tarjetas(lista) {
+        espacio(25);
         var cw = (ANCHO - 9) / 4;
         lista.forEach(function (k, i) {
           var x = M + i * (cw + 3);
-          doc.setFillColor(255, 255, 255); doc.setDrawColor(214, 221, 217); doc.setLineWidth(0.3); doc.roundedRect(x, y, cw, 19, 2, 2, "FD");
-          doc.setFillColor.apply(doc, hex(k.color || VERDE)); doc.rect(x, y + 3, 1.2, 13, "F");
-          doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(k.t.toUpperCase(), x + 4, y + 6);
-          doc.setFontSize(k.chico ? 8.5 : 12); doc.setTextColor.apply(doc, hex(k.color || "#15201a")); doc.text(k.v, x + 4, y + 13.5, { maxWidth: cw - 6 });
-          if (k.n) { doc.setFont("helvetica", "normal"); doc.setFontSize(6.5); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(k.n, x + 4, y + 17.2, { maxWidth: cw - 6 }); }
+          doc.setFillColor(255, 255, 255); doc.setDrawColor(214, 221, 217); doc.setLineWidth(0.3); doc.roundedRect(x, y, cw, 21, 2, 2, "FD");
+          doc.setFillColor.apply(doc, hex(k.color || VERDE)); doc.rect(x, y + 3, 1.2, 15, "F");
+          doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(k.t.toUpperCase(), x + 4, y + 6, { maxWidth: cw - 6 });
+          doc.setFontSize(12); doc.setTextColor.apply(doc, hex(k.color || "#15201a")); doc.text(k.v, x + 4, y + 13, { maxWidth: cw - 6 });
+          if (k.n) { doc.setFont("helvetica", "normal"); doc.setFontSize(6.6); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(k.n, x + 4, y + 18, { maxWidth: cw - 6 }); }
         });
-        y += 23;
+        y += 25;
       }
-      var K = inf.kpis;
+      var vs = function (c) { return c == null ? "Sin periodo anterior" : signo(c) + " vs " + inf.anterior.nombre; };
       tarjetas([
-        { t: "Ingresos", v: cop(K.ingresos), color: VERDE }, { t: "Gastos", v: cop(K.gastos), color: ROJO },
-        { t: "Balance del periodo", v: cop(K.balance), color: K.balance >= 0 ? VERDE : ROJO }, { t: "Saldo en cuentas", v: cop(K.saldoTotal), color: "#15201a" }
+        { t: "Ingresos", v: cop(K.ingresos), color: VERDE, n: vs(inf.anterior.cambioIngresos) }, { t: "Gastos", v: cop(K.gastos), color: ROJO, n: vs(inf.anterior.cambioGastos) },
+        { t: "Balance del periodo", v: cop(K.balance), color: K.balance >= 0 ? VERDE : ROJO, n: K.balance >= 0 ? "Te sobró dinero" : "Gastaste más de lo que entró" }, { t: "Saldo en cuentas", v: cop(K.saldoTotal), color: "#15201a", n: "Lo que tienes hoy" }
       ]);
       tarjetas([
-        { t: "Gasto promedio por día", v: cop(K.promedioDiario) }, { t: "Ahorro del periodo", v: K.ahorroPct == null ? "Sin ingresos" : pct(K.ahorroPct), n: "del total de ingresos", color: K.ahorroPct != null && K.ahorroPct < 0 ? ROJO : VERDE },
-        { t: "Movimientos", v: String(K.movimientos) }, { t: "Mayor gasto", v: K.mayorGasto ? cop(K.mayorGasto.monto) : "-", n: K.mayorGasto ? K.mayorGasto.descripcion : "", chico: false }
+        { t: "Gasto promedio por día", v: cop(K.promedioDiario), n: "En el periodo" }, { t: "Ahorro del periodo", v: K.ahorroPct == null ? "Sin ingresos" : pct(K.ahorroPct), n: "Del total de ingresos", color: K.ahorroPct != null && K.ahorroPct < 0 ? ROJO : VERDE },
+        { t: "Movimientos", v: String(K.movimientos), n: "Registros del periodo" }, { t: "Mayor gasto", v: K.mayorGasto ? cop(K.mayorGasto.monto) : "-", n: K.mayorGasto ? K.mayorGasto.descripcion : "", color: ROJO }
       ]);
 
+      // ---- Cómo leer este informe ----
+      y += 2; espacio(48);
+      doc.setFillColor.apply(doc, hex(CLARO)); doc.setDrawColor(220, 226, 222); doc.setLineWidth(0.2);
+      var guia = GUIA.slice(0, 5), altoG = 12 + guia.length * 8;
+      doc.roundedRect(M, y, ANCHO, altoG, 2, 2, "FD");
+      doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor.apply(doc, hex(VERDE_OSC)); doc.text("Cómo leer este informe", M + 5, y + 6.5);
+      guia.forEach(function (g, i) {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(8.3); doc.setTextColor(40, 52, 45); doc.text(g[0] + ":", M + 5, y + 13 + i * 8);
+        doc.setFont("helvetica", "normal"); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(doc.splitTextToSize(g[1], ANCHO - 58)[0], M + 50, y + 13 + i * 8);
+      });
+      y += altoG + 8;
+
       // Gráficos
-      y += 5; titulo("A dónde se fue tu dinero", ANCHO * 380 / 900);
+      titulo("A dónde se fue tu dinero", ANCHO * 380 / 900);
       doc.addImage(G.dona, "PNG", M, y, ANCHO, ANCHO * 380 / 900); y += ANCHO * 380 / 900 + 6;
       titulo("Ingresos y gastos, últimos " + inf.serie.length + " periodos", ANCHO * 340 / 900);
       doc.addImage(G.serie, "PNG", M, y, ANCHO, ANCHO * 340 / 900); y += ANCHO * 340 / 900 + 6;
@@ -229,6 +320,21 @@
           }
         }) + 8;
       }
+      if (inf.ingresosCat.length) {
+        titulo("De dónde viene tu dinero", 30);
+        y = tabla({
+          startY: y, head: [["Categoría de ingreso", "Total", "% del ingreso"]], body: inf.ingresosCat.map(function (c) { return [c.nombre, cop(c.total), pct(c.pct)]; }),
+          columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } }
+        }) + 8;
+      }
+      if (inf.topGastos.length) {
+        titulo("Los " + inf.topGastos.length + " gastos más grandes", 40);
+        y = tabla({
+          startY: y, head: [["Fecha", "Descripción", "Categoría", "Valor"]],
+          body: inf.topGastos.map(function (m) { return [fechaCortaTxt(m.fecha), m.descripcion, m.categoria, "-" + cop(m.monto)]; }),
+          columnStyles: { 0: { cellWidth: 24 }, 3: { halign: "right", cellWidth: 32, textColor: hex(ROJO), fontStyle: "bold" } }
+        }) + 8;
+      }
       if (inf.presupuestos.length) {
         titulo("Presupuestos y límites");
         y = tabla({
@@ -248,6 +354,32 @@
         y = tabla({
           startY: y, head: [["Cuenta", "Tipo", "Saldo actual"]], body: inf.cuentas.map(function (c) { return [c.nombre, c.tipo, cop(c.saldo)]; }),
           foot: [["Total", "", cop(K.saldoTotal)]], footStyles: { fillColor: [232, 240, 235], textColor: [21, 32, 26], fontStyle: "bold" }, columnStyles: { 2: { halign: "right" } }
+        }) + 8;
+      }
+      if (inf.metas.length) {
+        titulo("Mis metas de ahorro", 30);
+        y = tabla({
+          startY: y, head: [["Meta", "Ahorrado", "Objetivo", "Avance", ""]],
+          body: inf.metas.map(function (m) { return [m.nombre, cop(m.ahorrado), cop(m.objetivo), pct(m.objetivo > 0 ? m.ahorrado / m.objetivo * 100 : 0), ""]; }),
+          columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right", cellWidth: 22 }, 4: { cellWidth: 38 } },
+          didDrawCell: function (d) {
+            if (d.section === "body" && d.column.index === 4) {
+              var m = inf.metas[d.row.index], f = m.objetivo > 0 ? Math.min(1, m.ahorrado / m.objetivo) : 0, w = d.cell.width - 4;
+              doc.setFillColor(226, 232, 228); doc.rect(d.cell.x + 2, d.cell.y + d.cell.height / 2 - 1.5, w, 3, "F");
+              doc.setFillColor.apply(doc, hex(VERDE)); doc.rect(d.cell.x + 2, d.cell.y + d.cell.height / 2 - 1.5, Math.max(0.5, w * f), 3, "F");
+            }
+          }
+        }) + 8;
+      }
+      if (inf.documentos.length) {
+        titulo("Vencimientos de papeles", 30);
+        y = tabla({
+          startY: y, head: [["Documento", "Vence", "Estado", "Costo"]],
+          body: inf.documentos.map(function (d) { return [d.nombre, fechaCortaTxt(new Date(d.vence + "T00:00:00")), d.texto, d.costo ? cop(d.costo) : "-"]; }),
+          columnStyles: { 3: { halign: "right" } },
+          didParseCell: function (d) {
+            if (d.section === "body" && d.column.index === 2) { var e = inf.documentos[d.row.index].estado; d.cell.styles.fontStyle = "bold"; d.cell.styles.textColor = e === "vencido" ? hex(ROJO) : e === "pronto" ? [200, 120, 20] : hex(VERDE_OSC); }
+          }
         }) + 8;
       }
       if (inf.conductor) {
@@ -276,12 +408,12 @@
 
       // Pie de página en todas las hojas
       var n = doc.getNumberOfPages();
-      for (var p = 1; p <= n; p++) {
+      for (var p = 2; p <= n; p++) {
         doc.setPage(p);
         doc.setDrawColor(210, 218, 213); doc.setLineWidth(0.2); doc.line(M, H - 11, W - M, H - 11);
         doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor.apply(doc, hex(GRIS));
-        doc.text(MARCA, M, H - 6.5); doc.text("Página " + p + " de " + n, W - M, H - 6.5, { align: "right" });
-        if (p > 1) { doc.setFont("helvetica", "bold"); doc.setTextColor.apply(doc, hex(VERDE_OSC)); doc.text("NOVA", M, 10); doc.setFont("helvetica", "normal"); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(inf.persona.nombre + " · " + inf.periodoNombre, W - M, 10, { align: "right" }); }
+        doc.text(MARCA, M, H - 6.5); doc.text("Página " + (p - 1) + " de " + (n - 1), W - M, H - 6.5, { align: "right" });
+        { doc.setFont("helvetica", "bold"); doc.setTextColor.apply(doc, hex(VERDE_OSC)); doc.text("NOVA", M, 10); doc.setFont("helvetica", "normal"); doc.setTextColor.apply(doc, hex(GRIS)); doc.text(inf.persona.nombre + " · " + inf.periodoNombre, W - M, 10, { align: "right" }); }
       }
       return { bytes: new Uint8Array(doc.output("arraybuffer")), nombre: "NOVA-informe-" + archivoSeguro(inf.periodoNombre) + ".pdf", tipo: "application/pdf" };
     });
@@ -303,7 +435,51 @@
       }
       function pie(ws, fila, ncols) { var c = ws.getCell(fila, 1); c.value = MARCA; c.font = { italic: true, size: 9, color: { argb: "FF5D695F" } }; ws.mergeCells(fila, 1, fila, ncols); }
 
-      // ---- Hoja 1: Dashboard ----
+      // ---- Portada ----
+      var po = wb.addWorksheet("Portada", { views: [{ showGridLines: false }], properties: { tabColor: { argb: argb(VERDE_OSC) } }, pageSetup: { orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+      po.columns = [{ width: 3 }, { width: 28 }, { width: 62 }, { width: 28 }];
+      for (var fr = 1; fr <= 8; fr++) for (var cc = 1; cc <= 5; cc++) po.getCell(fr, cc).fill = rell(VERDE_OSC);
+      po.mergeCells("B2:D3"); po.getCell("B2").value = "NOVA"; po.getCell("B2").font = { bold: true, size: 40, color: { argb: "FFFFFFFF" } }; po.getCell("B2").alignment = { vertical: "middle" };
+      po.mergeCells("B5:D5"); po.getCell("B5").value = "Informe financiero personal"; po.getCell("B5").font = { size: 16, color: { argb: "FFFFFFFF" } };
+      po.mergeCells("B6:D6"); po.getCell("B6").value = inf.periodoNombre + "  ·  del " + fechaCortaTxt(inf.desde) + " al " + fechaCortaTxt(inf.hasta); po.getCell("B6").font = { bold: true, size: 14, color: { argb: argb("#2ee06f") } };
+      po.getRow(2).height = 28; po.getRow(3).height = 28; po.getRow(5).height = 24; po.getRow(6).height = 22;
+      po.getCell("B10").value = "PREPARADO PARA"; po.getCell("B10").font = { bold: true, size: 9, color: { argb: "FF5D695F" } };
+      po.mergeCells("B11:D11"); po.getCell("B11").value = inf.persona.nombre; po.getCell("B11").font = { bold: true, size: 22, color: { argb: argb(VERDE_OSC) } }; po.getRow(11).height = 32;
+      po.mergeCells("B12:D12"); po.getCell("B12").value = inf.persona.email; po.getCell("B12").font = { size: 12, color: { argb: "FF5D695F" } };
+      function secPortada(fila, texto) { po.mergeCells(fila, 2, fila, 4); var c = po.getCell(fila, 2); c.value = texto; c.font = { bold: true, size: 13, color: { argb: argb(VERDE_OSC) } }; c.border = { bottom: { style: "medium", color: { argb: argb(VERDE) } } }; po.getRow(fila).height = 24; }
+      var Pf = inf.perfil, fila = 14; secPortada(fila++, "Ficha del cliente");
+      var ficha = [["Nombre", inf.persona.nombre], ["Correo", inf.persona.email]];
+      if (Pf.clienteDesde) ficha.push(["Usa NOVA desde", fechaTxt(Pf.clienteDesde)]);
+      ficha.push(["Periodo analizado", inf.periodoNombre], ["Ciclo de presupuesto", inf.cicloNombre + (Pf.presupuesto ? "  ·  presupuesto de " + cop(Pf.presupuesto) : "")], ["Cuentas registradas", String(Pf.cuentas)],
+        ["Movimientos guardados", Pf.movimientosTotal + (Pf.primerRegistro ? " (desde el " + fechaCortaTxt(Pf.primerRegistro) + ")" : "")], ["Informe generado", fechaTxt(inf.generado) + ", " + horaTxt(inf.generado)]);
+      if (Pf.modoConductor) ficha.push(["Modo conductor", "Activo" + (Pf.vehiculo ? "  ·  " + Pf.vehiculo : "") + (Pf.metaDiaria ? "  ·  meta diaria " + cop(Pf.metaDiaria) : "")]);
+      ficha.forEach(function (f) {
+        po.mergeCells(fila, 3, fila, 4);
+        var a = po.getCell(fila, 2), b = po.getCell(fila, 3); a.value = f[0]; b.value = f[1]; a.font = { bold: true, color: { argb: "FF3C5044" } }; a.fill = rell("#ecf3ef");
+        po.getCell(fila, 4).border = bordes; a.border = bordes; b.border = bordes; b.alignment = { wrapText: true, vertical: "middle" }; a.alignment = { vertical: "middle" }; po.getRow(fila).height = 20; fila++;
+      });
+      fila += 1; secPortada(fila++, "Resumen explicado");
+      hallazgos(inf).forEach(function (h) {
+        var col = h.tono === "ok" ? VERDE_OSC : h.tono === "alerta" ? ROJO : "#1f5fae", fondo = h.tono === "ok" ? "#f0f9f4" : h.tono === "alerta" ? "#fdf2f0" : "#f0f6fd";
+        po.mergeCells(fila, 3, fila, 4);
+        var a = po.getCell(fila, 2), b = po.getCell(fila, 3); a.value = h.titulo; b.value = h.texto;
+        a.font = { bold: true, color: { argb: argb(col) } }; a.alignment = { wrapText: true, vertical: "middle" }; b.alignment = { wrapText: true, vertical: "middle" };
+        [a, b, po.getCell(fila, 4)].forEach(function (c) { c.fill = rell(fondo); c.border = { top: borde, bottom: borde, left: c === a ? { style: "thick", color: { argb: argb(col) } } : undefined, right: c === po.getCell(fila, 4) ? borde : undefined }; });
+        po.getRow(fila).height = Math.max(34, Math.ceil(h.texto.length / 72) * 16 + 6); fila++;
+      });
+      fila += 1; secPortada(fila++, "Contenido de este libro (toca un nombre para ir a la hoja)");
+      VARIAS.forEach(function (v) {
+        if (v[0] === "Portada y resumen") return;
+        if (v[0] === "Metas y vencimientos" && !inf.metas.length && !inf.documentos.length) return;
+        po.mergeCells(fila, 3, fila, 4);
+        var a = po.getCell(fila, 2), b = po.getCell(fila, 3); a.value = { text: v[0], hyperlink: "#'" + v[0] + "'!A1" }; a.font = { bold: true, underline: true, color: { argb: "FF1F5FAE" } };
+        b.value = v[1]; b.alignment = { wrapText: true, vertical: "middle" }; a.alignment = { vertical: "middle" }; po.getRow(fila).height = 30;
+        a.border = bordes; b.border = bordes; po.getCell(fila, 4).border = bordes; fila++;
+      });
+      po.getCell(fila, 2).value = { text: "Guía: cómo leer este informe", hyperlink: "#'Guía'!A1" }; po.getCell(fila, 2).font = { bold: true, underline: true, color: { argb: "FF1F5FAE" } }; po.mergeCells(fila, 3, fila, 4); po.getCell(fila, 3).value = "Qué significa cada cifra y qué hay en cada hoja."; fila += 2;
+      po.mergeCells(fila, 2, fila, 4); po.getCell(fila, 2).value = "Documento confidencial: contiene información financiera personal.  ·  " + MARCA; po.getCell(fila, 2).font = { italic: true, size: 9, color: { argb: "FF5D695F" } };
+
+      // ---- Hoja 2: Dashboard ----
       var d = wb.addWorksheet("Dashboard", { views: [{ showGridLines: false }], properties: { tabColor: { argb: argb(VERDE) } }, pageSetup: { orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
       d.columns = [{ width: 2 }].concat(Array.apply(null, Array(11)).map(function (_, i) { return { width: [14, 14, 3, 14, 14, 3, 14, 14, 3, 14, 14][i] }; }));
       d.mergeCells("B1:L2"); var t = d.getCell("B1"); t.value = "NOVA · Informe financiero personal"; t.font = { bold: true, size: 22, color: { argb: "FFFFFFFF" } }; t.fill = rell(VERDE_OSC); t.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
@@ -328,8 +504,9 @@
         for (var f = fila; f <= fila + 2; f++) for (var c = c1; c <= c2; c++) { var cel = d.getCell(f, c); cel.fill = rell(CLARO); cel.border = { top: f === fila ? { style: "medium", color: { argb: argb(color || VERDE) } } : undefined, bottom: f === fila + 2 ? borde : undefined, left: c === c1 ? borde : undefined, right: c === c2 ? borde : undefined }; }
         d.getRow(fila + 1).height = 30;
       }
-      tile(9, 2, "Ingresos", K.ingresos, "Todo lo que entró", VERDE, true);
-      tile(9, 5, "Gastos", K.gastos, "Todo lo que salió", ROJO, true);
+      var vsX = function (c) { return c == null ? "Sin periodo anterior" : signo(c) + " vs " + inf.anterior.nombre; };
+      tile(9, 2, "Ingresos", K.ingresos, vsX(inf.anterior.cambioIngresos), VERDE, true);
+      tile(9, 5, "Gastos", K.gastos, vsX(inf.anterior.cambioGastos), ROJO, true);
       tile(9, 8, "Balance del periodo", K.balance, K.balance >= 0 ? "Te sobró dinero" : "Gastaste más de lo que entró", K.balance >= 0 ? VERDE : ROJO, true);
       tile(9, 11, "Saldo en cuentas", K.saldoTotal, "Lo que tienes hoy", "#15201a", true);
       tile(13, 2, "Gasto promedio por día", K.promedioDiario, "En el periodo", "#15201a", true);
@@ -423,6 +600,37 @@
       if (!inf.presupuestos.length) cu.getCell(fp + 1, 1).value = "Aún no tienes presupuestos ni límites.";
       pie(cu, fp + inf.presupuestos.length + 4, 6);
 
+      // ---- Metas y vencimientos ----
+      if (inf.metas.length || inf.documentos.length) {
+        var me = wb.addWorksheet("Metas y vencimientos", { views: [{ showGridLines: false }], properties: { tabColor: { argb: argb("#f1c40f") } } });
+        me.columns = [{ width: 32 }, { width: 18 }, { width: 18 }, { width: 14 }, { width: 26 }];
+        me.mergeCells("A1:E1"); me.getCell("A1").value = "Metas de ahorro y vencimientos de papeles"; me.getCell("A1").font = { bold: true, size: 14, color: { argb: argb(VERDE_OSC) } }; me.getRow(1).height = 26;
+        var fm = 3;
+        if (inf.metas.length) {
+          encabezado(me, fm, ["Meta", "Ahorrado", "Objetivo", "Avance", "Lo que falta"]);
+          inf.metas.forEach(function (m, i) {
+            var r = me.getRow(fm + 1 + i), av = m.objetivo > 0 ? Math.min(1, m.ahorrado / m.objetivo) : 0;
+            r.values = [m.nombre, m.ahorrado, m.objetivo, av, Math.max(0, m.objetivo - m.ahorrado)];
+            r.getCell(2).numFmt = MON; r.getCell(3).numFmt = MON; r.getCell(4).numFmt = "0%"; r.getCell(5).numFmt = MON;
+            for (var k = 1; k <= 5; k++) r.getCell(k).border = bordes;
+          });
+          me.addConditionalFormatting({ ref: "D" + (fm + 1) + ":D" + (fm + inf.metas.length), rules: [{ type: "dataBar", priority: 2, cfvo: [{ type: "num", value: 0 }, { type: "num", value: 1 }], color: { argb: argb("#2ee06f") }, gradient: false }] });
+          fm += inf.metas.length + 3;
+        }
+        if (inf.documentos.length) {
+          me.getCell(fm - 1, 1).value = "Vencimientos de papeles"; me.getCell(fm - 1, 1).font = { bold: true, size: 12, color: { argb: argb(VERDE_OSC) } };
+          encabezado(me, fm, ["Documento", "Vence", "Estado", "Costo", ""]);
+          inf.documentos.forEach(function (d, i) {
+            var r = me.getRow(fm + 1 + i); r.values = [d.nombre, utc(new Date(d.vence + "T00:00:00")), d.texto, d.costo || "", ""];
+            r.getCell(2).numFmt = "dd/mm/yyyy"; r.getCell(4).numFmt = MON;
+            r.getCell(3).font = { bold: true, color: { argb: argb(d.estado === "vencido" ? ROJO : d.estado === "pronto" ? "#c87814" : VERDE_OSC) } };
+            for (var k = 1; k <= 4; k++) r.getCell(k).border = bordes;
+          });
+          fm += inf.documentos.length + 1;
+        }
+        pie(me, fm + 2, 5);
+      }
+
       // ---- Hoja 6: Conductor (solo si el modo conductor está activo) ----
       if (inf.conductor) {
         var C = inf.conductor, co = wb.addWorksheet("Mi trabajo", { views: [{ showGridLines: false }], properties: { tabColor: { argb: argb("#d35400") } } });
@@ -438,7 +646,22 @@
         pie(co, fpl + C.plataformas.length + 3, 3);
       }
 
-      wb.eachSheet(function (h) { if (h.name !== "Dashboard") h.pageSetup = { orientation: h.name === "Transacciones" ? "landscape" : "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 }; });
+      // ---- Guía ----
+      var gu = wb.addWorksheet("Guía", { views: [{ showGridLines: false }], properties: { tabColor: { argb: argb("#7f8c8d") } } });
+      gu.columns = [{ width: 30 }, { width: 100 }];
+      gu.mergeCells("A1:B1"); gu.getCell("A1").value = "Guía: cómo leer este informe"; gu.getCell("A1").font = { bold: true, size: 14, color: { argb: argb(VERDE_OSC) } }; gu.getRow(1).height = 26;
+      var fg = 3;
+      function bloque(titulo, filas) {
+        encabezado(gu, fg, [titulo, "Qué significa"]); fg++;
+        filas.forEach(function (f) { var r = gu.getRow(fg); r.values = f; r.getCell(1).font = { bold: true }; r.getCell(2).alignment = { wrapText: true, vertical: "middle" }; r.getCell(1).alignment = { vertical: "middle" }; r.height = 22; for (var k = 1; k <= 2; k++) r.getCell(k).border = bordes; fg++; });
+        fg += 1;
+      }
+      bloque("Cifra", GUIA);
+      bloque("Hoja", VARIAS);
+      bloque("Sobre estos datos", [["De dónde salen", "Todo sale de lo que registraste en NOVA. Si algo falta, es porque no se anotó."], ["Periodo del informe", "Las cifras y los gráficos son del periodo " + inf.periodoNombre + ". La hoja Transacciones trae todo el historial."], ["Gráficos", "Los gráficos van como imágenes para que se vean igual en cualquier programa de Excel."], ["Autoría", "NOVA fue creada por OPITA-DIGITAL. Todos los derechos reservados."]]);
+      pie(gu, fg + 1, 2);
+
+      wb.eachSheet(function (h) { if (h.name !== "Dashboard" && h.name !== "Portada") h.pageSetup = { orientation: h.name === "Transacciones" ? "landscape" : "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 }; });
       return wb.xlsx.writeBuffer().then(function (buf) {
         return { bytes: new Uint8Array(buf), nombre: "NOVA-informe-" + archivoSeguro(inf.periodoNombre) + ".xlsx", tipo: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" };
       });
