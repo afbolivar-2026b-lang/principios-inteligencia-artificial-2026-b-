@@ -8,33 +8,51 @@ No necesita compilación: son archivos estáticos que se pueden publicar tal cua
 
 ## Qué hace
 
-- **Inicio:** balance disponible y su cambio en el mes, meta de ahorro principal,
-  gastos de la semana contra la semana pasada, gráfico de lunes a domingo y
-  actividad reciente.
-- **Entrada rápida:** entiende montos como `20 mil`, `15k`, `850.000`,
-  `2 millones`, `1,5 millones`, `30 lucas` o `2 palos`. También sabe si es gasto o
-  ingreso, elige la categoría y reconoce "ayer". Antes de guardar muestra lo que
-  entendió y deja cambiar la categoría.
-- **Dictado por voz** en navegadores que lo permiten (Chrome, Edge, Safari).
-- **Análisis** del mes por categoría y lista de todos los movimientos, con opción de borrar.
-- **Cuentas** (Nequi, banco, efectivo…) con su saldo, y **metas de ahorro** con abonos.
+Está pensada como Lukas, pero todo es gratis y sin anuncios.
+
+- **Inicio:** periodo con flechas (mes, quincena, semana…), balance del periodo con
+  ingresos y gastos, aviso de déficit, **"Seguro para gastar"** (cuánto puedes gastar
+  por día hasta el final del periodo), entrada rápida, registros comunes de un toque,
+  presupuesto, meta, gastos de la semana y movimientos agrupados por día. El ojo de
+  arriba oculta los valores.
+- **Botón +:** Asistente inteligente (varios gastos a la vez, dictados, escritos o con
+  foto), gasto o ingreso a mano y el chat con la IA.
+- **Nuevo gasto o ingreso:** teclado de números con calculadora (`+ − × ÷`), fecha,
+  descripción, categoría (con buscador, frecuentes y grupos), cuenta, etiquetas con
+  sugerencias, **estado** (pagado o pendiente), **nota**, **hacer recurrente** y
+  "guardar y agregar otro". Tocar un movimiento lo edita o lo borra.
+- **Planes:** límites de gasto por categoría o generales (semanal a anual, que se
+  renuevan solos) con su barra de avance, y metas de ahorro con abonos.
+- **Análisis:** por ciclo y periodo, con vista rápida (promedio diario, categoría top,
+  día que más gastas, cambio contra el periodo anterior), dona de gastos por categoría,
+  gasto por etiqueta, ingresos contra gastos, tendencia y proyección del balance a 90
+  días. Se pueden mostrar, ocultar y reordenar (⚙ Personalizar). Tocar una categoría
+  abre sus movimientos.
+- **Buscar:** por nombre, nota, categoría o etiqueta, con filtros (tipo, fechas,
+  categoría, etiqueta, estado) y orden; se puede exportar el resultado a CSV.
+- **Configuración:** período de presupuesto, **categorías** (crear, editar, borrar, con
+  ícono, color y grupo), registros comunes, etiquetas (crear, renombrar, quitar),
+  **programadas** (pagos que se registran solos al abrir la app), cuentas, "Seguro para
+  gastar", ubicación de cada pago, **exportar** (CSV de movimientos, categorías y
+  límites, respaldo JSON y reporte PDF) y tema.
+- **Entrada rápida:** entiende montos como `20 mil`, `15k`, `850.000`, `2 millones`,
+  `30 lucas` o `2 palos`, decide gasto o ingreso, elige la categoría y reconoce "ayer".
+  Antes de guardar muestra lo que entendió. También por voz y con foto del recibo.
 - **Modo demostración** con datos de ejemplo que no se guardan.
+
+La exportación y el PDF se descargan desde el navegador; dentro de la APK avisan que
+hay que abrir la página web.
 
 ## Todo gratis
 
-Todas las funciones están disponibles para todas las cuentas, sin pagos ni códigos:
+Todas las funciones están disponibles para todas las cuentas, sin pagos, códigos ni
+anuncios: IA ilimitada (texto, voz, imagen y chat), ciclos de presupuesto, registros
+comunes, programados y etiquetas sin límite, ubicación con mapa y exportación.
 
-- Registros escribiendo, hablando o con foto del recibo, sin límite.
-- Presupuesto semanal, quincenal, mensual, trimestral, semestral o anual.
-- Registros frecuentes de un toque, sin límite.
-- Etiquetas `#` para filtrar, sin límite.
-- Ubicación de cada pago con enlace al mapa y "otros pagos aquí".
-
-**Foto del recibo:** el botón de cámara lee la foto en el mismo celular con
-Tesseract (`vendor/tesseract/`, sin servicios externos ni costo). `recibo.js` busca
-el TOTAL (ignora subtotal, IVA, efectivo y cambio) y el nombre del negocio, y lo
-pasa a la entrada rápida para revisarlo antes de guardar. Funciona mejor con
-fotos de cerca, con buena luz y el recibo derecho.
+**Foto del recibo:** el botón de cámara lee la foto con la IA y, si no hay, en el
+mismo celular con Tesseract (`vendor/tesseract/`, sin servicios externos ni costo).
+`recibo.js` busca el TOTAL (ignora subtotal, IVA, efectivo y cambio) y el nombre del
+negocio, y lo pasa a la entrada rápida para revisarlo antes de guardar.
 
 ## Registros con IA (Gemini)
 
@@ -44,7 +62,9 @@ se mandan primero a la función `nova-ia` de Supabase
 devuelve tipo, valor, descripción, categoría, etiquetas y día. La vista previa
 muestra la marca "✦ IA" cuando la respuesta viene de ahí.
 
-- **Pregúntale a NOVA:** en Inicio hay un chat para hacerle preguntas a la IA
+- **Asistente inteligente:** mismo modo de la función con `varios: true`; devuelve
+  hasta 30 movimientos de un texto, un dictado o varias líneas, y se revisan antes de guardar.
+- **Pregúntale a NOVA:** el chat (desde el botón + o la tarjeta del inicio) para hacerle preguntas a la IA
   ("¿en qué gasto más este mes?", "¿cuánto me queda del presupuesto?"). La app
   le manda un resumen de las cuentas, el mes, el presupuesto, las metas y los
   últimos 150 movimientos, más las últimas preguntas de la conversación. La
@@ -69,14 +89,16 @@ muestra la marca "✦ IA" cuando la respuesta viene de ahí.
 | `parser.js` | Convierte la frase escrita o dictada en un movimiento |
 | `periodos.js` | Calcula el periodo actual de cada ciclo de presupuesto |
 | `recibo.js` | Saca el total y el negocio del texto leído en la foto de un recibo |
+| `analisis.js` | Cálculos sin pantalla: periodos, análisis, búsqueda, calculadora, programados y CSV |
 | `*.test.js` | Pruebas: `node --test app-finanzas/*.test.js` |
 | `config.js` | Nombre de la app y conexión a Supabase |
 | `vendor/` | `@supabase/supabase-js` 2.45.4 (MIT) y Tesseract.js 5.1.1 con el modelo en español (Apache-2.0), incluidos para no depender de un CDN |
 
 ## Base de datos (Supabase)
 
-Las tablas `fin_cuentas`, `fin_categorias`, `fin_movimientos`, `fin_metas`,
-`fin_perfiles` y `fin_frecuentes` tienen
+Las tablas `fin_cuentas`, `fin_categorias` (con color y grupo), `fin_movimientos`
+(con nota, estado y programación de origen), `fin_metas`, `fin_perfiles`,
+`fin_frecuentes`, `fin_programados` y `fin_limites` tienen
 RLS: cada usuario solo ve y edita sus propias filas, y un movimiento solo puede
 apuntar a una cuenta y una categoría del mismo usuario. Los visitantes sin sesión
 no pueden leer nada. En el primer inicio de sesión la app crea la cuenta

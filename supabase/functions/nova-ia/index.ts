@@ -77,13 +77,13 @@ Deno.serve(async (req) => {
 
   let entrada: {
     texto?: string; imagen?: string; mime?: string; categorias?: string[]; hoy?: string;
-    pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown;
+    pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown; varios?: boolean;
   };
   try { entrada = await req.json(); } catch { return responder(400, { error: "JSON inválido" }); }
 
   if (typeof entrada.pregunta === "string") return conversar(clave, entrada);
 
-  const texto = (entrada.texto || "").slice(0, 500).trim();
+  const texto = (entrada.texto || "").slice(0, entrada.varios === true ? 2000 : 500).trim();
   const imagen = entrada.imagen || "";
   if (!texto && !imagen) return responder(400, { error: "Falta texto o imagen" });
   if (imagen.length > 6_000_000) return responder(413, { error: "La foto es muy grande" });
@@ -92,8 +92,9 @@ Deno.serve(async (req) => {
     ? entrada.categorias.filter((c) => typeof c === "string").slice(0, 40).map((c) => c.slice(0, 40))
     : CATEGORIAS_BASE;
 
+  const varios = entrada.varios === true && !imagen;
   const instrucciones = `Eres el asistente de NOVA, una app colombiana de finanzas personales.
-Convierte lo que te dan (una frase escrita o dictada, o la foto de un recibo) en UN movimiento de dinero.
+Convierte lo que te dan (una frase escrita o dictada, o la foto de un recibo) en ${varios ? "UNO O VARIOS movimientos de dinero (uno por cada gasto o ingreso que se mencione; ignora lo que no sea un movimiento)" : "UN movimiento de dinero"}.
 Reglas:
 - Moneda: pesos colombianos (COP), sin decimales. "mil", "k", "lucas" = ×1.000; "millón", "palo" = ×1.000.000. En recibos "30.000" es treinta mil.
 - En un recibo usa el TOTAL pagado (no subtotal, IVA, efectivo recibido ni cambio). La descripción es el nombre del negocio.
@@ -109,25 +110,41 @@ Hoy es ${entrada.hoy || new Date().toISOString().slice(0, 10)}.`;
   if (texto) partes.push({ text: texto });
   if (imagen) partes.push({ inline_data: { mime_type: mime, data: imagen } });
 
+  const unMovimiento = {
+    type: "OBJECT",
+    properties: {
+      tipo: { type: "STRING", enum: ["gasto", "ingreso"] },
+      monto: { type: "NUMBER" },
+      descripcion: { type: "STRING" },
+      categoria: { type: "STRING", enum: categorias },
+      etiquetas: { type: "ARRAY", items: { type: "STRING" } },
+      dia: { type: "STRING", enum: ["hoy", "ayer", "anteayer"] },
+    },
+    required: ["tipo", "monto", "descripcion", "categoria", "etiquetas", "dia"],
+  };
   const cuerpo = {
     systemInstruction: { parts: [{ text: instrucciones }] },
     contents: [{ role: "user", parts: partes }],
     generationConfig: {
       temperature: 0,
       responseMimeType: "application/json",
-      responseSchema: {
-        type: "OBJECT",
-        properties: {
-          tipo: { type: "STRING", enum: ["gasto", "ingreso"] },
-          monto: { type: "NUMBER" },
-          descripcion: { type: "STRING" },
-          categoria: { type: "STRING", enum: categorias },
-          etiquetas: { type: "ARRAY", items: { type: "STRING" } },
-          dia: { type: "STRING", enum: ["hoy", "ayer", "anteayer"] },
-        },
-        required: ["tipo", "monto", "descripcion", "categoria", "etiquetas", "dia"],
-      },
+      responseSchema: varios
+        ? { type: "OBJECT", properties: { movimientos: { type: "ARRAY", items: unMovimiento } }, required: ["movimientos"] }
+        : unMovimiento,
     },
+  };
+
+  // Valida lo que devolvió la IA: nada de lo que viene de ella se guarda sin revisar.
+  const limpiar = (salida: Record<string, unknown>) => {
+    const monto = Math.round(Number(salida.monto) || 0);
+    return {
+      tipo: salida.tipo === "ingreso" ? "ingreso" : "gasto",
+      monto: monto > 0 && monto < 10_000_000_000 ? monto : 0,
+      descripcion: String(salida.descripcion || "").slice(0, 60),
+      categoria: categorias.includes(salida.categoria as string) ? salida.categoria : (salida.tipo === "ingreso" ? "Otros ingresos" : "Otros gastos"),
+      etiquetas: Array.isArray(salida.etiquetas) ? salida.etiquetas.map((e: unknown) => String(e).toLowerCase().replace(/^#/, "").slice(0, 30)).slice(0, 10) : [],
+      dia: ["hoy", "ayer", "anteayer"].includes(salida.dia as string) ? salida.dia : "hoy",
+    };
   };
 
   let r: Response;
@@ -145,15 +162,11 @@ Hoy es ${entrada.hoy || new Date().toISOString().slice(0, 10)}.`;
   try {
     const datos = await r.json();
     const salida = JSON.parse(datos.candidates[0].content.parts[0].text);
-    const monto = Math.round(Number(salida.monto) || 0);
-    return responder(200, {
-      tipo: salida.tipo === "ingreso" ? "ingreso" : "gasto",
-      monto: monto > 0 && monto < 10_000_000_000 ? monto : 0,
-      descripcion: String(salida.descripcion || "").slice(0, 60),
-      categoria: categorias.includes(salida.categoria) ? salida.categoria : (salida.tipo === "ingreso" ? "Otros ingresos" : "Otros gastos"),
-      etiquetas: Array.isArray(salida.etiquetas) ? salida.etiquetas.map((e: unknown) => String(e).toLowerCase().replace(/^#/, "").slice(0, 30)).slice(0, 10) : [],
-      dia: ["hoy", "ayer", "anteayer"].includes(salida.dia) ? salida.dia : "hoy",
-    });
+    if (varios) {
+      const lista = Array.isArray(salida.movimientos) ? salida.movimientos.slice(0, 30).map(limpiar) : [];
+      return responder(200, { movimientos: lista });
+    }
+    return responder(200, limpiar(salida));
   } catch (_e) {
     return responder(502, { error: "La IA respondió algo que no se entendió" });
   }
