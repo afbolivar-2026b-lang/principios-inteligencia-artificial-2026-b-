@@ -1310,17 +1310,28 @@
     $("perfil-conductor").checked = on;
     var al = $("alertas-docs");
     al.replaceChildren();
-    if (on) documentosPorVencer().slice(0, 3).forEach(function (x) {
-      var b = el("button", "alerta-doc " + x.e.estado); b.type = "button";
-      b.append(el("span", null, x.e.estado === "vencido" ? "⛔" : "⚠️"), el("span", null, x.d.nombre + " · " + x.e.texto.toLowerCase()), el("span", "flecha", "›"));
-      b.addEventListener("click", function () { ir("trabajo"); });
+    function alerta(clase, icono, texto, alClick) {
+      var b = el("button", "alerta-doc " + clase); b.type = "button";
+      b.append(el("span", null, icono), el("span", null, texto), el("span", "flecha", "›"));
+      b.addEventListener("click", alClick);
       al.append(b);
-    });
+    }
+    if (on) {
+      var porVencer = documentosPorVencer();
+      porVencer.slice(0, 3).forEach(function (x) {
+        alerta(x.e.estado, x.e.estado === "vencido" ? "⛔" : "⚠️", x.d.nombre + " · " + x.e.texto.toLowerCase(), function () { ir("trabajo"); });
+      });
+      if (!datos.documentos.length) alerta("pronto", "🛡️", "Pon la fecha de tu SOAT y tu tecnomecánica para que no se te olviden", function () { ir("trabajo"); abrirDocumento(null, "soat"); });
+      else if (!porVencer.length) {
+        var sig = datos.documentos.slice().sort(function (a, b) { return String(a.vence).localeCompare(String(b.vence)); })[0];
+        alerta("ok", "🗓️", "Próximo vencimiento: " + sig.nombre + " · " + A.estadoDocumento(sig).texto.toLowerCase(), function () { ir("trabajo"); });
+      }
+    }
     if (!on) return;
     var r = A.resumenTrabajo(datos.movimientos, datos.categorias, A.rangoJornada("hoy"));
-    $("jornada-neto").textContent = (r.neto < 0 && !ocultos ? "−" : "") + dinero(Math.abs(r.neto));
+    $("jornada-neto").textContent = (r.netoOperativo < 0 && !ocultos ? "−" : "") + dinero(Math.abs(r.netoOperativo));
     $("jornada-ganado").textContent = ocultos ? "$ ••••" : "+" + pesos.format(r.ingresos);
-    $("jornada-gastos").textContent = ocultos ? "$ ••••" : "−" + pesos.format(r.gastos);
+    $("jornada-gastos").textContent = ocultos ? "$ ••••" : "−" + pesos.format(r.operacion);
     var meta = num(datos.perfil.meta_diaria), caja = $("jornada-meta-barra-caja");
     caja.hidden = !meta;
     var nota = $("jornada-nota");
@@ -1345,9 +1356,10 @@
     if (!conductor()) return;
     document.querySelectorAll("#trabajo-periodos button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.cual === cualTrabajo)); });
     var r = A.resumenTrabajo(datos.movimientos, datos.categorias, A.rangoJornada(cualTrabajo));
-    $("trabajo-neto").textContent = (r.neto < 0 && !ocultos ? "−" : "") + dinero(Math.abs(r.neto));
+    $("trabajo-neto").textContent = (r.netoOperativo < 0 && !ocultos ? "−" : "") + dinero(Math.abs(r.netoOperativo));
     $("trabajo-ganado").textContent = ocultos ? "$ ••••" : "+" + pesos.format(r.ingresos);
-    $("trabajo-gastos").textContent = ocultos ? "$ ••••" : "−" + pesos.format(r.gastos);
+    $("trabajo-gastos").textContent = ocultos ? "$ ••••" : "−" + pesos.format(r.operacion);
+    $("trabajo-fijos").textContent = r.fijos ? "Papeles y cuotas (SOAT, seguro, cuota…): " + dinero(r.fijos) + " · Después de todo: " + (r.neto < 0 && !ocultos ? "−" : "") + dinero(Math.abs(r.neto)) : "";
     $("trabajo-viajes").textContent = r.viajes ? r.viajes + (r.viajes === 1 ? " viaje" : " viajes") + " · " + dinero(r.porViaje) + " por viaje"
       : r.movimientos ? "Sin viajes anotados" : "Aún no hay movimientos en este periodo";
     var meta = num(datos.perfil.meta_diaria);
@@ -1383,6 +1395,15 @@
     });
 
     pintarDocumentos();
+    var rap = $("doc-rapidos");
+    rap.replaceChildren();
+    ["soat", "tecnomecanica", "seguro-mensual", "seguro-anual", "cuota", "impuesto"].forEach(function (clave) {
+      var x = A.DOCUMENTOS.find(function (y) { return y.clave === clave; });
+      if (datos.documentos.some(function (d) { return d.tipo === x.tipo && d.nombre === x.nombre; })) return;
+      var b = el("button", "chip-rapido", "＋ " + x.nombre); b.type = "button";
+      b.addEventListener("click", function () { cadenaSetup = []; abrirDocumento(null, clave); });
+      rap.append(b);
+    });
     if (document.activeElement !== $("vehiculo-nombre")) $("vehiculo-nombre").value = datos.perfil.vehiculo || "";
     if (document.activeElement !== $("meta-diaria")) $("meta-diaria").value = datos.perfil.meta_diaria ? pesos.format(num(datos.perfil.meta_diaria)) : "";
   }
@@ -1395,7 +1416,14 @@
     (on ? asegurarCategoriasConductor() : Promise.resolve()).then(function () {
       return guardarPerfil({ modo_conductor: on }, "ajustes-mensaje",
         on ? "Modo conductor activado." : "Modo conductor apagado. Tus datos quedan guardados.");
-    }).then(function () { programarAvisos(); if (on) { toast("🚖 Modo conductor activado"); ir("trabajo"); } })
+    }).then(function () {
+      programarAvisos();
+      if (!on) return;
+      toast("🚖 Modo conductor activado");
+      ir("trabajo");
+      // Para que no se le olvide: se piden de una vez las fechas del SOAT y de la tecnomecánica.
+      if (!datos.documentos.length) { cadenaSetup = ["tecnomecanica"]; abrirDocumento(null, "soat"); }
+    })
       .catch(function (err) { mensaje("ajustes-mensaje", err.message, true); pintar(); });
   });
 
@@ -1427,41 +1455,48 @@
   }
   function parteFechaLocal(f) { var p = String(f).slice(0, 10).split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
 
-  var docActual = null;
-  function abrirDocumento(d) {
+  var docActual = null, cadenaSetup = []; // cadenaSetup: documentos que se piden uno tras otro al activar el modo conductor
+  function abrirDocumento(d, clave) {
     docActual = d || null;
+    if (d) cadenaSetup = [];
     var sel = $("doc-tipo");
     sel.replaceChildren();
-    A.DOCUMENTOS.forEach(function (x) { var o = el("option", null, x.nombre); o.value = x.tipo; sel.append(o); });
-    sel.value = d ? d.tipo : "soat";
-    $("doc-titulo").textContent = d ? "Editar vencimiento" : "Nuevo vencimiento";
-    $("doc-nombre").value = d ? d.nombre : "SOAT";
+    A.DOCUMENTOS.forEach(function (x) { var o = el("option", null, x.nombre); o.value = x.clave; sel.append(o); });
+    var preset = d ? A.presetDe(d) : A.DOCUMENTOS.find(function (x) { return x.clave === (clave || "soat"); });
+    sel.value = preset.clave;
+    $("doc-titulo").textContent = d ? "Editar vencimiento" : "Nuevo vencimiento: " + preset.nombre;
+    $("doc-nombre").value = d ? d.nombre : preset.nombre;
     $("doc-vence").value = d ? String(d.vence).slice(0, 10) : "";
     $("doc-costo").value = d && d.costo ? pesos.format(num(d.costo)) : "";
-    $("doc-aviso").value = String(d ? d.aviso_dias : 30);
-    $("doc-repetir").value = String(d ? d.repetir_meses : 12);
+    $("doc-aviso").value = String(d ? d.aviso_dias : A.avisoPorDefecto(preset.meses));
+    $("doc-repetir").value = String(d ? d.repetir_meses : preset.meses);
     $("doc-renovar").hidden = !d; $("doc-borrar").hidden = !d;
     mensaje("doc-mensaje", "");
     abrirCapa("pantalla-documento");
   }
   $("doc-tipo").addEventListener("change", function (e) {
-    var x = A.DOCUMENTOS.find(function (y) { return y.tipo === e.target.value; });
+    var x = A.DOCUMENTOS.find(function (y) { return y.clave === e.target.value; });
     if (!x) return;
-    if (!docActual || $("doc-nombre").value === "" || A.DOCUMENTOS.some(function (y) { return y.nombre === $("doc-nombre").value; })) $("doc-nombre").value = x.nombre;
+    if ($("doc-nombre").value === "" || A.DOCUMENTOS.some(function (y) { return y.nombre === $("doc-nombre").value; })) $("doc-nombre").value = x.nombre;
     $("doc-repetir").value = String(x.meses);
+    $("doc-aviso").value = String(A.avisoPorDefecto(x.meses));
   });
-  $("btn-nuevo-documento").addEventListener("click", function () { abrirDocumento(null); });
+  $("btn-nuevo-documento").addEventListener("click", function () { cadenaSetup = []; abrirDocumento(null); });
   $("form-documento").addEventListener("submit", function (e) {
     e.preventDefault();
     var nombre = $("doc-nombre").value.trim(), vence = $("doc-vence").value, txt = $("doc-costo").value.trim(), costo = txt ? leerValor(txt) : null;
     if (!nombre) return mensaje("doc-mensaje", "Escribe el nombre.", true);
     if (!vence) return mensaje("doc-mensaje", "Elige la fecha de vencimiento.", true);
     if (txt && !(costo > 0)) return mensaje("doc-mensaje", "No entendí el costo. Escribe por ejemplo 400 mil.", true);
-    var fila = { tipo: $("doc-tipo").value, nombre: nombre, vence: vence, costo: costo, aviso_dias: Number($("doc-aviso").value), repetir_meses: Number($("doc-repetir").value) };
+    var preset = A.DOCUMENTOS.find(function (y) { return y.clave === $("doc-tipo").value; }) || A.DOCUMENTOS[A.DOCUMENTOS.length - 1];
+    var fila = { tipo: preset.tipo, nombre: nombre, vence: vence, costo: costo, aviso_dias: Number($("doc-aviso").value), repetir_meses: Number($("doc-repetir").value) };
     var op = docActual ? fuente.actualizar("documentos", docActual.id, fila) : fuente.crear("documentos", fila);
+    var editando = !!docActual;
     op.then(function (d) {
       if (docActual) Object.assign(docActual, d); else datos.documentos.push(d);
-      toast("✓ Vencimiento guardado: " + d.nombre); programarAvisos(); cerrarCapa(); pintar();
+      toast("✓ Vencimiento guardado: " + d.nombre); programarAvisos(); pintar();
+      var siguiente = editando ? null : cadenaSetup.shift();
+      if (siguiente) cerrarYLuego(function () { abrirDocumento(null, siguiente); }); else cerrarCapa();
     }).catch(function (err) { mensaje("doc-mensaje", err.message, true); });
   });
   $("doc-borrar").addEventListener("click", function () {
@@ -1476,7 +1511,7 @@
 
   // "Ya lo renové": abre el registro del gasto con la categoría y el costo, y al guardarlo corre la fecha.
   function renovarDocumento(d) {
-    var x = A.DOCUMENTOS.find(function (y) { return y.tipo === d.tipo; }) || A.DOCUMENTOS[A.DOCUMENTOS.length - 1];
+    var x = A.presetDe(d);
     var c = datos.categorias.find(function (k) { return k.nombre === x.categoria && k.tipo === "gasto"; });
     abrirRegistro({ tipo: "gasto", categoriaId: c ? c.id : null, expr: d.costo ? String(Math.round(num(d.costo))) : "", desc: d.nombre, documentoId: d.id });
   }
@@ -1502,7 +1537,7 @@
       return N.requestPermissions().then(function (perm) {
         if (!perm || perm.display !== "granted") return null;
         return N.schedule({ notifications: avisos.map(function (a) {
-          return { id: a.docId * 1000 + a.dias, title: a.titulo, body: a.texto, schedule: { at: a.cuando, allowWhileIdle: true } };
+          return { id: a.id, title: a.titulo, body: a.texto, schedule: { at: a.cuando, allowWhileIdle: true } };
         }) });
       });
     }).catch(function () { /* sin permiso o sin el complemento: los avisos dentro de la app siguen funcionando */ });
@@ -2029,7 +2064,7 @@
       contexto.trabajo = { vehiculo: p.vehiculo || null, meta_diaria: p.meta_diaria ? num(p.meta_diaria) : null };
       ["hoy", "semana", "mes"].forEach(function (cual) {
         var r = A.resumenTrabajo(datos.movimientos, datos.categorias, A.rangoJornada(cual));
-        contexto.trabajo[cual] = { ganado: r.ingresos, gastos_del_trabajo: r.gastos, ganancia_neta: r.neto, viajes: r.viajes, ganancia_por_viaje: r.porViaje ? Math.round(r.porViaje) : null,
+        contexto.trabajo[cual] = { ganado: r.ingresos, gastos_de_operacion: r.operacion, papeles_y_cuotas: r.fijos, ganancia_neta_de_trabajar: r.netoOperativo, ganancia_despues_de_papeles_y_cuotas: r.neto, viajes: r.viajes, ganancia_por_viaje: r.porViaje ? Math.round(r.porViaje) : null,
           por_app: r.porPlataforma.map(function (x) { return { app: nombreCategoria(x.id), total: x.total, viajes: x.viajes }; }), gastos_por_categoria: r.gastosPorCategoria.map(nombreDe) };
       });
       contexto.trabajo.vencimientos = datos.documentos.map(function (d) { var e = A.estadoDocumento(d); return { nombre: d.nombre, vence: String(d.vence).slice(0, 10), dias: e.dias, costo: d.costo ? num(d.costo) : null }; });
@@ -2636,6 +2671,8 @@
       ordenarMovimientos();
       mostrar("app"); ir("inicio"); pintar();
       programarAvisos();
+      // Si salieron categorías nuevas del modo conductor (como "Cuota del vehículo"), se agregan solas.
+      if (conductor()) asegurarCategoriasConductor().then(pintar).catch(function () { /* se intentará la próxima vez */ });
       return procesarProgramados();
     }).catch(function (e) {
       mostrar("auth");

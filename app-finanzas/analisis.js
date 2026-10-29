@@ -272,20 +272,33 @@
     { nombre: "Tecnomecánica", tipo: "gasto", icono: "📋", color: "#14b8a6", grupo: GRUPO_TRABAJO },
     { nombre: "Impuesto del vehículo", tipo: "gasto", icono: "🧾", color: "#a855f7", grupo: GRUPO_TRABAJO },
     { nombre: "Seguro del vehículo", tipo: "gasto", icono: "🔒", color: "#1d4ed8", grupo: GRUPO_TRABAJO },
+    { nombre: "Cuota del vehículo", tipo: "gasto", icono: "💳", color: "#0ea5e9", grupo: GRUPO_TRABAJO },
     { nombre: "Multas", tipo: "gasto", icono: "⚠️", color: "#be123c", grupo: GRUPO_TRABAJO }
   ];
   // Documentos y mantenimientos con fecha de vencimiento: cada cuántos meses se renuevan y en qué categoría se anota el gasto.
   var DOCUMENTOS = [
-    { tipo: "soat", nombre: "SOAT", meses: 12, categoria: "SOAT" },
-    { tipo: "tecnomecanica", nombre: "Tecnomecánica", meses: 12, categoria: "Tecnomecánica" },
-    { tipo: "impuesto", nombre: "Impuesto del vehículo", meses: 12, categoria: "Impuesto del vehículo" },
-    { tipo: "licencia", nombre: "Licencia de conducción", meses: 36, categoria: "Multas" },
-    { tipo: "seguro", nombre: "Seguro del vehículo", meses: 12, categoria: "Seguro del vehículo" },
-    { tipo: "aceite", nombre: "Cambio de aceite", meses: 3, categoria: "Mantenimiento y arreglos" },
-    { tipo: "revision", nombre: "Revisión y alineación", meses: 6, categoria: "Mantenimiento y arreglos" },
-    { tipo: "otro", nombre: "Otro", meses: 12, categoria: "Mantenimiento y arreglos" }
+    { clave: "soat", tipo: "soat", nombre: "SOAT", meses: 12, categoria: "SOAT" },
+    { clave: "tecnomecanica", tipo: "tecnomecanica", nombre: "Tecnomecánica", meses: 12, categoria: "Tecnomecánica" },
+    { clave: "seguro-mensual", tipo: "seguro", nombre: "Seguro de la moto (cuota mensual)", meses: 1, categoria: "Seguro del vehículo" },
+    { clave: "seguro-anual", tipo: "seguro", nombre: "Seguro todo riesgo (anual)", meses: 12, categoria: "Seguro del vehículo" },
+    { clave: "cuota", tipo: "otro", nombre: "Cuota de la moto (crédito)", meses: 1, categoria: "Cuota del vehículo" },
+    { clave: "impuesto", tipo: "impuesto", nombre: "Impuesto del vehículo", meses: 12, categoria: "Impuesto del vehículo" },
+    { clave: "licencia", tipo: "licencia", nombre: "Licencia de conducción", meses: 36, categoria: "Multas" },
+    { clave: "aceite", tipo: "aceite", nombre: "Cambio de aceite", meses: 3, categoria: "Mantenimiento y arreglos" },
+    { clave: "revision", tipo: "revision", nombre: "Revisión y alineación", meses: 6, categoria: "Mantenimiento y arreglos" },
+    { clave: "otro", tipo: "otro", nombre: "Otro", meses: 12, categoria: "Mantenimiento y arreglos" }
   ];
+  // Con cuánta anticipación avisar según cada cuánto se renueva (una cuota mensual no se avisa 30 días antes).
+  function avisoPorDefecto(meses) { return meses <= 1 ? 5 : meses <= 3 ? 15 : 30; }
+  // El preset que le corresponde a un documento ya guardado (por tipo y nombre, o solo por tipo).
+  function presetDe(doc) {
+    return DOCUMENTOS.find(function (x) { return x.tipo === doc.tipo && x.nombre === doc.nombre; })
+      || DOCUMENTOS.find(function (x) { return x.tipo === doc.tipo; }) || DOCUMENTOS[DOCUMENTOS.length - 1];
+  }
 
+  // Pagos grandes y poco frecuentes: no se descuentan de la ganancia del día, se muestran aparte.
+  var FIJOS = ["SOAT", "Tecnomecánica", "Impuesto del vehículo", "Seguro del vehículo", "Cuota del vehículo"];
+  function esFijo(c) { return !!c && FIJOS.indexOf(c.nombre) >= 0; }
   function esGanancia(c) { return !!c && c.tipo === "ingreso" && grupoDe(c) === GRUPO_APPS; }
   function esGastoTrabajo(c) { return !!c && c.tipo === "gasto" && grupoDe(c) === GRUPO_TRABAJO; }
 
@@ -302,7 +315,7 @@
   function resumenTrabajo(movs, categorias, rango) {
     var porId = {};
     categorias.forEach(function (c) { porId[c.id] = c; });
-    var r = { ingresos: 0, gastos: 0, neto: 0, viajes: 0, porPlataforma: [], gastosPorCategoria: [], movimientos: 0 };
+    var r = { ingresos: 0, gastos: 0, neto: 0, operacion: 0, fijos: 0, netoOperativo: 0, viajes: 0, porPlataforma: [], gastosPorCategoria: [], movimientos: 0 };
     var plat = {}, gas = {};
     movs.forEach(function (m) {
       var f = new Date(m.fecha);
@@ -314,10 +327,12 @@
         p.total += v; p.viajes += num(m.viajes);
       } else if (esGastoTrabajo(c) && m.tipo === "gasto") {
         r.gastos += v; r.movimientos++;
+        if (esFijo(c)) r.fijos += v; else r.operacion += v;
         gas[c.id] = (gas[c.id] || 0) + v;
       }
     });
-    r.neto = r.ingresos - r.gastos;
+    r.neto = r.ingresos - r.gastos;                 // después de todo, incluidos papeles y cuotas
+    r.netoOperativo = r.ingresos - r.operacion;     // lo que dejó trabajar: ganado menos gasolina, tinto, peajes, arreglos…
     r.porPlataforma = Object.keys(plat).map(function (k) { return plat[k]; }).sort(function (a, b) { return b.total - a.total; });
     r.gastosPorCategoria = Object.keys(gas).map(function (k) { return { id: Number(k), total: gas[k] }; }).sort(function (a, b) { return b.total - a.total; });
     r.porViaje = r.viajes > 0 ? r.ingresos / r.viajes : null;
@@ -344,19 +359,31 @@
     var h = claveDia(hoy || new Date()), v = String(doc.vence).slice(0, 10);
     return sumarMeses(v > h ? v : h, doc.repetir_meses || 12);
   }
-  // Avisos del celular: cuando empieza el plazo de aviso, a los 7 días y el día del vencimiento. Solo futuros.
+  // Avisos del celular: cuando empieza el plazo de aviso, a los 15, 7, 3 y 1 días y el día del vencimiento.
+  // Si ya venció, un aviso por día durante una semana hasta que se renueve. Solo futuros.
+  // Cada aviso trae un id único: documento * 1000 + días que faltan (o 500 + n si ya venció).
   function avisosDocumentos(docs, ahora) {
     ahora = ahora || new Date();
     var out = [];
     docs.forEach(function (d) {
       var v = parteFecha(d.vence), aviso = d.aviso_dias == null ? 30 : d.aviso_dias;
-      [[aviso, 9], [7, 9], [1, 9], [0, 8]].forEach(function (x, i, todos) {
-        if (x[0] > aviso || todos.findIndex(function (y) { return y[0] === x[0]; }) !== i) return;
-        var cuando = new Date(v.getFullYear(), v.getMonth(), v.getDate() - x[0], x[1], 0, 0);
+      if (v < inicioDia(ahora)) {
+        for (var k = 0; k < 7; k++) {
+          var dia = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + k, 9, 0, 0);
+          if (dia <= ahora) continue;
+          var atraso = Math.round((inicioDia(dia) - v) / DIA);
+          out.push({ id: d.id * 1000 + 500 + k, docId: d.id, dias: -atraso, cuando: dia,
+            titulo: d.nombre + " está vencido", texto: "Venció hace " + atraso + (atraso === 1 ? " día" : " días") + ". Renuévalo cuanto antes: circular sin los papeles al día puede traer multas." });
+        }
+        return;
+      }
+      [aviso, 15, 7, 3, 1, 0].forEach(function (x, i, todos) {
+        if (x > aviso || todos.indexOf(x) !== i) return;
+        var cuando = new Date(v.getFullYear(), v.getMonth(), v.getDate() - x, x === 0 ? 8 : 9, 0, 0);
         if (cuando <= ahora) return;
-        out.push({ docId: d.id, dias: x[0], cuando: cuando,
-          titulo: x[0] === 0 ? d.nombre + " vence hoy" : d.nombre + " vence en " + x[0] + (x[0] === 1 ? " día" : " días"),
-          texto: x[0] === 0 ? "No olvides renovarlo para no tener multas." : "Entra a NOVA para ver el detalle y registrar el pago." });
+        out.push({ id: d.id * 1000 + x, docId: d.id, dias: x, cuando: cuando,
+          titulo: x === 0 ? d.nombre + " vence hoy" : d.nombre + " vence en " + x + (x === 1 ? " día" : " días"),
+          texto: x === 0 ? "No lo olvides: renuévalo hoy para no tener multas." : "Entra a NOVA para ver el detalle y anotar el pago cuando lo renueves." });
       });
     });
     return out.sort(function (a, b) { return a.cuando - b.cuando; });
@@ -382,7 +409,8 @@
     sinTildes: sinTildes, evaluar: evaluar, FRECUENCIAS: FRECUENCIAS, siguienteFecha: siguienteFecha,
     fechasPendientes: fechasPendientes, GRUPOS: GRUPOS, grupoDe: grupoDe, csv: csv, MESES: MESES,
     GRUPO_APPS: GRUPO_APPS, GRUPO_TRABAJO: GRUPO_TRABAJO, CATEGORIAS_CONDUCTOR: CATEGORIAS_CONDUCTOR, DOCUMENTOS: DOCUMENTOS,
-    esGanancia: esGanancia, esGastoTrabajo: esGastoTrabajo, rangoJornada: rangoJornada, resumenTrabajo: resumenTrabajo,
+    avisoPorDefecto: avisoPorDefecto, presetDe: presetDe,
+    esGanancia: esGanancia, esGastoTrabajo: esGastoTrabajo, esFijo: esFijo, rangoJornada: rangoJornada, resumenTrabajo: resumenTrabajo,
     estadoDocumento: estadoDocumento, sumarMeses: sumarMeses, proximoVencimiento: proximoVencimiento, avisosDocumentos: avisosDocumentos
   };
   if (typeof module === "object" && module.exports) module.exports = api;

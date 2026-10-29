@@ -118,7 +118,7 @@
           <button type="button" class="enlace" data-ir="trabajo">Ver mi trabajo</button>
         </div>
         <strong id="jornada-neto" class="jornada-neto"></strong>
-        <span class="nota">Ganancia neta de hoy</span>
+        <span class="nota">Ganancia de hoy después de gasolina y demás gastos</span>
         <div class="saldo-partes">
           <div><small>↗ Ganado</small><strong id="jornada-ganado"></strong></div>
           <div><small>↘ Gastos</small><strong id="jornada-gastos"></strong></div>
@@ -274,12 +274,13 @@
         <button type="button" data-cual="mes">Este mes</button>
       </div>
       <article class="tarjeta saldo">
-        <span class="etiqueta">Ganancia neta</span>
+        <span class="etiqueta">Ganancia neta (lo que te dejó trabajar)</span>
         <strong id="trabajo-neto" class="saldo-valor"></strong>
         <div class="saldo-partes">
           <div><small>↗ Ganado con las apps</small><strong id="trabajo-ganado"></strong></div>
-          <div><small>↘ Gastos del trabajo</small><strong id="trabajo-gastos"></strong></div>
+          <div><small>↘ Gasolina, tinto y demás</small><strong id="trabajo-gastos"></strong></div>
         </div>
+        <span id="trabajo-fijos" class="nota-clara"></span>
         <span id="trabajo-viajes" class="pildora"></span>
         <div class="barra clara" id="trabajo-meta-caja" hidden><span id="trabajo-meta-barra"></span></div>
         <span id="trabajo-meta-nota" class="nota-clara"></span>
@@ -303,7 +304,8 @@
         <h2>Vencimientos de mi vehículo</h2>
         <button type="button" class="enlace" id="btn-nuevo-documento">+ Agregar</button>
       </div>
-      <p class="nota">SOAT, tecnomecánica, impuesto, aceite… NOVA te avisa antes de que se venzan (en el celular también con una notificación).</p>
+      <p class="nota">Para que no se te olvide: pon la fecha y NOVA te avisa antes de que se venza (en el celular también con una notificación) y te insiste si ya se pasó.</p>
+      <div id="doc-rapidos" class="chips-rapidos"></div>
       <ul id="lista-documentos" class="lista-simple"></ul>
 
       <form id="form-vehiculo" class="tarjeta formulario" autocomplete="off">
@@ -694,7 +696,7 @@
     <label for="doc-costo">Cuánto cuesta renovarlo (opcional)</label>
     <input id="doc-costo" inputmode="numeric" placeholder="Ej. 400 mil">
     <label for="doc-aviso">Avisarme con anticipación</label>
-    <select id="doc-aviso"><option value="60">60 días antes</option><option value="30">30 días antes</option><option value="15">15 días antes</option><option value="7">7 días antes</option><option value="3">3 días antes</option></select>
+    <select id="doc-aviso"><option value="60">60 días antes</option><option value="30">30 días antes</option><option value="15">15 días antes</option><option value="7">7 días antes</option><option value="5">5 días antes</option><option value="3">3 días antes</option><option value="1">1 día antes</option></select>
     <label for="doc-repetir">Se renueva cada</label>
     <select id="doc-repetir"><option value="1">1 mes</option><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">12 meses (1 año)</option><option value="24">24 meses</option><option value="36">36 meses</option></select>
     <p class="mensaje" id="doc-mensaje" role="status"></p>

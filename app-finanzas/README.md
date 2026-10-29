@@ -31,12 +31,17 @@ Está pensada como Lukas, pero todo es gratis y sin anuncios.
   categorías de ganancias por app y de gastos del vehículo (gasolina, tinto y comida en ruta,
   peajes, parqueadero, lavado, mantenimiento y arreglos, repuestos, llantas, SOAT, tecnomecánica,
   impuesto, seguro, multas). Muestra "Mi jornada de hoy" en el inicio y la pantalla **Mi trabajo**:
-  - ganancia neta (ganado con las apps menos gastos del trabajo) de hoy, la semana o el mes;
+  - ganancia neta (ganado con las apps menos gasolina, tinto, peajes, arreglos…) de hoy, la semana
+    o el mes. Los **papeles y cuotas** (SOAT, tecnomecánica, impuesto, seguro y cuota de la moto) se
+    muestran aparte para que un pago grande no deje en rojo un día bueno;
   - viajes anotados y ganancia por viaje, meta diaria con barra, ganancias por app y gastos del trabajo;
   - atajos de un toque para anotar una ganancia (eligiendo la app y los viajes) o un gasto;
-  - **vencimientos del vehículo** (SOAT, tecnomecánica, impuesto, licencia, seguro, aceite…) con
-    aviso en el inicio y, en la APK, notificaciones del celular (al empezar el plazo, a los 7 días,
-    a 1 día y el día del vencimiento). "Renovar" abre el gasto ya con su categoría y costo, y al
+  - **vencimientos del vehículo** (SOAT, tecnomecánica, seguro de la moto —cuota mensual o anual—,
+    cuota de la moto, impuesto, licencia, aceite…). Al activar el modo conductor NOVA pide de una vez
+    la fecha del SOAT y la de la tecnomecánica. Avisa en el inicio y, en la APK, con notificaciones
+    del celular (al empezar el plazo, a los 15, 7, 3 y 1 días y el día del vencimiento) y, si ya se
+    pasó, una notificación diaria durante una semana hasta que se renueve. Las cuotas mensuales
+    avisan 5 días antes y, al pagarlas, la fecha corre un mes. "Renovar" abre el gasto ya con su categoría y costo, y al
     guardarlo corre la fecha al siguiente vencimiento.
   Los movimientos "pendientes" no cuentan. El chat con la IA también conoce estos datos.
 - **Botón +:** Asistente inteligente (varios gastos a la vez, dictados, escritos o con

@@ -112,6 +112,10 @@ test("resumen del trabajo: ganado, gastado, neto, viajes y por plataforma", () =
   assert.deepStrictEqual(hoy.porPlataforma.map((p) => [p.id, p.total, p.viajes]), [[id("Didi"), 100000, 8], [id("Uber"), 50000, 3]]);
   assert.deepStrictEqual(hoy.gastosPorCategoria.map((g) => g.total), [30000, 3000]);
   assert.strictEqual(Math.round(hoy.porViaje), 13636);
+  assert.deepStrictEqual([hoy.operacion, hoy.fijos, hoy.netoOperativo], [33000, 0, 117000]);
+  const conSoat = A.resumenTrabajo(movs.concat([mv(29, 9, "gasto", 480000, "SOAT")]), CATS, A.rangoJornada("hoy", HOY));
+  assert.deepStrictEqual([conSoat.operacion, conSoat.fijos, conSoat.netoOperativo, conSoat.neto, conSoat.gastos], [33000, 480000, 117000, -363000, 513000], "el SOAT no baja la ganancia del día");
+  assert.ok(A.esFijo(CATS.find((c) => c.nombre === "Cuota del vehículo")) && !A.esFijo(CATS.find((c) => c.nombre === "Gasolina")));
   const semana = A.resumenTrabajo(movs, CATS, A.rangoJornada("semana", HOY));
   assert.strictEqual(semana.ingresos, 220000);
   assert.strictEqual(A.resumenTrabajo([], CATS, A.rangoJornada("mes", HOY)).porViaje, null);
@@ -142,12 +146,30 @@ test("vencimientos: estado, texto y renovación", () => {
 });
 
 test("avisos del celular", () => {
-  const docs = [{ id: 1, nombre: "SOAT", vence: "2026-11-10", aviso_dias: 30 }, { id: 2, nombre: "Tecnomecánica", vence: "2026-12-31", aviso_dias: 15 }, { id: 3, nombre: "Licencia", vence: "2026-10-01", aviso_dias: 30 }];
-  const a = A.avisosDocumentos(docs, HOY);
-  assert.ok(!a.some((x) => x.docId === 3), "lo vencido no se avisa");
-  assert.deepStrictEqual(a.filter((x) => x.docId === 1).map((x) => [x.dias, A.claveDia(x.cuando)]), [[7, "2026-11-03"], [1, "2026-11-09"], [0, "2026-11-10"]]);
-  assert.deepStrictEqual(a.filter((x) => x.docId === 2).map((x) => x.dias), [15, 7, 1, 0]);
+  const docs = [{ id: 1, nombre: "SOAT", vence: "2026-11-10", aviso_dias: 30 }, { id: 2, nombre: "Tecnomecánica", vence: "2026-12-31", aviso_dias: 15 }, { id: 3, nombre: "Licencia", vence: "2026-10-27", aviso_dias: 30 },
+    { id: 4, nombre: "Cuota del seguro", vence: "2026-11-02", aviso_dias: 5 }];
+  const a = A.avisosDocumentos(docs, HOY); // jueves 29 oct 2026, 3 p. m.
+  assert.deepStrictEqual(a.filter((x) => x.docId === 1).map((x) => [x.dias, A.claveDia(x.cuando)]), [[7, "2026-11-03"], [3, "2026-11-07"], [1, "2026-11-09"], [0, "2026-11-10"]]);
+  assert.deepStrictEqual(a.filter((x) => x.docId === 2).map((x) => x.dias), [15, 7, 3, 1, 0]);
+  assert.deepStrictEqual(a.filter((x) => x.docId === 4).map((x) => x.dias), [3, 1, 0], "una cuota mensual avisa pocos días antes");
   assert.strictEqual(a.find((x) => x.docId === 1 && x.dias === 0).titulo, "SOAT vence hoy");
   assert.strictEqual(a.find((x) => x.docId === 2 && x.dias === 7).titulo, "Tecnomecánica vence en 7 días");
+  assert.strictEqual(a.find((x) => x.docId === 1 && x.dias === 0).id, 1000);
   assert.ok(a.every((x, i) => i === 0 || a[i - 1].cuando <= x.cuando), "ordenados");
+  assert.strictEqual(new Set(a.map((x) => x.id)).size, a.length, "ids únicos");
+  // Vencido: un aviso por día durante una semana, empezando mañana.
+  const vencido = a.filter((x) => x.docId === 3);
+  assert.strictEqual(vencido.length, 6);
+  assert.deepStrictEqual(vencido.slice(0, 2).map((x) => [A.claveDia(x.cuando), x.dias]), [["2026-10-30", -3], ["2026-10-31", -4]]);
+  assert.strictEqual(vencido[0].titulo, "Licencia está vencido");
+  assert.ok(/Venció hace 3 días/.test(vencido[0].texto));
+});
+
+test("avisos por defecto y presets de documentos", () => {
+  assert.deepStrictEqual([1, 3, 6, 12, 36].map(A.avisoPorDefecto), [5, 15, 30, 30, 30]);
+  assert.strictEqual(A.presetDe({ tipo: "seguro", nombre: "Seguro de la moto (cuota mensual)" }).meses, 1);
+  assert.strictEqual(A.presetDe({ tipo: "seguro", nombre: "Otro nombre" }).clave, "seguro-mensual");
+  assert.strictEqual(A.presetDe({ tipo: "soat", nombre: "Mi SOAT" }).categoria, "SOAT");
+  assert.ok(A.DOCUMENTOS.every((d) => A.CATEGORIAS_CONDUCTOR.some((c) => c.nombre === d.categoria) || d.categoria === "Multas" || d.categoria === "Mantenimiento y arreglos"));
+  assert.strictEqual(new Set(A.DOCUMENTOS.map((d) => d.clave)).size, A.DOCUMENTOS.length);
 });
