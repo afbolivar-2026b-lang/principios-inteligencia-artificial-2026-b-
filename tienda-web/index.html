@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mercado Opita</title>
+<style>
+  :root {
+    --bg: #f5f6f2; --surface: #ffffff; --ink: #1d2419; --muted: #5d6857;
+    --line: #dde2d6; --accent: #2f7d32; --accent-ink: #ffffff; --tag: #fff2cc; --tag-ink: #6b4e00;
+    --font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #11160f; --surface: #1a2117; --ink: #e9eee5; --muted: #a4b09c; --line: #2c3627;
+      --accent: #6cc070; --accent-ink: #0d1a0d; --tag: #3a3010; --tag-ink: #f3d77a; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--font); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1040px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+  .bar h1 { font-size: 1.3rem; margin: 0; flex: 1; }
+  button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 8px 12px; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  main { max-width: 1040px; margin: 0 auto; padding: 20px 16px 120px; display: flex; flex-direction: column; gap: 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+  .card h2 { font-size: 1.05rem; margin: 0; }
+  .cat { color: var(--muted); font-size: .85rem; }
+  .price { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tag { align-self: flex-start; background: var(--tag); color: var(--tag-ink); font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+  .card .actions { margin-top: auto; padding-top: 8px; }
+  .estado { color: var(--muted); padding: 24px 0; }
+  .estado.error { color: #b3261e; }
+  #carrito { position: fixed; inset: auto 0 0 0; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgb(0 0 0 / .08); }
+  #carrito .inner { max-width: 1040px; margin: 0 auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow: auto; }
+  #lineas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  #lineas li { display: flex; align-items: center; gap: 8px; }
+  #lineas li span.n { flex: 1; min-width: 0; }
+  #lineas li span.s { font-variant-numeric: tabular-nums; }
+  .qty button { padding: 2px 10px; }
+  .total { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-weight: 700; font-size: 1.1rem; }
+  .total .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  #aviso { color: var(--muted); font-size: .9rem; min-height: 1.2em; }
+</style>
+</head>
+<body>
+<header><div class="bar"><h1 id="titulo">Tienda</h1><span id="resumen" aria-live="polite"></span></div></header>
+<main>
+  <div class="chips" id="chips" role="group" aria-label="Filtrar por categoría"></div>
+  <p class="estado" id="estado">Cargando productos…</p>
+  <div class="grid" id="grid"></div>
+</main>
+<section id="carrito" hidden aria-label="Tu pedido">
+  <div class="inner">
+    <ul id="lineas"></ul>
+    <div class="total">
+      <span>Total: <span id="total"></span></span>
+      <div class="btns">
+        <button type="button" id="vaciar">Vaciar</button>
+        <button type="button" id="copiar">Copiar pedido</button>
+        <button type="button" class="primary" id="whatsapp" hidden>Pedir por WhatsApp</button>
+      </div>
+    </div>
+    <div id="aviso" aria-live="polite"></div>
+  </div>
+</section>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  var cfg = window.TIENDA_CONFIG || {};
+  var $ = function (id) { return document.getElementById(id); };
+  var pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
+  var categorias = [], productos = [], filtro = null, carrito = {};
+
+  document.title = cfg.nombre || "Tienda";
+  $("titulo").textContent = cfg.nombre || "Tienda";
+
+  function leer(tabla, query) {
+    return fetch(cfg.supabaseUrl + "/rest/v1/" + tabla + "?" + query, {
+      headers: { apikey: cfg.supabaseKey, Accept: "application/json" }
+    }).then(function (r) {
+      if (!r.ok) throw new Error(tabla + ": HTTP " + r.status);
+      return r.json();
+    });
+  }
+
+  function el(tag, attrs, text) {
+    var e = document.createElement(tag);
+    for (var k in attrs || {}) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function nombreCategoria(id) {
+    var c = categorias.find(function (c) { return c.id === id; });
+    return c ? c.nombre : "Sin categoría";
+  }
+
+  function pintarChips() {
+    var chips = $("chips");
+    chips.replaceChildren();
+    [{ id: null, nombre: "Todo" }].concat(categorias).forEach(function (c) {
+      var b = el("button", { type: "button", "aria-pressed": String(filtro === c.id) }, c.nombre);
+      b.addEventListener("click", function () { filtro = c.id; pintarChips(); pintarProductos(); });
+      chips.appendChild(b);
+    });
+  }
+
+  function pintarProductos() {
+    var grid = $("grid");
+    grid.replaceChildren();
+    var lista = productos.filter(function (p) { return filtro === null || p.categoria_id === filtro; });
+    $("estado").hidden = lista.length > 0;
+    if (!lista.length) $("estado").textContent = "No hay productos en esta categoría.";
+    lista.forEach(function (p) {
+      var card = el("article", { class: "card" });
+      if ((p.descripcion || "").indexOf("EJEMPLO") === 0) card.appendChild(el("span", { class: "tag" }, "Ejemplo"));
+      card.appendChild(el("h2", null, p.nombre));
+      card.appendChild(el("span", { class: "cat" }, nombreCategoria(p.categoria_id)));
+      card.appendChild(el("span", { class: "price" }, pesos.format(Number(p.precio))));
+      var acc = el("div", { class: "actions" });
+      var b = el("button", { type: "button", class: "primary" }, p.stock > 0 ? "Agregar" : "Agotado");
+      b.disabled = p.stock <= 0;
+      b.addEventListener("click", function () { cambiar(p.id, 1); });
+      acc.appendChild(b);
+      card.appendChild(acc);
+      grid.appendChild(card);
+    });
+  }
+
+  function cambiar(id, delta) {
+    var p = productos.find(function (x) { return x.id === id; });
+    var n = Math.max(0, Math.min(p.stock, (carrito[id] || 0) + delta));
+    if (n) carrito[id] = n; else delete carrito[id];
+    $("aviso").textContent = n === p.stock && delta > 0 ? "No hay más unidades de " + p.nombre + "." : "";
+    pintarCarrito();
+  }
+
+  function lineas() {
+    return Object.keys(carrito).map(function (id) {
+      var p = productos.find(function (x) { return x.id === Number(id); });
+      return { p: p, cant: carrito[id], subtotal: carrito[id] * Number(p.precio) };
+    });
+  }
+
+  function textoPedido() {
+    var ls = lineas(), total = ls.reduce(function (s, l) { return s + l.subtotal; }, 0);
+    return "Hola, quiero hacer este pedido en " + (cfg.nombre || "la tienda") + ":\n" +
+      ls.map(function (l) { return "- " + l.cant + " x " + l.p.nombre + " = " + pesos.format(l.subtotal); }).join("\n") +
+      "\nTotal: " + pesos.format(total);
+  }
+
+  function pintarCarrito() {
+    var ls = lineas(), ul = $("lineas");
+    ul.replaceChildren();
+    var total = 0, unidades = 0;
+    ls.forEach(function (l) {
+      total += l.subtotal; unidades += l.cant;
+      var li = el("li");
+      var q = el("span", { class: "qty" });
+      var menos = el("button", { type: "button", "aria-label": "Quitar uno de " + l.p.nombre }, "−");
+      var mas = el("button", { type: "button", "aria-label": "Agregar uno de " + l.p.nombre }, "+");
+      menos.addEventListener("click", function () { cambiar(l.p.id, -1); });
+      mas.addEventListener("click", function () { cambiar(l.p.id, 1); });
+      q.append(menos, " " + l.cant + " ", mas);
+      li.append(q, el("span", { class: "n" }, l.p.nombre), el("span", { class: "s" }, pesos.format(l.subtotal)));
+      ul.appendChild(li);
+    });
+    $("total").textContent = pesos.format(total);
+    $("resumen").textContent = unidades ? unidades + " en el pedido" : "";
+    $("carrito").hidden = !ls.length;
+    $("whatsapp").hidden = !cfg.whatsapp;
+  }
+
+  $("vaciar").addEventListener("click", function () { carrito = {}; $("aviso").textContent = ""; pintarCarrito(); });
+  $("copiar").addEventListener("click", function () {
+    var t = textoPedido();
+    var ok = function () { $("aviso").textContent = "Pedido copiado. Pégalo en un mensaje a la tienda."; };
+    try { navigator.clipboard.writeText(t).then(ok, function () { $("aviso").textContent = t; }); }
+    catch (e) { $("aviso").textContent = t; }
+  });
+  $("whatsapp").addEventListener("click", function () {
+    window.open("https://wa.me/" + cfg.whatsapp.replace(/\D/g, "") + "?text=" + encodeURIComponent(textoPedido()), "_blank", "noopener");
+  });
+
+  Promise.all([
+    leer("categorias", "select=id,nombre&order=nombre"),
+    leer("productos", "select=id,categoria_id,nombre,descripcion,precio,moneda,stock&activo=eq.true&order=nombre")
+  ]).then(function (r) {
+    categorias = r[0]; productos = r[1];
+    if (!productos.length) { $("estado").textContent = "Todavía no hay productos a la venta."; return; }
+    pintarChips(); pintarProductos();
+  }).catch(function (err) {
+    $("estado").textContent = "No se pudieron cargar los productos (" + err.message + "). Revisa supabaseUrl y supabaseKey en config.js.";
+    $("estado").classList.add("error");
+  });
+})();
+</script>
+</body>
+</html>
