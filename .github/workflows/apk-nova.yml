@@ -52,6 +52,9 @@ jobs:
           sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.CAMERA" />#' android/app/src/main/AndroidManifest.xml
           # Android 11+ necesita declarar que la app usa el reconocimiento de voz
           sed -i 's#</manifest>#    <queries>\n        <intent>\n            <action android:name="android.speech.RecognitionService" />\n        </intent>\n    </queries>\n</manifest>#' android/app/src/main/AndroidManifest.xml
+          # Avisos de vencimientos (SOAT, tecnomecánica…): Android 13+ pide permiso para mostrar notificaciones
+          sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />#' android/app/src/main/AndroidManifest.xml
+          grep -q POST_NOTIFICATIONS android/app/src/main/AndroidManifest.xml
           grep -q RECORD_AUDIO android/app/src/main/AndroidManifest.xml
           grep -q RecognitionService android/app/src/main/AndroidManifest.xml
           # Número de versión: uno más en cada armado

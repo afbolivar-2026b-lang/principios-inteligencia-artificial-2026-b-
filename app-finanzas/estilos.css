@@ -496,3 +496,28 @@ body.con-capa { overflow: hidden; }
 .fila-moneda .marca { color: var(--accent); font-weight: 800; width: 24px; text-align: center; }
 .nota a { color: var(--accent); }
 #chat-titulo { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+
+/* ---------- Modo conductor ---------- */
+.alertas-docs { display: flex; flex-direction: column; gap: 8px; }
+.alertas-docs:empty { display: none; }
+.alerta-doc { display: flex; align-items: center; gap: 10px; text-align: left; border-radius: 14px; padding: 10px 14px; font-weight: 700; background: var(--surface); width: 100%; }
+.alerta-doc span:nth-child(2) { flex: 1; }
+.alerta-doc.pronto { border-color: #f59e0b; background: color-mix(in srgb, #f59e0b 12%, var(--surface)); }
+.alerta-doc.vencido { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, var(--surface)); color: var(--danger); }
+.alerta-doc .flecha { color: var(--muted); font-size: 1.3rem; }
+.jornada { display: flex; flex-direction: column; gap: 6px; border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.jornada-neto { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.jornada .saldo-partes div { background: var(--surface-2); }
+.jornada .fila-botones { margin-top: 4px; }
+.jornada .fila-botones button { padding: 10px 6px; font-size: .9rem; }
+.nota-clara { font-size: .85rem; opacity: .9; }
+.chips-rapidos { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-rapido { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 999px; font-weight: 600; font-size: .9rem; background: var(--surface); }
+.chip-rapido .mov-icono.chico { width: 30px; height: 30px; }
+.detalle { grid-column: 1 / -1; margin-top: -2px; }
+.por-categoria .cat-fila:has(.detalle) { grid-template-columns: 1fr auto; }
+.documento .estado-pronto { color: #f59e0b; font-weight: 700; }
+.documento .estado-vencido { color: var(--danger); font-weight: 700; }
+.documento.vencido { border-color: var(--danger); }
+.documento.pronto { border-color: #f59e0b; }
+.documento .chip-opcion { padding: 4px 12px; font-size: .8rem; flex: none; }

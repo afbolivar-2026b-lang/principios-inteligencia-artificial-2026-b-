@@ -231,9 +231,10 @@
   }
 
   // ---------- Grupos de categorías ----------
+  var GRUPO_APPS = "Apps de transporte", GRUPO_TRABAJO = "Trabajo con vehículo";
   var GRUPOS = {
-    gasto: ["Comida y Bebida", "Estilo de Vida", "Familia", "Hogar y Servicios", "Transporte", "Otros"],
-    ingreso: ["Ingresos Principales", "Otros Ingresos"]
+    gasto: ["Comida y Bebida", "Estilo de Vida", "Familia", "Hogar y Servicios", "Transporte", GRUPO_TRABAJO, "Otros"],
+    ingreso: ["Ingresos Principales", GRUPO_APPS, "Otros Ingresos"]
   };
   var GRUPO_POR_NOMBRE = {
     comida: "Comida y Bebida", mercado: "Comida y Bebida", restaurantes: "Comida y Bebida",
@@ -248,6 +249,117 @@
     var g = GRUPO_POR_NOMBRE[sinTildes(c.nombre)];
     if (g) return g;
     return c.tipo === "ingreso" ? "Otros Ingresos" : "Otros";
+  }
+
+  // ---------- Modo conductor (Didi, Uber, inDrive…) ----------
+  // Categorías que se crean al activar el modo conductor. Las ganancias de las apps van en el grupo
+  // "Apps de transporte" y los gastos del vehículo en "Trabajo con vehículo".
+  var CATEGORIAS_CONDUCTOR = [
+    { nombre: "Didi", tipo: "ingreso", icono: "🚖", color: "#f97316", grupo: GRUPO_APPS },
+    { nombre: "Uber", tipo: "ingreso", icono: "🚗", color: "#94a3b8", grupo: GRUPO_APPS },
+    { nombre: "inDrive", tipo: "ingreso", icono: "🛺", color: "#22c55e", grupo: GRUPO_APPS },
+    { nombre: "Cabify", tipo: "ingreso", icono: "🚕", color: "#8b5cf6", grupo: GRUPO_APPS },
+    { nombre: "Otras apps", tipo: "ingreso", icono: "📱", color: "#64748b", grupo: GRUPO_APPS },
+    { nombre: "Gasolina", tipo: "gasto", icono: "⛽", color: "#ef4444", grupo: GRUPO_TRABAJO },
+    { nombre: "Tinto y comida en ruta", tipo: "gasto", icono: "☕", color: "#b45309", grupo: GRUPO_TRABAJO },
+    { nombre: "Peajes", tipo: "gasto", icono: "🛣️", color: "#6366f1", grupo: GRUPO_TRABAJO },
+    { nombre: "Parqueadero", tipo: "gasto", icono: "🅿️", color: "#0ea5e9", grupo: GRUPO_TRABAJO },
+    { nombre: "Lavado", tipo: "gasto", icono: "🧽", color: "#06b6d4", grupo: GRUPO_TRABAJO },
+    { nombre: "Mantenimiento y arreglos", tipo: "gasto", icono: "🔧", color: "#f59e0b", grupo: GRUPO_TRABAJO },
+    { nombre: "Repuestos", tipo: "gasto", icono: "⚙️", color: "#78716c", grupo: GRUPO_TRABAJO },
+    { nombre: "Llantas", tipo: "gasto", icono: "🛞", color: "#475569", grupo: GRUPO_TRABAJO },
+    { nombre: "SOAT", tipo: "gasto", icono: "🛡️", color: "#3b82f6", grupo: GRUPO_TRABAJO },
+    { nombre: "Tecnomecánica", tipo: "gasto", icono: "📋", color: "#14b8a6", grupo: GRUPO_TRABAJO },
+    { nombre: "Impuesto del vehículo", tipo: "gasto", icono: "🧾", color: "#a855f7", grupo: GRUPO_TRABAJO },
+    { nombre: "Seguro del vehículo", tipo: "gasto", icono: "🔒", color: "#1d4ed8", grupo: GRUPO_TRABAJO },
+    { nombre: "Multas", tipo: "gasto", icono: "⚠️", color: "#be123c", grupo: GRUPO_TRABAJO }
+  ];
+  // Documentos y mantenimientos con fecha de vencimiento: cada cuántos meses se renuevan y en qué categoría se anota el gasto.
+  var DOCUMENTOS = [
+    { tipo: "soat", nombre: "SOAT", meses: 12, categoria: "SOAT" },
+    { tipo: "tecnomecanica", nombre: "Tecnomecánica", meses: 12, categoria: "Tecnomecánica" },
+    { tipo: "impuesto", nombre: "Impuesto del vehículo", meses: 12, categoria: "Impuesto del vehículo" },
+    { tipo: "licencia", nombre: "Licencia de conducción", meses: 36, categoria: "Multas" },
+    { tipo: "seguro", nombre: "Seguro del vehículo", meses: 12, categoria: "Seguro del vehículo" },
+    { tipo: "aceite", nombre: "Cambio de aceite", meses: 3, categoria: "Mantenimiento y arreglos" },
+    { tipo: "revision", nombre: "Revisión y alineación", meses: 6, categoria: "Mantenimiento y arreglos" },
+    { tipo: "otro", nombre: "Otro", meses: 12, categoria: "Mantenimiento y arreglos" }
+  ];
+
+  function esGanancia(c) { return !!c && c.tipo === "ingreso" && grupoDe(c) === GRUPO_APPS; }
+  function esGastoTrabajo(c) { return !!c && c.tipo === "gasto" && grupoDe(c) === GRUPO_TRABAJO; }
+
+  // Rango de la jornada: hoy, esta semana (lunes a domingo) o este mes.
+  function rangoJornada(cual, ahora) {
+    var d = inicioDia(ahora || new Date());
+    if (cual === "semana") { var l = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7)); return { desde: l, hasta: new Date(l.getFullYear(), l.getMonth(), l.getDate() + 7) }; }
+    if (cual === "mes") return { desde: new Date(d.getFullYear(), d.getMonth(), 1), hasta: new Date(d.getFullYear(), d.getMonth() + 1, 1) };
+    return { desde: d, hasta: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1) };
+  }
+
+  // Lo ganado con las apps, lo gastado en el vehículo y la ganancia neta en un rango.
+  // pendientes: los movimientos "pendiente" no cuentan como plata que ya entró o salió.
+  function resumenTrabajo(movs, categorias, rango) {
+    var porId = {};
+    categorias.forEach(function (c) { porId[c.id] = c; });
+    var r = { ingresos: 0, gastos: 0, neto: 0, viajes: 0, porPlataforma: [], gastosPorCategoria: [], movimientos: 0 };
+    var plat = {}, gas = {};
+    movs.forEach(function (m) {
+      var f = new Date(m.fecha);
+      if (f < rango.desde || f >= rango.hasta || m.estado === "pendiente") return;
+      var c = porId[m.categoria_id], v = num(m.monto);
+      if (esGanancia(c) && m.tipo === "ingreso") {
+        r.ingresos += v; r.viajes += num(m.viajes); r.movimientos++;
+        var p = plat[c.id] = plat[c.id] || { id: c.id, total: 0, viajes: 0 };
+        p.total += v; p.viajes += num(m.viajes);
+      } else if (esGastoTrabajo(c) && m.tipo === "gasto") {
+        r.gastos += v; r.movimientos++;
+        gas[c.id] = (gas[c.id] || 0) + v;
+      }
+    });
+    r.neto = r.ingresos - r.gastos;
+    r.porPlataforma = Object.keys(plat).map(function (k) { return plat[k]; }).sort(function (a, b) { return b.total - a.total; });
+    r.gastosPorCategoria = Object.keys(gas).map(function (k) { return { id: Number(k), total: gas[k] }; }).sort(function (a, b) { return b.total - a.total; });
+    r.porViaje = r.viajes > 0 ? r.ingresos / r.viajes : null;
+    return r;
+  }
+
+  function parteFecha(fecha) { var p = String(fecha).slice(0, 10).split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  // Cuánto falta para que venza algo: { dias, estado: "vencido" | "pronto" | "ok", texto }.
+  function estadoDocumento(doc, hoy) {
+    var dias = Math.round((parteFecha(doc.vence) - inicioDia(hoy || new Date())) / DIA);
+    var aviso = doc.aviso_dias == null ? 30 : doc.aviso_dias;
+    var estado = dias < 0 ? "vencido" : dias <= aviso ? "pronto" : "ok";
+    var texto = dias < 0 ? "Venció hace " + (-dias) + (dias === -1 ? " día" : " días") : dias === 0 ? "Vence hoy" : dias === 1 ? "Vence mañana" : "Vence en " + dias + " días";
+    return { dias: dias, estado: estado, texto: texto };
+  }
+  // Suma meses a una fecha YYYY-MM-DD (el 31 de enero + 1 mes = 28 o 29 de febrero).
+  function sumarMeses(fecha, n) {
+    var p = String(fecha).slice(0, 10).split("-").map(Number), a = p[0], m = p[1] - 1 + n, d = p[2];
+    var anio = a + Math.floor(m / 12), mes = ((m % 12) + 12) % 12;
+    return claveDia(new Date(anio, mes, Math.min(d, new Date(anio, mes + 1, 0).getDate())));
+  }
+  // Al renovar: la nueva fecha cuenta desde el vencimiento (o desde hoy si ya había vencido).
+  function proximoVencimiento(doc, hoy) {
+    var h = claveDia(hoy || new Date()), v = String(doc.vence).slice(0, 10);
+    return sumarMeses(v > h ? v : h, doc.repetir_meses || 12);
+  }
+  // Avisos del celular: cuando empieza el plazo de aviso, a los 7 días y el día del vencimiento. Solo futuros.
+  function avisosDocumentos(docs, ahora) {
+    ahora = ahora || new Date();
+    var out = [];
+    docs.forEach(function (d) {
+      var v = parteFecha(d.vence), aviso = d.aviso_dias == null ? 30 : d.aviso_dias;
+      [[aviso, 9], [7, 9], [1, 9], [0, 8]].forEach(function (x, i, todos) {
+        if (x[0] > aviso || todos.findIndex(function (y) { return y[0] === x[0]; }) !== i) return;
+        var cuando = new Date(v.getFullYear(), v.getMonth(), v.getDate() - x[0], x[1], 0, 0);
+        if (cuando <= ahora) return;
+        out.push({ docId: d.id, dias: x[0], cuando: cuando,
+          titulo: x[0] === 0 ? d.nombre + " vence hoy" : d.nombre + " vence en " + x[0] + (x[0] === 1 ? " día" : " días"),
+          texto: x[0] === 0 ? "No olvides renovarlo para no tener multas." : "Entra a NOVA para ver el detalle y registrar el pago." });
+      });
+    });
+    return out.sort(function (a, b) { return a.cuando - b.cuando; });
   }
 
   // ---------- Exportar ----------
@@ -268,7 +380,10 @@
     porCategoria: porCategoria, porEtiqueta: porEtiqueta, vistaRapida: vistaRapida, serie: serie, proyeccion: proyeccion,
     seguroParaGastar: seguroParaGastar, nombreDia: nombreDia, porDia: porDia, claveDia: claveDia, buscar: buscar,
     sinTildes: sinTildes, evaluar: evaluar, FRECUENCIAS: FRECUENCIAS, siguienteFecha: siguienteFecha,
-    fechasPendientes: fechasPendientes, GRUPOS: GRUPOS, grupoDe: grupoDe, csv: csv, MESES: MESES
+    fechasPendientes: fechasPendientes, GRUPOS: GRUPOS, grupoDe: grupoDe, csv: csv, MESES: MESES,
+    GRUPO_APPS: GRUPO_APPS, GRUPO_TRABAJO: GRUPO_TRABAJO, CATEGORIAS_CONDUCTOR: CATEGORIAS_CONDUCTOR, DOCUMENTOS: DOCUMENTOS,
+    esGanancia: esGanancia, esGastoTrabajo: esGastoTrabajo, rangoJornada: rangoJornada, resumenTrabajo: resumenTrabajo,
+    estadoDocumento: estadoDocumento, sumarMeses: sumarMeses, proximoVencimiento: proximoVencimiento, avisosDocumentos: avisosDocumentos
   };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaAnalisis = api;

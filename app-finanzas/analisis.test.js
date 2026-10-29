@@ -84,3 +84,70 @@ test("grupos y CSV", () => {
   const texto = A.csv([{ a: "x;y", b: "=SUMA(1)" }, { a: 5, b: ["t1", "t2"] }], [{ titulo: "A", valor: (f) => f.a }, { titulo: "B", valor: (f) => f.b }]);
   assert.strictEqual(texto, '﻿A;B\r\n"x;y";\'=SUMA(1)\r\n5;t1 t2');
 });
+
+// ---------- Modo conductor ----------
+const CATS = A.CATEGORIAS_CONDUCTOR.map((c, i) => Object.assign({ id: i + 1 }, c));
+const id = (n) => CATS.find((c) => c.nombre === n).id;
+const mv = (dia, mes, tipo, monto, cat, extra) => Object.assign({ fecha: new Date(2026, mes, dia, 12).toISOString(), tipo, monto, categoria_id: id(cat) }, extra);
+
+test("categorías del conductor traen su grupo", () => {
+  assert.ok(A.esGanancia(CATS.find((c) => c.nombre === "Didi")));
+  assert.ok(!A.esGanancia(CATS.find((c) => c.nombre === "Gasolina")));
+  assert.ok(A.esGastoTrabajo(CATS.find((c) => c.nombre === "Tecnomecánica")));
+  assert.ok(!A.esGastoTrabajo(null));
+  assert.ok(A.GRUPOS.ingreso.includes("Apps de transporte") && A.GRUPOS.gasto.includes("Trabajo con vehículo"));
+  assert.strictEqual(new Set(CATS.map((c) => c.nombre)).size, CATS.length);
+});
+
+test("resumen del trabajo: ganado, gastado, neto, viajes y por plataforma", () => {
+  const movs = [
+    mv(29, 9, "ingreso", 80000, "Didi", { viajes: 6 }), mv(29, 9, "ingreso", 50000, "Uber", { viajes: 3 }), mv(29, 9, "ingreso", 20000, "Didi", { viajes: 2 }),
+    mv(29, 9, "gasto", 30000, "Gasolina"), mv(29, 9, "gasto", 3000, "Tinto y comida en ruta"),
+    mv(29, 9, "gasto", 9999, "Gasolina", { estado: "pendiente" }), // pendiente: no cuenta
+    mv(28, 9, "ingreso", 70000, "Didi", { viajes: 5 }), // ayer
+    { fecha: HOY.toISOString(), tipo: "gasto", monto: 15000, categoria_id: 999 } // categoría personal: no es del trabajo
+  ];
+  const hoy = A.resumenTrabajo(movs, CATS, A.rangoJornada("hoy", HOY));
+  assert.deepStrictEqual([hoy.ingresos, hoy.gastos, hoy.neto, hoy.viajes], [150000, 33000, 117000, 11]);
+  assert.deepStrictEqual(hoy.porPlataforma.map((p) => [p.id, p.total, p.viajes]), [[id("Didi"), 100000, 8], [id("Uber"), 50000, 3]]);
+  assert.deepStrictEqual(hoy.gastosPorCategoria.map((g) => g.total), [30000, 3000]);
+  assert.strictEqual(Math.round(hoy.porViaje), 13636);
+  const semana = A.resumenTrabajo(movs, CATS, A.rangoJornada("semana", HOY));
+  assert.strictEqual(semana.ingresos, 220000);
+  assert.strictEqual(A.resumenTrabajo([], CATS, A.rangoJornada("mes", HOY)).porViaje, null);
+});
+
+test("rangos de la jornada", () => {
+  const r = A.rangoJornada("semana", HOY); // jueves 29 oct 2026
+  assert.strictEqual(A.claveDia(r.desde), "2026-10-26");
+  assert.strictEqual(A.claveDia(r.hasta), "2026-11-02");
+  assert.strictEqual(A.claveDia(A.rangoJornada("mes", HOY).hasta), "2026-11-01");
+  assert.strictEqual(A.claveDia(A.rangoJornada("hoy", HOY).hasta), "2026-10-30");
+});
+
+test("vencimientos: estado, texto y renovación", () => {
+  const d = (vence, extra) => Object.assign({ vence, aviso_dias: 30, repetir_meses: 12 }, extra);
+  assert.deepStrictEqual(A.estadoDocumento(d("2026-11-10"), HOY), { dias: 12, estado: "pronto", texto: "Vence en 12 días" });
+  assert.strictEqual(A.estadoDocumento(d("2026-10-29"), HOY).texto, "Vence hoy");
+  assert.strictEqual(A.estadoDocumento(d("2026-10-30"), HOY).texto, "Vence mañana");
+  assert.deepStrictEqual(A.estadoDocumento(d("2026-10-20"), HOY), { dias: -9, estado: "vencido", texto: "Venció hace 9 días" });
+  assert.strictEqual(A.estadoDocumento(d("2027-03-01"), HOY).estado, "ok");
+  assert.strictEqual(A.estadoDocumento(d("2026-11-20", { aviso_dias: 7 }), HOY).estado, "ok");
+  assert.strictEqual(A.sumarMeses("2026-01-31", 1), "2026-02-28");
+  assert.strictEqual(A.sumarMeses("2026-11-15", 3), "2027-02-15");
+  assert.strictEqual(A.sumarMeses("2024-02-29", 12), "2025-02-28");
+  assert.strictEqual(A.proximoVencimiento(d("2026-11-10"), HOY), "2027-11-10"); // renueva antes: cuenta desde el vencimiento
+  assert.strictEqual(A.proximoVencimiento(d("2026-09-01"), HOY), "2027-10-29"); // ya vencido: cuenta desde hoy
+  assert.strictEqual(A.proximoVencimiento(d("2026-11-10", { repetir_meses: 3 }), HOY), "2027-02-10");
+});
+
+test("avisos del celular", () => {
+  const docs = [{ id: 1, nombre: "SOAT", vence: "2026-11-10", aviso_dias: 30 }, { id: 2, nombre: "Tecnomecánica", vence: "2026-12-31", aviso_dias: 15 }, { id: 3, nombre: "Licencia", vence: "2026-10-01", aviso_dias: 30 }];
+  const a = A.avisosDocumentos(docs, HOY);
+  assert.ok(!a.some((x) => x.docId === 3), "lo vencido no se avisa");
+  assert.deepStrictEqual(a.filter((x) => x.docId === 1).map((x) => [x.dias, A.claveDia(x.cuando)]), [[7, "2026-11-03"], [1, "2026-11-09"], [0, "2026-11-10"]]);
+  assert.deepStrictEqual(a.filter((x) => x.docId === 2).map((x) => x.dias), [15, 7, 1, 0]);
+  assert.strictEqual(a.find((x) => x.docId === 1 && x.dias === 0).titulo, "SOAT vence hoy");
+  assert.strictEqual(a.find((x) => x.docId === 2 && x.dias === 7).titulo, "Tecnomecánica vence en 7 días");
+  assert.ok(a.every((x, i) => i === 0 || a[i - 1].cuando <= x.cuando), "ordenados");
+});

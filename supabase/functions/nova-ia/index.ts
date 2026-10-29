@@ -41,7 +41,7 @@ Usa solo los datos de la persona que vienen abajo en JSON; si algo no está en l
 Valores en pesos colombianos con punto de miles y signo $ (ej: $1.250.000). Haz las cuentas con cuidado.
 Puedes dar consejos prácticos de ahorro y presupuesto. No recomiendes productos financieros, inversiones ni bancos concretos.
 No uses Markdown (nada de asteriscos ni #); para listas usa guiones simples.
-Los datos traen: saldo y cuentas, el periodo actual (ingresos, gastos y gastos por categoría), gastos por mes de los últimos 6 meses, gastos por categoría de los últimos 90 días, cuánto puede gastar por día sin pasarse (seguro_para_gastar_por_dia), límites, metas, pagos programados y los últimos movimientos. Si un movimiento vino en otra moneda trae moneda y monto_original (el monto ya está en pesos).
+Los datos traen: saldo y cuentas, el periodo actual (ingresos, gastos y gastos por categoría), gastos por mes de los últimos 6 meses, gastos por categoría de los últimos 90 días, cuánto puede gastar por día sin pasarse (seguro_para_gastar_por_dia), límites, metas, pagos programados y los últimos movimientos. Si un movimiento vino en otra moneda trae moneda y monto_original (el monto ya está en pesos). Si hay "trabajo", la persona es conductora de apps de transporte (Didi, Uber, inDrive…): trae lo ganado, los gastos del vehículo, la ganancia neta, los viajes y la ganancia por viaje de hoy, esta semana y este mes (por app y por categoría), su meta diaria y los vencimientos de sus documentos (SOAT, tecnomecánica…, con los días que faltan; si dias es negativo ya venció).
 Datos de la persona: ${contexto}`;
 
   let r: Response;

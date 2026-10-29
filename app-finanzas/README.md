@@ -27,6 +27,18 @@ Está pensada como Lukas, pero todo es gratis y sin anuncios.
   El teclado tiene coma para los centavos. Tasas: ExchangeRate-API (`open.er-api.com`,
   gratis y sin clave, una actualización al día), pedidas por la función `nova-ia` y
   guardadas 12 horas en el celular.
+- **Modo conductor (Didi, Uber, inDrive, Cabify…):** se activa en Configuración. Crea las
+  categorías de ganancias por app y de gastos del vehículo (gasolina, tinto y comida en ruta,
+  peajes, parqueadero, lavado, mantenimiento y arreglos, repuestos, llantas, SOAT, tecnomecánica,
+  impuesto, seguro, multas). Muestra "Mi jornada de hoy" en el inicio y la pantalla **Mi trabajo**:
+  - ganancia neta (ganado con las apps menos gastos del trabajo) de hoy, la semana o el mes;
+  - viajes anotados y ganancia por viaje, meta diaria con barra, ganancias por app y gastos del trabajo;
+  - atajos de un toque para anotar una ganancia (eligiendo la app y los viajes) o un gasto;
+  - **vencimientos del vehículo** (SOAT, tecnomecánica, impuesto, licencia, seguro, aceite…) con
+    aviso en el inicio y, en la APK, notificaciones del celular (al empezar el plazo, a los 7 días,
+    a 1 día y el día del vencimiento). "Renovar" abre el gasto ya con su categoría y costo, y al
+    guardarlo corre la fecha al siguiente vencimiento.
+  Los movimientos "pendientes" no cuentan. El chat con la IA también conoce estos datos.
 - **Botón +:** Asistente inteligente (varios gastos a la vez, dictados, escritos o con
   foto), gasto o ingreso a mano y el chat con la IA.
 - **Nuevo gasto o ingreso:** teclado de números con calculadora (`+ − × ÷`), fecha,
@@ -113,7 +125,7 @@ muestra la marca "✦ IA" cuando la respuesta viene de ahí.
 
 Las tablas `fin_cuentas`, `fin_categorias` (con color y grupo), `fin_movimientos`
 (con nota, estado y programación de origen), `fin_metas`, `fin_perfiles`,
-`fin_frecuentes`, `fin_programados`, `fin_limites` y `fin_conversaciones` tienen
+`fin_frecuentes`, `fin_programados`, `fin_limites`, `fin_conversaciones` y `fin_documentos` tienen
 RLS: cada usuario solo ve y edita sus propias filas, y un movimiento solo puede
 apuntar a una cuenta y una categoría del mismo usuario. Los visitantes sin sesión
 no pueden leer nada. En el primer inicio de sesión la app crea la cuenta
@@ -157,6 +169,8 @@ instalada no se muestra.
   flujo comprueba la huella antes de publicar. Las APK 1.1 a 1.6 salieron con
   otra firma: quien tenga una de esas debe desinstalarla una vez. Para publicar en Google Play
   hace falta una firma propia y secreta.
+- **Avisos de vencimientos:** `@capacitor/local-notifications` programa las notificaciones de
+  `fin_documentos` cada vez que se abre la app o cambia algo. En Android 13 o más pide permiso.
 - **Voz y cámara en la APK:** el dictado usa el reconocimiento de voz del
   celular (`@capacitor-community/speech-recognition`), y la foto del recibo usa
   la cámara. La APK pide permiso de micrófono, cámara y ubicación la primera vez.

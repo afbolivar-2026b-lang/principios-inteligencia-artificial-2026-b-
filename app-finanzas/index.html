@@ -110,6 +110,27 @@
         <span id="seguro-nota" class="nota"></span>
       </article>
 
+      <div id="alertas-docs" class="alertas-docs"></div>
+
+      <article id="tarjeta-jornada" class="tarjeta jornada" hidden>
+        <div class="presupuesto-cabeza">
+          <span class="etiqueta">🚖 Mi jornada de hoy</span>
+          <button type="button" class="enlace" data-ir="trabajo">Ver mi trabajo</button>
+        </div>
+        <strong id="jornada-neto" class="jornada-neto"></strong>
+        <span class="nota">Ganancia neta de hoy</span>
+        <div class="saldo-partes">
+          <div><small>↗ Ganado</small><strong id="jornada-ganado"></strong></div>
+          <div><small>↘ Gastos</small><strong id="jornada-gastos"></strong></div>
+        </div>
+        <div class="barra" id="jornada-meta-barra-caja" hidden><span id="jornada-meta-barra"></span></div>
+        <span id="jornada-nota" class="nota"></span>
+        <div class="fila-botones">
+          <button type="button" class="primario" data-trabajo="ganancia">＋ Ganancia de viaje</button>
+          <button type="button" data-trabajo="gasto">＋ Gasto del trabajo</button>
+        </div>
+      </article>
+
       <form id="form-rapido" class="tarjeta rapido" autocomplete="off">
         <label for="entrada-rapida" class="etiqueta">¿Qué gastaste o recibiste?</label>
         <div class="rapido-fila">
@@ -244,6 +265,58 @@
       <p class="nota centro">Tus conversaciones se guardan en tu cuenta. NOVA IA responde con tus propios números.</p>
     </section>
 
+    <!-- MI TRABAJO (modo conductor) -->
+    <section class="vista" data-vista="trabajo" hidden>
+      <div class="sub-cabecera"><button type="button" class="icono-btn" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Mi trabajo</h1></div>
+      <div id="trabajo-periodos" class="pestanas" role="group" aria-label="Periodo">
+        <button type="button" data-cual="hoy">Hoy</button>
+        <button type="button" data-cual="semana">Esta semana</button>
+        <button type="button" data-cual="mes">Este mes</button>
+      </div>
+      <article class="tarjeta saldo">
+        <span class="etiqueta">Ganancia neta</span>
+        <strong id="trabajo-neto" class="saldo-valor"></strong>
+        <div class="saldo-partes">
+          <div><small>↗ Ganado con las apps</small><strong id="trabajo-ganado"></strong></div>
+          <div><small>↘ Gastos del trabajo</small><strong id="trabajo-gastos"></strong></div>
+        </div>
+        <span id="trabajo-viajes" class="pildora"></span>
+        <div class="barra clara" id="trabajo-meta-caja" hidden><span id="trabajo-meta-barra"></span></div>
+        <span id="trabajo-meta-nota" class="nota-clara"></span>
+      </article>
+
+      <h2 class="grupo-ajustes">Registrar una ganancia</h2>
+      <div id="trabajo-apps" class="chips-rapidos"></div>
+      <h2 class="grupo-ajustes">Registrar un gasto del trabajo</h2>
+      <div id="trabajo-gastos-rapidos" class="chips-rapidos"></div>
+
+      <article class="tarjeta widget">
+        <h2 class="titulo-widget">Ganancias por app</h2>
+        <ul id="trabajo-plataformas" class="por-categoria"></ul>
+      </article>
+      <article class="tarjeta widget">
+        <h2 class="titulo-widget">En qué gastas del trabajo</h2>
+        <ul id="trabajo-categorias" class="por-categoria"></ul>
+      </article>
+
+      <div class="seccion-cabecera">
+        <h2>Vencimientos de mi vehículo</h2>
+        <button type="button" class="enlace" id="btn-nuevo-documento">+ Agregar</button>
+      </div>
+      <p class="nota">SOAT, tecnomecánica, impuesto, aceite… NOVA te avisa antes de que se venzan (en el celular también con una notificación).</p>
+      <ul id="lista-documentos" class="lista-simple"></ul>
+
+      <form id="form-vehiculo" class="tarjeta formulario" autocomplete="off">
+        <h2 class="titulo-tarjeta">Mi vehículo y mi meta</h2>
+        <label for="vehiculo-nombre">Vehículo</label>
+        <input id="vehiculo-nombre" maxlength="60" placeholder="Moto NKD 125 · placa ABC12D">
+        <label for="meta-diaria">Meta de ganancia por día</label>
+        <input id="meta-diaria" inputmode="numeric" placeholder="150 mil (opcional)">
+        <button type="submit" class="primario">Guardar</button>
+        <p class="mensaje" id="vehiculo-mensaje" role="status"></p>
+      </form>
+    </section>
+
     <!-- BUSCAR -->
     <section class="vista" data-vista="buscar" hidden>
       <h1 class="titulo-vista">Buscar</h1>
@@ -322,6 +395,12 @@
         <label class="menu-fila"><span class="menu-icono">📍</span><span><strong>Guardar la ubicación</strong><small>Mapa y otros pagos en el mismo lugar</small></span><input type="checkbox" id="perfil-ubicacion" class="interruptor"></label>
       </div>
       <p class="mensaje" id="ajustes-mensaje" role="status"></p>
+
+      <h2 class="grupo-ajustes">Trabajo con apps de transporte</h2>
+      <div class="menu">
+        <label class="menu-fila"><span class="menu-icono">🚖</span><span><strong>Modo conductor</strong><small>Didi, Uber, inDrive… ganancias, gastos y vencimientos</small></span><input type="checkbox" id="perfil-conductor" class="interruptor"></label>
+        <button type="button" id="aj-trabajo" data-ir="trabajo" hidden><span class="menu-icono">📊</span><span><strong>Mi trabajo</strong><small>Cuánto voy ganando, mis gastos y el SOAT</small></span></button>
+      </div>
 
       <h2 class="grupo-ajustes">Datos</h2>
       <div class="menu">
@@ -466,6 +545,10 @@
       <button type="button" class="opcion-tipo gasto" data-nuevo="gasto"><span>↘</span><strong>Gasto</strong><small>Manual</small></button>
       <button type="button" class="opcion-tipo ingreso" data-nuevo="ingreso"><span>↗</span><strong>Ingreso</strong><small>Manual</small></button>
     </div>
+    <div id="mas-conductor" class="dos-col" hidden>
+      <button type="button" class="opcion-tipo ingreso" data-trabajo="ganancia"><span>🚖</span><strong>Ganancia de viaje</strong><small>Didi, Uber…</small></button>
+      <button type="button" class="opcion-tipo gasto" data-trabajo="gasto"><span>⛽</span><strong>Gasto del trabajo</strong><small>Gasolina, tinto…</small></button>
+    </div>
     <button type="button" class="opcion-ia chat" data-abrir="pantalla-chat">
       <span class="acceso-ia-icono">💬</span>
       <span><strong>Pregúntale a NOVA</strong><small>Chatea con la IA sobre tus finanzas</small></span>
@@ -511,6 +594,10 @@
     </div>
     <label for="reg-fecha">Fecha</label>
     <input id="reg-fecha" type="date" required>
+    <div id="reg-bloque-viajes" class="formulario" hidden>
+      <label for="reg-viajes">¿Cuántos viajes fueron? (opcional)</label>
+      <input id="reg-viajes" inputmode="numeric" maxlength="4" placeholder="Ej. 6">
+    </div>
     <label for="reg-desc">Descripción (opcional)</label>
     <input id="reg-desc" maxlength="120" placeholder="¿En qué gastaste?">
     <label>Categoría</label>
@@ -591,6 +678,29 @@
     <p class="mensaje" id="lim-mensaje" role="status"></p>
     <button type="submit" class="primario">Guardar</button>
     <button type="button" class="peligro" id="lim-borrar" hidden>Borrar límite</button>
+  </form>
+</section>
+
+<!-- Nuevo o editar vencimiento (SOAT, tecnomecánica…) -->
+<section id="pantalla-documento" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="doc-titulo">Nuevo vencimiento</h1></div>
+  <form id="form-documento" class="formulario" autocomplete="off">
+    <label for="doc-tipo">¿Qué se vence?</label>
+    <select id="doc-tipo"></select>
+    <label for="doc-nombre">Nombre</label>
+    <input id="doc-nombre" maxlength="60" required>
+    <label for="doc-vence">Fecha de vencimiento</label>
+    <input id="doc-vence" type="date" required>
+    <label for="doc-costo">Cuánto cuesta renovarlo (opcional)</label>
+    <input id="doc-costo" inputmode="numeric" placeholder="Ej. 400 mil">
+    <label for="doc-aviso">Avisarme con anticipación</label>
+    <select id="doc-aviso"><option value="60">60 días antes</option><option value="30">30 días antes</option><option value="15">15 días antes</option><option value="7">7 días antes</option><option value="3">3 días antes</option></select>
+    <label for="doc-repetir">Se renueva cada</label>
+    <select id="doc-repetir"><option value="1">1 mes</option><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">12 meses (1 año)</option><option value="24">24 meses</option><option value="36">36 meses</option></select>
+    <p class="mensaje" id="doc-mensaje" role="status"></p>
+    <button type="submit" class="primario">Guardar</button>
+    <button type="button" id="doc-renovar" hidden>Ya lo renové: anotar el gasto</button>
+    <button type="button" class="peligro" id="doc-borrar" hidden>Borrar este vencimiento</button>
   </form>
 </section>
 

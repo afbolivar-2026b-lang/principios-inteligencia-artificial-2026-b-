@@ -123,7 +123,7 @@
 
   // ---------- Fuentes de datos ----------
   // Las dos fuentes (Supabase y demostración) ofrecen las mismas operaciones sobre las mismas tablas.
-  var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites", "conversaciones"];
+  var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites", "conversaciones", "documentos"];
 
   function fuenteSupabase(cliente, usuario) {
     function q(promesa) {
@@ -143,9 +143,10 @@
           q(t("frecuentes").select("*").order("id")),
           q(t("programados").select("*").order("proxima")),
           q(t("limites").select("*").order("id")),
-          q(t("conversaciones").select("*").order("actualizado_en", { ascending: false }).limit(60))
+          q(t("conversaciones").select("*").order("actualizado_en", { ascending: false }).limit(60)),
+          q(t("documentos").select("*").order("vence"))
         ]).then(function (r) {
-          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5], programados: r[6], limites: r[7], conversaciones: r[8] };
+          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5], programados: r[6], limites: r[7], conversaciones: r[8], documentos: r[9] };
           // Primera vez: crear el perfil, la cuenta principal y las categorías por defecto.
           var pendientes = [];
           if (!datos.perfil) {
@@ -192,6 +193,7 @@
                       frecuencia: "mensual", proxima: A.siguienteFecha(A.claveDia(hace(1, 12)), "mensual"), activo: true }],
       limites: [{ id: 1, categoria_id: cat("Comida"), monto: 400000, ciclo: "mensual", recurrente: true, creado_en: hace(20, 9) }],
       conversaciones: [],
+      documentos: [],
       movimientos: [
         [0, 10, 42, "gasto", "Café y pandebono", 8500, "Comida", [], CAFE],
         [1, 18, 30, "gasto", "Netflix", 26900, "Suscripciones", [], null],
@@ -215,7 +217,7 @@
                  categoria_id: cat(m[6]), etiquetas: m[7], lat: m[8] ? m[8][0] : null, lng: m[8] ? m[8][1] : null };
       })
     };
-    var perfil = { presupuesto_monto: 1500000, presupuesto_ciclo: "mensual", guardar_ubicacion: false, mostrar_seguro: true };
+    var perfil = { presupuesto_monto: 1500000, presupuesto_ciclo: "mensual", guardar_ubicacion: false, mostrar_seguro: true, modo_conductor: false, vehiculo: null, meta_diaria: null };
     function copia(o) { return JSON.parse(JSON.stringify(o)); }
     function nueva(nombre, fila) {
       var n = Object.assign({ id: sig++ }, fila);
@@ -244,7 +246,7 @@
 
   // ---------- Estado y cálculos ----------
   function datosVacios() {
-    var d = { perfil: { presupuesto_ciclo: "mensual", guardar_ubicacion: false, mostrar_seguro: true } };
+    var d = { perfil: { presupuesto_ciclo: "mensual", guardar_ubicacion: false, mostrar_seguro: true, modo_conductor: false } };
     TABLAS.forEach(function (t) { d[t] = []; });
     return d;
   }
@@ -1272,6 +1274,240 @@
     }).catch(function (err) { mensaje("cuenta-mensaje", err.message, true); });
   });
 
+  // ---------- Modo conductor (Didi, Uber, inDrive…) ----------
+  function conductor() { return !!datos.perfil.modo_conductor; }
+  var cualTrabajo = leerLocal("nova-trabajo", "hoy");
+  var ICONO_DOC = { soat: "🛡️", tecnomecanica: "📋", impuesto: "🧾", licencia: "🪪", seguro: "🔒", aceite: "🛢️", revision: "🔧", otro: "📌" };
+
+  function categoriasDelGrupo(esDelGrupo) { return datos.categorias.filter(esDelGrupo).sort(function (a, b) { return a.nombre.localeCompare(b.nombre); }); }
+  function asegurarCategoriasConductor() {
+    var faltan = A.CATEGORIAS_CONDUCTOR.filter(function (c) { return !datos.categorias.some(function (x) { return x.nombre === c.nombre && x.tipo === c.tipo; }); });
+    if (!faltan.length) return Promise.resolve();
+    return fuente.crearVarios("categorias", faltan).then(function (creadas) { Array.prototype.push.apply(datos.categorias, creadas); });
+  }
+  // La categoría de trabajo que más se usa (o la primera) para abrir el registro ya con ella elegida.
+  function categoriaDeTrabajo(tipo) {
+    var es = tipo === "ingreso" ? A.esGanancia : A.esGastoTrabajo, uso = {};
+    datos.movimientos.slice(0, 300).forEach(function (m) { var c = categoria(m.categoria_id); if (m.tipo === tipo && es(c)) uso[c.id] = (uso[c.id] || 0) + 1; });
+    var mas = Object.keys(uso).sort(function (a, b) { return uso[b] - uso[a]; })[0];
+    return mas ? categoria(Number(mas)) : categoriasDelGrupo(es)[0] || null;
+  }
+  function nuevoTrabajo(cual, catId) {
+    var tipo = cual === "ganancia" ? "ingreso" : "gasto", c = catId != null ? categoria(catId) : categoriaDeTrabajo(tipo);
+    abrirRegistro({ tipo: tipo, categoriaId: c ? c.id : null });
+  }
+
+  function documentosPorVencer() {
+    return datos.documentos.map(function (d) { return { d: d, e: A.estadoDocumento(d) }; })
+      .filter(function (x) { return x.e.estado !== "ok"; }).sort(function (a, b) { return a.e.dias - b.e.dias; });
+  }
+
+  function pintarConductor() {
+    var on = conductor();
+    $("tarjeta-jornada").hidden = !on;
+    $("mas-conductor").hidden = !on;
+    $("aj-trabajo").hidden = !on;
+    $("perfil-conductor").checked = on;
+    var al = $("alertas-docs");
+    al.replaceChildren();
+    if (on) documentosPorVencer().slice(0, 3).forEach(function (x) {
+      var b = el("button", "alerta-doc " + x.e.estado); b.type = "button";
+      b.append(el("span", null, x.e.estado === "vencido" ? "⛔" : "⚠️"), el("span", null, x.d.nombre + " · " + x.e.texto.toLowerCase()), el("span", "flecha", "›"));
+      b.addEventListener("click", function () { ir("trabajo"); });
+      al.append(b);
+    });
+    if (!on) return;
+    var r = A.resumenTrabajo(datos.movimientos, datos.categorias, A.rangoJornada("hoy"));
+    $("jornada-neto").textContent = (r.neto < 0 && !ocultos ? "−" : "") + dinero(Math.abs(r.neto));
+    $("jornada-ganado").textContent = ocultos ? "$ ••••" : "+" + pesos.format(r.ingresos);
+    $("jornada-gastos").textContent = ocultos ? "$ ••••" : "−" + pesos.format(r.gastos);
+    var meta = num(datos.perfil.meta_diaria), caja = $("jornada-meta-barra-caja");
+    caja.hidden = !meta;
+    var nota = $("jornada-nota");
+    if (meta) {
+      $("jornada-meta-barra").style.width = Math.min(100, (r.ingresos / meta) * 100) + "%";
+      nota.textContent = r.ingresos >= meta ? "🎉 ¡Meta del día cumplida!" : "Llevas " + dinero(r.ingresos) + " de tu meta de " + dinero(meta) + " (" + Math.round((r.ingresos / meta) * 100) + "%)";
+    } else nota.textContent = r.viajes ? r.viajes + (r.viajes === 1 ? " viaje" : " viajes") + " hoy · " + dinero(r.porViaje) + " por viaje" : "Anota tus ganancias después de cada carrera.";
+    pintarTrabajo();
+  }
+
+  function filaPlataforma(ul, nombre, color, total, detalle, max) {
+    var li = el("li", "cat-fila");
+    var punto = el("span", "punto"); punto.style.background = color;
+    var n = el("span", "cat-nombre"); n.append(punto, document.createTextNode(nombre));
+    var barra = el("div", "barra"), sp = el("span"); sp.style.width = (total / (max || 1)) * 100 + "%"; sp.style.background = color; barra.append(sp);
+    li.append(n, el("strong", null, dinero(total)), barra);
+    if (detalle) li.append(el("small", "nota detalle", detalle));
+    ul.append(li);
+  }
+
+  function pintarTrabajo() {
+    if (!conductor()) return;
+    document.querySelectorAll("#trabajo-periodos button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.cual === cualTrabajo)); });
+    var r = A.resumenTrabajo(datos.movimientos, datos.categorias, A.rangoJornada(cualTrabajo));
+    $("trabajo-neto").textContent = (r.neto < 0 && !ocultos ? "−" : "") + dinero(Math.abs(r.neto));
+    $("trabajo-ganado").textContent = ocultos ? "$ ••••" : "+" + pesos.format(r.ingresos);
+    $("trabajo-gastos").textContent = ocultos ? "$ ••••" : "−" + pesos.format(r.gastos);
+    $("trabajo-viajes").textContent = r.viajes ? r.viajes + (r.viajes === 1 ? " viaje" : " viajes") + " · " + dinero(r.porViaje) + " por viaje"
+      : r.movimientos ? "Sin viajes anotados" : "Aún no hay movimientos en este periodo";
+    var meta = num(datos.perfil.meta_diaria);
+    $("trabajo-meta-caja").hidden = !(meta && cualTrabajo === "hoy");
+    $("trabajo-meta-nota").textContent = meta && cualTrabajo === "hoy" ? (r.ingresos >= meta ? "🎉 ¡Meta del día cumplida!" : "Meta del día: " + dinero(meta) + " (" + Math.round((r.ingresos / meta) * 100) + "%)") : "";
+    $("trabajo-meta-barra").style.width = meta ? Math.min(100, (r.ingresos / meta) * 100) + "%" : "0";
+
+    function chips(cont, lista, cual) {
+      cont.replaceChildren();
+      lista.forEach(function (c) {
+        var b = el("button", "chip-rapido"); b.type = "button";
+        b.append(pintarIcono(el("span", "mov-icono chico"), c), document.createTextNode(c.nombre));
+        b.addEventListener("click", function () { nuevoTrabajo(cual, c.id); });
+        cont.append(b);
+      });
+    }
+    chips($("trabajo-apps"), categoriasDelGrupo(A.esGanancia), "ganancia");
+    chips($("trabajo-gastos-rapidos"), categoriasDelGrupo(A.esGastoTrabajo), "gasto");
+
+    var ulp = $("trabajo-plataformas"), maxP = r.porPlataforma.length ? r.porPlataforma[0].total : 1;
+    ulp.replaceChildren();
+    if (!r.porPlataforma.length) ulp.append(el("li", "vacio", "Todavía no hay ganancias en este periodo."));
+    r.porPlataforma.forEach(function (p) {
+      var c = categoria(p.id);
+      filaPlataforma(ulp, c ? c.nombre : "Otra", colorDe(c), p.total, p.viajes ? p.viajes + (p.viajes === 1 ? " viaje" : " viajes") + " · " + dinero(p.total / p.viajes) + " por viaje" : "", maxP);
+    });
+    var ulg = $("trabajo-categorias"), maxG = r.gastosPorCategoria.length ? r.gastosPorCategoria[0].total : 1;
+    ulg.replaceChildren();
+    if (!r.gastosPorCategoria.length) ulg.append(el("li", "vacio", "Todavía no hay gastos del trabajo en este periodo."));
+    r.gastosPorCategoria.forEach(function (g) {
+      var c = categoria(g.id);
+      filaPlataforma(ulg, c ? c.nombre : "Otro", colorDe(c), g.total, r.ingresos ? Math.round((g.total / r.ingresos) * 100) + "% de lo que ganaste" : "", maxG);
+    });
+
+    pintarDocumentos();
+    if (document.activeElement !== $("vehiculo-nombre")) $("vehiculo-nombre").value = datos.perfil.vehiculo || "";
+    if (document.activeElement !== $("meta-diaria")) $("meta-diaria").value = datos.perfil.meta_diaria ? pesos.format(num(datos.perfil.meta_diaria)) : "";
+  }
+  document.querySelectorAll("#trabajo-periodos button").forEach(function (b) {
+    b.addEventListener("click", function () { cualTrabajo = b.dataset.cual; guardarLocal("nova-trabajo", cualTrabajo); pintarTrabajo(); });
+  });
+
+  $("perfil-conductor").addEventListener("change", function (e) {
+    var on = e.target.checked;
+    (on ? asegurarCategoriasConductor() : Promise.resolve()).then(function () {
+      return guardarPerfil({ modo_conductor: on }, "ajustes-mensaje",
+        on ? "Modo conductor activado." : "Modo conductor apagado. Tus datos quedan guardados.");
+    }).then(function () { programarAvisos(); if (on) { toast("🚖 Modo conductor activado"); ir("trabajo"); } })
+      .catch(function (err) { mensaje("ajustes-mensaje", err.message, true); pintar(); });
+  });
+
+  $("form-vehiculo").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var txt = $("meta-diaria").value.trim(), meta = txt ? leerValor(txt) : null;
+    if (txt && !(meta > 0)) return mensaje("vehiculo-mensaje", "No entendí la meta. Escribe por ejemplo 150 mil.", true);
+    guardarPerfil({ vehiculo: $("vehiculo-nombre").value.trim() || null, meta_diaria: meta }, "vehiculo-mensaje", "Guardado.");
+  });
+
+  // Vencimientos (SOAT, tecnomecánica…)
+  function pintarDocumentos() {
+    var ul = $("lista-documentos");
+    ul.replaceChildren();
+    if (!datos.documentos.length) ul.append(el("li", "vacio", "Aún no has agregado vencimientos. Toca «+ Agregar» y pon la fecha de tu SOAT y de la tecnomecánica."));
+    datos.documentos.slice().sort(function (a, b) { return String(a.vence).localeCompare(String(b.vence)); }).forEach(function (d) {
+      var e = A.estadoDocumento(d);
+      var li = el("li", "fila-categoria documento " + e.estado);
+      li.tabIndex = 0; li.setAttribute("role", "button");
+      var txt = el("span", "mov-texto");
+      txt.append(el("strong", null, d.nombre), el("small", e.estado === "ok" ? null : "estado-" + e.estado, fechaCorta.format(parteFechaLocal(d.vence)) + " · " + e.texto));
+      var ren = el("button", "chip-opcion", "Renovar"); ren.type = "button";
+      ren.addEventListener("click", function (ev) { ev.stopPropagation(); renovarDocumento(d); });
+      li.append(el("span", "mov-icono chico", ICONO_DOC[d.tipo] || "📌"), txt, ren);
+      li.addEventListener("click", function () { abrirDocumento(d); });
+      li.addEventListener("keydown", function (ev) { if (ev.key === "Enter") abrirDocumento(d); });
+      ul.append(li);
+    });
+  }
+  function parteFechaLocal(f) { var p = String(f).slice(0, 10).split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+
+  var docActual = null;
+  function abrirDocumento(d) {
+    docActual = d || null;
+    var sel = $("doc-tipo");
+    sel.replaceChildren();
+    A.DOCUMENTOS.forEach(function (x) { var o = el("option", null, x.nombre); o.value = x.tipo; sel.append(o); });
+    sel.value = d ? d.tipo : "soat";
+    $("doc-titulo").textContent = d ? "Editar vencimiento" : "Nuevo vencimiento";
+    $("doc-nombre").value = d ? d.nombre : "SOAT";
+    $("doc-vence").value = d ? String(d.vence).slice(0, 10) : "";
+    $("doc-costo").value = d && d.costo ? pesos.format(num(d.costo)) : "";
+    $("doc-aviso").value = String(d ? d.aviso_dias : 30);
+    $("doc-repetir").value = String(d ? d.repetir_meses : 12);
+    $("doc-renovar").hidden = !d; $("doc-borrar").hidden = !d;
+    mensaje("doc-mensaje", "");
+    abrirCapa("pantalla-documento");
+  }
+  $("doc-tipo").addEventListener("change", function (e) {
+    var x = A.DOCUMENTOS.find(function (y) { return y.tipo === e.target.value; });
+    if (!x) return;
+    if (!docActual || $("doc-nombre").value === "" || A.DOCUMENTOS.some(function (y) { return y.nombre === $("doc-nombre").value; })) $("doc-nombre").value = x.nombre;
+    $("doc-repetir").value = String(x.meses);
+  });
+  $("btn-nuevo-documento").addEventListener("click", function () { abrirDocumento(null); });
+  $("form-documento").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nombre = $("doc-nombre").value.trim(), vence = $("doc-vence").value, txt = $("doc-costo").value.trim(), costo = txt ? leerValor(txt) : null;
+    if (!nombre) return mensaje("doc-mensaje", "Escribe el nombre.", true);
+    if (!vence) return mensaje("doc-mensaje", "Elige la fecha de vencimiento.", true);
+    if (txt && !(costo > 0)) return mensaje("doc-mensaje", "No entendí el costo. Escribe por ejemplo 400 mil.", true);
+    var fila = { tipo: $("doc-tipo").value, nombre: nombre, vence: vence, costo: costo, aviso_dias: Number($("doc-aviso").value), repetir_meses: Number($("doc-repetir").value) };
+    var op = docActual ? fuente.actualizar("documentos", docActual.id, fila) : fuente.crear("documentos", fila);
+    op.then(function (d) {
+      if (docActual) Object.assign(docActual, d); else datos.documentos.push(d);
+      toast("✓ Vencimiento guardado: " + d.nombre); programarAvisos(); cerrarCapa(); pintar();
+    }).catch(function (err) { mensaje("doc-mensaje", err.message, true); });
+  });
+  $("doc-borrar").addEventListener("click", function () {
+    if (!docActual || !confirm("¿Borrar el vencimiento «" + docActual.nombre + "»? Los gastos que ya anotaste no se borran.")) return;
+    var id = docActual.id;
+    fuente.borrar("documentos", id).then(function () {
+      datos.documentos = datos.documentos.filter(function (x) { return x.id !== id; });
+      toast("Vencimiento borrado"); programarAvisos(); cerrarCapa(); pintar();
+    }).catch(function (err) { mensaje("doc-mensaje", err.message, true); });
+  });
+  $("doc-renovar").addEventListener("click", function () { var d = docActual; cerrarYLuego(function () { renovarDocumento(d); }); });
+
+  // "Ya lo renové": abre el registro del gasto con la categoría y el costo, y al guardarlo corre la fecha.
+  function renovarDocumento(d) {
+    var x = A.DOCUMENTOS.find(function (y) { return y.tipo === d.tipo; }) || A.DOCUMENTOS[A.DOCUMENTOS.length - 1];
+    var c = datos.categorias.find(function (k) { return k.nombre === x.categoria && k.tipo === "gasto"; });
+    abrirRegistro({ tipo: "gasto", categoriaId: c ? c.id : null, expr: d.costo ? String(Math.round(num(d.costo))) : "", desc: d.nombre, documentoId: d.id });
+  }
+  function renovarDocumentoListo(docId) {
+    var d = datos.documentos.find(function (x) { return x.id === docId; });
+    if (!d) return;
+    fuente.actualizar("documentos", d.id, { vence: A.proximoVencimiento(d) }).then(function (n) {
+      Object.assign(d, n); toast("✓ " + d.nombre + " renovado: ahora vence el " + fechaCorta.format(parteFechaLocal(d.vence)) + " " + parteFechaLocal(d.vence).getFullYear());
+      programarAvisos(); pintar();
+    }).catch(function (err) { toast("No se pudo mover la fecha: " + err.message); });
+  }
+
+  // Avisos en el celular (solo en la app instalada): se vuelven a programar cada vez que cambia algo.
+  function programarAvisos() {
+    var N = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+    if (!N || !fuente || fuente.demo) return Promise.resolve();
+    var avisos = conductor() ? A.avisosDocumentos(datos.documentos).slice(0, 60) : [];
+    return N.getPending().then(function (p) {
+      var viejos = (p && p.notifications || []).map(function (n) { return { id: n.id }; });
+      return viejos.length ? N.cancel({ notifications: viejos }) : null;
+    }).then(function () {
+      if (!avisos.length) return null;
+      return N.requestPermissions().then(function (perm) {
+        if (!perm || perm.display !== "granted") return null;
+        return N.schedule({ notifications: avisos.map(function (a) {
+          return { id: a.docId * 1000 + a.dias, title: a.titulo, body: a.texto, schedule: { at: a.cuando, allowWhileIdle: true } };
+        }) });
+      });
+    }).catch(function () { /* sin permiso o sin el complemento: los avisos dentro de la app siguen funcionando */ });
+  }
+
   // ---------- Exportar ----------
   function descargar(nombre, contenido, tipo) {
     if (enApp) {
@@ -1364,7 +1600,7 @@
   // ---------- Pintar todo ----------
   function pintar() {
     if (!fuente) return;
-    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA();
+    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA(); pintarConductor();
   }
 
   function alerta(e) { mensaje("rapido-mensaje", "No se pudo guardar: " + (e && e.message ? e.message : e), true); }
@@ -1373,7 +1609,7 @@
   var PRINCIPALES = ["inicio", "planes", "ia", "analisis", "buscar", "ajustes"];
   function ir(vista) {
     document.querySelectorAll(".vista").forEach(function (v) { v.hidden = v.dataset.vista !== vista; });
-    var principal = PRINCIPALES.indexOf(vista) >= 0 ? vista : "ajustes";
+    var principal = PRINCIPALES.indexOf(vista) >= 0 ? vista : vista === "trabajo" ? "inicio" : "ajustes";
     document.querySelectorAll(".nav-inferior button").forEach(function (b) {
       b.classList.toggle("activo", b.dataset.ir === principal);
       if (b.dataset.ir === principal) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
@@ -1433,6 +1669,9 @@
       abrirDesdeHoja(function () { if (id === "pantalla-chat") abrirChat(null); else abrirCapa(id); });
     });
   });
+  document.querySelectorAll("[data-trabajo]").forEach(function (b) {
+    b.addEventListener("click", function () { var cual = b.dataset.trabajo; abrirDesdeHoja(function () { nuevoTrabajo(cual); }); });
+  });
   document.querySelectorAll("[data-nuevo]").forEach(function (b) {
     b.addEventListener("click", function () { var t = b.dataset.nuevo; abrirDesdeHoja(function () { abrirRegistro({ tipo: t }); }); });
   });
@@ -1445,15 +1684,17 @@
     reg = {
       editar: m || null,
       tipo: m ? m.tipo : o.tipo || "gasto",
-      expr: m ? textoMonto(m.moneda && m.moneda !== "COP" && num(m.monto_original) > 0 ? num(m.monto_original) : num(m.monto)) : "",
-      categoriaId: m ? m.categoria_id : null,
+      expr: m ? textoMonto(m.moneda && m.moneda !== "COP" && num(m.monto_original) > 0 ? num(m.monto_original) : num(m.monto)) : (o.expr || ""),
+      categoriaId: m ? m.categoria_id : (o.categoriaId != null ? o.categoriaId : null),
+      documentoId: o.documentoId || null,
       etiquetas: m ? (m.etiquetas || []).slice() : [],
       moneda: m && m.moneda ? m.moneda : "COP",
       tasa: m && m.tasa ? Number(m.tasa) : null,
       tasaAuto: null, tasaFecha: "", tasaEditada: !!(m && m.tasa)
     };
     $("reg-fecha").value = A.claveDia(m ? m.fecha : new Date());
-    $("reg-desc").value = m ? m.descripcion : "";
+    $("reg-desc").value = m ? m.descripcion : (o.desc || "");
+    $("reg-viajes").value = m && m.viajes ? m.viajes : "";
     $("reg-nota").value = m && m.nota ? m.nota : "";
     $("reg-estado").value = m && m.estado ? m.estado : "pagado";
     $("reg-etiqueta").value = "";
@@ -1560,6 +1801,7 @@
     var c = reg.categoriaId != null ? categoria(reg.categoriaId) : null;
     if (c && c.tipo !== reg.tipo) { reg.categoriaId = null; c = null; }
     pintarIcono($("reg-cat-icono"), c || { icono: "otro", color: "#64748b" });
+    $("reg-bloque-viajes").hidden = !A.esGanancia(c);
     $("reg-cat-nombre").textContent = c ? c.nombre : "Seleccionar categoría";
     var tags = $("reg-etiquetas");
     tags.replaceChildren();
@@ -1654,13 +1896,14 @@
     btn.disabled = true;
     var conCategoria = reg.categoriaId != null ? Promise.resolve(categoria(reg.categoriaId))
       : categoriaPorNombre(reg.tipo === "ingreso" ? "Otros ingresos" : "Otros gastos", reg.tipo);
-    var editar = reg.editar, otro = $("reg-otro").checked;
+    var editar = reg.editar, otro = $("reg-otro").checked, docId = reg.documentoId;
     conCategoria.then(function (c) {
       var fila = {
         cuenta_id: Number($("reg-cuenta").value) || datos.cuentas[0].id, categoria_id: c.id, tipo: reg.tipo,
         descripcion: $("reg-desc").value.trim() || c.nombre, monto: monto, fecha: fecha.toISOString(),
         etiquetas: reg.etiquetas, estado: $("reg-estado").value, nota: $("reg-nota").value.trim() || null,
-        moneda: reg.moneda, monto_original: ext ? montoOriginal : null, tasa: ext ? reg.tasa : null
+        moneda: reg.moneda, monto_original: ext ? montoOriginal : null, tasa: ext ? reg.tasa : null,
+        viajes: A.esGanancia(c) && parseInt($("reg-viajes").value, 10) > 0 ? Math.min(1000, parseInt($("reg-viajes").value, 10)) : null
       };
       if (editar) return fuente.actualizar("movimientos", editar.id, fila).then(function (n) { Object.assign(editar, n); return { m: editar, c: c }; });
       var prog = Promise.resolve(null);
@@ -1681,8 +1924,9 @@
       });
     }).then(function (r) {
       ordenarMovimientos();
+      if (docId) renovarDocumentoListo(docId);
       var etiquetaDesc = r.m ? r.m.descripcion : r.programado.descripcion;
-      toast((editar ? "✓ Cambios guardados: " : "✓ ¡Guardado! ") + etiquetaDesc + " " + pesos.format(monto) + (ext ? " (" + Mon.formatoMonto(montoOriginal, reg.moneda) + ")" : "") + (r.programado ? " · 🔁 " + A.FRECUENCIAS[r.programado.frecuencia].toLowerCase() : ""));
+      toast((editar ? "✓ Cambios guardados: " : "✓ ¡Guardado! ") + etiquetaDesc + " " + pesos.format(monto) + (ext ? " (" + Mon.formatoMonto(montoOriginal, reg.moneda) + ")" : "") + (r.m && r.m.viajes ? " · " + r.m.viajes + (r.m.viajes === 1 ? " viaje" : " viajes") : "") + (r.programado ? " · 🔁 " + A.FRECUENCIAS[r.programado.frecuencia].toLowerCase() : ""));
       pintar();
       if (otro && !editar) {
         reg.expr = ""; reg.etiquetas = []; $("reg-desc").value = ""; $("reg-nota").value = ""; $("teclado").hidden = false;
@@ -1780,6 +2024,16 @@
       contexto.presupuesto = { ciclo: ciclo, limite: num(p.presupuesto_monto), gastado: gastadoEn(rango),
                                desde: A.claveDia(rango.desde), hasta: A.claveDia(new Date(rango.hasta.getTime() - 1)) };
     }
+    if (conductor()) {
+      var nombreDe = function (f) { return { nombre: nombreCategoria(f.id), total: f.total }; };
+      contexto.trabajo = { vehiculo: p.vehiculo || null, meta_diaria: p.meta_diaria ? num(p.meta_diaria) : null };
+      ["hoy", "semana", "mes"].forEach(function (cual) {
+        var r = A.resumenTrabajo(datos.movimientos, datos.categorias, A.rangoJornada(cual));
+        contexto.trabajo[cual] = { ganado: r.ingresos, gastos_del_trabajo: r.gastos, ganancia_neta: r.neto, viajes: r.viajes, ganancia_por_viaje: r.porViaje ? Math.round(r.porViaje) : null,
+          por_app: r.porPlataforma.map(function (x) { return { app: nombreCategoria(x.id), total: x.total, viajes: x.viajes }; }), gastos_por_categoria: r.gastosPorCategoria.map(nombreDe) };
+      });
+      contexto.trabajo.vencimientos = datos.documentos.map(function (d) { var e = A.estadoDocumento(d); return { nombre: d.nombre, vence: String(d.vence).slice(0, 10), dias: e.dias, costo: d.costo ? num(d.costo) : null }; });
+    }
     return contexto;
   }
 
@@ -1815,13 +2069,14 @@
 
   // Preguntas sugeridas con los datos de la persona (como las de la app de referencia).
   function sugerenciasChat() {
-    var lista = ["¿Cuál fue mi gasto más grande este período?"];
+    var lista = conductor() ? ["¿Cuánto he ganado hoy con las apps?", "¿Cuál app me deja más por viaje?", "¿Cuánto me queda libre esta semana después de gasolina y gastos?"] : ["¿Cuál fue mi gasto más grande este período?"];
+    if (conductor() && documentosPorVencer().length) lista.push("¿Qué documentos de mi vehículo se me vencen pronto?");
     var hace90 = new Date(Date.now() - 90 * 86400000);
     var top = A.porCategoria(datos.movimientos.filter(function (m) { return new Date(m.fecha) >= hace90; }))[0];
     lista.push(top && top.id != null ? "¿Cuánto he gastado en " + nombreCategoria(top.id) + " los últimos 3 meses?" : "¿En qué gasto más este mes?");
     var b = presupuestoActual(), seguro = b.limite > 0 ? A.seguroParaGastar(b.limite, b.gastado, b.rango) : null;
     lista.push(seguro && seguro.porDia >= 1000 ? "¿Puedo gastar " + pesos.format(Math.round(seguro.porDia / 1000) * 1000) + " hoy sin afectar mi presupuesto?" : "¿Cuánto me queda del presupuesto?");
-    lista.push("¿Qué puedo hacer para ahorrar más?");
+    if (!conductor()) lista.push("¿Qué puedo hacer para ahorrar más?");
     if (datos.metas.length) lista.push("¿Cómo voy con mis metas?");
     if (datos.programados.some(function (x) { return x.activo; })) lista.push("¿Qué pagos tengo programados?");
     return lista;
@@ -2380,6 +2635,7 @@
       datos = Object.assign(datosVacios(), d);
       ordenarMovimientos();
       mostrar("app"); ir("inicio"); pintar();
+      programarAvisos();
       return procesarProgramados();
     }).catch(function (e) {
       mostrar("auth");
