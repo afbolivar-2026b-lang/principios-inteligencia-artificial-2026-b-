@@ -238,7 +238,7 @@
       titulo("Ficha del cliente", 60);
       var ficha = [["Nombre", inf.persona.nombre], ["Correo", inf.persona.email]];
       if (P.clienteDesde) ficha.push(["Usa NOVA desde", fechaTxt(P.clienteDesde)]);
-      ficha.push(["Periodo analizado", inf.periodoNombre + " (del " + fechaCortaTxt(inf.desde) + " al " + fechaCortaTxt(inf.hasta) + ")"], ["Ciclo de presupuesto", inf.cicloNombre + (P.presupuesto ? ", con un presupuesto de " + cop(P.presupuesto) : "")],
+      ficha.push(["Periodo analizado", inf.periodoNombre + " (del " + fechaCortaTxt(inf.desde) + " al " + fechaCortaTxt(inf.hasta) + ")"], ["Ciclo de presupuesto", inf.cicloPresupuesto + (P.presupuesto ? ", con un presupuesto de " + cop(P.presupuesto) : "")],
         ["Cuentas registradas", String(P.cuentas)], ["Movimientos guardados", P.movimientosTotal + (P.primerRegistro ? " (desde el " + fechaCortaTxt(P.primerRegistro) + ")" : "")]);
       if (P.modoConductor) ficha.push(["Modo conductor", "Activo" + (P.vehiculo ? " · " + P.vehiculo : "") + (P.metaDiaria ? ", meta diaria " + cop(P.metaDiaria) : "")]);
       y = tabla({ startY: y, body: ficha, theme: "grid", columnStyles: { 0: { fontStyle: "bold", fillColor: [236, 243, 239], textColor: [60, 80, 68], cellWidth: 46 } }, styles: { fontSize: 9.5, cellPadding: 2.6, lineColor: [220, 228, 223], lineWidth: 0.1, font: "helvetica" } }) + 9;
@@ -298,7 +298,7 @@
       // Gráficos
       titulo("A dónde se fue tu dinero", ANCHO * 380 / 900);
       doc.addImage(G.dona, "PNG", M, y, ANCHO, ANCHO * 380 / 900); y += ANCHO * 380 / 900 + 6;
-      titulo("Ingresos y gastos, últimos " + inf.serie.length + " periodos", ANCHO * 340 / 900);
+      titulo("Ingresos y gastos, " + inf.serieTitulo, ANCHO * 340 / 900);
       doc.addImage(G.serie, "PNG", M, y, ANCHO, ANCHO * 340 / 900); y += ANCHO * 340 / 900 + 6;
       titulo("En qué día de la semana gastas más", ANCHO * 260 / 900);
       doc.addImage(G.semana, "PNG", M, y, ANCHO, ANCHO * 260 / 900); y += ANCHO * 260 / 900 + 6;
@@ -450,7 +450,7 @@
       var Pf = inf.perfil, fila = 14; secPortada(fila++, "Ficha del cliente");
       var ficha = [["Nombre", inf.persona.nombre], ["Correo", inf.persona.email]];
       if (Pf.clienteDesde) ficha.push(["Usa NOVA desde", fechaTxt(Pf.clienteDesde)]);
-      ficha.push(["Periodo analizado", inf.periodoNombre], ["Ciclo de presupuesto", inf.cicloNombre + (Pf.presupuesto ? "  ·  presupuesto de " + cop(Pf.presupuesto) : "")], ["Cuentas registradas", String(Pf.cuentas)],
+      ficha.push(["Periodo analizado", inf.periodoNombre], ["Ciclo de presupuesto", inf.cicloPresupuesto + (Pf.presupuesto ? "  ·  presupuesto de " + cop(Pf.presupuesto) : "")], ["Cuentas registradas", String(Pf.cuentas)],
         ["Movimientos guardados", Pf.movimientosTotal + (Pf.primerRegistro ? " (desde el " + fechaCortaTxt(Pf.primerRegistro) + ")" : "")], ["Informe generado", fechaTxt(inf.generado) + ", " + horaTxt(inf.generado)]);
       if (Pf.modoConductor) ficha.push(["Modo conductor", "Activo" + (Pf.vehiculo ? "  ·  " + Pf.vehiculo : "") + (Pf.metaDiaria ? "  ·  meta diaria " + cop(Pf.metaDiaria) : "")]);
       ficha.forEach(function (f) {
@@ -518,7 +518,7 @@
       function imagen(url, fila, col, ancho, alto) { var id = wb.addImage({ base64: url, extension: "png" }); d.addImage(id, { tl: { col: col, row: fila - 1 }, ext: { width: ancho, height: alto } }); }
       seccion(17, "A dónde se fue tu dinero");
       imagen(G.dona, 18, 1.05, 760, 321);          // ~16 filas
-      seccion(35, "Ingresos y gastos, últimos " + inf.serie.length + " periodos");
+      seccion(35, "Ingresos y gastos, " + inf.serieTitulo);
       imagen(G.serie, 36, 1.05, 760, 287);
       seccion(51, "En qué día de la semana gastas más");
       imagen(G.semana, 52, 1.05, 760, 220);

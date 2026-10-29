@@ -140,6 +140,7 @@
         <strong id="inicio-periodo"></strong>
         <button type="button" class="icono-btn" data-periodo-inicio="1" aria-label="Periodo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
       </div>
+      <div class="inf-barra"><span>Descargar informe</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="inicio" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="inicio" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
 
       <article class="tarjeta saldo">
         <span class="etiqueta">Balance disponible</span>
@@ -264,6 +265,7 @@
     <!-- PLANES -->
     <section class="vista" data-vista="planes" hidden>
       <h1 class="titulo-vista">Planes</h1>
+      <div class="inf-barra"><span>Informe con tus límites y metas</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="planes" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="planes" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
       <div id="planes-vacio" class="tarjeta vacio-grande" hidden>
         <span class="vacio-icono">+</span>
         <strong>No tienes ningún plan</strong>
@@ -295,6 +297,7 @@
         <button type="button" id="btn-personalizar" class="enlace">⚙ Personalizar</button>
       </div>
       <div id="analisis-ciclos" class="pestanas" role="group" aria-label="Ciclo"></div>
+      <div class="inf-barra"><span>Descargar informe</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="analisis" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="analisis" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
       <div class="periodo-nav">
         <button type="button" class="icono-btn" data-periodo-analisis="-1" aria-label="Periodo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
         <strong id="analisis-periodo"></strong>
@@ -323,6 +326,7 @@
     <!-- MI TRABAJO (modo conductor) -->
     <section class="vista" data-vista="trabajo" hidden>
       <div class="sub-cabecera"><button type="button" class="icono-btn" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Mi trabajo</h1></div>
+      <div class="inf-barra"><span>Informe de mi trabajo</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="trabajo" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="trabajo" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
       <div id="trabajo-periodos" class="pestanas" role="group" aria-label="Periodo">
         <button type="button" data-cual="hoy">Hoy</button>
         <button type="button" data-cual="semana">Esta semana</button>
@@ -377,6 +381,7 @@
     <!-- BUSCAR -->
     <section class="vista" data-vista="buscar" hidden>
       <h1 class="titulo-vista">Buscar</h1>
+      <div class="inf-barra"><span>Descargar informe</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="buscar" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="buscar" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
       <input id="buscar-texto" type="search" placeholder="Buscar por nombre, categoría, nota o etiqueta" autocomplete="off">
       <div class="fila-filtros">
         <div class="segmentado" role="radiogroup" aria-label="Tipo" id="buscar-tipo">
@@ -579,6 +584,7 @@
     <section class="vista" data-vista="ajustes-exportar" hidden>
       <div class="sub-cabecera"><button type="button" class="icono-btn" data-ir="ajustes" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Exportar datos</h1></div>
       <article class="tarjeta"><strong>Informes completos</strong><p class="nota">Con tu nombre, cifras, gráficos y todos tus movimientos, listos para guardar, imprimir o enviar. Salen del periodo que ves en Inicio.</p></article>
+      <div class="inf-barra"><span>Elige el periodo y descarga</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="exportar" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="exportar" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
       <div class="menu">
         <button type="button" data-exportar="excel"><span class="menu-icono">📗</span><span><strong>Excel con dashboard</strong><small>Hoja de resumen con gráficos, transacciones, categorías, cuentas y límites</small></span></button>
         <button type="button" data-exportar="pdf"><span class="menu-icono">📕</span><span><strong>Informe PDF</strong><small>Documento con tus cifras, gráficos y movimientos</small></span></button>
@@ -812,6 +818,27 @@
 </section>
 
 <!-- Elegir moneda -->
+<div id="hoja-informe" class="hoja-fondo" hidden>
+  <div class="hoja" role="dialog" aria-labelledby="hoja-informe-titulo">
+    <h2 id="hoja-informe-titulo" class="centro">Descargar informe</h2>
+    <div class="segmentado dos" id="informe-formato" role="radiogroup" aria-label="Formato">
+      <button type="button" role="radio" data-f="pdf">PDF</button>
+      <button type="button" role="radio" data-f="excel">Excel</button>
+    </div>
+    <p class="nota">¿De qué periodo?</p>
+    <div id="informe-ciclos" class="pestanas" role="group" aria-label="Periodo">
+      <button type="button" data-c="diario">Diario</button><button type="button" data-c="semanal">Semanal</button><button type="button" data-c="quincenal">Quincenal</button>
+      <button type="button" data-c="mensual">Mensual</button><button type="button" data-c="trimestral">Trimestral</button><button type="button" data-c="semestral">Semestral</button><button type="button" data-c="anual">Anual</button>
+    </div>
+    <div id="informe-cual" class="pestanas" role="group" aria-label="Cuál">
+      <button type="button" data-d="0">Actual</button><button type="button" data-d="-1">Anterior</button><button type="button" data-d="-2">Hace 2</button><button type="button" data-d="-3">Hace 3</button>
+    </div>
+    <p id="informe-nombre" class="informe-nombre"></p>
+    <button type="button" id="informe-descargar" class="primario">Descargar</button>
+    <button type="button" class="enlace" data-cerrar>Cancelar</button>
+  </div>
+</div>
+
 <div id="hoja-moneda" class="hoja-fondo" hidden>
   <div class="hoja alta" role="dialog" aria-labelledby="hoja-moneda-titulo">
     <h2 id="hoja-moneda-titulo" class="centro">¿En qué moneda fue?</h2>

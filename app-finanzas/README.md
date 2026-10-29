@@ -213,3 +213,7 @@ En Ajustes → Exportar datos hay dos informes completos del periodo que se ve e
 
 Se arman en el celular con jsPDF y ExcelJS (`vendor/informes/`, se cargan solo al exportar) y `informes.js`.
 En la app de Android el archivo se guarda en la caché y se abre el menú de compartir.
+
+Los iconos **PDF** y **XLS** aparecen en Inicio, Planes (límites y metas), Análisis, Mi trabajo, Buscar y Exportar datos.
+Al tocarlos se abre una hoja para elegir el formato y el periodo: diario, semanal, quincenal, mensual, trimestral,
+semestral o anual, y cuál (actual, anterior, hace 2 o hace 3). Cada icono propone el periodo de la pantalla donde está.

@@ -528,3 +528,15 @@ body.con-capa { overflow: hidden; }
 .boton-google:disabled { opacity: .6; }
 .en-codigo .boton-apk, .en-codigo .respaldo, .en-codigo .ayuda-instalar { display: none !important; }
 .creditos { opacity: .75; font-size: 12px; }
+
+/* Informes: iconos PDF y Excel en cada pantalla */
+.inf-barra { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0 12px; padding: 6px 8px 6px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); font-size: .85rem; color: var(--muted); }
+.inf-iconos { display: flex; gap: 6px; }
+button.inf-ico { width: 44px; height: 44px; padding: 6px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; }
+.inf-ico svg { width: 30px; height: 30px; fill: none; stroke: none; }
+.inf-ico svg text { stroke: none; }
+.segmentado.dos { grid-template-columns: repeat(2, 1fr); }
+.informe-nombre { text-align: center; font-weight: 700; text-transform: capitalize; margin: 6px 0; }
+#hoja-informe .hoja { display: flex; flex-direction: column; gap: 12px; }
+#hoja-informe .pestanas { flex-wrap: wrap; overflow: visible; }
+#hoja-informe .pestanas button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }

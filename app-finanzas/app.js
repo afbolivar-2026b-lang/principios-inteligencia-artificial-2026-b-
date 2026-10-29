@@ -1547,6 +1547,8 @@
   }
 
   // ---------- Exportar ----------
+  // El aviso sale en la pantalla de exportar y también como mensaje flotante (los iconos PDF y Excel están en todas las pantallas).
+  function avisoExp(texto, error) { mensaje("exportar-mensaje", texto, error); if (texto) toast(texto); }
   function aBase64(bytes) {
     var s = "";
     for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
@@ -1560,18 +1562,18 @@
       // (Guardar en Drive, WhatsApp, correo, Archivos...).
       var P = window.Capacitor.Plugins || {};
       if (!P.Filesystem || !P.Share) {
-        mensaje("exportar-mensaje", "Actualiza NOVA a la última versión para poder descargar desde la app.", true);
+        avisoExp("Actualiza NOVA a la última versión para poder descargar desde la app.", true);
         return;
       }
-      mensaje("exportar-mensaje", "Preparando " + nombre + "…");
+      avisoExp("Preparando " + nombre + "…");
       var archivo = { path: nombre, data: binario ? aBase64(contenido) : contenido, directory: "CACHE" };
       if (!binario) archivo.encoding = "utf8";
       P.Filesystem.writeFile(archivo)
         .then(function (r) { return P.Share.share({ title: nombre, text: "Informe de NOVA · OPITA-DIGITAL", url: r.uri, dialogTitle: "Guardar o enviar " + nombre }); })
-        .then(function () { mensaje("exportar-mensaje", "Listo: elige dónde guardar " + nombre + "."); })
+        .then(function () { avisoExp("Listo: elige dónde guardar " + nombre + "."); })
         .catch(function (e) {
-          if (e && /cancel/i.test(String(e.message || e))) return mensaje("exportar-mensaje", "");
-          mensaje("exportar-mensaje", "No se pudo exportar: " + (e && e.message ? e.message : e), true);
+          if (e && /cancel/i.test(String(e.message || e))) return avisoExp("");
+          avisoExp("No se pudo exportar: " + (e && e.message ? e.message : e), true);
         });
       return;
     }
@@ -1579,7 +1581,7 @@
     var a = el("a"); a.href = url; a.download = nombre;
     document.body.append(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-    mensaje("exportar-mensaje", "Se descargó " + nombre + ".");
+    avisoExp("Se descargó " + nombre + ".");
   }
   function hoyArchivo() { return A.claveDia(new Date()); }
   function exportarMovimientos(movs, nombre) {
@@ -1623,7 +1625,7 @@
         TABLAS.forEach(function (t) { copia[t] = datos[t]; });
         return descargar("nova-respaldo-" + hoyArchivo() + ".json", JSON.stringify(copia, null, 2), "application/json");
       }
-      if (que === "pdf" || que === "excel") return exportarInforme(que);
+      if (que === "pdf" || que === "excel") return abrirInforme(que, "exportar");
     });
   });
 
@@ -1634,10 +1636,33 @@
     var local = String(fuente.email || "").split("@")[0].replace(/[._-]+/g, " ").replace(/\d+/g, "").trim();
     return local ? local.replace(/\b\w/g, function (l) { return l.toUpperCase(); }) : "Usuario de NOVA";
   }
-  function construirInforme() {
-    var ciclo = cicloEfectivo(), rango = rangoInicio(), movs = A.enRango(datos.movimientos, rango), t = A.totales(movs);
+  // Periodos de los informes: diario, semanal, quincenal, mensual, trimestral, semestral y anual.
+  // desfase 0 = el actual, -1 = el anterior, etc.
+  function rangoDeInforme(ciclo, desfase) {
+    if (ciclo === "diario") {
+      var d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + desfase);
+      var h = new Date(d); h.setDate(h.getDate() + 1);
+      return { desde: d, hasta: h };
+    }
+    return A.desplazar(ciclo, new Date(), desfase);
+  }
+  function nombreDeInforme(ciclo, rango) { return ciclo === "diario" ? fechaLarga.format(rango.desde) : A.nombrePeriodo(ciclo, rango); }
+  function serieDiaria(rango) {
+    var out = [];
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(rango.desde); d.setDate(d.getDate() - i);
+      var h = new Date(d); h.setDate(h.getDate() + 1);
+      var t = A.totales(A.enRango(datos.movimientos, { desde: d, hasta: h }));
+      out.push({ etiqueta: fechaCorta.format(d), ingresos: t.ingresos, gastos: t.gastos });
+    }
+    return out;
+  }
+  function construirInforme(ciclo, desfase) {
+    ciclo = ciclo || cicloEfectivo(); desfase = Math.min(0, desfase || 0);
+    var cicloP = cicloEfectivo(), rango = rangoDeInforme(ciclo, desfase), movs = A.enRango(datos.movimientos, rango), t = A.totales(movs);
     var cuentaNombre = function (id) { var c = datos.cuentas.find(function (x) { return x.id === id; }); return c ? c.nombre : ""; };
-    var rapida = A.vistaRapida(datos.movimientos, ciclo, rango.desde);
+    var finEfectivo = Math.min(rango.hasta.getTime(), new Date().setHours(24, 0, 0, 0));
+    var dias = Math.max(1, Math.round((finEfectivo - rango.desde.getTime()) / 86400000));
     var gastos = movs.filter(function (m) { return m.tipo === "gasto"; });
     var mayor = gastos.reduce(function (mx, m) { return !mx || num(m.monto) > num(mx.monto) ? m : mx; }, null);
     var semana = DIAS_CORTOS.map(function (d) { return { dia: d, total: 0 }; });
@@ -1651,26 +1676,27 @@
       return { nombre: l.categoria_id != null ? nombreCategoria(l.categoria_id) : "Todas las categorías", ciclo: Periodos.CICLOS[l.ciclo] || l.ciclo, limite: num(l.monto), gastado: e.gastado };
     });
     if (datos.perfil.presupuesto_monto) {
-      presupuestos.unshift({ nombre: "Presupuesto general", ciclo: Periodos.CICLOS[ciclo], limite: num(datos.perfil.presupuesto_monto), gastado: gastadoEn(Periodos.periodo(ciclo)) });
+      presupuestos.unshift({ nombre: "Presupuesto general", ciclo: Periodos.CICLOS[cicloP], limite: num(datos.perfil.presupuesto_monto), gastado: gastadoEn(Periodos.periodo(cicloP)) });
     }
     var inf = {
-      persona: { nombre: nombreDePersona(), email: fuente.email }, generado: new Date(), periodoNombre: A.nombrePeriodo(ciclo, rango),
-      ciclo: ciclo, cicloNombre: Periodos.CICLOS[ciclo], desde: rango.desde, hasta: new Date(rango.hasta.getTime() - 1),
+      persona: { nombre: nombreDePersona(), email: fuente.email }, generado: new Date(), periodoNombre: nombreDeInforme(ciclo, rango),
+      ciclo: ciclo, cicloNombre: ciclo === "diario" ? "Diario" : Periodos.CICLOS[ciclo], cicloPresupuesto: Periodos.CICLOS[cicloP], desde: rango.desde, hasta: new Date(rango.hasta.getTime() - 1),
+      serieTitulo: ciclo === "diario" ? "últimos 7 días" : "últimos 6 periodos",
       kpis: {
-        ingresos: t.ingresos, gastos: t.gastos, balance: t.neto, saldoTotal: saldoTotal(), promedioDiario: rapida.promedioDiario, movimientos: movs.length,
+        ingresos: t.ingresos, gastos: t.gastos, balance: t.neto, saldoTotal: saldoTotal(), promedioDiario: t.gastos / dias, movimientos: movs.length,
         ahorroPct: t.ingresos > 0 ? (t.neto / t.ingresos) * 100 : null, mayorGasto: mayor ? { descripcion: mayor.descripcion || nombreCategoria(mayor.categoria_id), monto: num(mayor.monto) } : null
       },
       categorias: A.porCategoria(movs).map(function (f) {
         return { nombre: nombreCategoria(f.id), total: f.total, pct: t.gastos > 0 ? (f.total / t.gastos) * 100 : 0,
           cantidad: gastos.filter(function (m) { return (m.categoria_id == null ? null : m.categoria_id) === f.id; }).length };
       }),
-      serie: A.serie(datos.movimientos, ciclo, rango.desde, 6), semana: semana,
+      serie: ciclo === "diario" ? serieDiaria(rango) : A.serie(datos.movimientos, ciclo, rango.desde, 6), semana: semana,
       cuentas: datos.cuentas.map(function (c) { return { nombre: c.nombre, tipo: c.tipo ? String(c.tipo).charAt(0).toUpperCase() + String(c.tipo).slice(1) : "Cuenta", saldo: saldoCuenta(c) }; }),
       presupuestos: presupuestos, movimientos: movs.map(forma), todos: datos.movimientos.map(forma), conductor: null
     };
-    var ant = A.desplazar(ciclo, rango.desde, -1), tAnt = A.totales(A.enRango(datos.movimientos, ant));
+    var antR = ciclo === "diario" ? rangoDeInforme("diario", desfase - 1) : A.desplazar(ciclo, rango.desde, -1), tAnt = A.totales(A.enRango(datos.movimientos, antR));
     var cambio = function (a, b) { return b > 0 ? ((a - b) / b) * 100 : null; };
-    inf.anterior = { nombre: A.nombrePeriodo(ciclo, ant), ingresos: tAnt.ingresos, gastos: tAnt.gastos, balance: tAnt.neto, cambioIngresos: cambio(t.ingresos, tAnt.ingresos), cambioGastos: cambio(t.gastos, tAnt.gastos) };
+    inf.anterior = { nombre: nombreDeInforme(ciclo, antR), ingresos: tAnt.ingresos, gastos: tAnt.gastos, balance: tAnt.neto, cambioIngresos: cambio(t.ingresos, tAnt.ingresos), cambioGastos: cambio(t.gastos, tAnt.gastos) };
     inf.ingresosCat = A.porCategoria(movs, "ingreso").map(function (f) { return { nombre: nombreCategoria(f.id), total: f.total, pct: t.ingresos > 0 ? (f.total / t.ingresos) * 100 : 0 }; });
     inf.topGastos = gastos.slice().sort(function (a, b) { return num(b.monto) - num(a.monto); }).slice(0, 5).map(forma);
     inf.metas = datos.metas.map(function (m) { return { nombre: m.nombre, objetivo: num(m.objetivo), ahorrado: num(m.ahorrado) }; });
@@ -1687,19 +1713,52 @@
     return inf;
   }
   var generandoInforme = false;
-  function exportarInforme(tipo) {
+  function exportarInforme(tipo, ciclo, desfase) {
     if (generandoInforme) return;
-    if (!window.NovaInformes) return mensaje("exportar-mensaje", "No se pudo preparar el informe. Actualiza NOVA.", true);
+    if (!window.NovaInformes) return avisoExp("No se pudo preparar el informe. Actualiza NOVA.", true);
     generandoInforme = true;
-    mensaje("exportar-mensaje", "Preparando tu informe " + (tipo === "pdf" ? "en PDF" : "en Excel") + "… puede tardar unos segundos.");
+    avisoExp("Preparando tu informe " + (tipo === "pdf" ? "en PDF" : "en Excel") + "… puede tardar unos segundos.");
     setTimeout(function () {
       var listo;
-      try { listo = window.NovaInformes[tipo](construirInforme()); } catch (e) { listo = Promise.reject(e); }
+      try { listo = window.NovaInformes[tipo](construirInforme(ciclo, desfase)); } catch (e) { listo = Promise.reject(e); }
       listo.then(function (r) { descargar(r.nombre, r.bytes, r.tipo); })
-        .catch(function (e) { mensaje("exportar-mensaje", "No se pudo crear el informe: " + (e && e.message ? e.message : e), true); })
+        .catch(function (e) { avisoExp("No se pudo crear el informe: " + (e && e.message ? e.message : e), true); })
         .then(function () { generandoInforme = false; });
     }, 30);
   }
+
+  // Hoja para elegir formato y periodo; los iconos PDF y Excel de cada pantalla la abren con su periodo.
+  var informeSel = { tipo: "pdf", ciclo: "mensual", desfase: 0 };
+  function contextoInforme(ctx) {
+    switch (ctx) {
+      case "inicio": return { ciclo: cicloEfectivo(), desfase: desfaseInicio };
+      case "analisis": return { ciclo: cicloDeAnalisis(), desfase: desfaseAnalisis };
+      case "trabajo": return { ciclo: cualTrabajo === "hoy" ? "diario" : cualTrabajo === "semana" ? "semanal" : "mensual", desfase: 0 };
+      case "buscar": return { ciclo: "mensual", desfase: 0 };
+      default: return { ciclo: cicloEfectivo(), desfase: 0 };
+    }
+  }
+  function pintarHojaInforme() {
+    document.querySelectorAll("#informe-formato button").forEach(function (b) { b.setAttribute("aria-checked", String(b.dataset.f === informeSel.tipo)); });
+    document.querySelectorAll("#informe-ciclos button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.c === informeSel.ciclo)); });
+    document.querySelectorAll("#informe-cual button").forEach(function (b) { b.setAttribute("aria-pressed", String(Number(b.dataset.d) === informeSel.desfase)); });
+    $("informe-nombre").textContent = nombreDeInforme(informeSel.ciclo, rangoDeInforme(informeSel.ciclo, informeSel.desfase));
+    $("informe-descargar").textContent = "Descargar " + (informeSel.tipo === "pdf" ? "PDF" : "Excel");
+  }
+  function abrirInforme(tipo, ctx) {
+    var c = contextoInforme(ctx);
+    informeSel = { tipo: tipo, ciclo: c.ciclo, desfase: Math.max(-3, Math.min(0, c.desfase)) };
+    pintarHojaInforme();
+    abrirCapa("hoja-informe");
+  }
+  document.querySelectorAll("[data-informe]").forEach(function (b) { b.addEventListener("click", function () { abrirInforme(b.dataset.informe, b.dataset.ctx); }); });
+  document.querySelectorAll("#informe-formato button").forEach(function (b) { b.addEventListener("click", function () { informeSel.tipo = b.dataset.f; pintarHojaInforme(); }); });
+  document.querySelectorAll("#informe-ciclos button").forEach(function (b) { b.addEventListener("click", function () { informeSel.ciclo = b.dataset.c; pintarHojaInforme(); }); });
+  document.querySelectorAll("#informe-cual button").forEach(function (b) { b.addEventListener("click", function () { informeSel.desfase = Number(b.dataset.d); pintarHojaInforme(); }); });
+  $("informe-descargar").addEventListener("click", function () {
+    var sel = informeSel;
+    cerrarYLuego(function () { exportarInforme(sel.tipo, sel.ciclo, sel.desfase); });
+  });
 
   // ---------- Pintar todo ----------
   function pintar() {
