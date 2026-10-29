@@ -70,8 +70,16 @@
   }
 
   function interpretar(texto, ahora) {
-    var original = String(texto || "").trim();
-    if (!original) return { ok: false, error: "Escribe qué gastaste o recibiste." };
+    var completo = String(texto || "").trim();
+    if (!completo) return { ok: false, error: "Escribe qué gastaste o recibiste." };
+    // Etiquetas: "#trabajo #viaje" se guardan aparte y no cuentan para el resto.
+    var etiquetas = [];
+    var original = completo.replace(/#([\p{L}\d_-]{1,30})/gu, function (_, e) {
+      e = e.toLowerCase();
+      if (etiquetas.indexOf(e) < 0) etiquetas.push(e);
+      return " ";
+    }).replace(/\s+/g, " ").trim();
+    if (!original) return { ok: false, error: "No encontré el valor. Prueba con \"gasté 20 mil en almuerzo\"." };
     ahora = ahora ? new Date(ahora) : new Date();
 
     var monto = buscarMonto(original);
@@ -97,7 +105,7 @@
     desc = desc.charAt(0).toUpperCase() + desc.slice(1);
 
     return { ok: true, tipo: tipo, monto: monto.valor, categoria: categoria.nombre, icono: categoria.icono,
-             descripcion: desc, fecha: fecha.toISOString() };
+             descripcion: desc, fecha: fecha.toISOString(), etiquetas: etiquetas };
   }
 
   var api = { interpretar: interpretar, CATEGORIAS: CATEGORIAS };

@@ -155,4 +155,53 @@ main .vista { display: flex; flex-direction: column; gap: 14px; }
 .nav-inferior button.activo { color: var(--accent); }
 .nav-inferior button.activo svg { filter: drop-shadow(0 0 6px var(--glow)); }
 
+/* Etiquetas, frecuentes y presupuesto */
+.casilla { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 600; font-size: .9rem; cursor: pointer; }
+.casilla input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+.etiquetas { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.etiqueta-chip { font-size: .75rem; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 1px 8px; }
+.frecuentes { display: flex; flex-wrap: wrap; gap: 8px; }
+.frecuentes:empty { display: none; }
+.frecuente { display: inline-flex; align-items: center; border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; max-width: 100%; }
+.frecuente button { border: 0; background: none; border-radius: 999px; padding: 6px 4px 6px 12px; font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.frecuente button.quitar { padding: 6px 10px 6px 4px; color: var(--muted); }
+.presupuesto { display: flex; flex-direction: column; gap: 4px; }
+.presupuesto-cabeza { display: flex; justify-content: space-between; align-items: center; }
+.presupuesto strong { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+.barra span.excedido { background: var(--danger); box-shadow: none; }
+.filtro-etiquetas { display: flex; flex-wrap: wrap; gap: 6px; }
+.filtro-etiquetas:empty { display: none; }
+.filtro-etiquetas button { padding: 4px 12px; border-radius: 999px; font-size: .85rem; }
+.filtro-etiquetas button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.mov-extra { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 2px; }
+.mov-extra a { color: var(--accent); font-size: .78rem; font-weight: 700; text-decoration: none; }
+.mov-extra a:hover { text-decoration: underline; }
+.mov-extra small { font-size: .78rem; }
+.bloqueado { font-size: .75rem; font-weight: 700; color: var(--accent); }
+
+/* NOVA Pro */
+.pro-acceso { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; color: var(--ink); }
+.pro-acceso-texto { flex: 1; display: flex; flex-direction: column; }
+.pro-acceso-texto small { color: var(--muted); font-weight: 600; }
+.pro-logo { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: none; color: #fff;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 85%, #0b5), color-mix(in srgb, var(--accent) 45%, #022)); box-shadow: 0 0 16px var(--glow); }
+.pro-logo svg { stroke-width: 2.4; }
+.pro-logo.grande { width: 84px; height: 84px; border-radius: 22px; align-self: center; margin-top: 8px; }
+.pro-logo.grande svg { width: 46px; height: 46px; }
+.vista.pro { position: relative; gap: 16px; padding-bottom: 12px; }
+.vista.pro .cerrar { position: absolute; right: 0; top: 0; }
+.pro-titulo { font-size: 2rem; text-align: center; }
+.pro-lema { text-align: center; color: var(--muted); margin: 0; }
+.pro-activo { text-align: center; margin: 0; padding: 10px; border-radius: 12px; background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+.pro-beneficios { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.pro-beneficios li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: center; }
+.pro-beneficios li::before { content: ""; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft) center / 16px no-repeat
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232ee06f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E"); }
+.pro-beneficios small { color: var(--muted); }
+.pro-compra { display: flex; flex-direction: column; gap: 10px; }
+.segmentado.dos { grid-template-columns: 1fr 1fr; max-width: 320px; width: 100%; align-self: center; }
+.centrada { text-align: center; }
+.codigo { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.ancho { width: 100%; padding: 16px; border-radius: 999px; font-size: 1.05rem; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

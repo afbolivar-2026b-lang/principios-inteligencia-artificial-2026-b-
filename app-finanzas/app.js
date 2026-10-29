@@ -69,11 +69,16 @@
           q(cliente.from("fin_cuentas").select("*").order("id")),
           q(cliente.from("fin_categorias").select("*").order("nombre")),
           q(cliente.from("fin_movimientos").select("*").order("fecha", { ascending: false }).limit(2000)),
-          q(cliente.from("fin_metas").select("*").order("id"))
+          q(cliente.from("fin_metas").select("*").order("id")),
+          q(cliente.from("fin_perfiles").select("*").maybeSingle()),
+          q(cliente.from("fin_frecuentes").select("*").order("id"))
         ]).then(function (r) {
-          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3] };
-          // Primera vez: crear la cuenta principal y las categorías por defecto.
+          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5] };
+          // Primera vez: crear el perfil, la cuenta principal y las categorías por defecto.
           var pendientes = [];
+          if (!datos.perfil) {
+            pendientes.push(q(cliente.from("fin_perfiles").insert({ presupuesto_ciclo: "mensual" }).select().single()).then(function (p) { datos.perfil = p; }));
+          }
           if (!datos.cuentas.length) {
             pendientes.push(q(cliente.from("fin_cuentas").insert({ nombre: "Principal", tipo: "debito" }).select()).then(function (c) { datos.cuentas = c; }));
           }
@@ -91,6 +96,10 @@
       crearMeta: function (m) { return q(cliente.from("fin_metas").insert(m).select().single()); },
       actualizarMeta: function (id, cambios) { return q(cliente.from("fin_metas").update(cambios).eq("id", id).select().single()); },
       borrarMeta: function (id) { return q(cliente.from("fin_metas").delete().eq("id", id)); },
+      guardarPerfil: function (cambios) { return q(cliente.from("fin_perfiles").update(cambios).eq("user_id", usuario.id).select().single()); },
+      canjear: function (codigo) { return q(cliente.rpc("canjear_codigo", { p_codigo: codigo })); },
+      crearFrecuente: function (texto) { return q(cliente.from("fin_frecuentes").insert({ texto: texto }).select().single()); },
+      borrarFrecuente: function (id) { return q(cliente.from("fin_frecuentes").delete().eq("id", id)); },
       salir: function () { return cliente.auth.signOut(); }
     };
   }
@@ -105,24 +114,29 @@
     }
     var categorias = Parser.CATEGORIAS.map(function (c, i) { return { id: i + 1, nombre: c.nombre, tipo: c.tipo, icono: c.icono }; });
     function cat(n) { return categorias.find(function (c) { return c.nombre === n; }).id; }
+    // Coordenadas de ejemplo en Neiva para mostrar el mapa.
+    var CAFE = [2.9273, -75.2819], U = [2.9349, -75.2808];
     var datos = {
       cuentas: [{ id: 1, nombre: "Nequi", tipo: "debito", saldo_inicial: 1850000 }],
       categorias: categorias,
       metas: [{ id: 1, nombre: "Audífonos nuevos", objetivo: 2000000, ahorrado: 1200000 }],
+      perfil: { es_pro: false, presupuesto_monto: 1500000, presupuesto_ciclo: "mensual", guardar_ubicacion: false },
+      frecuentes: [{ id: 1, texto: "tinto 3 mil" }, { id: 2, texto: "almuerzo 20 mil #trabajo" }],
       movimientos: [
-        [0, 10, 42, "gasto", "Café y pandebono", 8500, "Comida"],
-        [1, 18, 30, "gasto", "Netflix", 26900, "Suscripciones"],
-        [1, 13, 5, "gasto", "Almuerzo", 22000, "Comida"],
-        [2, 8, 10, "gasto", "Uber a la universidad", 14500, "Transporte"],
-        [3, 20, 0, "gasto", "Cine con amigos", 36000, "Entretenimiento"],
-        [4, 9, 0, "ingreso", "Pago de quincena", 2400000, "Salario"],
-        [5, 12, 30, "gasto", "Mercado", 145000, "Comida"],
-        [8, 19, 0, "gasto", "Domicilio", 38000, "Comida"],
-        [9, 7, 45, "gasto", "Gasolina", 60000, "Transporte"],
-        [11, 15, 0, "gasto", "Droguería", 27000, "Salud"],
-        [12, 11, 0, "gasto", "Arriendo", 850000, "Hogar"]
+        [0, 10, 42, "gasto", "Café y pandebono", 8500, "Comida", [], CAFE],
+        [1, 18, 30, "gasto", "Netflix", 26900, "Suscripciones", [], null],
+        [1, 13, 5, "gasto", "Almuerzo", 22000, "Comida", ["trabajo"], CAFE],
+        [2, 8, 10, "gasto", "Uber a la universidad", 14500, "Transporte", ["universidad"], U],
+        [3, 20, 0, "gasto", "Cine con amigos", 36000, "Entretenimiento", ["amigos"], null],
+        [4, 9, 0, "ingreso", "Pago de quincena", 2400000, "Salario", ["trabajo"], null],
+        [5, 12, 30, "gasto", "Mercado", 145000, "Comida", [], null],
+        [8, 19, 0, "gasto", "Domicilio", 38000, "Comida", [], null],
+        [9, 7, 45, "gasto", "Gasolina", 60000, "Transporte", [], null],
+        [11, 15, 0, "gasto", "Droguería", 27000, "Salud", [], null],
+        [12, 11, 0, "gasto", "Arriendo", 850000, "Hogar", [], null]
       ].map(function (m, i) {
-        return { id: i + 1, cuenta_id: 1, fecha: hace(m[0], m[1], m[2]), tipo: m[3], descripcion: m[4], monto: m[5], categoria_id: cat(m[6]) };
+        return { id: i + 1, cuenta_id: 1, fecha: hace(m[0], m[1], m[2]), tipo: m[3], descripcion: m[4], monto: m[5],
+                 categoria_id: cat(m[6]), etiquetas: m[7], lat: m[8] ? m[8][0] : null, lng: m[8] ? m[8][1] : null };
       })
     };
     function copia(o) { return JSON.parse(JSON.stringify(o)); }
@@ -137,16 +151,54 @@
       crearMeta: function (m) { var n = Object.assign({ id: sig++, ahorrado: 0 }, m); datos.metas.push(n); return Promise.resolve(copia(n)); },
       actualizarMeta: function (id, cambios) { var m = datos.metas.find(function (x) { return x.id === id; }); Object.assign(m, cambios); return Promise.resolve(copia(m)); },
       borrarMeta: function (id) { datos.metas = datos.metas.filter(function (m) { return m.id !== id; }); return Promise.resolve(); },
+      guardarPerfil: function (cambios) { Object.assign(datos.perfil, cambios); return Promise.resolve(copia(datos.perfil)); },
+      // En la demostración el código DEMO activa Pro (no se guarda nada).
+      canjear: function (codigo) {
+        var ok = String(codigo).trim().toUpperCase() === "DEMO";
+        if (ok) datos.perfil.es_pro = true;
+        return Promise.resolve(ok);
+      },
+      crearFrecuente: function (texto) { var n = { id: sig++, texto: texto }; datos.frecuentes.push(n); return Promise.resolve(copia(n)); },
+      borrarFrecuente: function (id) { datos.frecuentes = datos.frecuentes.filter(function (f) { return f.id !== id; }); return Promise.resolve(); },
       salir: function () { return Promise.resolve(); }
     };
   }
 
   // ---------- Estado y cálculos ----------
+  function datosVacios() {
+    return { cuentas: [], categorias: [], movimientos: [], metas: [], frecuentes: [],
+             perfil: { es_pro: false, presupuesto_ciclo: "mensual", guardar_ubicacion: false } };
+  }
+  // Lo que se puede usar sin NOVA Pro.
+  var GRATIS = { frecuentes: 3, etiquetas: 3 };
+  var filtroEtiqueta = null;
   var fuente = null;
-  var datos = { cuentas: [], categorias: [], movimientos: [], metas: [] };
+  var datos = datosVacios();
   var pendiente = null;
 
   function categoria(id) { return datos.categorias.find(function (c) { return c.id === id; }); }
+  function esPro() { return !!(datos.perfil && datos.perfil.es_pro); }
+  function etiquetasUsadas() {
+    var todas = [];
+    datos.movimientos.forEach(function (m) { (m.etiquetas || []).forEach(function (e) { if (todas.indexOf(e) < 0) todas.push(e); }); });
+    return todas.sort();
+  }
+  function tieneUbicacion(m) { return m.lat != null && m.lng != null; }
+  // Distancia en metros entre dos pagos (fórmula del haversine).
+  function distancia(a, b) {
+    var R = 6371000, rad = Math.PI / 180;
+    var dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  function pagosCerca(m) {
+    if (!tieneUbicacion(m)) return [];
+    return datos.movimientos.filter(function (o) { return o.id !== m.id && tieneUbicacion(o) && distancia(m, o) <= 150; });
+  }
+  function cicloEfectivo() {
+    var c = datos.perfil.presupuesto_ciclo || "mensual";
+    return esPro() ? c : "mensual";
+  }
   function num(v) { return Number(v) || 0; }
   function inicioSemana(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
   function inicioMes(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
@@ -183,6 +235,20 @@
     var ic = el("span", "mov-icono"); ic.innerHTML = icono(c.icono);
     var txt = el("div", "mov-texto");
     txt.append(el("strong", null, m.descripcion), el("small", null, "• " + c.nombre));
+    var extra = el("div", "mov-extra");
+    (m.etiquetas || []).forEach(function (e) { extra.append(el("span", "etiqueta-chip", "#" + e)); });
+    if (tieneUbicacion(m) && esPro()) {
+      var mapa = el("a", null, "Ver en el mapa");
+      mapa.href = "https://www.openstreetmap.org/?mlat=" + Number(m.lat) + "&mlon=" + Number(m.lng) + "#map=18/" + Number(m.lat) + "/" + Number(m.lng);
+      mapa.target = "_blank"; mapa.rel = "noopener";
+      extra.append(mapa);
+      var cerca = pagosCerca(m);
+      if (cerca.length) {
+        var total = cerca.reduce(function (s, o) { return s + (o.tipo === "gasto" ? num(o.monto) : 0); }, 0);
+        extra.append(el("small", null, cerca.length + (cerca.length === 1 ? " pago más" : " pagos más") + " aquí · " + pesos.format(total)));
+      }
+    }
+    if (extra.childNodes.length) txt.append(extra);
     var f = new Date(m.fecha), hoy = new Date(), ayer = new Date(); ayer.setDate(hoy.getDate() - 1);
     var cuando = f.toDateString() === hoy.toDateString() ? "Hoy" : f.toDateString() === ayer.toDateString() ? "Ayer" : diaMes.format(f);
     var val = el("div", "mov-valor");
@@ -218,6 +284,9 @@
     $("saldo-mes").textContent = pct === null
       ? (r.netoMes >= 0 ? "+" : "−") + pesos.format(Math.abs(r.netoMes)) + " este mes"
       : (pct >= 0 ? "↗ +" : "↘ ") + pct.toFixed(1).replace(".", ",") + "% este mes";
+
+    pintarPresupuesto();
+    pintarFrecuentes();
 
     var meta = datos.metas[0];
     if (meta) {
@@ -260,6 +329,66 @@
     lista($("lista-reciente"), datos.movimientos.slice(0, 5), false, "Aún no hay movimientos. Escribe arriba tu primer gasto.");
   }
 
+  var fechaCorta = new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "short" });
+
+  function pintarPresupuesto() {
+    var p = datos.perfil, ciclo = cicloEfectivo();
+    var nombre = window.NovaPeriodos.CICLOS[ciclo];
+    $("presupuesto-titulo").textContent = "Presupuesto " + nombre.toLowerCase();
+    var barra = $("presupuesto-barra"), nota = $("presupuesto-nota");
+    nota.className = "nota";
+    barra.classList.remove("excedido");
+    if (!p.presupuesto_monto) {
+      $("presupuesto-valor").textContent = "Sin presupuesto";
+      barra.style.width = "0";
+      nota.textContent = "Toca Editar para definir cuánto quieres gastar.";
+      return;
+    }
+    var rango = window.NovaPeriodos.periodo(ciclo);
+    var gastado = datos.movimientos.reduce(function (s, m) {
+      var f = new Date(m.fecha);
+      return m.tipo === "gasto" && f >= rango.desde && f < rango.hasta ? s + num(m.monto) : s;
+    }, 0);
+    var limite = num(p.presupuesto_monto), resto = limite - gastado;
+    var ultimoDia = new Date(rango.hasta.getTime() - 1);
+    $("presupuesto-valor").textContent = pesos.format(gastado) + " de " + pesos.format(limite);
+    barra.style.width = Math.min(100, (gastado / limite) * 100) + "%";
+    if (resto >= 0) {
+      nota.textContent = "Te quedan " + pesos.format(resto) + " hasta el " + fechaCorta.format(ultimoDia);
+      if (resto / limite < 0.15) nota.classList.add("mal");
+    } else {
+      nota.textContent = "Te pasaste por " + pesos.format(-resto) + " en este periodo";
+      nota.classList.add("mal");
+      barra.classList.add("excedido");
+    }
+  }
+
+  function pintarFrecuentes() {
+    var cont = $("frecuentes");
+    cont.replaceChildren();
+    datos.frecuentes.forEach(function (f) {
+      var chip = el("span", "frecuente");
+      var usar = el("button", null, f.texto); usar.type = "button";
+      usar.title = "Guardar ahora: " + f.texto;
+      usar.addEventListener("click", function () {
+        var r = Parser.interpretar(f.texto);
+        if (!r.ok) { mensaje("rapido-mensaje", r.error, true); return; }
+        usar.disabled = true;
+        guardarRegistro(r, r.categoria, false).finally(function () { usar.disabled = false; });
+      });
+      var quitar = el("button", "quitar", "×"); quitar.type = "button";
+      quitar.setAttribute("aria-label", "Quitar " + f.texto + " de frecuentes");
+      quitar.addEventListener("click", function () {
+        quitar.disabled = true;
+        fuente.borrarFrecuente(f.id).then(function () {
+          datos.frecuentes = datos.frecuentes.filter(function (x) { return x.id !== f.id; }); pintar();
+        }).catch(function (e) { quitar.disabled = false; alerta(e); });
+      });
+      chip.append(usar, quitar);
+      cont.append(chip);
+    });
+  }
+
   function pintarAnalisis(r) {
     $("mes-ingresos").textContent = pesos.format(r.ingresosMes);
     $("mes-gastos").textContent = pesos.format(r.gastosMes);
@@ -276,7 +405,53 @@
       li.append(el("span", null, f.c ? f.c.nombre : "Sin categoría"), el("strong", null, pesos.format(f.v)), barra);
       ul.append(li);
     });
-    lista($("lista-todos"), datos.movimientos, true, "Aún no hay movimientos.");
+    // Filtro por etiqueta.
+    var usadas = etiquetasUsadas(), filtros = $("filtro-etiquetas");
+    if (filtroEtiqueta && usadas.indexOf(filtroEtiqueta) < 0) filtroEtiqueta = null;
+    filtros.replaceChildren();
+    if (usadas.length) {
+      [null].concat(usadas).forEach(function (e) {
+        var b = el("button", null, e ? "#" + e : "Todos"); b.type = "button";
+        b.setAttribute("aria-pressed", String(filtroEtiqueta === e));
+        b.addEventListener("click", function () { filtroEtiqueta = e; pintar(); });
+        filtros.append(b);
+      });
+    }
+    var movs = filtroEtiqueta
+      ? datos.movimientos.filter(function (m) { return (m.etiquetas || []).indexOf(filtroEtiqueta) >= 0; })
+      : datos.movimientos;
+    var resumenFiltro = $("filtro-resumen");
+    resumenFiltro.hidden = !filtroEtiqueta;
+    if (filtroEtiqueta) {
+      var g = 0, i = 0;
+      movs.forEach(function (m) { if (m.tipo === "gasto") g += num(m.monto); else i += num(m.monto); });
+      resumenFiltro.textContent = "#" + filtroEtiqueta + ": " + movs.length + " movimientos · gastos " + pesos.format(g) + " · ingresos " + pesos.format(i);
+    }
+    lista($("lista-todos"), movs, true, "Aún no hay movimientos.");
+  }
+
+  function pintarPerfil() {
+    var pro = esPro(), p = datos.perfil;
+    $("pro-estado").textContent = pro ? "Activo" : "Plan gratis · ver beneficios";
+    var sel = $("presupuesto-ciclo");
+    sel.replaceChildren();
+    Object.keys(window.NovaPeriodos.CICLOS).forEach(function (c) {
+      var o = el("option", null, window.NovaPeriodos.CICLOS[c] + (pro || c === "mensual" ? "" : " (Pro)"));
+      o.value = c; o.disabled = !pro && c !== "mensual"; o.selected = c === cicloEfectivo();
+      sel.append(o);
+    });
+    $("presupuesto-pro-nota").hidden = pro;
+    if (document.activeElement !== $("presupuesto-monto")) {
+      $("presupuesto-monto").value = p.presupuesto_monto ? pesos.format(num(p.presupuesto_monto)).replace(/\s/g, "") : "";
+    }
+    var ubic = $("perfil-ubicacion");
+    ubic.checked = pro && !!p.guardar_ubicacion;
+    ubic.disabled = !pro;
+    $("ubicacion-nota").textContent = pro
+      ? "Te muestra el lugar en el mapa y los otros pagos que hiciste ahí. El navegador te pedirá permiso."
+      : "Te muestra el lugar en el mapa y los otros pagos que hiciste ahí. Es una función de NOVA Pro.";
+    $("pro-activo").hidden = !pro;
+    $("pro-compra").hidden = pro;
   }
 
   function pintarCuentas() {
@@ -328,7 +503,7 @@
 
   function pintar() {
     var r = resumen();
-    pintarInicio(r); pintarAnalisis(r); pintarCuentas(); pintarMetas();
+    pintarInicio(r); pintarAnalisis(r); pintarCuentas(); pintarMetas(); pintarPerfil();
     $("perfil-email").textContent = fuente.email;
     $("avatar").textContent = (fuente.email || "?").trim().charAt(0).toUpperCase();
   }
@@ -367,6 +542,10 @@
     chip.className = "chip " + r.tipo;
     $("previa-monto").textContent = pesos.format(r.monto);
     $("previa-desc").textContent = r.descripcion;
+    var tags = $("previa-etiquetas");
+    tags.replaceChildren();
+    r.etiquetas.forEach(function (t) { tags.append(el("span", "etiqueta-chip", "#" + t)); });
+    $("previa-frecuente").checked = false;
     opcionesCategoria(r.tipo, r.categoria);
     $("vista-previa").hidden = false;
     $("btn-guardar").focus();
@@ -374,24 +553,65 @@
 
   $("btn-cancelar").addEventListener("click", function () { pendiente = null; $("vista-previa").hidden = true; });
 
-  $("btn-guardar").addEventListener("click", function () {
-    if (!pendiente) return;
-    var r = pendiente, btn = $("btn-guardar"), nombreCat = $("previa-categoria").value;
-    btn.disabled = true;
+  // Pide la ubicación actual; si no se puede, sigue sin ella.
+  function ubicacionActual() {
+    if (!esPro() || !datos.perfil.guardar_ubicacion || !navigator.geolocation) return Promise.resolve(null);
+    return new Promise(function (resolver) {
+      navigator.geolocation.getCurrentPosition(
+        function (p) { resolver({ lat: p.coords.latitude, lng: p.coords.longitude }); },
+        function () { resolver(null); },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      );
+    });
+  }
+
+  // Guarda un registro interpretado. Devuelve una promesa que no falla (los errores se muestran).
+  function guardarRegistro(r, nombreCat, comoFrecuente, textoOriginal) {
+    var nuevas = r.etiquetas.filter(function (e) { return etiquetasUsadas().indexOf(e) < 0; });
+    if (!esPro() && etiquetasUsadas().length + nuevas.length > GRATIS.etiquetas) {
+      mensaje("rapido-mensaje", "En el plan gratis puedes usar hasta " + GRATIS.etiquetas + " etiquetas distintas. Con NOVA Pro son ilimitadas.", true);
+      return Promise.resolve(false);
+    }
+    if (comoFrecuente && !esPro() && datos.frecuentes.length >= GRATIS.frecuentes) {
+      mensaje("rapido-mensaje", "En el plan gratis puedes tener hasta " + GRATIS.frecuentes + " registros frecuentes. Con NOVA Pro son ilimitados.", true);
+      return Promise.resolve(false);
+    }
     var cat = datos.categorias.find(function (c) { return c.nombre === nombreCat && c.tipo === r.tipo; });
     var conCategoria = cat ? Promise.resolve(cat) : fuente.crearCategoria({ nombre: nombreCat || r.categoria, tipo: r.tipo, icono: r.icono })
       .then(function (c) { datos.categorias.push(c); return c; });
-    conCategoria.then(function (c) {
-      return fuente.crearMovimiento({ cuenta_id: datos.cuentas[0].id, categoria_id: c.id, tipo: r.tipo, descripcion: r.descripcion, monto: r.monto, fecha: r.fecha });
+    return Promise.all([conCategoria, ubicacionActual()]).then(function (res) {
+      var c = res[0], lugar = res[1];
+      var fila = { cuenta_id: datos.cuentas[0].id, categoria_id: c.id, tipo: r.tipo, descripcion: r.descripcion,
+                   monto: r.monto, fecha: r.fecha, etiquetas: r.etiquetas };
+      if (lugar) { fila.lat = lugar.lat; fila.lng = lugar.lng; }
+      return fuente.crearMovimiento(fila);
     }).then(function (m) {
       datos.movimientos.unshift(m);
       datos.movimientos.sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); });
-      pendiente = null;
-      $("vista-previa").hidden = true;
-      $("entrada-rapida").value = "";
-      mensaje("rapido-mensaje", (m.tipo === "ingreso" ? "Ingreso" : "Gasto") + " guardado: " + pesos.format(num(m.monto)));
+      var aviso = (m.tipo === "ingreso" ? "Ingreso" : "Gasto") + " guardado: " + pesos.format(num(m.monto));
+      if (!comoFrecuente) return aviso;
+      return fuente.crearFrecuente(textoOriginal).then(function (f) {
+        datos.frecuentes.push(f);
+        return aviso + ". También quedó en tus frecuentes.";
+      });
+    }).then(function (aviso) {
+      mensaje("rapido-mensaje", aviso);
       pintar();
-    }).catch(alerta).finally(function () { btn.disabled = false; });
+      return true;
+    }).catch(function (e) { alerta(e); return false; });
+  }
+
+  $("btn-guardar").addEventListener("click", function () {
+    if (!pendiente) return;
+    var btn = $("btn-guardar");
+    btn.disabled = true;
+    guardarRegistro(pendiente, $("previa-categoria").value, $("previa-frecuente").checked, $("entrada-rapida").value.trim())
+      .then(function (ok) {
+        if (!ok) return;
+        pendiente = null;
+        $("vista-previa").hidden = true;
+        $("entrada-rapida").value = "";
+      }).finally(function () { btn.disabled = false; });
   });
 
   // Dictado por voz (Chrome, Edge y Safari recientes).
@@ -437,6 +657,52 @@
     fuente.crearMeta({ nombre: nombre, objetivo: objetivo }).then(function (m) {
       datos.metas.push(m); e.target.reset(); mensaje("meta-mensaje", "Meta creada."); pintar();
     }).catch(function (err) { mensaje("meta-mensaje", err.message, true); });
+  });
+
+  // ---------- Perfil y NOVA Pro ----------
+  function guardarPerfil(cambios, idMensaje, textoOk) {
+    return fuente.guardarPerfil(cambios).then(function (p) {
+      datos.perfil = p; mensaje(idMensaje, textoOk); pintar();
+    }).catch(function (err) { mensaje(idMensaje, err.message, true); pintar(); });
+  }
+
+  $("form-presupuesto").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var txt = $("presupuesto-monto").value.trim();
+    var monto = txt ? leerValor(txt) : null;
+    if (txt && !(monto > 0)) return mensaje("presupuesto-mensaje", "No entendí el valor. Escribe por ejemplo 1 millón.", true);
+    var ciclo = $("presupuesto-ciclo").value;
+    if (!esPro() && ciclo !== "mensual") ciclo = "mensual";
+    guardarPerfil({ presupuesto_monto: monto, presupuesto_ciclo: ciclo }, "presupuesto-mensaje",
+      monto ? "Presupuesto guardado." : "Presupuesto quitado.");
+  });
+
+  $("perfil-ubicacion").addEventListener("change", function (e) {
+    if (!esPro()) { e.target.checked = false; return; }
+    guardarPerfil({ guardar_ubicacion: e.target.checked }, "presupuesto-mensaje",
+      e.target.checked ? "Desde ahora se guarda la ubicación de cada pago." : "Ya no se guarda la ubicación.");
+  });
+
+  document.querySelectorAll("[data-plan]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll("[data-plan]").forEach(function (x) { x.setAttribute("aria-checked", String(x === b)); });
+    });
+  });
+
+  $("form-codigo").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var codigo = $("codigo-promo").value.trim();
+    if (!codigo) return mensaje("codigo-mensaje", "Escribe tu código.", true);
+    var btn = e.target.querySelector("button");
+    btn.disabled = true;
+    fuente.canjear(codigo).then(function (ok) {
+      if (!ok) return mensaje("codigo-mensaje", "Ese código no es válido o ya se usó.", true);
+      datos.perfil.es_pro = true;
+      $("codigo-promo").value = "";
+      mensaje("codigo-mensaje", "¡Listo! Ya tienes NOVA Pro.");
+      pintar();
+    }).catch(function (err) { mensaje("codigo-mensaje", err.message, true); })
+      .finally(function () { btn.disabled = false; });
   });
 
   // ---------- Sesión ----------
@@ -491,7 +757,7 @@
 
   $("btn-salir").addEventListener("click", function () {
     fuente.salir().finally(function () {
-      fuente = null; datos = { cuentas: [], categorias: [], movimientos: [], metas: [] };
+      fuente = null; datos = datosVacios();
       $("form-auth").reset(); mensaje("auth-mensaje", ""); mostrar("auth");
     });
   });

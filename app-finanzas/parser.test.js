@@ -31,6 +31,27 @@ test("ayer resta un día", () => {
   assert.strictEqual(r.categoria, "Comida");
 });
 
+test("etiquetas con # se separan del texto", () => {
+  const r = interpretar("almuerzo 20 mil #Trabajo #oficina #trabajo", AHORA);
+  assert.deepStrictEqual(r.etiquetas, ["trabajo", "oficina"]);
+  assert.strictEqual(r.descripcion, "Almuerzo");
+  assert.strictEqual(r.monto, 20000);
+});
+
+test("sin etiquetas devuelve lista vacía", () => {
+  assert.deepStrictEqual(interpretar("uber 15k", AHORA).etiquetas, []);
+});
+
+test("el número de una etiqueta no se toma como valor", () => {
+  const r = interpretar("taxi 12 mil #viaje2026", AHORA);
+  assert.strictEqual(r.monto, 12000);
+  assert.deepStrictEqual(r.etiquetas, ["viaje2026"]);
+});
+
+test("solo etiquetas da error claro", () => {
+  assert.strictEqual(interpretar("#trabajo", AHORA).ok, false);
+});
+
 test("sin valor da error claro", () => {
   const r = interpretar("almuerzo", AHORA);
   assert.strictEqual(r.ok, false);
