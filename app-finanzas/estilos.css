@@ -526,3 +526,8 @@ body.con-capa { overflow: hidden; }
 .documento.vencido { border-color: var(--danger); }
 .documento.pronto { border-color: #f59e0b; }
 .documento .chip-opcion { padding: 4px 12px; font-size: .8rem; flex: none; }
+
+/* Código de verificación del correo */
+.campo-codigo { font-size: 1.6rem; font-weight: 800; letter-spacing: .35em; text-align: center; font-variant-numeric: tabular-nums; }
+.campo-codigo::placeholder { letter-spacing: .35em; opacity: .4; }
+.en-codigo .boton-apk, .en-codigo .respaldo, .en-codigo .ayuda-instalar { display: none !important; }

@@ -39,6 +39,7 @@
       <button type="submit" data-accion="registrar">Crear cuenta</button>
     </div>
     <p id="auth-mensaje" class="mensaje" role="status"></p>
+    <button type="button" id="btn-tengo-codigo" class="enlace" hidden>Ya tengo el código del correo</button>
     <button type="button" id="btn-reenviar" class="enlace" hidden>Reenviar el correo de verificación</button>
   </form>
 
@@ -57,6 +58,40 @@
     </div>
     <button type="submit" class="primario">Guardar contraseña</button>
     <p id="nueva-clave-mensaje" class="mensaje" role="status"></p>
+  </form>
+
+  <!-- Código que llega al correo al crear la cuenta -->
+  <form id="form-codigo" class="tarjeta auth-form" novalidate hidden>
+    <h2 class="titulo-tarjeta">Escribe el código</h2>
+    <p class="nota" id="codigo-texto"></p>
+    <label for="codigo-valor">Código del correo</label>
+    <input id="codigo-valor" class="campo-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456">
+    <button type="submit" class="primario">Verificar y entrar</button>
+    <p id="codigo-mensaje" class="mensaje" role="status"></p>
+    <button type="button" id="codigo-reenviar" class="enlace">Reenviar el código</button>
+    <button type="button" id="codigo-volver" class="enlace">Volver</button>
+  </form>
+
+  <!-- Olvidé mi contraseña: código del correo y contraseña nueva -->
+  <form id="form-recuperar" class="tarjeta auth-form" novalidate hidden>
+    <h2 class="titulo-tarjeta">Cambiar mi contraseña</h2>
+    <p class="nota" id="recuperar-texto"></p>
+    <label for="recuperar-codigo">Código del correo</label>
+    <input id="recuperar-codigo" class="campo-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456">
+    <label for="recuperar-clave">Nueva contraseña</label>
+    <div class="campo-clave">
+      <input id="recuperar-clave" type="password" autocomplete="new-password" minlength="6">
+      <button type="button" class="ver-clave" data-ver-clave="recuperar-clave" aria-label="Mostrar la contraseña" aria-pressed="false"></button>
+    </div>
+    <label for="recuperar-clave-2">Repítela</label>
+    <div class="campo-clave">
+      <input id="recuperar-clave-2" type="password" autocomplete="new-password" minlength="6">
+      <button type="button" class="ver-clave" data-ver-clave="recuperar-clave-2" aria-label="Mostrar la contraseña" aria-pressed="false"></button>
+    </div>
+    <button type="submit" class="primario">Cambiar contraseña y entrar</button>
+    <p id="recuperar-mensaje" class="mensaje" role="status"></p>
+    <button type="button" id="recuperar-reenviar" class="enlace">Reenviar el código</button>
+    <button type="button" id="recuperar-volver" class="enlace">Volver</button>
   </form>
 
   <button type="button" id="btn-demo" class="enlace">Ver la demostración sin cuenta</button>

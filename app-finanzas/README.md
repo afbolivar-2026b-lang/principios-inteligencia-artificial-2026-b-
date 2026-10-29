@@ -142,12 +142,11 @@ debe ir en el navegador.
 ## Inicio de sesión
 
 - **Candado** en el campo de contraseña para verla u ocultarla.
-- **¿Olvidaste tu contraseña?** envía un correo con un enlace. Ese enlace abre
-  la app en `sitioUrl` (de `config.js`) y pide la contraseña nueva dos veces.
-  Si el enlace venció, la app lo dice y deja pedir otro.
-- **Crear cuenta** envía un correo de verificación al correo de la persona. Su
-  enlace abre la app, que muestra "¡Tu correo quedó verificado!". Si no llega,
-  aparece "Reenviar el correo de verificación".
+- **Crear cuenta** y **¿Olvidaste tu contraseña?** mandan un **código** al correo de la persona,
+  que se escribe en la app (verificar la cuenta, o elegir la contraseña nueva). Hay "Reenviar el
+  código" con una espera de un minuto, y los enlaces de correos viejos siguen funcionando. Las
+  plantillas de los correos están en `supabase/plantillas-correo.md` y se pegan en el panel de
+  Supabase.
 - Supabase manda pocos correos por hora con su servidor de correo gratuito.
 
 ## App para Android (APK)

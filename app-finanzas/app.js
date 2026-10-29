@@ -2581,12 +2581,97 @@
     mensaje("auth-mensaje", "Enviando el correo…");
     cliente.auth.resetPasswordForEmail(email, { redirectTo: cfg.sitioUrl || location.origin }).then(function (r) {
       if (r.error) throw r.error;
-      mensaje("auth-mensaje", "Listo. Si " + email + " tiene cuenta, te llegará un correo con un enlace para crear una contraseña nueva. Revisa también Spam.");
+      enfriar(60);
+      abrirRecuperar(email);
     }).catch(function (err) {
-      mensaje("auth-mensaje", /rate limit|too many/i.test(err.message)
-        ? "Ya se enviaron varios correos. Espera unos minutos y vuelve a intentarlo."
-        : "No se pudo enviar el correo: " + err.message, true);
+      mensaje("auth-mensaje", errorDeCorreo(err) || "No se pudo enviar el correo: " + err.message, true);
     }).finally(function () { b.disabled = false; });
+  });
+
+  // ---------- Códigos del correo: crear cuenta y cambiar la contraseña ----------
+  // El correo trae un código (plantilla de Supabase con {{ .Token }}) que se escribe aquí. Sirve más que
+  // un enlace: Gmail y otros programas abren los enlaces antes que la persona y los dejan sin efecto.
+  var FORMULARIOS_AUTH = ["form-auth", "form-nueva-clave", "form-codigo", "form-recuperar", "btn-demo"];
+  var codigoDe = { email: "", tipo: "" };
+  function verAuth(cual) {
+    FORMULARIOS_AUTH.forEach(function (id) { $(id).hidden = id !== cual; });
+    $("pantalla-auth").classList.add("en-codigo");
+  }
+  function volverAuth() {
+    FORMULARIOS_AUTH.forEach(function (id) { $(id).hidden = !(id === "form-auth" || id === "btn-demo"); });
+    $("pantalla-auth").classList.remove("en-codigo");
+    pintarEnfriamiento();
+  }
+  function mostrarReenviar(si) { $("btn-reenviar").hidden = $("btn-tengo-codigo").hidden = !si; }
+  function soloCodigo(valor) { return String(valor || "").replace(/\D/g, ""); }
+  function textoErrorCodigo(err) {
+    var m = String(err && err.message || "");
+    if (/expired|invalid|not found|otp/i.test(m)) return "Ese código no sirve: está mal escrito o ya venció. Usa el del último correo que te llegó, o pide uno nuevo con «Reenviar el código».";
+    return errorDeCorreo(err) || m;
+  }
+  function abrirCodigo(email) {
+    codigoDe = { email: email, tipo: "signup" };
+    $("codigo-texto").textContent = "Te enviamos un código a " + email + ". Escríbelo aquí para terminar de crear tu cuenta. Revisa también Spam.";
+    $("codigo-valor").value = ""; mensaje("codigo-mensaje", "");
+    verAuth("form-codigo"); $("codigo-valor").focus(); pintarEnfriamiento();
+  }
+  function abrirRecuperar(email) {
+    codigoDe = { email: email, tipo: "recovery" };
+    $("recuperar-texto").textContent = "Si " + email + " tiene cuenta, te enviamos un código. Escríbelo aquí y elige tu contraseña nueva. Revisa también Spam.";
+    ["recuperar-codigo", "recuperar-clave", "recuperar-clave-2"].forEach(function (id) { $(id).value = ""; });
+    mensaje("recuperar-mensaje", "");
+    verAuth("form-recuperar"); $("recuperar-codigo").focus(); pintarEnfriamiento();
+  }
+  $("codigo-volver").addEventListener("click", volverAuth);
+  $("recuperar-volver").addEventListener("click", volverAuth);
+
+  $("form-codigo").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var token = soloCodigo($("codigo-valor").value);
+    if (token.length < 6) return mensaje("codigo-mensaje", "Escribe el código completo que te llegó al correo.", true);
+    var btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true; mensaje("codigo-mensaje", "Verificando…");
+    cliente.auth.verifyOtp({ email: codigoDe.email, token: token, type: "signup" }).then(function (r) {
+      if (r.error) throw r.error;
+      mensaje("codigo-mensaje", "");
+      volverAuth(); $("form-auth").reset();
+      return entrar(fuenteSupabase(cliente, r.data.user));
+    }).catch(function (err) { mensaje("codigo-mensaje", textoErrorCodigo(err), true); })
+      .finally(function () { btn.disabled = false; });
+  });
+  $("codigo-reenviar").addEventListener("click", function () {
+    cliente.auth.resend({ type: "signup", email: codigoDe.email, options: { emailRedirectTo: cfg.sitioUrl || location.origin } }).then(function (r) {
+      if (r.error) throw r.error;
+      enfriar(60); mensaje("codigo-mensaje", "Listo, te enviamos un código nuevo. Usa solo el último.");
+    }).catch(function (err) { mensaje("codigo-mensaje", errorDeCorreo(err) || err.message, true); });
+  });
+
+  $("form-recuperar").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var token = soloCodigo($("recuperar-codigo").value), c1 = $("recuperar-clave").value, c2 = $("recuperar-clave-2").value;
+    if (token.length < 6) return mensaje("recuperar-mensaje", "Escribe el código completo que te llegó al correo.", true);
+    if (c1.length < 6) return mensaje("recuperar-mensaje", "La contraseña debe tener al menos 6 caracteres.", true);
+    if (c1 !== c2) return mensaje("recuperar-mensaje", "Las dos contraseñas no coinciden.", true);
+    var btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true; mensaje("recuperar-mensaje", "Cambiando tu contraseña…");
+    cliente.auth.verifyOtp({ email: codigoDe.email, token: token, type: "recovery" }).then(function (r) {
+      if (r.error) throw r.error;
+      return cliente.auth.updateUser({ password: c1 });
+    }).then(function (r) {
+      if (r.error) throw r.error;
+      mensaje("recuperar-mensaje", "");
+      volverAuth(); $("form-auth").reset();
+      toast("✓ Contraseña cambiada");
+      return entrar(fuenteSupabase(cliente, r.data.user));
+    }).catch(function (err) {
+      mensaje("recuperar-mensaje", /different from the old/i.test(err.message) ? "La nueva contraseña debe ser distinta de la anterior." : textoErrorCodigo(err), true);
+    }).finally(function () { btn.disabled = false; });
+  });
+  $("recuperar-reenviar").addEventListener("click", function () {
+    cliente.auth.resetPasswordForEmail(codigoDe.email, { redirectTo: cfg.sitioUrl || location.origin }).then(function (r) {
+      if (r.error) throw r.error;
+      enfriar(60); mensaje("recuperar-mensaje", "Listo, te enviamos un código nuevo. Usa solo el último.");
+    }).catch(function (err) { mensaje("recuperar-mensaje", errorDeCorreo(err) || err.message, true); });
   });
 
   function pedirNuevaClave() {
@@ -2692,6 +2777,10 @@
     crear.disabled = re.disabled = seg > 0;
     crear.textContent = seg > 0 ? "Crear cuenta (" + seg + " s)" : "Crear cuenta";
     re.textContent = seg > 0 ? "Reenviar el correo de verificación (" + seg + " s)" : "Reenviar el correo de verificación";
+    ["codigo-reenviar", "recuperar-reenviar"].forEach(function (id) {
+      $(id).disabled = seg > 0;
+      $(id).textContent = seg > 0 ? "Reenviar el código (" + seg + " s)" : "Reenviar el código";
+    });
     if (seg <= 0 && enfriarReloj) { clearInterval(enfriarReloj); enfriarReloj = null; }
   }
   function enfriar(segundos) {
@@ -2722,7 +2811,7 @@
     var botones = e.target.querySelectorAll("button");
     botones.forEach(function (b) { b.disabled = true; });
     mensaje("auth-mensaje", accion === "registrar" ? "Creando tu cuenta…" : "Entrando…");
-    $("btn-reenviar").hidden = true;
+    mostrarReenviar(false);
     // El correo de verificación le llega a la persona que crea la cuenta; su enlace abre la app.
     var op = accion === "registrar"
       ? cliente.auth.signUp({ email: email, password: clave, options: { emailRedirectTo: cfg.sitioUrl || location.origin } })
@@ -2736,8 +2825,8 @@
           return;
         }
         enfriar(60);
-        mensaje("auth-mensaje", "Te enviamos un correo de verificación a " + email + ". Abre SOLO el más reciente (los anteriores dejan de servir), toca el botón para confirmar y vuelve aquí a tocar Entrar. Revisa también Spam.");
-        $("btn-reenviar").hidden = false;
+        mensaje("auth-mensaje", "");
+        abrirCodigo(email);
         return;
       }
       mensaje("auth-mensaje", "");
@@ -2745,11 +2834,11 @@
     }).catch(function (err) {
       var noConfirmado = /not confirmed/i.test(err.message);
       var t = errorDeCorreo(err) || (/invalid login/i.test(err.message) ? "Correo o contraseña incorrectos."
-        : noConfirmado ? "Primero confirma tu correo con el enlace que te enviamos. Si no te llegó, pide otro abajo."
+        : noConfirmado ? "Tu cuenta todavía no está verificada. Toca «Ya tengo el código del correo», o pide un código nuevo con «Reenviar»."
         : /already registered/i.test(err.message) ? "Ese correo ya tiene cuenta. Usa Entrar."
         : err.message);
       mensaje("auth-mensaje", t, true);
-      $("btn-reenviar").hidden = !noConfirmado;
+      mostrarReenviar(noConfirmado);
     }).finally(function () { botones.forEach(function (b) { b.disabled = false; }); pintarEnfriamiento(); });
   });
 
@@ -2760,10 +2849,17 @@
     cliente.auth.resend({ type: "signup", email: email, options: { emailRedirectTo: cfg.sitioUrl || location.origin } }).then(function (r) {
       if (r.error) throw r.error;
       enfriar(60);
-      mensaje("auth-mensaje", "Listo, te enviamos otro correo a " + email + ". Abre SOLO este último: los correos anteriores ya no sirven.");
+      mensaje("auth-mensaje", "");
+      abrirCodigo(email);
     }).catch(function (err) {
       mensaje("auth-mensaje", errorDeCorreo(err) || "No se pudo reenviar: " + err.message, true);
     }).finally(function () { pintarEnfriamiento(); if (segundosEspera() <= 0) b.disabled = false; });
+  });
+
+  $("btn-tengo-codigo").addEventListener("click", function () {
+    var email = $("auth-email").value.trim();
+    if (!email) { $("auth-email").focus(); return mensaje("auth-mensaje", "Escribe arriba el correo con el que creaste la cuenta.", true); }
+    abrirCodigo(email);
   });
 
   $("btn-demo").addEventListener("click", function () { entrar(fuenteDemo()); });
