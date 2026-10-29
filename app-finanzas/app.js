@@ -511,12 +511,61 @@
     });
   }
 
+  // ---------- IA (Gemini, a través de la función nova-ia de Supabase) ----------
+  // Se usa con sesión iniciada. Si todavía no hay clave, se acabó la cuota gratis del día
+  // o algo falla, la app sigue con su propio intérprete y su propio lector de recibos.
+  var iaActiva = true;
+  function iaDisponible() { return iaActiva && !!cliente && !!fuente && !fuente.demo; }
+  function hoyLocal() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function preguntarIA(entrada) {
+    if (!iaDisponible()) return Promise.reject(new Error("IA no disponible"));
+    var cuerpo = Object.assign({ categorias: datos.categorias.map(function (c) { return c.nombre; }), hoy: hoyLocal() }, entrada);
+    return cliente.functions.invoke("nova-ia", { body: cuerpo }).then(function (res) {
+      if (res.error) {
+        var estado = res.error.context && res.error.context.status;
+        if (estado === 503) iaActiva = false; // la clave de Gemini todavía no está puesta
+        throw res.error;
+      }
+      var d = res.data || {};
+      if (!(d.monto > 0)) throw new Error("La IA no encontró el valor");
+      var fecha = new Date();
+      fecha.setDate(fecha.getDate() - ({ ayer: 1, anteayer: 2 }[d.dia] || 0));
+      var base = Parser.CATEGORIAS.find(function (c) { return c.nombre === d.categoria; });
+      return { ok: true, ia: true, tipo: d.tipo === "ingreso" ? "ingreso" : "gasto", monto: d.monto, categoria: d.categoria,
+               icono: base ? base.icono : "otro", descripcion: d.descripcion || d.categoria, fecha: fecha.toISOString(),
+               etiquetas: Array.isArray(d.etiquetas) ? d.etiquetas : [] };
+    });
+  }
+
+  var consulta = 0;
   $("form-rapido").addEventListener("submit", function (e) {
     e.preventDefault();
-    var r = Parser.interpretar($("entrada-rapida").value);
-    if (!r.ok) { mensaje("rapido-mensaje", r.error, true); $("vista-previa").hidden = true; return; }
+    var texto = $("entrada-rapida").value, local = Parser.interpretar(texto), id = ++consulta;
+    if (!texto.trim() || !iaDisponible()) return terminar(local);
+    var enviar = e.target.querySelector("button[type=submit]");
+    enviar.disabled = true;
+    mensaje("rapido-mensaje", "✦ La IA está leyendo…");
+    preguntarIA({ texto: texto }).then(function (r) {
+      // Las etiquetas escritas con # siempre se respetan.
+      (local.etiquetas || []).forEach(function (t) { if (r.etiquetas.indexOf(t) < 0) r.etiquetas.push(t); });
+      return r;
+    }).catch(function () { return local; }).then(function (r) {
+      enviar.disabled = false;
+      if (id === consulta) terminar(r);
+    });
+    function terminar(r) {
+      if (!r.ok) { mensaje("rapido-mensaje", r.error, true); $("vista-previa").hidden = true; return; }
+      mensaje("rapido-mensaje", "");
+      mostrarPrevia(r);
+    }
+  });
+
+  function mostrarPrevia(r) {
     pendiente = r;
-    mensaje("rapido-mensaje", "");
+    $("previa-ia").hidden = !r.ia;
     var chip = $("previa-tipo");
     chip.textContent = r.tipo === "ingreso" ? "Ingreso" : "Gasto";
     chip.className = "chip " + r.tipo;
@@ -529,7 +578,7 @@
     opcionesCategoria(r.tipo, r.categoria);
     $("vista-previa").hidden = false;
     $("btn-guardar").focus();
-  });
+  }
 
   $("btn-cancelar").addEventListener("click", function () { pendiente = null; $("vista-previa").hidden = true; });
 
@@ -682,24 +731,39 @@
     if (!archivo) return;
     var btn = $("btn-foto");
     btn.disabled = true;
-    mensaje("rapido-mensaje", "Preparando el lector de recibos… la primera vez tarda unos segundos.");
-    Promise.all([cargarLector(), prepararFoto(archivo)]).then(function (res) {
-      return res[0].recognize(res[1]);
-    }).then(function (salida) {
-      var rec = window.NovaRecibo.leerRecibo(salida.data.text);
-      if (!rec.ok) {
-        if (rec.comercio) $("entrada-rapida").value = rec.comercio + " ";
-        $("entrada-rapida").focus();
-        return mensaje("rapido-mensaje", rec.error, true);
-      }
-      $("entrada-rapida").value = numeroCO.format(rec.monto) + " " + (rec.comercio || "Compra");
-      $("form-rapido").requestSubmit();
-      // La descripción es el nombre del negocio completo, sin quitarle palabras como "La" o "El".
-      if (pendiente && rec.comercio) { pendiente.descripcion = rec.comercio; $("previa-desc").textContent = rec.comercio; }
-      mensaje("rapido-mensaje", "Leído del recibo. Revisa el valor: si no es correcto, corrige el texto y vuelve a tocar la flecha.");
+    var AVISO = " Revisa el valor: si no es correcto, corrige el texto y vuelve a tocar la flecha.";
+    prepararFoto(archivo).then(function (foto) {
+      if (!iaDisponible()) return leerConTesseract(foto);
+      mensaje("rapido-mensaje", "✦ La IA está leyendo el recibo…");
+      var jpeg = foto.toDataURL("image/jpeg", 0.85).split(",")[1];
+      return preguntarIA({ imagen: jpeg, mime: "image/jpeg" }).then(function (r) {
+        $("entrada-rapida").value = numeroCO.format(r.monto) + " " + r.descripcion;
+        mostrarPrevia(r);
+        mensaje("rapido-mensaje", "✦ Leído con IA." + AVISO);
+      }, function () { return leerConTesseract(foto); });
     }).catch(function (err) {
       mensaje("rapido-mensaje", (err && err.message) || "No se pudo leer la foto.", true);
     }).finally(function () { btn.disabled = false; });
+
+    // Sin IA: lector de texto en el mismo celular.
+    function leerConTesseract(foto) {
+      mensaje("rapido-mensaje", "Preparando el lector de recibos… la primera vez tarda unos segundos.");
+      return cargarLector().then(function (lectorListo) { return lectorListo.recognize(foto); }).then(function (salida) {
+        var rec = window.NovaRecibo.leerRecibo(salida.data.text);
+        if (!rec.ok) {
+          if (rec.comercio) $("entrada-rapida").value = rec.comercio + " ";
+          $("entrada-rapida").focus();
+          return mensaje("rapido-mensaje", rec.error, true);
+        }
+        var texto = numeroCO.format(rec.monto) + " " + (rec.comercio || "Compra");
+        $("entrada-rapida").value = texto;
+        var r = Parser.interpretar(texto);
+        // La descripción es el nombre del negocio completo, sin quitarle palabras como "La" o "El".
+        if (rec.comercio) r.descripcion = rec.comercio;
+        mostrarPrevia(r);
+        mensaje("rapido-mensaje", "Leído del recibo." + AVISO);
+      });
+    }
   });
 
   // ---------- Formularios de cuentas y metas ----------

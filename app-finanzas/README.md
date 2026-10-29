@@ -36,6 +36,24 @@ el TOTAL (ignora subtotal, IVA, efectivo y cambio) y el nombre del negocio, y lo
 pasa a la entrada rápida para revisarlo antes de guardar. Funciona mejor con
 fotos de cerca, con buena luz y el recibo derecho.
 
+## Registros con IA (Gemini)
+
+Cuando hay sesión iniciada, la entrada rápida (texto o voz) y la foto del recibo
+se mandan primero a la función `nova-ia` de Supabase
+(`supabase/functions/nova-ia/index.ts`), que le pregunta a Gemini de Google y
+devuelve tipo, valor, descripción, categoría, etiquetas y día. La vista previa
+muestra la marca "✦ IA" cuando la respuesta viene de ahí.
+
+- **Clave:** la función lee el secreto `GEMINI_API_KEY` (Supabase → Edge
+  Functions → Secrets). La clave gratuita se saca en https://aistudio.google.com
+  → "Get API key". La app nunca ve la clave.
+- **Modelo:** `gemini-flash-latest`; se puede cambiar con el secreto `GEMINI_MODEL`.
+- **Sin clave, sin internet o sin cupo:** la app sigue funcionando con
+  `parser.js` (texto) y Tesseract (fotos), como antes. En modo demostración
+  nunca se usa la IA.
+- **Privacidad:** con el plan gratuito, Google puede usar lo que se le envía
+  para mejorar sus productos. No mandes fotos con datos sensibles.
+
 ## Archivos
 
 | Archivo | Para qué sirve |
