@@ -1546,8 +1546,21 @@
   // ---------- Exportar ----------
   function descargar(nombre, contenido, tipo) {
     if (enApp) {
-      mensaje("exportar-mensaje", "Para descargar archivos, abre NOVA en el navegador (" + (cfg.sitioUrl || "la página web") + ") con tu cuenta y exporta desde ahí.", true);
-      toast("Exporta desde el navegador");
+      // En la app: se guarda en una carpeta temporal y se abre el menú de compartir de Android
+      // (Guardar en Drive, WhatsApp, correo, Archivos...).
+      var P = window.Capacitor.Plugins || {};
+      if (!P.Filesystem || !P.Share) {
+        mensaje("exportar-mensaje", "Actualiza NOVA a la última versión para poder descargar desde la app.", true);
+        return;
+      }
+      mensaje("exportar-mensaje", "Preparando " + nombre + "…");
+      P.Filesystem.writeFile({ path: nombre, data: contenido, directory: "CACHE", encoding: "utf8" })
+        .then(function (r) { return P.Share.share({ title: nombre, text: "Archivo de NOVA · Opita-digital", url: r.uri, dialogTitle: "Guardar o enviar " + nombre }); })
+        .then(function () { mensaje("exportar-mensaje", "Listo: elige dónde guardar " + nombre + "."); })
+        .catch(function (e) {
+          if (e && /cancel/i.test(String(e.message || e))) return mensaje("exportar-mensaje", "");
+          mensaje("exportar-mensaje", "No se pudo exportar: " + (e && e.message ? e.message : e), true);
+        });
       return;
     }
     var url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
@@ -1594,7 +1607,7 @@
         ]), "text/csv;charset=utf-8");
       }
       if (que === "respaldo") {
-        var copia = { app: "NOVA", exportado: new Date().toISOString(), perfil: datos.perfil };
+        var copia = { app: "NOVA", creada_por: "Opita-digital", exportado: new Date().toISOString(), perfil: datos.perfil };
         TABLAS.forEach(function (t) { copia[t] = datos[t]; });
         return descargar("nova-respaldo-" + hoyArchivo() + ".json", JSON.stringify(copia, null, 2), "application/json");
       }
@@ -1604,7 +1617,6 @@
 
   // Reporte para imprimir o guardar como PDF desde el navegador.
   function reportePDF() {
-    if (enApp) return descargar("", "", "");
     var ciclo = cicloEfectivo(), rango = rangoInicio(), movs = A.enRango(datos.movimientos, rango), t = A.totales(movs);
     var r = $("reporte");
     r.replaceChildren();
@@ -1627,7 +1639,14 @@
         el("td", null, (m.tipo === "ingreso" ? "+" : "−") + pesos.format(num(m.monto))));
       tabla.append(tr);
     });
-    r.append(tabla);
+    r.append(tabla, el("p", null, "Creada por Opita-digital · NOVA"));
+    if (enApp) {
+      // La app no puede imprimir: se comparte el reporte como página (.html) que se abre en el
+      // navegador y se guarda como PDF desde ahí (menú ⋮ → Imprimir → Guardar como PDF).
+      var css = "body{font:14px/1.4 sans-serif;color:#000;margin:16px}h1{font-size:20px}h2{font-size:16px;margin-top:18px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:4px 6px;border-bottom:1px solid #ddd}";
+      var html = "<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"author\" content=\"Opita-digital\"><title>Reporte NOVA</title><style>" + css + "</style></head><body>" + r.innerHTML + "</body></html>";
+      return descargar("nova-reporte-" + hoyArchivo() + ".html", html, "text/html;charset=utf-8");
+    }
     mensaje("exportar-mensaje", "En la ventana de impresión elige «Guardar como PDF».");
     setTimeout(function () { window.print(); }, 50);
   }

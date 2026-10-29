@@ -536,3 +536,4 @@ body.con-capa { overflow: hidden; }
 .boton-google svg { width: 20px; height: 20px; stroke: none; }
 .boton-google:disabled { opacity: .6; }
 .en-codigo .boton-apk, .en-codigo .respaldo, .en-codigo .ayuda-instalar { display: none !important; }
+.creditos { opacity: .75; font-size: 12px; }
