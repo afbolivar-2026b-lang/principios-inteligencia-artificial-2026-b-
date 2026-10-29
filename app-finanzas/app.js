@@ -4,6 +4,7 @@
   var cfg = window.NOVA_CONFIG || {};
   var Parser = window.NovaParser;
   var A = window.NovaAnalisis;
+  var Mon = window.NovaMonedas;
   var Periodos = window.NovaPeriodos;
   // ¿Corre dentro de la app de Android (Capacitor)?
   var enApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
@@ -122,7 +123,7 @@
 
   // ---------- Fuentes de datos ----------
   // Las dos fuentes (Supabase y demostración) ofrecen las mismas operaciones sobre las mismas tablas.
-  var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites"];
+  var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites", "conversaciones"];
 
   function fuenteSupabase(cliente, usuario) {
     function q(promesa) {
@@ -141,9 +142,10 @@
           q(t("perfiles").select("*").maybeSingle()),
           q(t("frecuentes").select("*").order("id")),
           q(t("programados").select("*").order("proxima")),
-          q(t("limites").select("*").order("id"))
+          q(t("limites").select("*").order("id")),
+          q(t("conversaciones").select("*").order("actualizado_en", { ascending: false }).limit(60))
         ]).then(function (r) {
-          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5], programados: r[6], limites: r[7] };
+          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5], programados: r[6], limites: r[7], conversaciones: r[8] };
           // Primera vez: crear el perfil, la cuenta principal y las categorías por defecto.
           var pendientes = [];
           if (!datos.perfil) {
@@ -189,6 +191,7 @@
       programados: [{ id: 1, cuenta_id: 1, categoria_id: cat("Suscripciones"), tipo: "gasto", monto: 26900, descripcion: "Netflix", etiquetas: [],
                       frecuencia: "mensual", proxima: A.siguienteFecha(A.claveDia(hace(1, 12)), "mensual"), activo: true }],
       limites: [{ id: 1, categoria_id: cat("Comida"), monto: 400000, ciclo: "mensual", recurrente: true, creado_en: hace(20, 9) }],
+      conversaciones: [],
       movimientos: [
         [0, 10, 42, "gasto", "Café y pandebono", 8500, "Comida", [], CAFE],
         [1, 18, 30, "gasto", "Netflix", 26900, "Suscripciones", [], null],
@@ -299,7 +302,8 @@
     li.setAttribute("aria-label", "Editar " + m.descripcion);
     var ic = pintarIcono(el("span", "mov-icono"), c);
     var txt = el("div", "mov-texto");
-    txt.append(el("strong", null, m.descripcion), el("small", null, c.nombre + (m.nota ? " · " + m.nota : "")));
+    var otraMoneda = m.moneda && m.moneda !== "COP" && num(m.monto_original) > 0;
+    txt.append(el("strong", null, m.descripcion), el("small", null, c.nombre + (m.nota ? " · " + m.nota : "") + (otraMoneda ? " · " + Mon.formatoMonto(m.monto_original, m.moneda) : "")));
     var extra = el("div", "mov-extra");
     if (m.estado === "pendiente") extra.append(el("span", "chip pendiente", "Pendiente"));
     if (m.programado_id) extra.append(el("span", "chip", "🔁"));
@@ -1360,13 +1364,13 @@
   // ---------- Pintar todo ----------
   function pintar() {
     if (!fuente) return;
-    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes();
+    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA();
   }
 
   function alerta(e) { mensaje("rapido-mensaje", "No se pudo guardar: " + (e && e.message ? e.message : e), true); }
 
   // ---------- Navegación ----------
-  var PRINCIPALES = ["inicio", "planes", "analisis", "buscar", "ajustes"];
+  var PRINCIPALES = ["inicio", "planes", "ia", "analisis", "buscar", "ajustes"];
   function ir(vista) {
     document.querySelectorAll(".vista").forEach(function (v) { v.hidden = v.dataset.vista !== vista; });
     var principal = PRINCIPALES.indexOf(vista) >= 0 ? vista : "ajustes";
@@ -1377,6 +1381,7 @@
     enVista = vista;
     actualizarFab();
     if (vista === "buscar") pintarBuscar();
+    if (vista === "ia") pintarIA();
     window.scrollTo(0, 0);
   }
   // El botón + se esconde donde estorba: en pantallas de configuración y mientras se ve la entrada rápida del inicio.
@@ -1423,7 +1428,10 @@
   }
   $("btn-mas").addEventListener("click", function () { abrirCapa("hoja-mas"); });
   document.querySelectorAll("[data-abrir]").forEach(function (b) {
-    b.addEventListener("click", function () { var id = b.dataset.abrir; abrirDesdeHoja(function () { abrirCapa(id); }); });
+    b.addEventListener("click", function () {
+      var id = b.dataset.abrir;
+      abrirDesdeHoja(function () { if (id === "pantalla-chat") abrirChat(null); else abrirCapa(id); });
+    });
   });
   document.querySelectorAll("[data-nuevo]").forEach(function (b) {
     b.addEventListener("click", function () { var t = b.dataset.nuevo; abrirDesdeHoja(function () { abrirRegistro({ tipo: t }); }); });
@@ -1437,9 +1445,12 @@
     reg = {
       editar: m || null,
       tipo: m ? m.tipo : o.tipo || "gasto",
-      expr: m ? String(Math.round(num(m.monto))) : "",
+      expr: m ? textoMonto(m.moneda && m.moneda !== "COP" && num(m.monto_original) > 0 ? num(m.monto_original) : num(m.monto)) : "",
       categoriaId: m ? m.categoria_id : null,
-      etiquetas: m ? (m.etiquetas || []).slice() : []
+      etiquetas: m ? (m.etiquetas || []).slice() : [],
+      moneda: m && m.moneda ? m.moneda : "COP",
+      tasa: m && m.tasa ? Number(m.tasa) : null,
+      tasaAuto: null, tasaFecha: "", tasaEditada: !!(m && m.tasa)
     };
     $("reg-fecha").value = A.claveDia(m ? m.fecha : new Date());
     $("reg-desc").value = m ? m.descripcion : "";
@@ -1464,17 +1475,87 @@
     pintarRegistro();
     abrirCapa("pantalla-registro");
   }
+  // 19.99 -> "19,99" (la coma es el decimal que se escribe con el teclado de la app)
+  function textoMonto(n) { return String(Math.round(n * 100) / 100).replace(".", ","); }
   function formatearExpr(expr) {
     if (!expr) return "0";
-    return expr.replace(/\d+/g, function (d) { return numeroCO.format(Number(d)); });
+    return expr.replace(/\d+(,\d*)?/g, function (d) {
+      var p = d.split(",");
+      return numeroCO.format(Number(p[0])) + (p.length > 1 ? "," + p[1] : "");
+    });
   }
+
+  // Tasas de cambio (base USD): se piden una vez al día y se guardan en el celular.
+  function cargarTasas() {
+    var g = leerLocal("nova-tasas", null);
+    if (g && g.rates && Date.now() - g.guardado < 12 * 3600000) return Promise.resolve(g);
+    var origen = cliente && fuente && !fuente.demo
+      ? cliente.functions.invoke("nova-ia", { body: { tasas: true } }).then(function (res) { if (res.error || !res.data || !res.data.rates) throw new Error("tasas"); return res.data; })
+      : fetch("https://open.er-api.com/v6/latest/USD").then(function (r) { return r.json(); }).then(function (d) { if (d.result !== "success") throw new Error("tasas"); return { rates: d.rates, fecha: d.time_last_update_utc }; });
+    return origen.then(function (d) {
+      var t = { rates: d.rates, fecha: d.fecha || "", guardado: Date.now() };
+      guardarLocal("nova-tasas", t);
+      return t;
+    }).catch(function () { return g && g.rates ? g : null; });
+  }
+  function elegirMoneda() {
+    abrirCapa("hoja-moneda");
+    $("hoja-moneda-buscar").value = "";
+    pintarHojaMoneda();
+  }
+  function pintarHojaMoneda() {
+    var cont = $("hoja-moneda-lista");
+    cont.replaceChildren();
+    var lista = Mon.buscar($("hoja-moneda-buscar").value);
+    if (!lista.length) cont.append(el("p", "vacio", "No hay monedas con ese nombre."));
+    lista.forEach(function (m) {
+      var b = el("button", "fila-moneda"); b.type = "button";
+      var txt = el("span", "mov-texto"); txt.append(el("strong", null, m.codigo), el("small", null, m.nombre));
+      b.append(el("span", "bandera", m.bandera), txt, el("span", "marca", m.codigo === reg.moneda ? "✓" : ""));
+      b.addEventListener("click", function () { cerrarYLuego(function () { cambiarMoneda(m.codigo); }); });
+      cont.append(b);
+    });
+  }
+  $("hoja-moneda-buscar").addEventListener("input", pintarHojaMoneda);
+  $("reg-moneda").addEventListener("click", elegirMoneda);
+  function cambiarMoneda(codigo) {
+    reg.moneda = codigo;
+    reg.tasaAuto = null;
+    if (codigo === "COP") { reg.tasa = null; reg.tasaEditada = false; return pintarRegistro(); }
+    if (!reg.tasaEditada) reg.tasa = null;
+    pintarRegistro();
+    cargarTasas().then(function (t) {
+      if (!reg || reg.moneda !== codigo) return;
+      reg.tasaAuto = t ? Mon.tasaACOP(codigo, t.rates) : null;
+      reg.tasaFecha = t ? t.fecha : "";
+      if (!reg.tasaEditada && reg.tasaAuto) reg.tasa = reg.tasaAuto;
+      pintarRegistro();
+    });
+  }
+  $("reg-tasa").addEventListener("input", function (e) {
+    var v = Mon.leerTasa(e.target.value);
+    reg.tasa = isNaN(v) ? null : v;
+    reg.tasaEditada = true;
+    pintarRegistro();
+  });
   function pintarRegistro() {
     $("reg-titulo").textContent = (reg.editar ? "Editar " : "Nuevo ") + (reg.tipo === "ingreso" ? "ingreso" : "gasto") + ($("reg-bloque-recurrente").hidden ? "" : " recurrente");
     document.querySelectorAll("#reg-tipo button").forEach(function (b) { b.setAttribute("aria-checked", String(b.dataset.tipo === reg.tipo)); });
     $("pantalla-registro").classList.toggle("es-ingreso", reg.tipo === "ingreso");
     $("reg-monto-texto").textContent = formatearExpr(reg.expr);
-    var v = A.evaluar(reg.expr);
-    $("reg-resultado").textContent = /[+\-×÷−]/.test(reg.expr.replace(/^-/, "")) ? (isNaN(v) ? "…" : "= " + pesos.format(v)) : "";
+    var v = A.evaluar(reg.expr), ext = reg.moneda !== "COP", mi = Mon.info(reg.moneda);
+    $("reg-resultado").textContent = /[+\-×÷−]/.test(reg.expr.replace(/^-/, "")) ? (isNaN(v) ? "…" : "= " + (ext ? Mon.formatoMonto(v, reg.moneda) : pesos.format(v))) : "";
+    $("reg-moneda-bandera").textContent = mi.bandera; $("reg-moneda-codigo").textContent = mi.codigo;
+    $("reg-moneda").classList.toggle("activo", ext);
+    $("reg-bloque-moneda").hidden = !ext;
+    if (ext) {
+      $("reg-conversion").textContent = v > 0 && reg.tasa > 0 ? "= " + pesos.format(Mon.aCOP(v, reg.tasa)) + " COP" : "Escribe el valor y la tasa para ver los pesos";
+      $("reg-tasa-etiqueta").textContent = "Tasa: 1 " + reg.moneda + " = ? COP";
+      if (document.activeElement !== $("reg-tasa")) $("reg-tasa").value = reg.tasa ? Mon.formatoTasa(reg.tasa) : "";
+      $("reg-tasa-nota").textContent = reg.tasa && reg.tasaAuto && Math.abs(reg.tasa - reg.tasaAuto) < 1e-9 ? "Tasa del día" + (reg.tasaFecha ? " · " + reg.tasaFecha.slice(5, 16) : "")
+        : reg.tasaAuto ? "Tasa del día: " + Mon.formatoTasa(reg.tasaAuto) + " (la cambiaste)"
+        : reg.tasa ? "Tasa escrita por ti" : "No pude consultar la tasa del día: escríbela a mano.";
+    }
     $("reg-desc").placeholder = reg.tipo === "ingreso" ? "¿De dónde proviene?" : "¿En qué gastaste?";
     var c = reg.categoriaId != null ? categoria(reg.categoriaId) : null;
     if (c && c.tipo !== reg.tipo) { reg.categoriaId = null; c = null; }
@@ -1501,13 +1582,22 @@
   }
   document.querySelectorAll("#reg-tipo button").forEach(function (b) { b.addEventListener("click", function () { reg.tipo = b.dataset.tipo; pintarRegistro(); }); });
   $("reg-monto").addEventListener("click", function () { $("teclado").hidden = false; });
-  document.querySelectorAll("#teclado button").forEach(function (b) {
+  document.querySelectorAll("#teclado button, #reg-borrar-digito").forEach(function (b) {
     b.addEventListener("click", function () {
       var t = b.dataset.tecla, e = reg.expr;
       if (t === "borrar") e = e.slice(0, -1);
       else if ("+−×÷".indexOf(t) >= 0) { if (!e) return; e = /[+−×÷]$/.test(e) ? e.slice(0, -1) + t : e + t; }
-      else if (t === "000") { if (!e || /[+−×÷]$/.test(e)) return; e += "000"; }
-      else e = (e === "0" ? "" : e) + t;
+      else if (t === ",") {
+        var seg = e.match(/[\d,]*$/)[0];
+        if (seg.indexOf(",") >= 0) return;
+        e += seg ? "," : "0,";
+      }
+      else if (t === "000") { if (!e || /[+−×÷]$/.test(e) || /,$/.test(e)) return; e += "000"; }
+      else {
+        var ult = e.match(/[\d,]*$/)[0];
+        if (ult.indexOf(",") >= 0 && ult.split(",")[1].length >= 2) return; // máximo 2 decimales
+        e = (/(^|[+−×÷])0$/.test(e) ? e.slice(0, -1) : e) + t;
+      }
       if (e.replace(/\D/g, "").length > 15) return;
       reg.expr = e;
       pintarRegistro();
@@ -1516,9 +1606,9 @@
   // Teclado físico (computador) para el valor.
   $("pantalla-registro").addEventListener("keydown", function (e) {
     if (e.target.matches("input, textarea, select")) return;
-    var mapa = { "*": "×", "/": "÷", "-": "−", "+": "+", Backspace: "borrar" };
+    var mapa = { "*": "×", "/": "÷", "-": "−", "+": "+", Backspace: "borrar", ",": ",", ".": "," };
     var t = /^\d$/.test(e.key) ? e.key : mapa[e.key];
-    var b = t && document.querySelector('#teclado [data-tecla="' + t + '"]');
+    var b = t && document.querySelector('[data-tecla="' + t + '"]');
     if (b) { e.preventDefault(); b.click(); }
   });
   ["reg-desc", "reg-etiqueta", "reg-nota"].forEach(function (id) { $(id).addEventListener("focus", function () { $("teclado").hidden = true; }); });
@@ -1549,8 +1639,11 @@
   $("form-registro").addEventListener("submit", function (e) {
     e.preventDefault();
     if ($("reg-etiqueta").value.trim()) agregarEtiquetaEscrita();
-    var monto = A.evaluar(reg.expr);
-    if (!(monto > 0)) { $("teclado").hidden = false; return mensaje("reg-mensaje", "Escribe el valor con el teclado de números.", true); }
+    var montoOriginal = A.evaluar(reg.expr), ext = reg.moneda !== "COP";
+    if (!(montoOriginal > 0)) { $("teclado").hidden = false; return mensaje("reg-mensaje", "Escribe el valor con el teclado de números.", true); }
+    if (ext && !(reg.tasa > 0)) return mensaje("reg-mensaje", "Escribe la tasa de cambio: cuántos pesos vale 1 " + reg.moneda + ".", true);
+    var monto = ext ? Mon.aCOP(montoOriginal, reg.tasa) : montoOriginal;
+    if (!(monto > 0)) return mensaje("reg-mensaje", "El valor en pesos quedó en cero. Revisa la tasa.", true);
     var fechaTxt = $("reg-fecha").value;
     if (!fechaTxt) return mensaje("reg-mensaje", "Elige la fecha.", true);
     var recurrente = !reg.editar && !$("reg-bloque-recurrente").hidden;
@@ -1566,7 +1659,8 @@
       var fila = {
         cuenta_id: Number($("reg-cuenta").value) || datos.cuentas[0].id, categoria_id: c.id, tipo: reg.tipo,
         descripcion: $("reg-desc").value.trim() || c.nombre, monto: monto, fecha: fecha.toISOString(),
-        etiquetas: reg.etiquetas, estado: $("reg-estado").value, nota: $("reg-nota").value.trim() || null
+        etiquetas: reg.etiquetas, estado: $("reg-estado").value, nota: $("reg-nota").value.trim() || null,
+        moneda: reg.moneda, monto_original: ext ? montoOriginal : null, tasa: ext ? reg.tasa : null
       };
       if (editar) return fuente.actualizar("movimientos", editar.id, fila).then(function (n) { Object.assign(editar, n); return { m: editar, c: c }; });
       var prog = Promise.resolve(null);
@@ -1588,7 +1682,7 @@
     }).then(function (r) {
       ordenarMovimientos();
       var etiquetaDesc = r.m ? r.m.descripcion : r.programado.descripcion;
-      toast((editar ? "✓ Cambios guardados: " : "✓ ¡Guardado! ") + etiquetaDesc + " " + pesos.format(monto) + (r.programado ? " · 🔁 " + A.FRECUENCIAS[r.programado.frecuencia].toLowerCase() : ""));
+      toast((editar ? "✓ Cambios guardados: " : "✓ ¡Guardado! ") + etiquetaDesc + " " + pesos.format(monto) + (ext ? " (" + Mon.formatoMonto(montoOriginal, reg.moneda) + ")" : "") + (r.programado ? " · 🔁 " + A.FRECUENCIAS[r.programado.frecuencia].toLowerCase() : ""));
       pintar();
       if (otro && !editar) {
         reg.expr = ""; reg.etiquetas = []; $("reg-desc").value = ""; $("reg-nota").value = ""; $("teclado").hidden = false;
@@ -1653,11 +1747,13 @@
     });
   }
 
-  // ---------- Pregúntale a NOVA ----------
-  // Le manda a la IA un resumen de los datos de la persona y lo que lleva de conversación.
-  var historialChat = [];
+  // ---------- NOVA IA: conversaciones guardadas ----------
+  // Cada pregunta lleva un resumen de los datos de la persona; la conversación se guarda en su cuenta.
+  var chatActual = { id: null, titulo: "", mensajes: [] };
   function contextoFinanzas() {
     var ciclo = cicloEfectivo(), rango = Periodos.periodo(ciclo), t = A.totales(A.enRango(datos.movimientos, rango)), p = datos.perfil;
+    var hace90 = new Date(Date.now() - 90 * 86400000);
+    var b = presupuestoActual(), seguro = b.limite > 0 ? A.seguroParaGastar(b.limite, b.gastado, b.rango) : null;
     var contexto = {
       hoy: hoyLocal(),
       saldo_en_cuentas: saldoTotal(),
@@ -1666,12 +1762,18 @@
         nombre: A.nombrePeriodo(ciclo, rango), ingresos: t.ingresos, gastos: t.gastos,
         gastos_por_categoria: A.porCategoria(A.enRango(datos.movimientos, rango)).map(function (f) { return { categoria: nombreCategoria(f.id), total: f.total }; })
       },
+      gastos_por_mes: A.serie(datos.movimientos, "mensual", new Date(), 6).map(function (x) { return { mes: x.etiqueta, ingresos: x.ingresos, gastos: x.gastos }; }),
+      gastos_por_categoria_90_dias: A.porCategoria(datos.movimientos.filter(function (m) { return new Date(m.fecha) >= hace90; }))
+        .map(function (f) { return { categoria: nombreCategoria(f.id), total: f.total }; }),
+      seguro_para_gastar_por_dia: seguro ? Math.round(seguro.porDia) : null,
       metas: datos.metas.map(function (m) { return { nombre: m.nombre, objetivo: num(m.objetivo), ahorrado: num(m.ahorrado) }; }),
       limites: datos.limites.map(function (l) { var e = estadoLimite(l); return { categoria: l.categoria_id != null ? nombreCategoria(l.categoria_id) : "todas", ciclo: l.ciclo, limite: num(l.monto), gastado: e.gastado }; }),
       programados: datos.programados.filter(function (x) { return x.activo; }).map(function (x) { return { descripcion: x.descripcion, tipo: x.tipo, monto: num(x.monto), frecuencia: x.frecuencia, proxima: x.proxima }; }),
       movimientos_recientes: datos.movimientos.slice(0, 150).map(function (m) {
-        return { fecha: A.claveDia(m.fecha), tipo: m.tipo, monto: num(m.monto), descripcion: m.descripcion,
-                 categoria: nombreCategoria(m.categoria_id), etiquetas: m.etiquetas || [], estado: m.estado || "pagado" };
+        var o = { fecha: A.claveDia(m.fecha), tipo: m.tipo, monto: num(m.monto), descripcion: m.descripcion,
+                  categoria: nombreCategoria(m.categoria_id), etiquetas: m.etiquetas || [], estado: m.estado || "pagado" };
+        if (m.moneda && m.moneda !== "COP") { o.moneda = m.moneda; o.monto_original = num(m.monto_original); }
+        return o;
       })
     };
     if (p.presupuesto_monto) {
@@ -1680,18 +1782,108 @@
     }
     return contexto;
   }
+
+  function haceTiempo(f) {
+    var min = Math.max(0, Math.round((Date.now() - new Date(f).getTime()) / 60000));
+    if (min < 1) return "ahora";
+    if (min < 60) return "hace " + min + (min === 1 ? " minuto" : " minutos");
+    var h = Math.round(min / 60);
+    if (h < 24) return "hace " + h + (h === 1 ? " hora" : " horas");
+    var d = Math.round(h / 24);
+    return d < 30 ? "hace " + d + (d === 1 ? " día" : " días") : fechaCorta.format(new Date(f));
+  }
+  function pintarIA() {
+    var ul = $("lista-chats"), q = A.sinTildes($("chat-buscar").value);
+    ul.replaceChildren();
+    var lista = datos.conversaciones.filter(function (c) { return !q || A.sinTildes(c.titulo).indexOf(q) >= 0; });
+    if (!lista.length) {
+      ul.append(el("li", "vacio", datos.conversaciones.length ? "No hay conversaciones con ese nombre."
+        : "Todavía no tienes conversaciones. Toca el lápiz de arriba para preguntarle algo a NOVA IA."));
+    }
+    lista.forEach(function (c) {
+      var li = el("li", "chat-fila");
+      li.tabIndex = 0; li.setAttribute("role", "button");
+      var txt = el("span", "mov-texto"); txt.append(el("strong", null, c.titulo), el("small", null, haceTiempo(c.actualizado_en || c.creado_en)));
+      li.append(txt, el("span", "flecha", "›"));
+      li.addEventListener("click", function () { abrirChat(c); });
+      li.addEventListener("keydown", function (e) { if (e.key === "Enter") abrirChat(c); });
+      ul.append(li);
+    });
+  }
+  $("chat-buscar").addEventListener("input", pintarIA);
+  $("btn-chat-nuevo").addEventListener("click", function () { abrirChat(null); });
+
+  // Preguntas sugeridas con los datos de la persona (como las de la app de referencia).
+  function sugerenciasChat() {
+    var lista = ["¿Cuál fue mi gasto más grande este período?"];
+    var hace90 = new Date(Date.now() - 90 * 86400000);
+    var top = A.porCategoria(datos.movimientos.filter(function (m) { return new Date(m.fecha) >= hace90; }))[0];
+    lista.push(top && top.id != null ? "¿Cuánto he gastado en " + nombreCategoria(top.id) + " los últimos 3 meses?" : "¿En qué gasto más este mes?");
+    var b = presupuestoActual(), seguro = b.limite > 0 ? A.seguroParaGastar(b.limite, b.gastado, b.rango) : null;
+    lista.push(seguro && seguro.porDia >= 1000 ? "¿Puedo gastar " + pesos.format(Math.round(seguro.porDia / 1000) * 1000) + " hoy sin afectar mi presupuesto?" : "¿Cuánto me queda del presupuesto?");
+    lista.push("¿Qué puedo hacer para ahorrar más?");
+    if (datos.metas.length) lista.push("¿Cómo voy con mis metas?");
+    if (datos.programados.some(function (x) { return x.activo; })) lista.push("¿Qué pagos tengo programados?");
+    return lista;
+  }
   function burbuja(clase, texto) {
     var li = el("li", clase, texto);
     $("chat").append(li);
     li.scrollIntoView({ block: "nearest" });
     return li;
   }
-  function reiniciarChat() {
-    historialChat = [];
+  function pintarChat() {
     $("chat").replaceChildren();
-    $("chat-sugerencias").hidden = false;
-    mensaje("chat-mensaje", "");
+    chatActual.mensajes.forEach(function (m) { $("chat").append(el("li", m.rol === "usuario" ? "yo" : "nova", m.texto)); });
+    $("chat-bienvenida").hidden = chatActual.mensajes.length > 0;
+    $("chat-titulo").textContent = chatActual.titulo || "Nueva conversación";
+    $("chat-borrar").hidden = !chatActual.id;
+    var sug = $("chat-sugerencias");
+    sug.replaceChildren();
+    sugerenciasChat().forEach(function (t) {
+      var b = el("button", "sugerencia", t); b.type = "button";
+      b.addEventListener("click", function () { preguntarNova(t); });
+      sug.append(b);
+    });
   }
+  function abrirChat(conv) {
+    chatActual = conv ? { id: conv.id, titulo: conv.titulo, mensajes: (conv.mensajes || []).slice() } : { id: null, titulo: "", mensajes: [] };
+    mensaje("chat-mensaje", "");
+    $("chat-pregunta").value = "";
+    pintarChat();
+    abrirCapa("pantalla-chat");
+    var ol = $("chat"); setTimeout(function () { ol.scrollTop = ol.scrollHeight; }, 30);
+  }
+  function reiniciarChat() {
+    chatActual = { id: null, titulo: "", mensajes: [] };
+    $("chat-buscar").value = "";
+  }
+  function guardarConversacion() {
+    var mensajes = chatActual.mensajes.slice(-40).map(function (m) { return { rol: m.rol, texto: String(m.texto).slice(0, 4000) }; });
+    var ahora = new Date().toISOString();
+    if (chatActual.id) {
+      var c = datos.conversaciones.find(function (x) { return x.id === chatActual.id; });
+      return fuente.actualizar("conversaciones", chatActual.id, { mensajes: mensajes, actualizado_en: ahora }).then(function (n) {
+        if (c) Object.assign(c, n);
+        datos.conversaciones.sort(function (a, b) { return new Date(b.actualizado_en) - new Date(a.actualizado_en); });
+      });
+    }
+    var titulo = chatActual.mensajes[0].texto.replace(/\s+/g, " ").trim().slice(0, 60) || "Conversación";
+    return fuente.crear("conversaciones", { titulo: titulo, mensajes: mensajes, actualizado_en: ahora }).then(function (c) {
+      datos.conversaciones.unshift(c);
+      chatActual.id = c.id; chatActual.titulo = c.titulo;
+      $("chat-titulo").textContent = c.titulo; $("chat-borrar").hidden = false;
+    });
+  }
+  $("chat-borrar").addEventListener("click", function () {
+    var id = chatActual.id;
+    if (!id || !confirm("¿Borrar esta conversación?")) return;
+    fuente.borrar("conversaciones", id).then(function () {
+      datos.conversaciones = datos.conversaciones.filter(function (c) { return c.id !== id; });
+      reiniciarChat(); cerrarCapa(); pintarIA(); toast("Conversación borrada");
+    }).catch(function (e) { mensaje("chat-mensaje", e.message, true); });
+  });
+
   function preguntarNova(pregunta) {
     pregunta = pregunta.trim();
     if (!pregunta) return;
@@ -1701,23 +1893,25 @@
     }
     var boton = $("form-chat").querySelector("button[type=submit]");
     boton.disabled = true;
-    $("chat-sugerencias").hidden = true;
+    $("chat-bienvenida").hidden = true;
     mensaje("chat-mensaje", "");
     burbuja("yo", pregunta);
     var espera = burbuja("nova pensando", "✦ Pensando…");
-    invocarIA({ pregunta: pregunta, historial: historialChat.slice(-6), contexto: contextoFinanzas() }).then(function (d) {
+    var historial = chatActual.mensajes.slice(-6);
+    invocarIA({ pregunta: pregunta, historial: historial, contexto: contextoFinanzas() }).then(function (d) {
       if (!d.respuesta) throw new Error("La IA no pudo responder. Intenta otra vez en un momento.");
       espera.textContent = d.respuesta;
       espera.classList.remove("pensando");
-      historialChat.push({ rol: "usuario", texto: pregunta }, { rol: "nova", texto: d.respuesta });
+      chatActual.mensajes.push({ rol: "usuario", texto: pregunta }, { rol: "nova", texto: d.respuesta });
       $("chat-pregunta").value = "";
-    }).catch(function (e) {
+      return guardarConversacion().catch(function () { mensaje("chat-mensaje", "La respuesta no se pudo guardar en tu historial, pero puedes seguir chateando.", true); });
+    }).then(pintarIA).catch(function (e) {
       espera.remove();
+      if (!chatActual.mensajes.length) $("chat-bienvenida").hidden = false;
       mensaje("chat-mensaje", e.message, true);
     }).finally(function () { boton.disabled = false; });
   }
   $("form-chat").addEventListener("submit", function (e) { e.preventDefault(); preguntarNova($("chat-pregunta").value); });
-  document.querySelectorAll(".sugerencia").forEach(function (b) { b.addEventListener("click", function () { preguntarNova(b.textContent); }); });
 
   var consulta = 0;
   $("form-rapido").addEventListener("submit", function (e) {

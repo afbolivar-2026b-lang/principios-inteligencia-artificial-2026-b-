@@ -15,6 +15,18 @@ Está pensada como Lukas, pero todo es gratis y sin anuncios.
   por día hasta el final del periodo), entrada rápida, registros comunes de un toque,
   presupuesto, meta, gastos de la semana y movimientos agrupados por día. El ojo de
   arriba oculta los valores.
+- **NOVA IA (pestaña del centro):** lista de tus conversaciones con la IA (con buscador),
+  lápiz para empezar una nueva, y un chat con preguntas sugeridas hechas con tus propios
+  datos ("¿Cuánto he gastado en Comida los últimos 3 meses?", "¿Puedo gastar $ X hoy sin
+  afectar mi presupuesto?"). Las conversaciones se guardan en tu cuenta (`fin_conversaciones`).
+  Ajustes se abre con tu foto de la esquina.
+- **Otras monedas:** al registrar un gasto o ingreso, toca la moneda (COP ▾) y elige entre
+  35 monedas (dólar, euro, dólar canadiense, peso mexicano…). NOVA calcula los pesos con la
+  tasa del día, que puedes corregir a mano. Guarda el valor original, la moneda y la tasa
+  (`moneda`, `monto_original` y `tasa` en `fin_movimientos`); todo el análisis usa pesos.
+  El teclado tiene coma para los centavos. Tasas: ExchangeRate-API (`open.er-api.com`,
+  gratis y sin clave, una actualización al día), pedidas por la función `nova-ia` y
+  guardadas 12 horas en el celular.
 - **Botón +:** Asistente inteligente (varios gastos a la vez, dictados, escritos o con
   foto), gasto o ingreso a mano y el chat con la IA.
 - **Nuevo gasto o ingreso:** teclado de números con calculadora (`+ − × ÷`), fecha,
@@ -64,7 +76,9 @@ muestra la marca "✦ IA" cuando la respuesta viene de ahí.
 
 - **Asistente inteligente:** mismo modo de la función con `varios: true`; devuelve
   hasta 30 movimientos de un texto, un dictado o varias líneas, y se revisan antes de guardar.
-- **Pregúntale a NOVA:** el chat (desde el botón + o la tarjeta del inicio) para hacerle preguntas a la IA
+- **Tasas de cambio:** con `{ tasas: true }` devuelve las tasas con base en USD, sin gastar
+  cupo de Gemini y sin necesitar la clave.
+- **Pregúntale a NOVA:** el chat (pestaña NOVA IA, botón + o tarjeta del inicio) para hacerle preguntas a la IA
   ("¿en qué gasto más este mes?", "¿cuánto me queda del presupuesto?"). La app
   le manda un resumen de las cuentas, el mes, el presupuesto, las metas y los
   últimos 150 movimientos, más las últimas preguntas de la conversación. La
@@ -90,6 +104,7 @@ muestra la marca "✦ IA" cuando la respuesta viene de ahí.
 | `periodos.js` | Calcula el periodo actual de cada ciclo de presupuesto |
 | `recibo.js` | Saca el total y el negocio del texto leído en la foto de un recibo |
 | `analisis.js` | Cálculos sin pantalla: periodos, análisis, búsqueda, calculadora, programados y CSV |
+| `monedas.js` | Lista de monedas, búsqueda y cambio a pesos |
 | `*.test.js` | Pruebas: `node --test app-finanzas/*.test.js` |
 | `config.js` | Nombre de la app y conexión a Supabase |
 | `vendor/` | `@supabase/supabase-js` 2.45.4 (MIT) y Tesseract.js 5.1.1 con el modelo en español (Apache-2.0), incluidos para no depender de un CDN |
@@ -98,7 +113,7 @@ muestra la marca "✦ IA" cuando la respuesta viene de ahí.
 
 Las tablas `fin_cuentas`, `fin_categorias` (con color y grupo), `fin_movimientos`
 (con nota, estado y programación de origen), `fin_metas`, `fin_perfiles`,
-`fin_frecuentes`, `fin_programados` y `fin_limites` tienen
+`fin_frecuentes`, `fin_programados`, `fin_limites` y `fin_conversaciones` tienen
 RLS: cada usuario solo ve y edita sus propias filas, y un movimiento solo puede
 apuntar a una cuenta y una categoría del mismo usuario. Los visitantes sin sesión
 no pueden leer nada. En el primer inicio de sesión la app crea la cuenta

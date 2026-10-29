@@ -41,6 +41,7 @@ Usa solo los datos de la persona que vienen abajo en JSON; si algo no está en l
 Valores en pesos colombianos con punto de miles y signo $ (ej: $1.250.000). Haz las cuentas con cuidado.
 Puedes dar consejos prácticos de ahorro y presupuesto. No recomiendes productos financieros, inversiones ni bancos concretos.
 No uses Markdown (nada de asteriscos ni #); para listas usa guiones simples.
+Los datos traen: saldo y cuentas, el periodo actual (ingresos, gastos y gastos por categoría), gastos por mes de los últimos 6 meses, gastos por categoría de los últimos 90 días, cuánto puede gastar por día sin pasarse (seguro_para_gastar_por_dia), límites, metas, pagos programados y los últimos movimientos. Si un movimiento vino en otra moneda trae moneda y monto_original (el monto ya está en pesos).
 Datos de la persona: ${contexto}`;
 
   let r: Response;
@@ -68,18 +69,42 @@ Datos de la persona: ${contexto}`;
   }
 }
 
+// Tasas de cambio con base en USD (open.er-api.com: gratis, sin clave, se actualiza una vez al día).
+// Se guardan unas horas en memoria para no pedirlas en cada consulta.
+let tasasCache: { rates: Record<string, number>; fecha: string; guardado: number } | null = null;
+async function tasas() {
+  if (tasasCache && Date.now() - tasasCache.guardado < 6 * 3600_000) return tasasCache;
+  const r = await fetch("https://open.er-api.com/v6/latest/USD");
+  if (!r.ok) throw new Error("tasas " + r.status);
+  const d = await r.json();
+  if (d.result !== "success" || !d.rates) throw new Error("tasas sin datos");
+  const rates: Record<string, number> = {};
+  for (const [k, v] of Object.entries(d.rates)) if (/^[A-Z]{3}$/.test(k) && Number(v) > 0) rates[k] = Number(v);
+  tasasCache = { rates, fecha: String(d.time_last_update_utc || ""), guardado: Date.now() };
+  return tasasCache;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return responder(405, { error: "Usa POST" });
 
-  const clave = Deno.env.get("GEMINI_API_KEY");
-  if (!clave) return responder(503, { error: "sin_clave" });
-
   let entrada: {
-    texto?: string; imagen?: string; mime?: string; categorias?: string[]; hoy?: string;
+    texto?: string; imagen?: string; mime?: string; categorias?: string[]; hoy?: string; tasas?: boolean;
     pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown; varios?: boolean;
   };
   try { entrada = await req.json(); } catch { return responder(400, { error: "JSON inválido" }); }
+
+  if (entrada.tasas === true) {
+    try {
+      const t = await tasas();
+      return responder(200, { base: "USD", rates: t.rates, fecha: t.fecha });
+    } catch (_e) {
+      return responder(502, { error: "No se pudieron consultar las tasas" });
+    }
+  }
+
+  const clave = Deno.env.get("GEMINI_API_KEY");
+  if (!clave) return responder(503, { error: "sin_clave" });
 
   if (typeof entrada.pregunta === "string") return conversar(clave, entrada);
 
