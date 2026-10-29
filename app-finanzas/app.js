@@ -2617,22 +2617,25 @@
     }).finally(function () { btn.disabled = false; });
   });
 
-  // Botón para descargar la APK: solo en el navegador. Siempre lleva a la última versión.
+  // Botón para descargar la APK: solo en el navegador. Se baja desde esta misma página (la última
+  // que se publicó), con una copia en GitHub como respaldo y ayuda por si no deja instalar.
+  document.querySelectorAll(".apk-respaldo").forEach(function (a) { if (cfg.apkRespaldoUrl) a.href = cfg.apkRespaldoUrl; else a.parentNode.hidden = true; });
+  function mostrarApk(si) {
+    $("btn-apk").hidden = $("perfil-apk").hidden = !si;
+    document.querySelectorAll(".respaldo, .ayuda-instalar").forEach(function (e) { e.hidden = !si; });
+  }
+  mostrarApk(false);
   if (!enApp) {
-    if (cfg.apkUrl) {
-      $("btn-apk").href = $("perfil-apk").href = cfg.apkUrl;
-      $("btn-apk").hidden = $("perfil-apk").hidden = false;
-    } else {
-      fetch("descargas/NOVA.apk", { method: "HEAD" }).then(function (r) {
-        var hay = r.ok && !/text\/html/.test(r.headers.get("content-type") || "");
-        $("btn-apk").hidden = $("perfil-apk").hidden = !hay;
-      }).catch(function () { /* sin APK publicada todavía */ });
-    }
+    $("btn-apk").href = $("perfil-apk").href = "descargas/NOVA.apk";
+    $("btn-apk").setAttribute("download", "NOVA.apk"); $("perfil-apk").setAttribute("download", "NOVA.apk");
+    fetch("descargas/NOVA.apk", { method: "HEAD" }).then(function (r) {
+      mostrarApk(r.ok && !/text\/html/.test(r.headers.get("content-type") || ""));
+    }).catch(function () { mostrarApk(false); });
   }
 
   // Dentro de la app instalada: si ya hay una APK más nueva, avisar con un botón para bajarla.
   // version-app.json lo escribe el flujo al armar la APK; la versión publicada se pide con el
-  // HTTP del celular (CapacitorHttp) porque GitHub no deja leerla desde la app con fetch.
+  // HTTP del celular (CapacitorHttp), que no depende de los permisos entre sitios del navegador.
   function buscarActualizacion() {
     var http = window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp;
     if (!http || !cfg.apkVersionUrl || !cfg.apkUrl) return;
