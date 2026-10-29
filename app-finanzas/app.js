@@ -1555,7 +1555,7 @@
       }
       mensaje("exportar-mensaje", "Preparando " + nombre + "…");
       P.Filesystem.writeFile({ path: nombre, data: contenido, directory: "CACHE", encoding: "utf8" })
-        .then(function (r) { return P.Share.share({ title: nombre, text: "Archivo de NOVA · Opita-digital", url: r.uri, dialogTitle: "Guardar o enviar " + nombre }); })
+        .then(function (r) { return P.Share.share({ title: nombre, text: "Archivo de NOVA · OPITA-DIGITAL", url: r.uri, dialogTitle: "Guardar o enviar " + nombre }); })
         .then(function () { mensaje("exportar-mensaje", "Listo: elige dónde guardar " + nombre + "."); })
         .catch(function (e) {
           if (e && /cancel/i.test(String(e.message || e))) return mensaje("exportar-mensaje", "");
@@ -1607,7 +1607,7 @@
         ]), "text/csv;charset=utf-8");
       }
       if (que === "respaldo") {
-        var copia = { app: "NOVA", creada_por: "Opita-digital", exportado: new Date().toISOString(), perfil: datos.perfil };
+        var copia = { app: "NOVA", creada_por: "OPITA-DIGITAL", exportado: new Date().toISOString(), perfil: datos.perfil };
         TABLAS.forEach(function (t) { copia[t] = datos[t]; });
         return descargar("nova-respaldo-" + hoyArchivo() + ".json", JSON.stringify(copia, null, 2), "application/json");
       }
@@ -1639,12 +1639,12 @@
         el("td", null, (m.tipo === "ingreso" ? "+" : "−") + pesos.format(num(m.monto))));
       tabla.append(tr);
     });
-    r.append(tabla, el("p", null, "Creada por Opita-digital · NOVA"));
+    r.append(tabla, el("p", null, "Creada por OPITA-DIGITAL · NOVA"));
     if (enApp) {
       // La app no puede imprimir: se comparte el reporte como página (.html) que se abre en el
       // navegador y se guarda como PDF desde ahí (menú ⋮ → Imprimir → Guardar como PDF).
       var css = "body{font:14px/1.4 sans-serif;color:#000;margin:16px}h1{font-size:20px}h2{font-size:16px;margin-top:18px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:4px 6px;border-bottom:1px solid #ddd}";
-      var html = "<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"author\" content=\"Opita-digital\"><title>Reporte NOVA</title><style>" + css + "</style></head><body>" + r.innerHTML + "</body></html>";
+      var html = "<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"author\" content=\"OPITA-DIGITAL\"><title>Reporte NOVA</title><style>" + css + "</style></head><body>" + r.innerHTML + "</body></html>";
       return descargar("nova-reporte-" + hoyArchivo() + ".html", html, "text/html;charset=utf-8");
     }
     mensaje("exportar-mensaje", "En la ventana de impresión elige «Guardar como PDF».");
