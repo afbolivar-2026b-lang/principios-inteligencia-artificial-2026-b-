@@ -540,6 +540,91 @@
     });
   }
 
+  // ---------- Pregúntale a NOVA ----------
+  // Le manda a la IA un resumen de los datos de la persona y lo que lleva de conversación.
+  var historialChat = [];
+  function fechaISO(f) { var d = new Date(f); return isNaN(d) ? "" : d.toISOString().slice(0, 10); }
+  function contextoFinanzas() {
+    var r = resumen(), ciclo = cicloEfectivo(), p = datos.perfil;
+    var contexto = {
+      hoy: hoyLocal(),
+      balance_total: r.total,
+      cuentas: datos.cuentas.map(function (c) { return { nombre: c.nombre, saldo: saldoCuenta(c) }; }),
+      mes_actual: {
+        ingresos: r.ingresosMes, gastos: r.gastosMes,
+        gastos_por_categoria: Object.keys(r.porCategoria).map(function (id) {
+          return { categoria: (categoria(Number(id)) || { nombre: "Sin categoría" }).nombre, total: r.porCategoria[id] };
+        })
+      },
+      gastos_esta_semana: r.semana, gastos_semana_pasada: r.semanaPasada,
+      metas: datos.metas.map(function (m) { return { nombre: m.nombre, objetivo: num(m.objetivo), ahorrado: num(m.ahorrado) }; }),
+      movimientos_recientes: datos.movimientos.slice(0, 150).map(function (m) {
+        return { fecha: fechaISO(m.fecha), tipo: m.tipo, monto: num(m.monto), descripcion: m.descripcion,
+                 categoria: (categoria(m.categoria_id) || { nombre: "Sin categoría" }).nombre, etiquetas: m.etiquetas || [] };
+      })
+    };
+    if (p.presupuesto_monto) {
+      var rango = window.NovaPeriodos.periodo(ciclo);
+      var gastado = datos.movimientos.reduce(function (s, m) {
+        var f = new Date(m.fecha);
+        return m.tipo === "gasto" && f >= rango.desde && f < rango.hasta ? s + num(m.monto) : s;
+      }, 0);
+      contexto.presupuesto = { ciclo: ciclo, limite: num(p.presupuesto_monto), gastado: gastado,
+                               desde: fechaISO(rango.desde), hasta: fechaISO(new Date(rango.hasta.getTime() - 1)) };
+    }
+    return contexto;
+  }
+  function burbuja(clase, texto) {
+    var li = el("li", clase, texto);
+    $("chat").append(li);
+    li.scrollIntoView({ block: "nearest" });
+    return li;
+  }
+  function reiniciarChat() {
+    historialChat = [];
+    $("chat").replaceChildren();
+    $("chat-sugerencias").hidden = false;
+    mensaje("chat-mensaje", "");
+  }
+  function preguntarNova(pregunta) {
+    pregunta = pregunta.trim();
+    if (!pregunta) return;
+    if (!cliente || !fuente || fuente.demo) {
+      mensaje("chat-mensaje", "Inicia sesión con tu cuenta para preguntarle a la IA.", true);
+      return;
+    }
+    var form = $("form-chat"), boton = form.querySelector("button[type=submit]");
+    boton.disabled = true;
+    $("chat-sugerencias").hidden = true;
+    mensaje("chat-mensaje", "");
+    burbuja("yo", pregunta);
+    var espera = burbuja("nova pensando", "✦ Pensando…");
+    cliente.functions.invoke("nova-ia", {
+      body: { pregunta: pregunta, historial: historialChat.slice(-6), contexto: contextoFinanzas() }
+    }).then(function (res) {
+      if (res.error) {
+        var estado = res.error.context && res.error.context.status;
+        throw new Error(estado === 503 ? "La IA todavía no tiene su clave de Google en Supabase."
+          : estado === 429 ? "Se acabó el cupo gratis de la IA por hoy. Intenta mañana."
+          : "La IA no pudo responder. Intenta otra vez en un momento.");
+      }
+      var respuesta = res.data && res.data.respuesta;
+      if (!respuesta) throw new Error("La IA no pudo responder. Intenta otra vez en un momento.");
+      espera.textContent = respuesta;
+      espera.classList.remove("pensando");
+      historialChat.push({ rol: "usuario", texto: pregunta }, { rol: "nova", texto: respuesta });
+      iaActiva = true; // la clave ya está: los registros también pueden volver a usar la IA
+      $("chat-pregunta").value = "";
+    }).catch(function (e) {
+      espera.remove();
+      mensaje("chat-mensaje", e.message, true);
+    }).finally(function () { boton.disabled = false; });
+  }
+  $("form-chat").addEventListener("submit", function (e) { e.preventDefault(); preguntarNova($("chat-pregunta").value); });
+  document.querySelectorAll(".sugerencia").forEach(function (b) {
+    b.addEventListener("click", function () { preguntarNova(b.textContent); });
+  });
+
   var consulta = 0;
   $("form-rapido").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -904,6 +989,7 @@
 
   function entrar(nuevaFuente) {
     fuente = nuevaFuente;
+    reiniciarChat();
     $("aviso-demo").hidden = !fuente.demo;
     $("cargando").hidden = false;
     return fuente.cargar().then(function (d) {

@@ -44,6 +44,11 @@ se mandan primero a la función `nova-ia` de Supabase
 devuelve tipo, valor, descripción, categoría, etiquetas y día. La vista previa
 muestra la marca "✦ IA" cuando la respuesta viene de ahí.
 
+- **Pregúntale a NOVA:** en Inicio hay un chat para hacerle preguntas a la IA
+  ("¿en qué gasto más este mes?", "¿cuánto me queda del presupuesto?"). La app
+  le manda un resumen de las cuentas, el mes, el presupuesto, las metas y los
+  últimos 150 movimientos, más las últimas preguntas de la conversación. La
+  conversación no se guarda: se borra al cerrar la app.
 - **Clave:** la función lee el secreto `GEMINI_API_KEY` (Supabase → Edge
   Functions → Secrets). La clave gratuita se saca en https://aistudio.google.com
   → "Get API key". La app nunca ve la clave.

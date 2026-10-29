@@ -108,6 +108,23 @@
         <div id="frecuentes" class="frecuentes" aria-label="Registros frecuentes"></div>
       </form>
 
+      <section class="tarjeta asistente" aria-labelledby="asistente-titulo">
+        <h2 class="titulo-tarjeta" id="asistente-titulo"><span class="chip ia">✦ IA</span> Pregúntale a NOVA</h2>
+        <p class="nota">Pregunta lo que quieras sobre tu plata: en qué gastas más, cuánto te queda o cómo ahorrar.</p>
+        <ol id="chat" class="chat" aria-live="polite"></ol>
+        <div id="chat-sugerencias" class="frecuentes">
+          <button type="button" class="sugerencia">¿En qué gasto más este mes?</button>
+          <button type="button" class="sugerencia">¿Cuánto me queda del presupuesto?</button>
+          <button type="button" class="sugerencia">Dame un consejo para ahorrar</button>
+        </div>
+        <form id="form-chat" class="rapido-fila" autocomplete="off">
+          <label for="chat-pregunta" class="sr">Tu pregunta</label>
+          <input id="chat-pregunta" type="text" placeholder="Escribe tu pregunta" maxlength="500" enterkeyhint="send">
+          <button type="submit" class="icono-btn redondo primario" aria-label="Preguntar"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </form>
+        <p id="chat-mensaje" class="mensaje" role="status"></p>
+      </section>
+
       <article class="tarjeta presupuesto" id="tarjeta-presupuesto">
         <div class="presupuesto-cabeza">
           <span class="etiqueta" id="presupuesto-titulo">Presupuesto</span>

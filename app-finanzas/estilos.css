@@ -119,6 +119,18 @@ main .vista { display: flex; flex-direction: column; gap: 14px; }
 .chip.ingreso { color: var(--positivo); }
 .chip.ia { background: var(--accent); color: var(--accent-ink); }
 
+/* Pregúntale a NOVA */
+.asistente { display: flex; flex-direction: column; gap: 10px; }
+.asistente .titulo-tarjeta { display: flex; align-items: center; gap: 8px; }
+.asistente > .nota { margin: 0; }
+.chat { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
+.chat:empty { display: none; }
+.chat li { padding: 10px 12px; border-radius: 14px; max-width: 88%; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .95rem; }
+.chat .yo { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 4px; }
+.chat .nova { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.chat .nova.pensando { color: var(--muted); }
+.sugerencia { padding: 6px 12px; border-radius: 999px; font-size: .85rem; text-align: left; }
+
 /* Mini tarjetas */
 .mini { display: flex; flex-direction: column; gap: 4px; }
 .mini strong { font-size: 1.25rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
