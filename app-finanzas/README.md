@@ -24,13 +24,17 @@ No necesita compilación: son archivos estáticos que se pueden publicar tal cua
 
 Todas las funciones están disponibles para todas las cuentas, sin pagos ni códigos:
 
-- Registros escribiendo o hablando, sin límite.
+- Registros escribiendo, hablando o con foto del recibo, sin límite.
 - Presupuesto semanal, quincenal, mensual, trimestral, semestral o anual.
 - Registros frecuentes de un toque, sin límite.
 - Etiquetas `#` para filtrar, sin límite.
 - Ubicación de cada pago con enlace al mapa y "otros pagos aquí".
 
-Registrar con foto del recibo está pendiente, porque necesita un servicio de IA con su propia clave.
+**Foto del recibo:** el botón de cámara lee la foto en el mismo celular con
+Tesseract (`vendor/tesseract/`, sin servicios externos ni costo). `recibo.js` busca
+el TOTAL (ignora subtotal, IVA, efectivo y cambio) y el nombre del negocio, y lo
+pasa a la entrada rápida para revisarlo antes de guardar. Funciona mejor con
+fotos de cerca, con buena luz y el recibo derecho.
 
 ## Archivos
 
@@ -41,9 +45,10 @@ Registrar con foto del recibo está pendiente, porque necesita un servicio de IA
 | `app.js` | Lógica, sesión y conexión con Supabase |
 | `parser.js` | Convierte la frase escrita o dictada en un movimiento |
 | `periodos.js` | Calcula el periodo actual de cada ciclo de presupuesto |
+| `recibo.js` | Saca el total y el negocio del texto leído en la foto de un recibo |
 | `*.test.js` | Pruebas: `node --test app-finanzas/*.test.js` |
 | `config.js` | Nombre de la app y conexión a Supabase |
-| `vendor/` | Biblioteca oficial `@supabase/supabase-js` 2.45.4 (licencia MIT), incluida para no depender de un CDN |
+| `vendor/` | `@supabase/supabase-js` 2.45.4 (MIT) y Tesseract.js 5.1.1 con el modelo en español (Apache-2.0), incluidos para no depender de un CDN |
 
 ## Base de datos (Supabase)
 
@@ -82,8 +87,9 @@ instalada no se muestra.
   (contraseña `android`, la estándar). Se guarda en el repositorio para que cada
   versión nueva se instale encima de la anterior. Para publicar en Google Play
   hace falta una firma propia y secreta.
-- **Diferencias con la web:** dentro de la APK el dictado por voz no está
-  disponible, porque el navegador interno de Android no lo trae. Escribir sí funciona.
+- **Voz y cámara en la APK:** el dictado usa el reconocimiento de voz del
+  celular (`@capacitor-community/speech-recognition`), y la foto del recibo usa
+  la cámara. La APK pide permiso de micrófono, cámara y ubicación la primera vez.
 
 ## Probar en tu ordenador
 

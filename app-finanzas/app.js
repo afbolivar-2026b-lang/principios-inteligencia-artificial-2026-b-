@@ -3,6 +3,8 @@
 
   var cfg = window.NOVA_CONFIG || {};
   var Parser = window.NovaParser;
+  // ¿Corre dentro de la app de Android (Capacitor)?
+  var enApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   var $ = function (id) { return document.getElementById(id); };
   var pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
   var hora = new Intl.DateTimeFormat("es-CO", { hour: "numeric", minute: "2-digit" });
@@ -583,9 +585,29 @@
       }).finally(function () { btn.disabled = false; });
   });
 
-  // Dictado por voz (Chrome, Edge y Safari recientes).
+  // Dictado por voz. En la app de Android se usa el reconocimiento de voz del celular
+  // (complemento de Capacitor); en el navegador, el de Chrome, Edge o Safari.
+  var vozNativa = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.SpeechRecognition;
   var Reconocimiento = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (Reconocimiento) {
+  if (vozNativa) {
+    var vozApp = $("btn-voz");
+    vozNativa.available().then(function (r) { vozApp.hidden = !(r && r.available); }).catch(function () {});
+    vozApp.addEventListener("click", function () {
+      vozApp.classList.add("escuchando");
+      mensaje("rapido-mensaje", "Te escucho…");
+      vozNativa.requestPermissions().then(function (p) {
+        if (p.speechRecognition !== "granted") throw new Error("permiso");
+        return vozNativa.start({ language: "es-CO", maxResults: 1, prompt: "Dime tu gasto o ingreso", partialResults: false, popup: true });
+      }).then(function (r) {
+        var dicho = r && r.matches && r.matches[0];
+        if (!dicho) throw new Error("vacio");
+        $("entrada-rapida").value = dicho;
+        $("form-rapido").requestSubmit();
+      }).catch(function (err) {
+        mensaje("rapido-mensaje", err && err.message === "permiso" ? "Permite el micrófono para dictar." : "No te entendí. Intenta de nuevo o escríbelo.", true);
+      }).finally(function () { vozApp.classList.remove("escuchando"); });
+    });
+  } else if (Reconocimiento) {
     var voz = $("btn-voz");
     voz.hidden = false;
     voz.addEventListener("click", function () {
@@ -604,6 +626,81 @@
       rec.start();
     });
   }
+
+  // ---------- Foto del recibo ----------
+  // Lee el texto de la foto en el mismo celular con Tesseract (sin servicios externos ni costo)
+  // y le pasa el total y el negocio a la entrada rápida, para revisarlo antes de guardar.
+  var lector = null;
+  var numeroCO = new Intl.NumberFormat("es-CO");
+  function cargarLector() {
+    if (lector) return lector;
+    lector = new Promise(function (ok, mal) {
+      var s = document.createElement("script");
+      s.src = "vendor/tesseract/tesseract.min.js";
+      s.onload = function () {
+        var base = new URL("vendor/tesseract/", location.href).href;
+        window.Tesseract.createWorker("spa", 1, {
+          workerPath: base + "worker.min.js",
+          corePath: base + "core",
+          langPath: base + "lang",
+          gzip: true,
+          logger: function (m) {
+            if (m.status === "recognizing text") mensaje("rapido-mensaje", "Leyendo el recibo… " + Math.round(m.progress * 100) + "%");
+          }
+        }).then(ok, mal);
+      };
+      s.onerror = function () { mal(new Error("No se pudo cargar el lector de fotos. Revisa tu conexión.")); };
+      document.head.appendChild(s);
+    });
+    lector.catch(function () { lector = null; });
+    return lector;
+  }
+
+  // Achica la foto y la pasa a gris con más contraste: se lee mejor y más rápido.
+  function prepararFoto(archivo) {
+    return new Promise(function (ok, mal) {
+      var url = URL.createObjectURL(archivo), img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 1800 / Math.max(img.width, img.height));
+        var c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        var g = c.getContext("2d");
+        g.filter = "grayscale(1) contrast(1.4)";
+        g.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        ok(c);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); mal(new Error("No se pudo abrir la foto.")); };
+      img.src = url;
+    });
+  }
+
+  $("btn-foto").addEventListener("click", function () { $("foto-recibo").click(); });
+  $("foto-recibo").addEventListener("change", function (e) {
+    var archivo = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!archivo) return;
+    var btn = $("btn-foto");
+    btn.disabled = true;
+    mensaje("rapido-mensaje", "Preparando el lector de recibos… la primera vez tarda unos segundos.");
+    Promise.all([cargarLector(), prepararFoto(archivo)]).then(function (res) {
+      return res[0].recognize(res[1]);
+    }).then(function (salida) {
+      var rec = window.NovaRecibo.leerRecibo(salida.data.text);
+      if (!rec.ok) {
+        if (rec.comercio) $("entrada-rapida").value = rec.comercio + " ";
+        $("entrada-rapida").focus();
+        return mensaje("rapido-mensaje", rec.error, true);
+      }
+      $("entrada-rapida").value = numeroCO.format(rec.monto) + " " + (rec.comercio || "Compra");
+      $("form-rapido").requestSubmit();
+      // La descripción es el nombre del negocio completo, sin quitarle palabras como "La" o "El".
+      if (pendiente && rec.comercio) { pendiente.descripcion = rec.comercio; $("previa-desc").textContent = rec.comercio; }
+      mensaje("rapido-mensaje", "Leído del recibo. Revisa el valor: si no es correcto, corrige el texto y vuelve a tocar la flecha.");
+    }).catch(function (err) {
+      mensaje("rapido-mensaje", (err && err.message) || "No se pudo leer la foto.", true);
+    }).finally(function () { btn.disabled = false; });
+  });
 
   // ---------- Formularios de cuentas y metas ----------
   $("form-cuenta").addEventListener("submit", function (e) {
@@ -655,7 +752,6 @@
   var hashInicial = new URLSearchParams(location.hash.replace(/^#/, ""));
   var esRecuperacion = hashInicial.get("type") === "recovery";
   var errorEnlace = hashInicial.get("error_description");
-  var enApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
   var cliente = window.supabase && cfg.supabaseUrl ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey) : null;
 

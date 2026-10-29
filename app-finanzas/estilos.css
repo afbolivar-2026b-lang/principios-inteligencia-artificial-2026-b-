@@ -113,7 +113,8 @@ main .vista { display: flex; flex-direction: column; gap: 14px; }
 .vista-previa { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 14px; background: var(--accent-soft); }
 .previa-datos { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
 .previa-datos strong { font-size: 1.2rem; font-variant-numeric: tabular-nums; }
-.previa-controles { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; }
+.previa-controles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.previa-controles select { grid-column: 1 / -1; }
 .chip { padding: 2px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; background: var(--surface); }
 .chip.ingreso { color: var(--positivo); }
 
@@ -192,5 +193,12 @@ main .vista { display: flex; flex-direction: column; gap: 14px; }
 .mov-extra a:hover { text-decoration: underline; }
 .mov-extra small { font-size: .78rem; }
 .bloqueado { font-size: .75rem; font-weight: 700; color: var(--accent); }
+
+/* Todo incluido */
+.incluido .titulo-tarjeta { text-align: left; }
+.lista-incluido { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.lista-incluido li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: center; }
+.lista-incluido li::before { content: ""; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft) center / 15px no-repeat
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232ee06f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E"); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

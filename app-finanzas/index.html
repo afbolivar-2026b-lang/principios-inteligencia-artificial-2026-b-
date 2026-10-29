@@ -84,6 +84,8 @@
         <div class="rapido-fila">
           <input id="entrada-rapida" type="text" placeholder="gasté 20 mil en almuerzo" enterkeyhint="send">
           <button type="button" id="btn-voz" class="icono-btn redondo" aria-label="Dictar" hidden><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+          <button type="button" id="btn-foto" class="icono-btn redondo" aria-label="Foto del recibo"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+          <input type="file" id="foto-recibo" accept="image/*" capture="environment" hidden>
           <button type="submit" class="icono-btn redondo primario" aria-label="Interpretar"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         </div>
         <div id="vista-previa" class="vista-previa" hidden>
@@ -200,6 +202,17 @@
         <span class="etiqueta">Sesión</span>
         <strong id="perfil-email"></strong>
       </article>
+      <article class="tarjeta incluido">
+        <h2 class="titulo-tarjeta">Todo incluido, gratis</h2>
+        <ul class="lista-incluido">
+          <li>Experiencia 100% libre de anuncios</li>
+          <li>Registros ilimitados escribiendo, hablando o con foto del recibo</li>
+          <li>Tu ciclo de presupuesto: semanal, quincenal, mensual, trimestral y más</li>
+          <li>Registros frecuentes ilimitados, a un toque</li>
+          <li>Etiquetas ilimitadas para filtrar y analizar por contexto</li>
+          <li>Mapa y otros pagos en el mismo lugar para cada pago</li>
+        </ul>
+      </article>
       <form id="form-presupuesto" class="tarjeta formulario">
         <h2 class="titulo-tarjeta">Presupuesto</h2>
         <label for="presupuesto-monto">¿Cuánto quieres gastar como máximo?</label>
@@ -243,6 +256,7 @@
 <script src="config.js"></script>
 <script src="parser.js"></script>
 <script src="periodos.js"></script>
+<script src="recibo.js"></script>
 <script src="vendor/supabase.js"></script>
 <script src="app.js"></script>
 </body>

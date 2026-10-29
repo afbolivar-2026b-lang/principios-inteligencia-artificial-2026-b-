@@ -43,9 +43,15 @@ jobs:
           # Ícono y pantalla de inicio con el logo de NOVA
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           cp -r recursos/res/* android/app/src/main/res/
-          # Permiso de ubicación (función Pro: guardar dónde se hizo cada pago)
+          # Permiso de ubicación (guardar dónde se hizo cada pago)
           sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />#' android/app/src/main/AndroidManifest.xml
           grep -q ACCESS_FINE_LOCATION android/app/src/main/AndroidManifest.xml
+          # Micrófono (dictar gastos) y cámara (foto del recibo)
+          sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.CAMERA" />#' android/app/src/main/AndroidManifest.xml
+          # Android 11+ necesita declarar que la app usa el reconocimiento de voz
+          sed -i 's#</manifest>#    <queries>\n        <intent>\n            <action android:name="android.speech.RecognitionService" />\n        </intent>\n    </queries>\n</manifest>#' android/app/src/main/AndroidManifest.xml
+          grep -q RECORD_AUDIO android/app/src/main/AndroidManifest.xml
+          grep -q RecognitionService android/app/src/main/AndroidManifest.xml
           # Número de versión: uno más en cada armado
           sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
           grep -E "versionCode|versionName" android/app/build.gradle
