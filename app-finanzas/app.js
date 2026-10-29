@@ -2862,6 +2862,49 @@
     abrirCodigo(email);
   });
 
+  // ---------- Entrar con Google ----------
+  // El botón aparece solo si Google está activado en Supabase (se pregunta a /auth/v1/settings).
+  // En el navegador se va a Google y vuelve a la página. En la app instalada, Google no deja entrar desde
+  // la ventana interna, así que se abre en el navegador del celular y vuelve a NOVA con un enlace propio.
+  var plugApp = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  var plugNavegador = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
+  if (cliente && cfg.supabaseUrl) {
+    fetch(cfg.supabaseUrl + "/auth/v1/settings", { headers: { apikey: cfg.supabaseKey } }).then(function (r) { return r.json(); }).then(function (a) {
+      $("bloque-google").hidden = !(a && a.external && a.external.google);
+    }).catch(function () { /* sin conexión: el botón no se muestra */ });
+  }
+  $("btn-google").addEventListener("click", function () {
+    var b = $("btn-google");
+    b.disabled = true;
+    mensaje("auth-mensaje", "Abriendo Google…");
+    var app = enApp && plugNavegador;
+    cliente.auth.signInWithOAuth({ provider: "google", options: app
+      ? { redirectTo: cfg.appEsquema, skipBrowserRedirect: true, queryParams: { prompt: "select_account" } }
+      : { redirectTo: cfg.sitioUrl || location.origin, queryParams: { prompt: "select_account" } } }).then(function (r) {
+      if (r.error) throw r.error;
+      if (app) return plugNavegador.open({ url: r.data.url });
+    }).catch(function (err) {
+      mensaje("auth-mensaje", /not enabled|Unsupported provider/i.test(err.message) ? "Entrar con Google todavía no está activado." : "No se pudo abrir Google: " + err.message, true);
+    }).finally(function () { setTimeout(function () { b.disabled = false; }, 1500); });
+  });
+  // Al volver de Google a la app instalada llega un enlace co.novafinanzas.app://login-callback#access_token=…
+  if (plugApp && cliente) {
+    plugApp.addListener("appUrlOpen", function (ev) {
+      var url = String(ev && ev.url || "");
+      if (!cfg.appEsquema || url.indexOf(cfg.appEsquema) !== 0) return;
+      var params = new URLSearchParams(url.split("#")[1] || (url.split("?")[1] || ""));
+      try { if (plugNavegador) plugNavegador.close(); } catch (e) { /* en Android la ventana del navegador se cierra sola */ }
+      if (params.get("error")) { mostrar("auth"); return mensaje("auth-mensaje", "No se pudo entrar con Google: " + (params.get("error_description") || params.get("error")).replace(/\+/g, " "), true); }
+      if (!params.get("access_token") || !params.get("refresh_token")) return;
+      mostrar("auth"); mensaje("auth-mensaje", "Entrando…");
+      cliente.auth.setSession({ access_token: params.get("access_token"), refresh_token: params.get("refresh_token") }).then(function (r) {
+        if (r.error) throw r.error;
+        mensaje("auth-mensaje", "");
+        return entrar(fuenteSupabase(cliente, r.data.user));
+      }).catch(function (err) { mensaje("auth-mensaje", "No se pudo entrar con Google: " + err.message, true); });
+    });
+  }
+
   $("btn-demo").addEventListener("click", function () { entrar(fuenteDemo()); });
 
   $("btn-salir").addEventListener("click", function () {
@@ -2886,7 +2929,7 @@
         history.replaceState(null, "", location.pathname);
         mensaje("auth-mensaje", /expired|invalid/i.test(errorEnlace)
           ? "El enlace del correo ya se usó o venció (a veces Gmail lo abre antes que tú). Si es de verificar tu cuenta, puede que ya esté verificada: escribe tu correo y contraseña y toca Entrar. Si no entra, pide un correo nuevo y abre solo el último."
-          : "No se pudo abrir el enlace del correo: " + errorEnlace, true);
+          : "No se pudo completar el inicio de sesión: " + errorEnlace.replace(/\+/g, " "), true);
       }
     }).catch(function () { mostrar("auth"); });
   } else {

@@ -16,5 +16,8 @@ window.NOVA_CONFIG = {
   // apkRespaldoUrl: copia en GitHub, por si el celular no baja el archivo desde la página.
   apkUrl: "https://nova-finanzas.vercel.app/descargas/NOVA.apk",
   apkVersionUrl: "https://nova-finanzas.vercel.app/descargas/version.json",
+  // Entrar con Google en la app instalada: Google se abre en el navegador del celular y vuelve a NOVA
+  // por esta dirección (debe estar también en Supabase → Authentication → URL Configuration).
+  appEsquema: "co.novafinanzas.app://login-callback",
   apkRespaldoUrl: "https://github.com/afbolivar-2026b-lang/principios-inteligencia-artificial-2026-b-/releases/download/nova-android/NOVA.apk",
 };

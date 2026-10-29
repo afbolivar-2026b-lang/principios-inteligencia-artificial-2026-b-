@@ -147,6 +147,9 @@ debe ir en el navegador.
   código" con una espera de un minuto, y los enlaces de correos viejos siguen funcionando. Las
   plantillas de los correos están en `supabase/plantillas-correo.md` y se pegan en el panel de
   Supabase.
+- **Continuar con Google:** entra sin contraseña (y sirve para recuperar la cuenta). El botón aparece
+  solo cuando Google está activado en Supabase; los pasos están en `supabase/google-login.md`.
+  En la APK se abre el navegador del celular y se vuelve a NOVA por `co.novafinanzas.app://login-callback`.
 - Supabase manda pocos correos por hora con su servidor de correo gratuito.
 
 ## App para Android (APK)

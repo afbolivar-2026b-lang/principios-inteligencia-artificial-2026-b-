@@ -55,6 +55,9 @@ jobs:
           # Avisos de vencimientos (SOAT, tecnomecánica…): Android 13+ pide permiso para mostrar notificaciones
           sed -i 's#<uses-permission android:name="android.permission.INTERNET" />#&\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />#' android/app/src/main/AndroidManifest.xml
           grep -q POST_NOTIFICATIONS android/app/src/main/AndroidManifest.xml
+          # Entrar con Google: Google vuelve a la app con el enlace co.novafinanzas.app://login-callback
+          sed -i '0,/<\/activity>/s#</activity>#    <intent-filter>\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:scheme="co.novafinanzas.app" />\n            </intent-filter>\n        </activity>#' android/app/src/main/AndroidManifest.xml
+          grep -q 'android:scheme="co.novafinanzas.app"' android/app/src/main/AndroidManifest.xml
           grep -q RECORD_AUDIO android/app/src/main/AndroidManifest.xml
           grep -q RecognitionService android/app/src/main/AndroidManifest.xml
           # Número de versión: uno más en cada armado

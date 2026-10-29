@@ -530,4 +530,9 @@ body.con-capa { overflow: hidden; }
 /* Código de verificación del correo */
 .campo-codigo { font-size: 1.6rem; font-weight: 800; letter-spacing: .35em; text-align: center; font-variant-numeric: tabular-nums; }
 .campo-codigo::placeholder { letter-spacing: .35em; opacity: .4; }
+.separador { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: .85rem; margin: 6px 0; }
+.separador::before, .separador::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.boton-google { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: #fff; color: #1f1f1f; border-color: #dadce0; font-weight: 700; }
+.boton-google svg { width: 20px; height: 20px; stroke: none; }
+.boton-google:disabled { opacity: .6; }
 .en-codigo .boton-apk, .en-codigo .respaldo, .en-codigo .ayuda-instalar { display: none !important; }
