@@ -104,11 +104,21 @@ Cada vez que cambia `app-finanzas/` o `app-android-nova/`, el flujo de GitHub Ac
 "Descargar la app para Android" cuando el archivo existe. Dentro de la app
 instalada no se muestra.
 
+- **Enlace fijo a la última APK:** el flujo también la sube, con `version.json`,
+  a la versión de GitHub `nova-android` (`apkUrl` y `apkVersionUrl` en
+  `config.js`). Los botones de descarga de la página llevan ahí, así que dan la
+  APK más nueva aunque la página no se haya vuelto a publicar.
+- **Aviso de actualización:** la APK lleva su número en `version-app.json`. Al
+  abrirla (y al volver a ella) compara ese número con `version.json`; si hay una
+  más nueva, muestra arriba "Hay una versión nueva de NOVA" con el botón para
+  descargarla e instalarla encima.
 - **Ícono y pantalla de inicio:** el logo de NOVA en `app-android-nova/recursos/res/`.
   Se generan desde un dibujo, así que cambiarlos es cambiar esas imágenes.
 - **Firma:** `app-android-nova/firma/debug.keystore` es una firma de depuración
-  (contraseña `android`, la estándar). Se guarda en el repositorio para que cada
-  versión nueva se instale encima de la anterior. Para publicar en Google Play
+  (contraseña `android`, la estándar). Se guarda en el repositorio y se le pasa
+  a Gradle para que cada versión nueva se instale encima de la anterior; el
+  flujo comprueba la huella antes de publicar. Las APK 1.1 a 1.6 salieron con
+  otra firma: quien tenga una de esas debe desinstalarla una vez. Para publicar en Google Play
   hace falta una firma propia y secreta.
 - **Voz y cámara en la APK:** el dictado usa el reconocimiento de voz del
   celular (`@capacitor-community/speech-recognition`), y la foto del recibo usa

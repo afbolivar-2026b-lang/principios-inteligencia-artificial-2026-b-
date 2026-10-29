@@ -78,6 +78,7 @@ label { font-size: .85rem; color: var(--muted); font-weight: 600; }
 .boton-apk span { display: flex; flex-direction: column; }
 .boton-apk small { color: var(--muted); font-size: .8rem; }
 .boton-apk:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.aviso-version { position: sticky; top: 0; z-index: 20; margin: 0 auto; max-width: 560px; border-radius: 0 0 16px 16px; background: var(--surface); border-color: var(--accent); box-shadow: 0 6px 20px var(--glow); }
 
 /* Estructura */
 .app { max-width: 480px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }

@@ -972,13 +972,41 @@
     }).finally(function () { btn.disabled = false; });
   });
 
-  // Botón para descargar la APK: solo en el navegador y solo si el archivo ya existe.
+  // Botón para descargar la APK: solo en el navegador. Siempre lleva a la última versión.
   if (!enApp) {
-    fetch("descargas/NOVA.apk", { method: "HEAD" }).then(function (r) {
-      var hay = r.ok && !/text\/html/.test(r.headers.get("content-type") || "");
-      $("btn-apk").hidden = !hay;
-      $("perfil-apk").hidden = !hay;
-    }).catch(function () { /* sin APK publicada todavía */ });
+    if (cfg.apkUrl) {
+      $("btn-apk").href = $("perfil-apk").href = cfg.apkUrl;
+      $("btn-apk").hidden = $("perfil-apk").hidden = false;
+    } else {
+      fetch("descargas/NOVA.apk", { method: "HEAD" }).then(function (r) {
+        var hay = r.ok && !/text\/html/.test(r.headers.get("content-type") || "");
+        $("btn-apk").hidden = $("perfil-apk").hidden = !hay;
+      }).catch(function () { /* sin APK publicada todavía */ });
+    }
+  }
+
+  // Dentro de la app instalada: si ya hay una APK más nueva, avisar con un botón para bajarla.
+  // version-app.json lo escribe el flujo al armar la APK; la versión publicada se pide con el
+  // HTTP del celular (CapacitorHttp) porque GitHub no deja leerla desde la app con fetch.
+  function buscarActualizacion() {
+    var http = window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp;
+    if (!http || !cfg.apkVersionUrl || !cfg.apkUrl) return;
+    fetch("version-app.json").then(function (r) { return r.json(); }).then(function (local) {
+      return http.get({ url: cfg.apkVersionUrl + "?t=" + Date.now(), responseType: "json" }).then(function (res) {
+        var remota = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+        if (!(Number(remota.versionCode) > Number(local.versionCode))) return;
+        var aviso = $("aviso-version");
+        aviso.href = cfg.apkUrl;
+        aviso.target = "_blank";
+        $("aviso-version-texto").textContent = "Versión " + remota.versionName + " (tienes la " + local.versionName +
+          "). Toca para descargarla y, al abrir el archivo, toca Actualizar.";
+        aviso.hidden = false;
+      });
+    }).catch(function () { /* sin conexión o APK armada sin número de versión */ });
+  }
+  if (enApp) {
+    buscarActualizacion();
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) buscarActualizacion(); });
   }
 
   function mostrar(pantalla) {

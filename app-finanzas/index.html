@@ -16,6 +16,12 @@
 <body>
 
 <!-- Inicio de sesión -->
+<!-- Solo dentro de la app instalada: avisa cuando hay una APK más nueva -->
+<a id="aviso-version" class="boton-apk aviso-version" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+  <span><strong>Hay una versión nueva de NOVA</strong><small id="aviso-version-texto">Toca para descargarla. Al abrir el archivo, toca Actualizar.</small></span>
+</a>
+
 <section id="pantalla-auth" class="auth" hidden>
   <div class="logo grande"><span>NOVA</span><svg class="chispa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></div>
   <p class="auth-lema">Anota tus gastos escribiendo o hablando. NOVA hace las cuentas.</p>
@@ -54,7 +60,7 @@
   </form>
 
   <button type="button" id="btn-demo" class="enlace">Ver la demostración sin cuenta</button>
-  <a id="btn-apk" class="boton-apk" href="descargas/NOVA.apk" download="NOVA.apk" hidden>
+  <a id="btn-apk" class="boton-apk" href="descargas/NOVA.apk" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
     <span><strong>Descargar la app para Android</strong><small>Archivo APK con el ícono de NOVA</small></span>
   </a>
@@ -252,7 +258,7 @@
           <button type="button" role="radio" data-tema="claro">Claro</button>
         </div>
       </article>
-      <a id="perfil-apk" class="boton-apk" href="descargas/NOVA.apk" download="NOVA.apk" hidden>
+      <a id="perfil-apk" class="boton-apk" href="descargas/NOVA.apk" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
         <span><strong>Descargar la app para Android</strong><small>Ábrela y toca Instalar. Si Android pregunta, permite instalar desde esta fuente.</small></span>
       </a>

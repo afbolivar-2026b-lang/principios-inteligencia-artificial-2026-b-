@@ -39,6 +39,8 @@ jobs:
         run: |
           npm ci --no-audit --no-fund
           node preparar.mjs
+          # Número de esta APK: la app lo compara con version.json para avisar cuando hay una nueva
+          echo '{"versionCode": ${{ github.run_number }}, "versionName": "1.${{ github.run_number }}"}' > www/version-app.json
           npx cap add android
           # Ícono y pantalla de inicio con el logo de NOVA
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
@@ -78,6 +80,18 @@ jobs:
           mkdir -p app-finanzas/descargas
           cp app-android-nova/android/app/build/outputs/apk/debug/app-debug.apk app-finanzas/descargas/NOVA.apk
           ls -la app-finanzas/descargas
+
+      # Enlace fijo a la última APK (y su número de versión), para la página y para el aviso de la app:
+      # https://github.com/<repo>/releases/download/nova-android/NOVA.apk
+      - name: Publicar la APK en la versión fija "nova-android"
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo '{"versionCode": ${{ github.run_number }}, "versionName": "1.${{ github.run_number }}"}' > version.json
+          gh release view nova-android >/dev/null 2>&1 || gh release create nova-android --target "$GITHUB_SHA" --latest=false \
+            --title "NOVA para Android" --notes "La última APK de NOVA. Se reemplaza sola en cada versión nueva."
+          gh release upload nova-android app-finanzas/descargas/NOVA.apk version.json --clobber
 
       - uses: actions/upload-artifact@v4
         with:
