@@ -18,34 +18,19 @@ No necesita compilación: son archivos estáticos que se pueden publicar tal cua
 - **Dictado por voz** en navegadores que lo permiten (Chrome, Edge, Safari).
 - **Análisis** del mes por categoría y lista de todos los movimientos, con opción de borrar.
 - **Cuentas** (Nequi, banco, efectivo…) con su saldo, y **metas de ahorro** con abonos.
-- **Modo demostración** con datos de ejemplo que no se guardan. Ahí el código `DEMO` activa Pro.
+- **Modo demostración** con datos de ejemplo que no se guardan.
 
-## NOVA Pro
+## Todo gratis
 
-| Función | Gratis | Pro |
-|---|---|---|
-| Registros escribiendo o hablando | Ilimitados | Ilimitados |
-| Anuncios | Ninguno | Ninguno |
-| Ciclo de presupuesto | Mensual | Semanal, quincenal, mensual, trimestral, semestral o anual |
-| Registros frecuentes (un toque) | Hasta 3 | Ilimitados |
-| Etiquetas `#` para filtrar | Hasta 3 distintas | Ilimitadas |
-| Ubicación, mapa y "otros pagos aquí" | No | Sí |
+Todas las funciones están disponibles para todas las cuentas, sin pagos ni códigos:
 
-Pro se activa con un **código promocional** en Perfil → NOVA Pro. Los códigos
-están en la tabla `fin_codigos`: la app no puede leerlos y solo se canjean con
-la función `canjear_codigo`, que comprueba los usos. El usuario no puede
-cambiar su propio `es_pro`, porque la base de datos solo le deja editar
-el presupuesto y la ubicación.
+- Registros escribiendo o hablando, sin límite.
+- Presupuesto semanal, quincenal, mensual, trimestral, semestral o anual.
+- Registros frecuentes de un toque, sin límite.
+- Etiquetas `#` para filtrar, sin límite.
+- Ubicación de cada pago con enlace al mapa y "otros pagos aquí".
 
-Para crear un código nuevo (por ejemplo, para un familiar), en el SQL Editor de Supabase:
-
-```sql
-insert into public.fin_codigos (codigo, usos_max) values ('NOVA-FAMILIA-2026', 1);
-```
-
-Todavía no hay cobro: el botón de pago dice "Pagos próximamente" hasta
-conectar una pasarela (Wompi, Mercado Pago o Stripe). Registrar con foto del
-recibo también está pendiente, porque necesita un servicio de IA con su propia clave.
+Registrar con foto del recibo está pendiente, porque necesita un servicio de IA con su propia clave.
 
 ## Archivos
 
@@ -78,6 +63,9 @@ debe ir en el navegador.
 - **¿Olvidaste tu contraseña?** envía un correo con un enlace. Ese enlace abre
   la app en `sitioUrl` (de `config.js`) y pide la contraseña nueva dos veces.
   Si el enlace venció, la app lo dice y deja pedir otro.
+- **Crear cuenta** envía un correo de verificación al correo de la persona. Su
+  enlace abre la app, que muestra "¡Tu correo quedó verificado!". Si no llega,
+  aparece "Reenviar el correo de verificación".
 - Supabase manda pocos correos por hora con su servidor de correo gratuito.
 
 ## App para Android (APK)

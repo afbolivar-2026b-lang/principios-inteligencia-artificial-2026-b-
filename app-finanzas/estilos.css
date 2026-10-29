@@ -193,29 +193,4 @@ main .vista { display: flex; flex-direction: column; gap: 14px; }
 .mov-extra small { font-size: .78rem; }
 .bloqueado { font-size: .75rem; font-weight: 700; color: var(--accent); }
 
-/* NOVA Pro */
-.pro-acceso { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; color: var(--ink); }
-.pro-acceso-texto { flex: 1; display: flex; flex-direction: column; }
-.pro-acceso-texto small { color: var(--muted); font-weight: 600; }
-.pro-logo { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: none; color: #fff;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 85%, #0b5), color-mix(in srgb, var(--accent) 45%, #022)); box-shadow: 0 0 16px var(--glow); }
-.pro-logo svg { stroke-width: 2.4; }
-.pro-logo.grande { width: 84px; height: 84px; border-radius: 22px; align-self: center; margin-top: 8px; }
-.pro-logo.grande svg { width: 46px; height: 46px; }
-.vista.pro { position: relative; gap: 16px; padding-bottom: 12px; }
-.vista.pro .cerrar { position: absolute; right: 0; top: 0; }
-.pro-titulo { font-size: 2rem; text-align: center; }
-.pro-lema { text-align: center; color: var(--muted); margin: 0; }
-.pro-activo { text-align: center; margin: 0; padding: 10px; border-radius: 12px; background: var(--accent-soft); color: var(--ink); font-weight: 700; }
-.pro-beneficios { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
-.pro-beneficios li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: center; }
-.pro-beneficios li::before { content: ""; width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft) center / 16px no-repeat
-  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232ee06f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E"); }
-.pro-beneficios small { color: var(--muted); }
-.pro-compra { display: flex; flex-direction: column; gap: 10px; }
-.segmentado.dos { grid-template-columns: 1fr 1fr; max-width: 320px; width: 100%; align-self: center; }
-.centrada { text-align: center; }
-.codigo { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
-.ancho { width: 100%; padding: 16px; border-radius: 999px; font-size: 1.05rem; }
-
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

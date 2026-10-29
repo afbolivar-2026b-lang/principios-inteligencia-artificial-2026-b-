@@ -33,6 +33,7 @@
       <button type="submit" data-accion="registrar">Crear cuenta</button>
     </div>
     <p id="auth-mensaje" class="mensaje" role="status"></p>
+    <button type="button" id="btn-reenviar" class="enlace" hidden>Reenviar el correo de verificación</button>
   </form>
 
   <!-- Al abrir el enlace del correo para cambiar la contraseña -->
@@ -199,24 +200,18 @@
         <span class="etiqueta">Sesión</span>
         <strong id="perfil-email"></strong>
       </article>
-      <button type="button" class="tarjeta pro-acceso" data-ir="pro">
-        <span class="pro-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 16l5-5 4 4 7-7"/><circle cx="20" cy="8" r="1.2"/></svg></span>
-        <span class="pro-acceso-texto"><strong>NOVA Pro</strong><small id="pro-estado">Plan gratis</small></span>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
       <form id="form-presupuesto" class="tarjeta formulario">
         <h2 class="titulo-tarjeta">Presupuesto</h2>
         <label for="presupuesto-monto">¿Cuánto quieres gastar como máximo?</label>
         <input id="presupuesto-monto" inputmode="numeric" placeholder="1 millón">
         <label for="presupuesto-ciclo">Cada cuánto</label>
         <select id="presupuesto-ciclo"></select>
-        <p class="nota" id="presupuesto-pro-nota">Con NOVA Pro puedes usar ciclos semanales, quincenales, trimestrales, semestrales y anuales.</p>
         <button type="submit" class="primario">Guardar presupuesto</button>
         <p class="mensaje" id="presupuesto-mensaje" role="status"></p>
       </form>
       <article class="tarjeta formulario">
         <label class="casilla"><input type="checkbox" id="perfil-ubicacion"> Guardar la ubicación de cada pago</label>
-        <p class="nota" id="ubicacion-nota">Te muestra el lugar en el mapa y los otros pagos que hiciste ahí. Es una función de NOVA Pro.</p>
+        <p class="nota">Te muestra el lugar en el mapa y los otros pagos que hiciste ahí. El celular te pedirá permiso de ubicación.</p>
       </article>
       <article class="tarjeta formulario">
         <span class="etiqueta">Apariencia</span>
@@ -231,37 +226,6 @@
         <span><strong>Descargar la app para Android</strong><small>Ábrela y toca Instalar. Si Android pregunta, permite instalar desde esta fuente.</small></span>
       </a>
       <button type="button" id="btn-salir" class="peligro">Cerrar sesión</button>
-    </section>
-
-    <!-- NOVA PRO -->
-    <section class="vista pro" data-vista="pro" hidden>
-      <button type="button" class="icono-btn cerrar" data-ir="perfil" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-      <span class="pro-logo grande" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 16l5-5 4 4 7-7"/><circle cx="20" cy="8" r="1.2"/></svg></span>
-      <h1 class="pro-titulo">NOVA Pro</h1>
-      <p class="pro-lema">Registros con IA ilimitados y todas las herramientas para controlar tu plata.</p>
-      <p id="pro-activo" class="pro-activo" hidden>Tienes NOVA Pro activo. ¡Disfrútalo!</p>
-      <ul class="pro-beneficios">
-        <li><span>Experiencia 100% libre de anuncios</span></li>
-        <li><span>Registros con IA ilimitados escribiendo o hablando <small>(con foto del recibo: próximamente)</small></span></li>
-        <li><span>Tu ciclo de presupuesto: semanal, quincenal, trimestral y más</span></li>
-        <li><span>Registros frecuentes ilimitados, a un toque</span></li>
-        <li><span>Etiquetas ilimitadas para filtrar y analizar por contexto</span></li>
-        <li><span>Mapa y otros pagos en el mismo lugar para cada pago</span></li>
-      </ul>
-      <div id="pro-compra" class="pro-compra">
-        <div class="segmentado dos" role="radiogroup" aria-label="Plan">
-          <button type="button" role="radio" data-plan="mensual">Mensual</button>
-          <button type="button" role="radio" data-plan="anual" aria-checked="true">Anual</button>
-        </div>
-        <p class="nota centrada">Precio por definir.</p>
-        <form id="form-codigo" class="codigo">
-          <label for="codigo-promo" class="sr">Código promocional</label>
-          <input id="codigo-promo" placeholder="Tengo un código promocional" autocapitalize="characters" autocomplete="off">
-          <button type="submit">Canjear</button>
-        </form>
-        <p class="mensaje" id="codigo-mensaje" role="status"></p>
-        <button type="button" class="primario ancho" disabled>Pagos próximamente</button>
-      </div>
     </section>
   </main>
 

@@ -97,7 +97,6 @@
       actualizarMeta: function (id, cambios) { return q(cliente.from("fin_metas").update(cambios).eq("id", id).select().single()); },
       borrarMeta: function (id) { return q(cliente.from("fin_metas").delete().eq("id", id)); },
       guardarPerfil: function (cambios) { return q(cliente.from("fin_perfiles").update(cambios).eq("user_id", usuario.id).select().single()); },
-      canjear: function (codigo) { return q(cliente.rpc("canjear_codigo", { p_codigo: codigo })); },
       crearFrecuente: function (texto) { return q(cliente.from("fin_frecuentes").insert({ texto: texto }).select().single()); },
       borrarFrecuente: function (id) { return q(cliente.from("fin_frecuentes").delete().eq("id", id)); },
       salir: function () { return cliente.auth.signOut(); }
@@ -152,12 +151,6 @@
       actualizarMeta: function (id, cambios) { var m = datos.metas.find(function (x) { return x.id === id; }); Object.assign(m, cambios); return Promise.resolve(copia(m)); },
       borrarMeta: function (id) { datos.metas = datos.metas.filter(function (m) { return m.id !== id; }); return Promise.resolve(); },
       guardarPerfil: function (cambios) { Object.assign(datos.perfil, cambios); return Promise.resolve(copia(datos.perfil)); },
-      // En la demostración el código DEMO activa Pro (no se guarda nada).
-      canjear: function (codigo) {
-        var ok = String(codigo).trim().toUpperCase() === "DEMO";
-        if (ok) datos.perfil.es_pro = true;
-        return Promise.resolve(ok);
-      },
       crearFrecuente: function (texto) { var n = { id: sig++, texto: texto }; datos.frecuentes.push(n); return Promise.resolve(copia(n)); },
       borrarFrecuente: function (id) { datos.frecuentes = datos.frecuentes.filter(function (f) { return f.id !== id; }); return Promise.resolve(); },
       salir: function () { return Promise.resolve(); }
@@ -169,15 +162,12 @@
     return { cuentas: [], categorias: [], movimientos: [], metas: [], frecuentes: [],
              perfil: { es_pro: false, presupuesto_ciclo: "mensual", guardar_ubicacion: false } };
   }
-  // Lo que se puede usar sin NOVA Pro.
-  var GRATIS = { frecuentes: 3, etiquetas: 3 };
   var filtroEtiqueta = null;
   var fuente = null;
   var datos = datosVacios();
   var pendiente = null;
 
   function categoria(id) { return datos.categorias.find(function (c) { return c.id === id; }); }
-  function esPro() { return !!(datos.perfil && datos.perfil.es_pro); }
   function etiquetasUsadas() {
     var todas = [];
     datos.movimientos.forEach(function (m) { (m.etiquetas || []).forEach(function (e) { if (todas.indexOf(e) < 0) todas.push(e); }); });
@@ -195,10 +185,7 @@
     if (!tieneUbicacion(m)) return [];
     return datos.movimientos.filter(function (o) { return o.id !== m.id && tieneUbicacion(o) && distancia(m, o) <= 150; });
   }
-  function cicloEfectivo() {
-    var c = datos.perfil.presupuesto_ciclo || "mensual";
-    return esPro() ? c : "mensual";
-  }
+  function cicloEfectivo() { return datos.perfil.presupuesto_ciclo || "mensual"; }
   function num(v) { return Number(v) || 0; }
   function inicioSemana(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
   function inicioMes(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
@@ -237,7 +224,7 @@
     txt.append(el("strong", null, m.descripcion), el("small", null, "• " + c.nombre));
     var extra = el("div", "mov-extra");
     (m.etiquetas || []).forEach(function (e) { extra.append(el("span", "etiqueta-chip", "#" + e)); });
-    if (tieneUbicacion(m) && esPro()) {
+    if (tieneUbicacion(m)) {
       var mapa = el("a", null, "Ver en el mapa");
       mapa.href = "https://www.openstreetmap.org/?mlat=" + Number(m.lat) + "&mlon=" + Number(m.lng) + "#map=18/" + Number(m.lat) + "/" + Number(m.lng);
       mapa.target = "_blank"; mapa.rel = "noopener";
@@ -431,27 +418,18 @@
   }
 
   function pintarPerfil() {
-    var pro = esPro(), p = datos.perfil;
-    $("pro-estado").textContent = pro ? "Activo" : "Plan gratis · ver beneficios";
+    var p = datos.perfil;
     var sel = $("presupuesto-ciclo");
     sel.replaceChildren();
     Object.keys(window.NovaPeriodos.CICLOS).forEach(function (c) {
-      var o = el("option", null, window.NovaPeriodos.CICLOS[c] + (pro || c === "mensual" ? "" : " (Pro)"));
-      o.value = c; o.disabled = !pro && c !== "mensual"; o.selected = c === cicloEfectivo();
+      var o = el("option", null, window.NovaPeriodos.CICLOS[c]);
+      o.value = c; o.selected = c === cicloEfectivo();
       sel.append(o);
     });
-    $("presupuesto-pro-nota").hidden = pro;
     if (document.activeElement !== $("presupuesto-monto")) {
       $("presupuesto-monto").value = p.presupuesto_monto ? pesos.format(num(p.presupuesto_monto)).replace(/\s/g, "") : "";
     }
-    var ubic = $("perfil-ubicacion");
-    ubic.checked = pro && !!p.guardar_ubicacion;
-    ubic.disabled = !pro;
-    $("ubicacion-nota").textContent = pro
-      ? "Te muestra el lugar en el mapa y los otros pagos que hiciste ahí. El navegador te pedirá permiso."
-      : "Te muestra el lugar en el mapa y los otros pagos que hiciste ahí. Es una función de NOVA Pro.";
-    $("pro-activo").hidden = !pro;
-    $("pro-compra").hidden = pro;
+    $("perfil-ubicacion").checked = !!p.guardar_ubicacion;
   }
 
   function pintarCuentas() {
@@ -555,7 +533,7 @@
 
   // Pide la ubicación actual; si no se puede, sigue sin ella.
   function ubicacionActual() {
-    if (!esPro() || !datos.perfil.guardar_ubicacion || !navigator.geolocation) return Promise.resolve(null);
+    if (!datos.perfil.guardar_ubicacion || !navigator.geolocation) return Promise.resolve(null);
     return new Promise(function (resolver) {
       navigator.geolocation.getCurrentPosition(
         function (p) { resolver({ lat: p.coords.latitude, lng: p.coords.longitude }); },
@@ -567,15 +545,6 @@
 
   // Guarda un registro interpretado. Devuelve una promesa que no falla (los errores se muestran).
   function guardarRegistro(r, nombreCat, comoFrecuente, textoOriginal) {
-    var nuevas = r.etiquetas.filter(function (e) { return etiquetasUsadas().indexOf(e) < 0; });
-    if (!esPro() && etiquetasUsadas().length + nuevas.length > GRATIS.etiquetas) {
-      mensaje("rapido-mensaje", "En el plan gratis puedes usar hasta " + GRATIS.etiquetas + " etiquetas distintas. Con NOVA Pro son ilimitadas.", true);
-      return Promise.resolve(false);
-    }
-    if (comoFrecuente && !esPro() && datos.frecuentes.length >= GRATIS.frecuentes) {
-      mensaje("rapido-mensaje", "En el plan gratis puedes tener hasta " + GRATIS.frecuentes + " registros frecuentes. Con NOVA Pro son ilimitados.", true);
-      return Promise.resolve(false);
-    }
     var cat = datos.categorias.find(function (c) { return c.nombre === nombreCat && c.tipo === r.tipo; });
     var conCategoria = cat ? Promise.resolve(cat) : fuente.crearCategoria({ nombre: nombreCat || r.categoria, tipo: r.tipo, icono: r.icono })
       .then(function (c) { datos.categorias.push(c); return c; });
@@ -671,38 +640,13 @@
     var txt = $("presupuesto-monto").value.trim();
     var monto = txt ? leerValor(txt) : null;
     if (txt && !(monto > 0)) return mensaje("presupuesto-mensaje", "No entendí el valor. Escribe por ejemplo 1 millón.", true);
-    var ciclo = $("presupuesto-ciclo").value;
-    if (!esPro() && ciclo !== "mensual") ciclo = "mensual";
-    guardarPerfil({ presupuesto_monto: monto, presupuesto_ciclo: ciclo }, "presupuesto-mensaje",
+    guardarPerfil({ presupuesto_monto: monto, presupuesto_ciclo: $("presupuesto-ciclo").value }, "presupuesto-mensaje",
       monto ? "Presupuesto guardado." : "Presupuesto quitado.");
   });
 
   $("perfil-ubicacion").addEventListener("change", function (e) {
-    if (!esPro()) { e.target.checked = false; return; }
     guardarPerfil({ guardar_ubicacion: e.target.checked }, "presupuesto-mensaje",
       e.target.checked ? "Desde ahora se guarda la ubicación de cada pago." : "Ya no se guarda la ubicación.");
-  });
-
-  document.querySelectorAll("[data-plan]").forEach(function (b) {
-    b.addEventListener("click", function () {
-      document.querySelectorAll("[data-plan]").forEach(function (x) { x.setAttribute("aria-checked", String(x === b)); });
-    });
-  });
-
-  $("form-codigo").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var codigo = $("codigo-promo").value.trim();
-    if (!codigo) return mensaje("codigo-mensaje", "Escribe tu código.", true);
-    var btn = e.target.querySelector("button");
-    btn.disabled = true;
-    fuente.canjear(codigo).then(function (ok) {
-      if (!ok) return mensaje("codigo-mensaje", "Ese código no es válido o ya se usó.", true);
-      datos.perfil.es_pro = true;
-      $("codigo-promo").value = "";
-      mensaje("codigo-mensaje", "¡Listo! Ya tienes NOVA Pro.");
-      pintar();
-    }).catch(function (err) { mensaje("codigo-mensaje", err.message, true); })
-      .finally(function () { btn.disabled = false; });
   });
 
   // ---------- Sesión ----------
@@ -820,21 +764,43 @@
     var botones = e.target.querySelectorAll("button");
     botones.forEach(function (b) { b.disabled = true; });
     mensaje("auth-mensaje", accion === "registrar" ? "Creando tu cuenta…" : "Entrando…");
+    $("btn-reenviar").hidden = true;
+    // El correo de verificación le llega a la persona que crea la cuenta; su enlace abre la app.
     var op = accion === "registrar"
-      ? cliente.auth.signUp({ email: email, password: clave })
+      ? cliente.auth.signUp({ email: email, password: clave, options: { emailRedirectTo: cfg.sitioUrl || location.origin } })
       : cliente.auth.signInWithPassword({ email: email, password: clave });
     op.then(function (r) {
       if (r.error) throw r.error;
-      if (!r.data.session) { mensaje("auth-mensaje", "Te enviamos un correo para confirmar tu cuenta. Ábrelo y luego entra aquí."); return; }
+      if (!r.data.session) {
+        mensaje("auth-mensaje", "Te enviamos un correo de verificación a " + email + ". Ábrelo, toca el enlace para confirmar tu cuenta y luego entra aquí. Revisa también Spam.");
+        $("btn-reenviar").hidden = false;
+        return;
+      }
       mensaje("auth-mensaje", "");
       return entrar(fuenteSupabase(cliente, r.data.user));
     }).catch(function (err) {
+      var noConfirmado = /not confirmed/i.test(err.message);
       var t = /invalid login/i.test(err.message) ? "Correo o contraseña incorrectos."
-        : /not confirmed/i.test(err.message) ? "Primero confirma tu correo con el enlace que te enviamos."
+        : noConfirmado ? "Primero confirma tu correo con el enlace que te enviamos. Si no te llegó, pide otro abajo."
         : /already registered/i.test(err.message) ? "Ese correo ya tiene cuenta. Usa Entrar."
+        : /rate limit|too many/i.test(err.message) ? "Ya se enviaron varios correos. Espera unos minutos y vuelve a intentarlo."
         : err.message;
       mensaje("auth-mensaje", t, true);
+      $("btn-reenviar").hidden = !noConfirmado;
     }).finally(function () { botones.forEach(function (b) { b.disabled = false; }); });
+  });
+
+  $("btn-reenviar").addEventListener("click", function () {
+    var email = $("auth-email").value.trim(), b = $("btn-reenviar");
+    if (!email) { $("auth-email").focus(); return mensaje("auth-mensaje", "Escribe arriba el correo con el que creaste la cuenta.", true); }
+    b.disabled = true;
+    cliente.auth.resend({ type: "signup", email: email, options: { emailRedirectTo: cfg.sitioUrl || location.origin } }).then(function (r) {
+      if (r.error) throw r.error;
+      mensaje("auth-mensaje", "Listo, te enviamos otro correo de verificación a " + email + ".");
+    }).catch(function (err) {
+      mensaje("auth-mensaje", /rate limit|too many|seconds/i.test(err.message)
+        ? "Espera un momento antes de pedir otro correo." : "No se pudo reenviar: " + err.message, true);
+    }).finally(function () { b.disabled = false; });
   });
 
   $("btn-demo").addEventListener("click", function () { entrar(fuenteDemo()); });
@@ -851,6 +817,12 @@
     cliente.auth.getSession().then(function (r) {
       var s = r.data && r.data.session;
       if (s && esRecuperacion) return pedirNuevaClave();
+      if (s && hashInicial.get("type") === "signup") {
+        // Llegó desde el enlace del correo de verificación.
+        return entrar(fuenteSupabase(cliente, s.user)).then(function () {
+          mensaje("rapido-mensaje", "¡Tu correo quedó verificado! Bienvenido a NOVA.");
+        });
+      }
       if (s) return entrar(fuenteSupabase(cliente, s.user));
       mostrar("auth");
       if (errorEnlace) {
