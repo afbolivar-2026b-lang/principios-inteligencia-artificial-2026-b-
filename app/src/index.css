@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color-scheme: light dark; --tab-bar: 68px; }
+  :root[data-theme='claro'] { color-scheme: light; }
+  :root[data-theme='oscuro'] { color-scheme: dark; }
+  html { -webkit-tap-highlight-color: transparent; }
+  body { @apply bg-surface font-sans text-text antialiased; min-height: 100dvh; font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+  button, input { font: inherit; color: inherit; }
+}
+
+@layer components {
+  /* Tarjeta grande del balance: degradado verde en claro, vidrio oscuro con brillo en oscuro */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    color: var(--color-on-hero);
+    background:
+      var(--hero-blob),
+      radial-gradient(120% 150% at 15% 0%, var(--color-hero-from) 0%, var(--color-hero-mid) 55%, var(--color-hero-to) 100%);
+    border: 1px solid var(--color-hero-border);
+    box-shadow: var(--shadow-card), var(--hero-glow);
+  }
+  .hero-pill { background: var(--hero-pill); border: 1px solid var(--color-hero-border); }
+  .cat-ico {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 44px; height: 44px; border-radius: 999px;
+    background: var(--ico-bg); color: var(--ico-fg); border: 1.5px solid var(--ico-ring);
+  }
+  .scrim { background: var(--scrim); }
+  .skeleton { background: var(--color-border); animation: pulso 1.2s ease-in-out infinite; }
+  @keyframes pulso { 50% { opacity: .5; } }
+  @keyframes subir { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .sube { animation: subir var(--motion-base) var(--motion-ease); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
