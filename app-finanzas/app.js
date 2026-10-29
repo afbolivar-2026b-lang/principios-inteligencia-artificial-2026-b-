@@ -2683,6 +2683,36 @@
     });
   }
 
+  // Pedir correos seguidos gasta el cupo de la hora y deja sin efecto el enlace del correo anterior.
+  // Por eso, después de pedir uno, "Crear cuenta" y "Reenviar" esperan un minuto.
+  var enfriarHasta = Number(leerLocal("nova-correo-hasta", 0)) || 0, enfriarReloj = null;
+  function segundosEspera() { return Math.max(0, Math.ceil((enfriarHasta - Date.now()) / 1000)); }
+  function pintarEnfriamiento() {
+    var seg = segundosEspera(), crear = document.querySelector("#form-auth [data-accion=registrar]"), re = $("btn-reenviar");
+    crear.disabled = re.disabled = seg > 0;
+    crear.textContent = seg > 0 ? "Crear cuenta (" + seg + " s)" : "Crear cuenta";
+    re.textContent = seg > 0 ? "Reenviar el correo de verificación (" + seg + " s)" : "Reenviar el correo de verificación";
+    if (seg <= 0 && enfriarReloj) { clearInterval(enfriarReloj); enfriarReloj = null; }
+  }
+  function enfriar(segundos) {
+    enfriarHasta = Date.now() + segundos * 1000;
+    guardarLocal("nova-correo-hasta", enfriarHasta);
+    pintarEnfriamiento();
+    if (!enfriarReloj) enfriarReloj = setInterval(pintarEnfriamiento, 1000);
+  }
+  if (segundosEspera() > 0) { pintarEnfriamiento(); enfriarReloj = setInterval(pintarEnfriamiento, 1000); }
+  // Traduce los errores del envío de correos a algo que se pueda entender y hacer.
+  function errorDeCorreo(err) {
+    var m = String(err && err.message || "");
+    var seg = (m.match(/after (\d+) second/i) || [])[1];
+    if (seg) { enfriar(Number(seg) + 1); return "Espera " + (Number(seg) + 1) + " segundos antes de pedir otro correo."; }
+    if (/email rate limit|over_email_send_rate_limit/i.test(m + " " + (err && err.code || ""))) {
+      enfriar(300);
+      return "Se acabó el cupo de correos de esta hora: el servicio gratis de correos manda muy pocos por hora. Espera un rato (hasta una hora) y vuelve a intentarlo. Si ya habías pedido uno, abre solo el más reciente.";
+    }
+    return null;
+  }
+
   $("form-auth").addEventListener("submit", function (e) {
     e.preventDefault();
     var accion = e.submitter && e.submitter.dataset.accion;
@@ -2700,7 +2730,13 @@
     op.then(function (r) {
       if (r.error) throw r.error;
       if (!r.data.session) {
-        mensaje("auth-mensaje", "Te enviamos un correo de verificación a " + email + ". Ábrelo, toca el enlace para confirmar tu cuenta y luego entra aquí. Revisa también Spam.");
+        // Supabase no avisa con un error cuando el correo ya tiene cuenta: devuelve un usuario sin identidades.
+        if (r.data.user && Array.isArray(r.data.user.identities) && !r.data.user.identities.length) {
+          mensaje("auth-mensaje", "Ese correo ya tiene cuenta. Toca Entrar. Si no recuerdas la contraseña, toca «¿Olvidaste tu contraseña?».", true);
+          return;
+        }
+        enfriar(60);
+        mensaje("auth-mensaje", "Te enviamos un correo de verificación a " + email + ". Abre SOLO el más reciente (los anteriores dejan de servir), toca el botón para confirmar y vuelve aquí a tocar Entrar. Revisa también Spam.");
         $("btn-reenviar").hidden = false;
         return;
       }
@@ -2708,14 +2744,13 @@
       return entrar(fuenteSupabase(cliente, r.data.user));
     }).catch(function (err) {
       var noConfirmado = /not confirmed/i.test(err.message);
-      var t = /invalid login/i.test(err.message) ? "Correo o contraseña incorrectos."
+      var t = errorDeCorreo(err) || (/invalid login/i.test(err.message) ? "Correo o contraseña incorrectos."
         : noConfirmado ? "Primero confirma tu correo con el enlace que te enviamos. Si no te llegó, pide otro abajo."
         : /already registered/i.test(err.message) ? "Ese correo ya tiene cuenta. Usa Entrar."
-        : /rate limit|too many/i.test(err.message) ? "Ya se enviaron varios correos. Espera unos minutos y vuelve a intentarlo."
-        : err.message;
+        : err.message);
       mensaje("auth-mensaje", t, true);
       $("btn-reenviar").hidden = !noConfirmado;
-    }).finally(function () { botones.forEach(function (b) { b.disabled = false; }); });
+    }).finally(function () { botones.forEach(function (b) { b.disabled = false; }); pintarEnfriamiento(); });
   });
 
   $("btn-reenviar").addEventListener("click", function () {
@@ -2724,11 +2759,11 @@
     b.disabled = true;
     cliente.auth.resend({ type: "signup", email: email, options: { emailRedirectTo: cfg.sitioUrl || location.origin } }).then(function (r) {
       if (r.error) throw r.error;
-      mensaje("auth-mensaje", "Listo, te enviamos otro correo de verificación a " + email + ".");
+      enfriar(60);
+      mensaje("auth-mensaje", "Listo, te enviamos otro correo a " + email + ". Abre SOLO este último: los correos anteriores ya no sirven.");
     }).catch(function (err) {
-      mensaje("auth-mensaje", /rate limit|too many|seconds/i.test(err.message)
-        ? "Espera un momento antes de pedir otro correo." : "No se pudo reenviar: " + err.message, true);
-    }).finally(function () { b.disabled = false; });
+      mensaje("auth-mensaje", errorDeCorreo(err) || "No se pudo reenviar: " + err.message, true);
+    }).finally(function () { pintarEnfriamiento(); if (segundosEspera() <= 0) b.disabled = false; });
   });
 
   $("btn-demo").addEventListener("click", function () { entrar(fuenteDemo()); });
@@ -2754,7 +2789,7 @@
       if (errorEnlace) {
         history.replaceState(null, "", location.pathname);
         mensaje("auth-mensaje", /expired|invalid/i.test(errorEnlace)
-          ? "El enlace del correo ya venció o ya se usó. Pide uno nuevo con «¿Olvidaste tu contraseña?»."
+          ? "El enlace del correo ya se usó o venció (a veces Gmail lo abre antes que tú). Si es de verificar tu cuenta, puede que ya esté verificada: escribe tu correo y contraseña y toca Entrar. Si no entra, pide un correo nuevo y abre solo el último."
           : "No se pudo abrir el enlace del correo: " + errorEnlace, true);
       }
     }).catch(function () { mostrar("auth"); });
