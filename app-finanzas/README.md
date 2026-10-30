@@ -264,3 +264,7 @@ cambiada. Las tasas vienen de open.er-api.com (una vez al día, guardadas en el 
 Convertidor entre cualquier par de las 162 monedas, con los dos valores editables (lo que se escribe en uno calcula el otro), botón
 para cambiar de lugar las monedas y la lista de todas las monedas con su tasa (1 moneda = X pesos, 1 USD = X moneda) y un buscador por
 nombre o código. Al tocar una moneda de la lista pasa al convertidor. Sin internet se usan las últimas tasas guardadas.
+
+Las tasas se revisan solas cada 30 minutos mientras la app está abierta, y también al abrirla, al volver a ella y al volver el internet;
+el botón «Actualizar ahora» las pide ya (máximo una vez por minuto). La fuente gratuita (open.er-api.com) publica tasas nuevas una vez al día.
+La tasa del pago que se está anotando también se renueva sola si la persona no la cambió a mano.

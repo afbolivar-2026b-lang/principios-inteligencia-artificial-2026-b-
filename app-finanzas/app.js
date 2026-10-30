@@ -2243,18 +2243,47 @@
   }
 
   // Tasas de cambio (base USD): se piden una vez al día y se guardan en el celular.
-  function cargarTasas() {
-    var g = leerLocal("nova-tasas", null);
-    if (g && g.rates && Date.now() - g.guardado < 12 * 3600000) return Promise.resolve(g);
-    var origen = cliente && fuente && !fuente.demo
-      ? cliente.functions.invoke("nova-ia", { body: { tasas: true } }).then(function (res) { if (res.error || !res.data || !res.data.rates) throw new Error("tasas"); return res.data; })
-      : fetch("https://open.er-api.com/v6/latest/USD").then(function (r) { return r.json(); }).then(function (d) { if (d.result !== "success") throw new Error("tasas"); return { rates: d.rates, fecha: d.time_last_update_utc }; });
+  // La fuente gratis publica tasas nuevas una vez al día; la app las vuelve a pedir cada 30 minutos (y al abrir, al volver
+  // a la app o al volver el internet) para tenerlas al día apenas salgan. "forzar" pide ya mismo (máximo una vez por minuto).
+  var TTL_TASAS = 30 * 60000;
+  function cargarTasas(forzar) {
+    var g = leerLocal("nova-tasas", null), tiene = g && g.rates;
+    if (tiene && Date.now() - g.guardado < (forzar ? 60000 : TTL_TASAS)) return Promise.resolve(g);
+    var directo = function () {
+      return fetch("https://open.er-api.com/v6/latest/USD").then(function (r) { return r.json(); })
+        .then(function (d) { if (d.result !== "success" || !d.rates) throw new Error("tasas"); return { rates: d.rates, fecha: d.time_last_update_utc }; });
+    };
+    var porFuncion = function () {
+      return cliente.functions.invoke("nova-ia", { body: { tasas: true } }).then(function (res) { if (res.error || !res.data || !res.data.rates) throw new Error("tasas"); return res.data; });
+    };
+    var origen = enLinea() ? directo().catch(function () { return cliente && fuente && !fuente.demo ? porFuncion() : Promise.reject(new Error("tasas")); }) : Promise.reject(new Error("sin internet"));
     return origen.then(function (d) {
       var t = { rates: d.rates, fecha: d.fecha || "", guardado: Date.now() };
       guardarLocal("nova-tasas", t);
       return t;
-    }).catch(function () { return g && g.rates ? g : null; });
+    }).catch(function () { return tiene ? g : null; });
   }
+  // Vuelve a pedir las tasas y actualiza lo que se esté viendo: el convertidor, la lista y la tasa del pago que se está anotando.
+  function refrescarTasas(forzar) {
+    return cargarTasas(forzar).then(function (t) {
+      if (!t) return null;
+      if (enVista === "ajustes-tasas") { conv.tasas = t.rates; conv.fecha = t.fecha; pintarFechaTasas(t); pintarConversor("monto"); pintarListaTasas(); }
+      if (typeof reg !== "undefined" && reg && reg.moneda !== "COP" && pilaCapas.indexOf("pantalla-registro") >= 0) {
+        var nueva = Mon.tasaACOP(reg.moneda, t.rates);
+        if (nueva) { reg.tasaAuto = nueva; reg.tasaFecha = t.fecha; if (!reg.tasaEditada) { reg.tasa = nueva; pintarRegistro(); } }
+      }
+      return t;
+    });
+  }
+  function pintarFechaTasas(t) {
+    var cuando = t.guardado ? new Date(t.guardado) : null;
+    $("tasas-fecha").textContent = t
+      ? "Tasas de ExchangeRate-API" + (t.fecha ? " del " + t.fecha.slice(5, 16) : "") + (cuando ? " · revisadas hoy a las " + hora.format(cuando) : "") + " — la app las vuelve a revisar sola cada 30 minutos y, sin internet, usa las últimas guardadas."
+      : "No pude descargar las tasas. Sin internet no hay tasas guardadas todavía.";
+  }
+  setInterval(function () { if (!document.hidden && enLinea() && fuente && !fuente.demo) refrescarTasas(); }, 5 * 60000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && fuente && !fuente.demo) refrescarTasas(); });
+  window.addEventListener("online", function () { if (fuente && !fuente.demo) refrescarTasas(true); });
   // La hoja de monedas (con buscador) la usan el registro y el convertidor: guarda cuál está elegida y qué hacer al elegir otra.
   var eleccionMoneda = { actual: "COP", fn: null };
   function abrirHojaMoneda(actual, fn) {
@@ -2324,10 +2353,13 @@
     pintarConversor("monto"); pintarListaTasas();
     cargarTasas().then(function (t) {
       conv.tasas = t ? t.rates : null; conv.fecha = t ? t.fecha : "";
-      $("tasas-fecha").textContent = t ? "Tasas de ExchangeRate-API" + (t.fecha ? " · " + t.fecha.slice(5, 16) : "") + ". Se actualizan una vez al día y, sin internet, se usan las últimas guardadas." : "No pude descargar las tasas. Sin internet no hay tasas guardadas todavía.";
-      pintarConversor("monto"); pintarListaTasas();
+      pintarFechaTasas(t); pintarConversor("monto"); pintarListaTasas();
     });
   }
+  $("tasas-actualizar").addEventListener("click", function () {
+    var b = $("tasas-actualizar"); b.disabled = true; b.textContent = "Actualizando…";
+    refrescarTasas(true).then(function (t) { toast(t ? "✓ Tasas revisadas" : "No pude actualizar las tasas"); }).finally(function () { b.disabled = false; b.textContent = "🔄 Actualizar ahora"; });
+  });
   $("conv-monto").addEventListener("input", function () { pintarConversor("monto"); });
   $("conv-resultado").addEventListener("input", function () { pintarConversor("resultado"); });
   $("conv-de").addEventListener("click", function () { abrirHojaMoneda(conv.de, function (c) { conv.de = c; pintarConversor("monto"); }); });
