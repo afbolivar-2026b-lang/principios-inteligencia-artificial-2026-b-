@@ -120,5 +120,10 @@ jobs:
           git add app-finanzas/descargas/NOVA.apk app-finanzas/descargas/version.json
           if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
           git commit -m "APK de NOVA actualizada (versión 1.${{ github.run_number }})"
-          git pull --no-rebase --no-edit origin "${GITHUB_REF_NAME}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          # Si otro armado guardó su APK mientras este corría, gana la APK de este armado (-X ours) en vez de fallar por el choque.
+          ok=0
+          for intento in 1 2 3; do
+            if git pull --no-rebase --no-edit -X ours origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}"; then ok=1; break; fi
+            sleep 5
+          done
+          [ "$ok" = 1 ]
