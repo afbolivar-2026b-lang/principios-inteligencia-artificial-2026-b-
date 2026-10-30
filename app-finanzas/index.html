@@ -516,6 +516,7 @@
       <h2 class="grupo-ajustes">Seguridad y respaldo</h2>
       <div class="menu">
         <button type="button" id="btn-pin"><span class="menu-icono">🔒</span><span><strong>Bloqueo con PIN</strong><small id="pin-estado">Pide un PIN cada vez que abres NOVA</small></span></button>
+        <button type="button" id="btn-pin2"><span class="menu-icono">🤫</span><span><strong>PIN discreto</strong><small id="pin2-estado">Un segundo PIN que abre NOVA con los valores ocultos</small></span></button>
         <button type="button" id="btn-restaurar"><span class="menu-icono">♻️</span><span><strong>Restaurar respaldo</strong><small>Agrega los movimientos de un archivo de respaldo, sin borrar nada</small></span></button>
         <input type="file" id="archivo-respaldo" accept=".json,application/json" hidden>
         <button type="button" id="btn-importar"><span class="menu-icono">📥</span><span><strong>Importar desde Excel o CSV</strong><small>Columnas: fecha, descripcion, monto (y tipo, categoria si quieres)</small></span></button>
@@ -551,6 +552,13 @@
         <label for="dia-pago">¿Qué día del mes te pagan? (opcional)</label>
         <input id="dia-pago" type="number" inputmode="numeric" min="1" max="31" placeholder="Por ejemplo 30">
         <p class="nota">Con eso te digo cuántos días faltan y cuánto puedes gastar por día hasta tu próximo pago.</p>
+      </article>
+      <article class="tarjeta formulario">
+        <label class="menu-fila"><span class="menu-icono">🐖</span><span><strong>Apartar al cobrar</strong><small>Cuando anotes un ingreso, te propongo apartar una parte para una meta</small></span><input type="checkbox" id="apartar-activo" class="interruptor"></label>
+        <label for="apartar-pct">¿Qué porcentaje? (1 a 50)</label>
+        <input id="apartar-pct" type="number" inputmode="numeric" min="1" max="50" placeholder="10">
+        <label for="apartar-meta">¿Para qué meta?</label>
+        <select id="apartar-meta"></select>
       </article>
       <div class="menu">
         <label class="menu-fila"><span class="menu-icono">🪙</span><span><strong>Redondeo ahorrador</strong><small>Cada gasto se redondea a mil y lo que sobra se aparta en una alcancía virtual</small></span><input type="checkbox" id="redondeo-activo" class="interruptor"></label>

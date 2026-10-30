@@ -322,3 +322,9 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 
 - Cada pregunta se **guarda en el historial de inmediato** (antes solo se guardaba si la IA respondía), y la respuesta se agrega cuando llega. Si la IA falla, la pregunta queda guardada y el texto vuelve al campo para reintentar.
 - El botón de enviar ya no se bloquea: si haces otra pregunta mientras la anterior espera, se cancela la anterior. La tecla «enviar» del teclado funciona siempre.
+
+## Novedades: sobres, plan de quincena, lugares, metas de reducción y más
+
+- Análisis: **mis sobres** (límites como sobres), **plan de quincena**, **días sin gastar**, **dónde más gastas** (lugares), **en qué parte del mes gastas** y **metas de reducción**; el consejo de **gastos fuera de lo normal**.
+- **Apartar al cobrar** (Configuración → «Tu plata»): al anotar un ingreso propone mover un porcentaje a una meta.
+- **PIN discreto**: un segundo PIN que abre NOVA con los valores ocultos.

@@ -704,3 +704,6 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 .toast-con-accion .toast-titulo { white-space: nowrap; }
 .toast-con-accion .toast-valor { font-size: 1rem; }
 .toast-con-accion .toast-accion { padding: 6px 10px; font-size: .85rem; }
+
+.sobre { display: flex; flex-direction: column; gap: 4px; padding: 6px 0; }
+.sobre small { color: var(--muted); }

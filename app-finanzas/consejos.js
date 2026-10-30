@@ -96,6 +96,10 @@
     var mayorCat = Object.keys(actual).sort(function (a, b) { return actual[b] - actual[a]; })[0];
     if (mayorCat && totalG > 0 && actual[mayorCat] / totalG >= 0.35) out.push({ id: "concentra", icono: "🥧", titulo: "Dónde se va tu plata", texto: Math.round((actual[mayorCat] / totalG) * 100) + " % de tus gastos va a «" + nombreCat(Number(mayorCat)) + "»." });
 
+    // 15. Gastos fuera de lo normal en el periodo
+    var raros = g.filter(function (m) { return gastoInusual(m, todos); });
+    if (raros.length) out.push({ id: "raros", icono: "⚠️", titulo: "Gastos fuera de lo normal", texto: raros.length === 1 ? "«" + raros[0].descripcion + "» (" + plata(raros[0].monto) + ") se sale de lo que sueles gastar en esa categoría." : raros.length + " gastos se salen de lo que sueles gastar en su categoría, por ejemplo «" + raros[0].descripcion + "»." });
+
     return out;
   }
 
@@ -459,11 +463,70 @@
     return ids.length && cuenta[ids[0]] >= 2 ? Number(ids[0]) : null;
   }
 
+  // ---------- Plan de quincena, lugares, semanas del mes, días sin gasto y metas de reducción ----------
+  // Reparte un pago: pagos fijos pendientes, cuota de deuda, ahorro y lo que queda libre.
+  function planQuincena(ingreso, op) {
+    op = op || {};
+    var ing = num(ingreso);
+    if (!(ing > 0)) return null;
+    var fijos = Math.min(ing, num(op.fijos)), deuda = Math.min(ing - fijos, num(op.cuotaDeuda));
+    var ahorro = Math.min(ing - fijos - deuda, Math.round(ing * (op.pctAhorro == null ? 10 : num(op.pctAhorro)) / 100));
+    var libre = ing - fijos - deuda - ahorro;
+    return { fijos: fijos, deuda: deuda, ahorro: ahorro, libre: libre, alcanza: num(op.fijos) + num(op.cuotaDeuda) <= ing };
+  }
+
+  // Lugares donde más gastas (movimientos con ubicación guardada, agrupados cada ~100 m).
+  function lugares(todos, limite) {
+    var por = {};
+    gastos(todos).forEach(function (m) {
+      if (m.lat == null || m.lng == null || m.lat === "" || m.lng === "") return;
+      var la = Number(m.lat), ln = Number(m.lng); if (isNaN(la) || isNaN(ln)) return;
+      var k = la.toFixed(3) + "," + ln.toFixed(3), o = por[k] = por[k] || { lat: la, lng: ln, total: 0, veces: 0, nombres: {} };
+      o.total += num(m.monto); o.veces++; var d = String(m.descripcion || "").trim(); if (d) o.nombres[d] = (o.nombres[d] || 0) + 1;
+    });
+    return Object.keys(por).map(function (k) {
+      var o = por[k], n = Object.keys(o.nombres).sort(function (a, b) { return o.nombres[b] - o.nombres[a]; })[0];
+      return { lat: o.lat, lng: o.lng, total: o.total, veces: o.veces, nombre: n || "Lugar sin nombre" };
+    }).sort(function (a, b) { return b.total - a.total; }).slice(0, limite || 5);
+  }
+
+  // En qué parte del mes gastas más (días 1-7, 8-14, 15-21 y 22 en adelante).
+  function semanasDelMes(todos) {
+    var t = [0, 0, 0, 0];
+    gastos(todos).forEach(function (m) { var d = new Date(m.fecha).getDate(); t[d <= 7 ? 0 : d <= 14 ? 1 : d <= 21 ? 2 : 3] += num(m.monto); });
+    var total = t.reduce(function (s, x) { return s + x; }, 0);
+    if (!total) return null;
+    var nombres = ["Días 1 al 7", "Días 8 al 14", "Días 15 al 21", "Del 22 en adelante"];
+    var filas = t.map(function (v, i) { return { nombre: nombres[i], total: v, pct: Math.round((v / total) * 100) }; });
+    var i = t.indexOf(Math.max.apply(null, t));
+    return { filas: filas, mayor: filas[i] };
+  }
+
+  // Días de este mes que ya terminaron sin ningún gasto (hoy no cuenta).
+  function diasSinGasto(todos, ahora) {
+    ahora = new Date(ahora || new Date());
+    var hoy = dia(ahora), mes = mesDe(ahora), con = {};
+    gastos(todos).forEach(function (m) { if (mesDe(m.fecha) === mes) con[new Date(m.fecha).getDate()] = true; });
+    var n = 0;
+    for (var d = 1; d < hoy.getDate(); d++) if (!con[d]) n++;
+    return n;
+  }
+
+  // Meta de reducción de una categoría frente al periodo anterior.
+  function progresoReduccion(movs, ant, categoriaId, pct) {
+    var suma2 = function (l) { return gastos(l).filter(function (m) { return m.categoria_id === categoriaId; }).reduce(function (s, m) { return s + num(m.monto); }, 0); };
+    var antes = suma2(ant), actual = suma2(movs);
+    if (!(antes > 0)) return null;
+    var meta = Math.round(antes * (1 - num(pct) / 100));
+    return { antes: antes, actual: actual, meta: meta, ahorrado: Math.max(0, antes - actual), cumple: actual <= meta, faltaParaMeta: Math.max(0, actual - meta), uso: Math.round((actual / meta) * 100) };
+  }
+
   var api = { consejos: consejos, gastoInusual: gastoInusual, semana: semana, logros: logros, cuotaCredito: cuotaCredito, ahorroFuturo: ahorroFuturo, regla503020: regla503020, calendario: calendario, plata: plata,
     gastoMensualPromedio: gastoMensualPromedio, mejorPeorMes: mejorPeorMes, salud: salud, iva: iva, dividirCuenta: dividirCuenta, costoHabito: costoHabito,
     contadoVsCuotas: contadoVsCuotas, cdt: cdt, primaCesantias: primaCesantias, salirDeDeuda: salirDeDeuda, reto52: reto52,
     suscripciones: suscripciones, inflacionPersonal: inflacionPersonal, mesesConDatos: mesesConDatos, compararMeses: compararMeses, costoEvento: costoEvento, etiquetasUsadas: etiquetasUsadas, importarCSV: importarCSV,
-    pagosFijosMes: pagosFijosMes, pronosticoMes: pronosticoMes, tuAnio: tuAnio, bolaDeNieve: bolaDeNieve, diasParaPago: diasParaPago, redondeo: redondeo, sugerirCategoria: sugerirCategoria };
+    pagosFijosMes: pagosFijosMes, pronosticoMes: pronosticoMes, tuAnio: tuAnio, bolaDeNieve: bolaDeNieve, diasParaPago: diasParaPago, redondeo: redondeo, sugerirCategoria: sugerirCategoria,
+    planQuincena: planQuincena, lugares: lugares, semanasDelMes: semanasDelMes, diasSinGasto: diasSinGasto, progresoReduccion: progresoReduccion };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaConsejos = api;
 })(typeof window !== "undefined" ? window : this);

@@ -173,3 +173,18 @@ test("tu año, bola de nieve, día de pago, redondeo y categoría sugerida", () 
   assert.strictEqual(C.sugerirCategoria("TINTO", "gasto", hist), 7);
   assert.strictEqual(C.sugerirCategoria("bus", "gasto", hist), null);
 });
+
+test("plan de quincena, lugares, semanas, días sin gasto y reducción", () => {
+  assert.deepStrictEqual(C.planQuincena(1000000, { fijos: 400000, cuotaDeuda: 200000, pctAhorro: 10 }), { fijos: 400000, deuda: 200000, ahorro: 100000, libre: 300000, alcanza: true });
+  const ap = C.planQuincena(500000, { fijos: 600000, cuotaDeuda: 100000 });
+  assert.strictEqual(ap.alcanza, false); assert.strictEqual(ap.libre, 0);
+  assert.strictEqual(C.planQuincena(0, {}), null);
+  const g = (d, monto, lat, lng, desc, cat) => ({ tipo: "gasto", fecha: new Date(2026, 9, d, 10).toISOString(), monto, lat, lng, descripcion: desc || "x", categoria_id: cat || 1 });
+  const l = C.lugares([g(1, 100, 2.9273, -75.2819, "Café"), g(2, 50, 2.92731, -75.28191, "Café"), g(3, 500, 3.5, -76.1, "Cine"), g(4, 10, null, null)], 5);
+  assert.strictEqual(l.length, 2); assert.strictEqual(l[0].nombre, "Cine"); assert.strictEqual(l[1].veces, 2);
+  const s = C.semanasDelMes([g(2, 100), g(9, 300), g(25, 100)]);
+  assert.strictEqual(s.mayor.nombre, "Días 8 al 14"); assert.strictEqual(s.filas[1].pct, 60); assert.strictEqual(C.semanasDelMes([]), null);
+  assert.strictEqual(C.diasSinGasto([g(1, 1), g(3, 1)], new Date(2026, 9, 6, 12)), 3);          // días 2, 4 y 5
+  const r = C.progresoReduccion([g(1, 270000, 0, 0, "a", 5)], [g(1, 300000, 0, 0, "a", 5)], 5, 10);
+  assert.strictEqual(r.meta, 270000); assert.ok(r.cumple); assert.strictEqual(C.progresoReduccion([], [], 5, 10), null);
+});
