@@ -402,8 +402,8 @@
     if (m.programado_id) extra.append(el("span", "chip", "🔁"));
     (m.etiquetas || []).forEach(function (e) { extra.append(el("span", "etiqueta-chip", "#" + e)); });
     if (tieneUbicacion(m)) {
-      var mapa = el("a", null, "Ver en el mapa");
-      mapa.href = "https://www.openstreetmap.org/?mlat=" + Number(m.lat) + "&mlon=" + Number(m.lng) + "#map=18/" + Number(m.lat) + "/" + Number(m.lng);
+      var mapa = el("a", null, "Ver en Google Maps");
+      mapa.href = "https://www.google.com/maps/search/?api=1&query=" + Number(m.lat) + "," + Number(m.lng); // abre Google Maps
       mapa.target = "_blank"; mapa.rel = "noopener";
       mapa.addEventListener("click", function (e) { e.stopPropagation(); });
       extra.append(mapa);
