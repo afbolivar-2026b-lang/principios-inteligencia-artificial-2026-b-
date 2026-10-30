@@ -18,12 +18,40 @@ function responder(estado: number, cuerpo: unknown) {
   return new Response(JSON.stringify(cuerpo), { status: estado, headers: { ...CORS, "Content-Type": "application/json" } });
 }
 
-function llamarGemini(clave: string, cuerpo: unknown) {
-  return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent`, {
+// Modelos de respaldo: si el principal está saturado o falla, se prueba el siguiente.
+const MODELOS = [MODELO, "gemini-2.5-flash", "gemini-flash-lite-latest"].filter((m, i, a) => a.indexOf(m) === i);
+type ResultadoGemini = { r: Response | null; detalle: string; limite: boolean };
+
+async function llamarModelo(modelo: string, clave: string, cuerpo: Record<string, unknown>) {
+  return await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": clave },
     body: JSON.stringify(cuerpo),
+    signal: AbortSignal.timeout(20_000), // sin esto una respuesta colgada dejaba a la app "pensando" para siempre
   });
+}
+
+// Llama a Gemini sin "pensar" (más rápido) y, si falla, prueba con los otros modelos.
+async function llamarGemini(clave: string, cuerpo: Record<string, unknown>, sinPensar = true): Promise<ResultadoGemini> {
+  let detalle = "";
+  let todosLimite = true;
+  for (const modelo of MODELOS) {
+    try {
+      const config = { ...(cuerpo.generationConfig as Record<string, unknown> || {}) };
+      let r = await llamarModelo(modelo, clave, sinPensar ? { ...cuerpo, generationConfig: { ...config, thinkingConfig: { thinkingBudget: 0 } } } : cuerpo);
+      if (r.status === 400 && sinPensar) r = await llamarModelo(modelo, clave, cuerpo); // ese modelo no admite apagar el pensamiento
+      if (r.ok) return { r, detalle: "", limite: false };
+      const texto = (await r.text()).slice(0, 300);
+      console.error("Gemini", modelo, r.status, texto);
+      detalle = `${modelo}: ${r.status}`;
+      if (r.status !== 429) todosLimite = false;
+    } catch (e) {
+      console.error("Gemini", modelo, String(e));
+      detalle = `${modelo}: ${(e as Error).name === "TimeoutError" ? "tardó demasiado" : "sin conexión"}`;
+      todosLimite = false;
+    }
+  }
+  return { r: null, detalle, limite: todosLimite };
 }
 
 // "Pregúntale a NOVA": responde preguntas sobre las finanzas de la persona con el resumen que manda la app.
@@ -44,21 +72,13 @@ No uses Markdown (nada de asteriscos ni #); para listas usa guiones simples.
 Los datos traen: saldo y cuentas, el periodo actual (ingresos, gastos y gastos por categoría), gastos por mes de los últimos 6 meses, gastos por categoría de los últimos 90 días, cuánto puede gastar por día sin pasarse (seguro_para_gastar_por_dia), límites, metas, pagos programados y los últimos movimientos. Si un movimiento vino en otra moneda trae moneda y monto_original (el monto ya está en pesos). Si hay "trabajo", la persona es conductora de apps de transporte (Didi, Uber, inDrive…): trae lo ganado, los gastos del vehículo, la ganancia neta, los viajes y la ganancia por viaje de hoy, esta semana y este mes (por app y por categoría), su meta diaria y los vencimientos de sus documentos (SOAT, tecnomecánica…, con los días que faltan; si dias es negativo ya venció).
 Datos de la persona: ${contexto}`;
 
-  let r: Response;
-  try {
-    r = await llamarGemini(clave, {
-      systemInstruction: { parts: [{ text: instrucciones }] },
-      contents: [...historial, { role: "user", parts: [{ text: pregunta }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 4096 }, // holgado: los modelos que "piensan" gastan parte de este cupo
-    });
-  } catch (_e) {
-    return responder(502, { error: "No se pudo contactar a la IA" });
-  }
-  if (r.status === 429) return responder(429, { error: "limite" });
-  if (!r.ok) {
-    console.error("Gemini", r.status, (await r.text()).slice(0, 500));
-    return responder(502, { error: "La IA no respondió bien" });
-  }
+  const g = await llamarGemini(clave, {
+    systemInstruction: { parts: [{ text: instrucciones }] },
+    contents: [...historial, { role: "user", parts: [{ text: pregunta }] }],
+    generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
+  });
+  if (!g.r) return g.limite ? responder(429, { error: "limite" }) : responder(502, { error: "La IA no respondió bien", detalle: g.detalle });
+  const r = g.r;
   try {
     const datos = await r.json();
     const texto = (datos.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join("").trim();
@@ -172,17 +192,9 @@ Hoy es ${entrada.hoy || new Date().toISOString().slice(0, 10)}.`;
     };
   };
 
-  let r: Response;
-  try {
-    r = await llamarGemini(clave, cuerpo);
-  } catch (_e) {
-    return responder(502, { error: "No se pudo contactar a la IA" });
-  }
-  if (r.status === 429) return responder(429, { error: "limite" });
-  if (!r.ok) {
-    console.error("Gemini", r.status, (await r.text()).slice(0, 500));
-    return responder(502, { error: "La IA no respondió bien" });
-  }
+  const g = await llamarGemini(clave, cuerpo);
+  if (!g.r) return g.limite ? responder(429, { error: "limite" }) : responder(502, { error: "La IA no respondió bien", detalle: g.detalle });
+  const r = g.r;
 
   try {
     const datos = await r.json();

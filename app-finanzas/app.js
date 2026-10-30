@@ -2123,19 +2123,29 @@
   function iaDisponible() { return iaActiva && !!cliente && !!fuente && !fuente.demo; }
   function hoyLocal() { return A.claveDia(new Date()); }
   function invocarIA(cuerpo) {
-    return cliente.functions.invoke("nova-ia", { body: cuerpo }).then(function (res) {
+    // Si la IA no contesta en 50 segundos, se avisa en vez de dejar "Pensando…" para siempre.
+    var tiempo = new Promise(function (_, mal) { setTimeout(function () { mal(new Error("La IA tardó demasiado. Revisa tu conexión e intenta otra vez.")); }, 50000); });
+    var llamada = cliente.functions.invoke("nova-ia", { body: cuerpo }).then(function (res) {
       if (res.error) {
         var estado = res.error.context && res.error.context.status;
         if (estado === 503) iaActiva = false; // la clave de Gemini todavía no está puesta
-        var err = new Error(estado === 503 ? "La IA todavía no tiene su clave de Google en Supabase."
-          : estado === 429 ? "Se acabó el cupo gratis de la IA por hoy. Intenta mañana."
-          : "La IA no pudo responder. Intenta otra vez en un momento.");
-        err.estado = estado;
-        throw err;
+        var lanzar = function (detalle) {
+          var err = new Error(estado === 503 ? "La IA todavía no tiene su clave de Google en Supabase."
+            : estado === 429 ? "Se acabó el cupo gratis de la IA por hoy. Intenta mañana."
+            : "La IA no pudo responder. Intenta otra vez en un momento." + (detalle ? " (" + detalle + ")" : ""));
+          err.estado = estado;
+          throw err;
+        };
+        // La función manda en "detalle" qué modelo falló, para saber la causa.
+        if (res.error.context && typeof res.error.context.json === "function") {
+          return res.error.context.json().then(function (c) { lanzar(c && c.detalle); }, function () { lanzar(""); });
+        }
+        return lanzar("");
       }
       iaActiva = true;
       return res.data || {};
     });
+    return Promise.race([llamada, tiempo]);
   }
   function registroDeIA(d) {
     var fecha = new Date();
