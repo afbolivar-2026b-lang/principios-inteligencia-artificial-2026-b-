@@ -268,3 +268,10 @@ nombre o código. Al tocar una moneda de la lista pasa al convertidor. Sin inter
 Las tasas se revisan solas cada 30 minutos mientras la app está abierta, y también al abrirla, al volver a ella y al volver el internet;
 el botón «Actualizar ahora» las pide ya (máximo una vez por minuto). La fuente gratuita (open.er-api.com) publica tasas nuevas una vez al día.
 La tasa del pago que se está anotando también se renueva sola si la persona no la cambió a mano.
+
+## Editar y borrar en todos lados
+
+Todo se puede corregir y borrar: movimientos (lápiz y papelera en el detalle), deudas (lápiz y papelera arriba del detalle y botones abajo),
+cada abono, metas, cuentas (se borran solo si hay más de una y no tienen movimientos), registros comunes, programaciones, límites,
+categorías, etiquetas y vencimientos. Un editor general (`abrirEditor` en `app.js`) arma el formulario de metas, abonos, cuentas,
+registros comunes y programaciones, con los campos de plata con puntos automáticos y un botón de borrar con confirmación.

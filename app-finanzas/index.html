@@ -802,6 +802,7 @@
     <h1>Detalle</h1>
     <button type="button" id="det-ojo" class="icono-btn" aria-label="Ocultar los valores"></button>
     <button type="button" id="det-editar" class="icono-btn" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></button>
+    <button type="button" id="det-borrar" class="icono-btn" aria-label="Borrar este movimiento"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
   </div>
   <div id="det-contenido" class="detalle"></div>
 </section>
@@ -833,7 +834,9 @@
 
 <!-- Detalle de una deuda y sus abonos -->
 <section id="pantalla-abonos" class="capa" hidden>
-  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="abono-titulo">Deuda</h1></div>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="abono-titulo">Deuda</h1>
+    <button type="button" id="abono-editar-icono" class="icono-btn" aria-label="Editar la deuda"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></button>
+    <button type="button" id="abono-borrar-icono" class="icono-btn" aria-label="Borrar la deuda"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
   <article id="abono-resumen" class="tarjeta"></article>
   <form id="form-abono" class="formulario" autocomplete="off">
     <label for="abono-monto" class="centro" id="abono-et">Registrar un abono</label>
@@ -847,7 +850,8 @@
   </form>
   <div class="seccion-cabecera"><h2>Abonos</h2></div>
   <ul id="lista-abonos" class="lista-simple"></ul>
-  <button type="button" id="abono-editar" class="enlace">Editar esta deuda</button>
+  <button type="button" id="abono-editar">✏️ Editar esta deuda</button>
+  <button type="button" id="abono-borrar" class="peligro">🗑 Borrar esta deuda</button>
 </section>
 
 <!-- Nuevo o editar vencimiento (SOAT, tecnomecánica…) -->
@@ -927,6 +931,20 @@
     <p id="informe-nombre" class="informe-nombre"></p>
     <button type="button" id="informe-descargar" class="primario">Descargar</button>
     <button type="button" class="enlace" data-cerrar>Cancelar</button>
+  </div>
+</div>
+
+<!-- Editor general: se usa para corregir o borrar metas, abonos, cuentas, registros comunes y programaciones -->
+<div id="hoja-editar" class="hoja-fondo" hidden>
+  <div class="hoja" role="dialog" aria-labelledby="editar-titulo">
+    <h2 id="editar-titulo" class="centro">Editar</h2>
+    <form id="form-editar" class="formulario" autocomplete="off">
+      <div id="editar-campos" class="editar-campos"></div>
+      <p class="mensaje" id="editar-mensaje" role="status"></p>
+      <button type="submit" class="primario">Guardar los cambios</button>
+      <button type="button" class="peligro" id="editar-borrar" hidden>Borrar</button>
+      <button type="button" class="enlace" data-cerrar>Cancelar</button>
+    </form>
   </div>
 </div>
 

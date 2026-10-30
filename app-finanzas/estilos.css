@@ -623,3 +623,13 @@ button.inf-ico { width: 44px; height: 44px; padding: 6px; border-radius: 12px; b
 .det-cabecera .mov-texto strong { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
 .sub-cabecera { gap: 10px; }
 .sub-cabecera .icono-btn:focus:not(:focus-visible) { outline: none; }
+
+/* Editor general y botones de editar / borrar */
+.editar-campos { display: flex; flex-direction: column; gap: 8px; }
+.editar-campos label { color: var(--muted); font-size: .85rem; }
+.fila-categoria .acciones-fila { display: flex; gap: 4px; align-items: center; }
+button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
+#abono-borrar-icono, #det-borrar { color: var(--danger); }
+.cuenta { cursor: pointer; }
+/* El formulario de la deuda se abre encima del detalle de la deuda */
+#pantalla-deuda { z-index: 32; }

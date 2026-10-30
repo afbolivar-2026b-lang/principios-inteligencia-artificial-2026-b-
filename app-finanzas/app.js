@@ -110,7 +110,7 @@
   }
   // En los campos de plata se van poniendo los puntos de miles mientras se escribe: 10000 → 10.000.
   // Si la persona escribe letras ("500 mil", "1 millón") se deja tal cual.
-  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo, #reg-orig, #reg-cop, #conv-monto, #conv-resultado, .asis-monto, .meta-abono input";
+  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo, .campo-plata, #reg-orig, #reg-cop, #conv-monto, #conv-resultado, .asis-monto, .meta-abono input";
   function formatearMontoEscrito(campo) {
     var v = campo.value;
     if (/[^\d.,$\s\u00a0]/.test(v) || /\s$/.test(v)) return;   // letras o un espacio al final (va a escribir "mil"): no se toca
@@ -698,7 +698,17 @@
       var inp = el("input"); inp.inputMode = "numeric"; inp.placeholder = "Abonar, ej. 50 mil"; inp.setAttribute("aria-label", "Valor a abonar a " + m.nombre);
       var ok = el("button", "primario", "Abonar"); ok.type = "submit";
       var del = el("button", "peligro", "Borrar"); del.type = "button";
-      abono.append(inp, ok, del);
+      var edit = el("button", "mini", "✏️ Editar"); edit.type = "button";
+      edit.addEventListener("click", function () {
+        abrirEditor({
+          titulo: "Editar meta",
+          campos: [{ clave: "nombre", etiqueta: "¿Para qué ahorras?", tipo: "texto", valor: m.nombre, requerido: true, max: 60 }, { clave: "objetivo", etiqueta: "¿Cuánto necesitas?", tipo: "plata", valor: num(m.objetivo) }, { clave: "ahorrado", etiqueta: "Lo que llevas ahorrado", tipo: "plata", valor: num(m.ahorrado), permiteCero: true }],
+          guardar: function (v) { return fuente.actualizar("metas", m.id, { nombre: v.nombre, objetivo: v.objetivo, ahorrado: v.ahorrado }).then(function (n) { Object.assign(m, n); }); },
+          borrar: function () { return fuente.borrar("metas", m.id).then(function () { datos.metas = datos.metas.filter(function (x) { return x.id !== m.id; }); }); },
+          textoBorrar: "🗑 Borrar esta meta", confirmar: "¿Borrar la meta «" + m.nombre + "»?", avisoBorrado: "Meta borrada"
+        });
+      });
+      abono.append(inp, ok, edit, del);
       abono.addEventListener("submit", function (e) {
         e.preventDefault();
         var v = leerValor(inp.value);
@@ -1290,7 +1300,18 @@
           datos.frecuentes = datos.frecuentes.filter(function (x) { return x.id !== f.id; }); pintar();
         }).catch(function (err) { quitar.disabled = false; mensaje("comun-mensaje", err.message, true); });
       });
-      li.append(el("span", "mov-icono chico", "⚡"), txt, quitar);
+      var editarC = el("button", "chip-opcion mini", "✏️ Editar"); editarC.type = "button";
+      editarC.addEventListener("click", function () {
+        abrirEditor({
+          titulo: "Editar registro común", ayuda: "Escríbelo como siempre, por ejemplo «tinto 3 mil #trabajo».",
+          campos: [{ clave: "texto", etiqueta: "Qué gastas y cuánto", tipo: "texto", valor: f.texto, requerido: true, max: 120 }],
+          guardar: function (v) {
+            if (!Parser.interpretar(v.texto).ok) return Promise.reject(new Error("No entendí el valor. Escribe por ejemplo «tinto 3 mil»."));
+            return fuente.actualizar("frecuentes", f.id, { texto: v.texto }).then(function (n) { Object.assign(f, n); });
+          }
+        });
+      });
+      li.append(el("span", "mov-icono chico", "⚡"), txt, editarC, quitar);
       ul.append(li);
     });
   }
@@ -1382,7 +1403,18 @@
           datos.programados = datos.programados.filter(function (x) { return x.id !== p.id; }); toast("Programación borrada"); pintar();
         }).catch(function (err) { toast(err.message); });
       });
-      li.append(pintarIcono(el("span", "mov-icono chico"), c), txt, valor, interruptor, quitar);
+      var editarP = el("button", "chip-opcion mini", "✏️"); editarP.type = "button"; editarP.setAttribute("aria-label", "Editar " + p.descripcion);
+      editarP.addEventListener("click", function () {
+        abrirEditor({
+          titulo: "Editar programación",
+          campos: [{ clave: "descripcion", etiqueta: "Descripción", tipo: "texto", valor: p.descripcion, requerido: true, max: 120 }, { clave: "monto", etiqueta: "Valor", tipo: "plata", valor: num(p.monto) },
+            { clave: "frecuencia", etiqueta: "Se repite", tipo: "select", valor: p.frecuencia, opciones: Object.keys(A.FRECUENCIAS).map(function (k) { return [k, A.FRECUENCIAS[k]]; }) }, { clave: "proxima", etiqueta: "Próxima fecha", tipo: "fecha", valor: p.proxima }],
+          guardar: function (v) { return fuente.actualizar("programados", p.id, { descripcion: v.descripcion, monto: v.monto, frecuencia: v.frecuencia, proxima: v.proxima || p.proxima }).then(function (n) { Object.assign(p, n); }); },
+          borrar: function () { return fuente.borrar("programados", p.id).then(function () { datos.programados = datos.programados.filter(function (x) { return x.id !== p.id; }); }); },
+          textoBorrar: "🗑 Borrar esta programación", confirmar: "¿Borrar la programación «" + p.descripcion + "»? Los movimientos que ya se registraron no se borran.", avisoBorrado: "Programación borrada"
+        });
+      });
+      li.append(pintarIcono(el("span", "mov-icono chico"), c), txt, valor, editarP, interruptor, quitar);
       ul.append(li);
     });
   }
@@ -1420,7 +1452,21 @@
       var li = el("li", "cuenta");
       var izq = el("div", "mov-texto");
       izq.append(el("strong", null, c.nombre), el("small", null, { debito: "Débito", ahorro: "Ahorros", efectivo: "Efectivo", credito: "Crédito" }[c.tipo] || c.tipo));
-      li.append(izq, el("strong", null, dinero(saldoCuenta(c))));
+      li.append(izq, el("strong", null, dinero(saldoCuenta(c))), el("span", "flecha", "›"));
+      li.tabIndex = 0; li.setAttribute("role", "button"); li.setAttribute("aria-label", "Editar la cuenta " + c.nombre);
+      function editarCuenta() {
+        var usos = datos.movimientos.filter(function (m) { return m.cuenta_id === c.id; }).length, puedeBorrar = datos.cuentas.length > 1 && usos === 0;
+        abrirEditor({
+          titulo: "Editar cuenta",
+          ayuda: puedeBorrar ? null : (datos.cuentas.length <= 1 ? "Es tu única cuenta: no se puede borrar." : "No se puede borrar porque tiene " + usos + (usos === 1 ? " movimiento." : " movimientos.") + " Si quieres, bórralos antes."),
+          campos: [{ clave: "nombre", etiqueta: "Nombre de la cuenta", tipo: "texto", valor: c.nombre, requerido: true, max: 40 }, { clave: "tipo", etiqueta: "Tipo", tipo: "select", valor: c.tipo, opciones: TIPOS_CUENTA }, { clave: "saldo_inicial", etiqueta: "Saldo con el que empezó", tipo: "plata", valor: num(c.saldo_inicial), permiteCero: true }],
+          guardar: function (v) { return fuente.actualizar("cuentas", c.id, { nombre: v.nombre, tipo: v.tipo, saldo_inicial: v.saldo_inicial }).then(function (n) { Object.assign(c, n); }); },
+          borrar: puedeBorrar ? function () { return fuente.borrar("cuentas", c.id).then(function () { datos.cuentas = datos.cuentas.filter(function (x) { return x.id !== c.id; }); }); } : null,
+          textoBorrar: "🗑 Borrar esta cuenta", confirmar: "¿Borrar la cuenta «" + c.nombre + "»?", avisoBorrado: "Cuenta borrada"
+        });
+      }
+      li.addEventListener("click", editarCuenta);
+      li.addEventListener("keydown", function (ev) { if (ev.key === "Enter") editarCuenta(); });
       ul.append(li);
     });
   }
@@ -1687,6 +1733,67 @@
   }
 
 
+
+  // ---------- Editor general: corregir números y textos, o borrar ----------
+  // cfg: { titulo, ayuda, campos: [{ clave, etiqueta, tipo: "texto" | "plata" | "fecha" | "select", valor, opciones, requerido, permiteCero, max }],
+  //        guardar(valores) → promesa, borrar() → promesa (opcional), confirmar, avisoBorrado }
+  var editorActual = null;
+  function abrirEditor(cfg) {
+    editorActual = cfg;
+    $("editar-titulo").textContent = cfg.titulo;
+    var caja = $("editar-campos");
+    caja.replaceChildren();
+    if (cfg.ayuda) caja.append(el("p", "nota", cfg.ayuda));
+    cfg.campos.forEach(function (f, i) {
+      var id = "editar-c" + i, etq = el("label", null, f.etiqueta), ent;
+      etq.setAttribute("for", id);
+      if (f.tipo === "select") {
+        ent = el("select");
+        f.opciones.forEach(function (o) { var op = el("option", null, o[1]); op.value = o[0]; op.selected = String(o[0]) === String(f.valor); ent.append(op); });
+      } else {
+        ent = el("input");
+        if (f.tipo === "plata") { ent.className = "campo-plata"; ent.inputMode = "numeric"; ent.value = f.valor != null && f.valor !== "" ? numeroCO.format(f.valor) : ""; }
+        else if (f.tipo === "fecha") { ent.type = "date"; ent.value = f.valor ? String(f.valor).slice(0, 10) : ""; }
+        else { ent.value = f.valor || ""; ent.maxLength = f.max || 100; }
+      }
+      ent.id = id; f.entrada = ent;
+      caja.append(etq, ent);
+    });
+    $("editar-borrar").hidden = !cfg.borrar;
+    $("editar-borrar").textContent = cfg.textoBorrar || "🗑 Borrar";
+    mensaje("editar-mensaje", "");
+    abrirCapa("hoja-editar");
+  }
+  $("form-editar").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var cfg = editorActual;
+    if (!cfg) return;
+    var valores = {};
+    for (var i = 0; i < cfg.campos.length; i++) {
+      var f = cfg.campos[i], t = f.entrada.value.trim(), v;
+      if (f.tipo === "plata") {
+        v = t === "" && f.permiteCero ? 0 : leerValor(t);
+        if (isNaN(v) || (v <= 0 && !(f.permiteCero && v === 0))) return mensaje("editar-mensaje", "No entendí «" + f.etiqueta + "». Escribe un valor, por ejemplo 500 mil.", true);
+      } else {
+        v = t;
+        if (f.requerido && !v) return mensaje("editar-mensaje", "Falta «" + f.etiqueta + "».", true);
+      }
+      valores[f.clave] = v;
+    }
+    var boton = e.target.querySelector("button[type=submit]");
+    boton.disabled = true;
+    cfg.guardar(valores).then(function () { cerrarCapa(); pintar(); toast("✓ Cambios guardados"); })
+      .catch(function (err) { mensaje("editar-mensaje", "No se pudo guardar: " + err.message, true); })
+      .finally(function () { boton.disabled = false; });
+  });
+  $("editar-borrar").addEventListener("click", function () {
+    var cfg = editorActual;
+    if (!cfg || !cfg.borrar || !confirm(cfg.confirmar || "¿Borrar esto?")) return;
+    cfg.borrar().then(function () { cerrarCapa(); pintar(); toast(cfg.avisoBorrado || "Borrado"); })
+      .catch(function (err) { mensaje("editar-mensaje", "No se pudo borrar: " + err.message, true); });
+  });
+  var TIPOS_CUENTA = [["debito", "Débito"], ["ahorro", "Ahorros"], ["efectivo", "Efectivo"], ["credito", "Crédito"]];
+
   // ---------- Deudas: lo que debo y lo que me deben, con abonos ----------
   var deudaActual = null, tipoDeuda = "debo", deudaAbierta = null;
   var ROTULO_DEUDA = { debo: "Yo debo", me_deben: "Me deben" };
@@ -1795,18 +1902,22 @@
       cerrarCapa(); pintar();
     }).catch(function (err) { mensaje("deuda-mensaje", "No se pudo guardar: " + err.message, true); });
   });
-  $("deuda-borrar").addEventListener("click", function () {
-    if (!deudaActual || !confirm("¿Borrar la deuda con «" + deudaActual.persona + "» y todos sus abonos? Los movimientos que ya anotaste no se borran.")) return;
-    var id = deudaActual.id;
+  function borrarDeuda(d, desdeFormulario) {
+    if (!d || !confirm("¿Borrar la deuda con «" + d.persona + "» y todos sus abonos? Los movimientos que ya anotaste no se borran.")) return;
+    var id = d.id;
     fuente.borrar("deudas", id).then(function () {
       datos.deudas = datos.deudas.filter(function (x) { return x.id !== id; });
       datos.abonos = datos.abonos.filter(function (x) { return x.deuda_id !== id; });
       toast("Deuda borrada");
+      if (!desdeFormulario) { cerrarCapa(); pintar(); return; }
       // cierra el formulario y también el detalle si estaba abierto
-      var cerrar = function () { if (pilaCapas.length && pilaCapas[pilaCapas.length - 1] === "pantalla-abonos") cerrarCapa(); pintar(); };
-      cerrarYLuego(cerrar);
-    }).catch(function (err) { mensaje("deuda-mensaje", err.message, true); });
-  });
+      cerrarYLuego(function () { if (pilaCapas.length && pilaCapas[pilaCapas.length - 1] === "pantalla-abonos") cerrarCapa(); pintar(); });
+    }).catch(function (err) { mensaje(desdeFormulario ? "deuda-mensaje" : "abono-mensaje", err.message, true); });
+  }
+  $("deuda-borrar").addEventListener("click", function () { borrarDeuda(deudaActual, true); });
+  $("abono-borrar").addEventListener("click", function () { borrarDeuda(deudaAbierta, false); });
+  $("abono-borrar-icono").addEventListener("click", function () { borrarDeuda(deudaAbierta, false); });
+  $("abono-editar-icono").addEventListener("click", function () { if (deudaAbierta) abrirDeuda(deudaAbierta); });
 
   // Detalle de una deuda: lo abonado, lo que falta y cada abono.
   function datosDeDeuda(d) { return resumenDeDeudas().lista.find(function (x) { return x.deuda.id === d.id; }); }
@@ -1837,12 +1948,17 @@
     abonos.forEach(function (a) {
       var li = el("li", "fila-categoria"), txt = el("span", "mov-texto");
       txt.append(el("strong", null, dinero(num(a.monto))), el("small", null, fechaCorta.format(parteFechaLocal(a.fecha)) + (a.nota ? " · " + a.nota : "")));
-      var quitar = el("button", "chip-opcion", "Quitar"); quitar.type = "button";
-      quitar.addEventListener("click", function () {
-        if (!confirm("¿Quitar este abono de " + pesos.format(num(a.monto)) + "? El movimiento que anotaste no se borra.")) return;
-        fuente.borrar("abonos", a.id).then(function () { datos.abonos = datos.abonos.filter(function (y) { return y.id !== a.id; }); pintar(); }).catch(function (err) { mensaje("abono-mensaje", err.message, true); });
+      var editar = el("button", "chip-opcion mini", "✏️ Editar"); editar.type = "button";
+      editar.addEventListener("click", function () {
+        abrirEditor({
+          titulo: "Editar abono", ayuda: "Si ya lo habías anotado en tus movimientos, ese movimiento no cambia: corrígelo desde el detalle del movimiento.",
+          campos: [{ clave: "monto", etiqueta: "Valor del abono", tipo: "plata", valor: num(a.monto) }, { clave: "fecha", etiqueta: "Fecha", tipo: "fecha", valor: a.fecha }, { clave: "nota", etiqueta: "Nota (opcional)", tipo: "texto", valor: a.nota, max: 200 }],
+          guardar: function (v) { return fuente.actualizar("abonos", a.id, { monto: v.monto, fecha: v.fecha || a.fecha, nota: v.nota || null }).then(function (n) { Object.assign(a, n); }); },
+          borrar: function () { return fuente.borrar("abonos", a.id).then(function () { datos.abonos = datos.abonos.filter(function (y) { return y.id !== a.id; }); }); },
+          textoBorrar: "🗑 Borrar este abono", confirmar: "¿Borrar este abono de " + pesos.format(num(a.monto)) + "? El movimiento que anotaste no se borra.", avisoBorrado: "Abono borrado"
+        });
       });
-      li.append(el("span", "mov-icono chico", "💵"), txt, quitar);
+      li.append(el("span", "mov-icono chico", "💵"), txt, editar);
       ul.append(li);
     });
   }
@@ -2620,6 +2736,14 @@
     pintarDetalle();
     abrirCapa("pantalla-detalle");
   }
+  $("det-borrar").addEventListener("click", function () {
+    var m = datos.movimientos.find(function (x) { return x.id === detalleId; });
+    if (!m || !confirm("¿Borrar «" + m.descripcion + "» de " + pesos.format(num(m.monto)) + "?")) return;
+    fuente.borrar("movimientos", m.id).then(function () {
+      datos.movimientos = datos.movimientos.filter(function (x) { return x.id !== m.id; });
+      toast("Movimiento borrado"); cerrarCapa(); pintar();
+    }).catch(function (err) { toast("No se pudo borrar: " + err.message); });
+  });
   $("det-editar").addEventListener("click", function () {
     var m = datos.movimientos.find(function (x) { return x.id === detalleId; });
     if (m) cerrarYLuego(function () { abrirRegistro({ movimiento: m }); });
