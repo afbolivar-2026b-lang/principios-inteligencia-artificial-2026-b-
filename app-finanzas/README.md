@@ -304,3 +304,10 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - **Salud financiera** (Análisis): puntaje 0–100, fondo de emergencia, deudas frente a ingresos, mejor y peor mes.
 - **Más calculadoras**: IVA, dividir la cuenta con propina, costo anual de un hábito, ¿contado o a cuotas?, CDT, prima y cesantías (estimado) y cuándo sales de una deuda.
 - **Reto de ahorro de 52 semanas** (se guarda en el dispositivo). El recordatorio del domingo ahora trae las cifras de la semana.
+
+## Novedades: papelera, deshacer, importar CSV y más
+
+- **Papelera** (Configuración): lo que borras (movimientos y metas) queda 30 días en el dispositivo y se puede recuperar; el aviso de borrado trae el botón «Deshacer».
+- **Importar desde CSV**, **sacudir para ocultar valores**, **tutorial de bienvenida** y **autocompletar** la descripción.
+- Análisis: **suscripciones y pagos fijos**, **inflación personal**, **comparar dos meses** y **costo de un evento**; botón de **fondo de emergencia** en Salud financiera.
+- Deudas: «Recordarle por WhatsApp» cuando te deben.

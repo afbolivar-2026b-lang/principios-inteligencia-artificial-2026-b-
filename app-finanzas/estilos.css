@@ -698,3 +698,9 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 .reto-semanas { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .reto-sem { aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); font-size: .72rem; padding: 0; }
 .reto-sem.hecha { background: var(--accent); color: var(--accent-ink); font-weight: 800; border-color: var(--accent); }
+
+.toast-accion { border: 0; background: var(--accent); color: var(--accent-ink); border-radius: 14px; padding: 8px 12px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.toast-con-accion { padding-left: 76px; gap: 8px; }
+.toast-con-accion .toast-titulo { white-space: nowrap; }
+.toast-con-accion .toast-valor { font-size: 1rem; }
+.toast-con-accion .toast-accion { padding: 6px 10px; font-size: .85rem; }

@@ -272,9 +272,128 @@
     return { semanas: semanas, ahorrado: ahorrado, total: total };
   }
 
+  // ---------- Suscripciones, inflación personal, comparar meses, eventos e importar CSV ----------
+  function mediana(v) { var s = v.slice().sort(function (a, b) { return a - b; }); return s.length ? s[Math.floor(s.length / 2)] : 0; }
+
+  // Gastos que se repiten cada mes con valor parecido (3 o más de los últimos 6 meses).
+  function suscripciones(todos, ahora) {
+    var actual = mesDe(ahora || new Date()), por = {};
+    gastos(todos).forEach(function (m) {
+      var k = String(m.descripcion || "").trim().toLowerCase(), mes = mesDe(m.fecha);
+      if (!k || mes > actual || mes < actual - 5) return;
+      (por[k] = por[k] || { nombre: String(m.descripcion).trim(), meses: {} }).meses[mes] = num(m.monto);
+    });
+    var lista = [];
+    Object.keys(por).forEach(function (k) {
+      var ms = Object.keys(por[k].meses).map(Number).sort(function (a, b) { return a - b; });
+      var vals = ms.map(function (x) { return por[k].meses[x]; }), med = mediana(vals);
+      if (ms.length >= 3 && med >= 5000 && vals.every(function (v) { return Math.abs(v - med) <= med * 0.15; })) {
+        lista.push({ nombre: por[k].nombre, monto: vals[vals.length - 1], meses: ms.length, anual: vals[vals.length - 1] * 12, ultimoMes: ms[ms.length - 1] });
+      }
+    });
+    lista.sort(function (a, b) { return b.monto - a.monto; });
+    return { lista: lista, mensual: lista.reduce(function (s, x) { return s + x.monto; }, 0) };
+  }
+
+  // Cuánto cambió el precio de lo que compras seguido (primera mitad frente a la segunda), con 4 compras o más en 60 días o más.
+  function inflacionPersonal(todos) {
+    var por = {};
+    gastos(todos).forEach(function (m) { var k = String(m.descripcion || "").trim().toLowerCase(); if (k) (por[k] = por[k] || { nombre: String(m.descripcion).trim(), compras: [] }).compras.push({ f: new Date(m.fecha), v: num(m.monto) }); });
+    var lista = [];
+    Object.keys(por).forEach(function (k) {
+      var c = por[k].compras.sort(function (a, b) { return a.f - b.f; });
+      if (c.length < 4 || (c[c.length - 1].f - c[0].f) < 60 * 86400000) return;
+      var mitad = Math.floor(c.length / 2), prom = function (l) { return l.reduce(function (s, x) { return s + x.v; }, 0) / l.length; };
+      var antes = prom(c.slice(0, mitad)), ahora = prom(c.slice(mitad));
+      if (antes > 0) lista.push({ nombre: por[k].nombre, antes: antes, ahora: ahora, cambioPct: Math.round(((ahora - antes) / antes) * 100), compras: c.length });
+    });
+    lista.sort(function (a, b) { return b.cambioPct - a.cambioPct; });
+    var general = lista.length ? Math.round(lista.reduce(function (s, x) { return s + x.cambioPct; }, 0) / lista.length) : null;
+    return { lista: lista, general: general };
+  }
+
+  // Meses (año*12+mes) que tienen movimientos, del más nuevo al más viejo.
+  function mesesConDatos(todos) {
+    var s = {}; todos.forEach(function (m) { s[mesDe(m.fecha)] = true; });
+    return Object.keys(s).map(Number).sort(function (a, b) { return b - a; }).map(function (k) { return { clave: k, nombre: nombreMes(k) }; });
+  }
+  // Gastos por categoría de dos meses lado a lado.
+  function compararMeses(todos, claveA, claveB) {
+    function por(clave) { var o = {}; gastos(todos).forEach(function (m) { if (mesDe(m.fecha) === clave) o[m.categoria_id] = (o[m.categoria_id] || 0) + num(m.monto); }); return o; }
+    var a = por(claveA), b = por(claveB), ids = {};
+    Object.keys(a).concat(Object.keys(b)).forEach(function (k) { ids[k] = true; });
+    var filas = Object.keys(ids).map(function (k) { return { categoria_id: Number(k), a: a[k] || 0, b: b[k] || 0, dif: (b[k] || 0) - (a[k] || 0) }; }).sort(function (x, y) { return Math.abs(y.dif) - Math.abs(x.dif); });
+    var ta = filas.reduce(function (s, f) { return s + f.a; }, 0), tb = filas.reduce(function (s, f) { return s + f.b; }, 0);
+    return { filas: filas, totalA: ta, totalB: tb, dif: tb - ta };
+  }
+
+  // Lo que costó todo lo marcado con una etiqueta (por ejemplo #viaje).
+  function costoEvento(todos, etiqueta) {
+    var l = gastos(todos).filter(function (m) { return (m.etiquetas || []).indexOf(etiqueta) >= 0; });
+    if (!l.length) return null;
+    var fechas = l.map(function (m) { return new Date(m.fecha); }).sort(function (a, b) { return a - b; });
+    return { total: suma(l), cantidad: l.length, desde: fechas[0], hasta: fechas[fechas.length - 1], mayor: l.slice().sort(function (a, b) { return num(b.monto) - num(a.monto); })[0] };
+  }
+  function etiquetasUsadas(todos) {
+    var o = {}; gastos(todos).forEach(function (m) { (m.etiquetas || []).forEach(function (t) { o[t] = (o[t] || 0) + 1; }); });
+    return Object.keys(o).sort(function (a, b) { return o[b] - o[a]; });
+  }
+
+  // Lee un CSV de movimientos. Columnas (por nombre en la primera fila): fecha, descripcion/detalle/concepto, monto/valor, tipo (opcional), categoria (opcional).
+  // Sin columna de tipo, un monto negativo es gasto y uno positivo es ingreso.
+  function partirLinea(l, sep) {
+    var out = [], cur = "", q = false;
+    for (var i = 0; i < l.length; i++) {
+      var ch = l[i];
+      if (ch === '"') { if (q && l[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+      else if (ch === sep && !q) { out.push(cur); cur = ""; }
+      else cur += ch;
+    }
+    out.push(cur);
+    return out.map(function (x) { return x.trim(); });
+  }
+  function leerFecha(t) {
+    t = String(t || "").trim();
+    var m = t.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12);
+    m = t.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})/);
+    if (m) { var y = +m[3]; if (y < 100) y += 2000; return new Date(y, +m[2] - 1, +m[1], 12); }
+    return null;
+  }
+  function leerMonto(t) {
+    t = String(t || "").replace(/[$\s]/g, "");
+    if (!t) return NaN;
+    var neg = /^-|^\(.*\)$/.test(t); t = t.replace(/[()-]/g, "");
+    if (/,\d{1,2}$/.test(t)) t = t.replace(/\./g, "").replace(",", ".");
+    else if (/\.\d{1,2}$/.test(t) && !/\.\d{3}/.test(t)) t = t.replace(/,/g, "");
+    else t = t.replace(/[.,]/g, "");
+    var v = Number(t);
+    return isNaN(v) ? NaN : (neg ? -v : v);
+  }
+  function importarCSV(texto) {
+    var lineas = String(texto || "").replace(/^\ufeff/, "").split(/\r?\n/).filter(function (l) { return l.trim(); });
+    if (lineas.length < 2) return { filas: [], errores: ["El archivo está vacío o solo trae la primera fila."] };
+    var sep = (lineas[0].match(/;/g) || []).length > (lineas[0].match(/,/g) || []).length ? ";" : ",";
+    var sinTild = function (s) { return String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); };
+    var cab = partirLinea(lineas[0], sep).map(sinTild);
+    var col = function (nombres) { for (var i = 0; i < cab.length; i++) if (nombres.indexOf(cab[i]) >= 0) return i; return -1; };
+    var cF = col(["fecha", "date"]), cD = col(["descripcion", "detalle", "concepto", "description"]), cM = col(["monto", "valor", "importe", "amount"]), cT = col(["tipo", "type"]), cC = col(["categoria", "category"]);
+    if (cF < 0 || cD < 0 || cM < 0) return { filas: [], errores: ["La primera fila debe tener las columnas: fecha, descripcion y monto."] };
+    var filas = [], errores = [];
+    for (var i = 1; i < lineas.length; i++) {
+      var p = partirLinea(lineas[i], sep), f = leerFecha(p[cF]), v = leerMonto(p[cM]), d = p[cD];
+      if (!f || isNaN(v) || v === 0 || !d) { errores.push("Fila " + (i + 1) + ": no se entendió."); continue; }
+      var tipo = cT >= 0 && /ingreso|income|entrada/.test(sinTild(p[cT])) ? "ingreso" : cT >= 0 && /gasto|expense|salida/.test(sinTild(p[cT])) ? "gasto" : (v < 0 ? "gasto" : "ingreso");
+      if (cT < 0 && v > 0) tipo = "ingreso";
+      filas.push({ fecha: f.toISOString(), descripcion: d.slice(0, 120), monto: Math.abs(v), tipo: tipo, categoria: cC >= 0 ? p[cC] : "" });
+    }
+    return { filas: filas, errores: errores };
+  }
+
   var api = { consejos: consejos, gastoInusual: gastoInusual, semana: semana, logros: logros, cuotaCredito: cuotaCredito, ahorroFuturo: ahorroFuturo, regla503020: regla503020, calendario: calendario, plata: plata,
     gastoMensualPromedio: gastoMensualPromedio, mejorPeorMes: mejorPeorMes, salud: salud, iva: iva, dividirCuenta: dividirCuenta, costoHabito: costoHabito,
-    contadoVsCuotas: contadoVsCuotas, cdt: cdt, primaCesantias: primaCesantias, salirDeDeuda: salirDeDeuda, reto52: reto52 };
+    contadoVsCuotas: contadoVsCuotas, cdt: cdt, primaCesantias: primaCesantias, salirDeDeuda: salirDeDeuda, reto52: reto52,
+    suscripciones: suscripciones, inflacionPersonal: inflacionPersonal, mesesConDatos: mesesConDatos, compararMeses: compararMeses, costoEvento: costoEvento, etiquetasUsadas: etiquetasUsadas, importarCSV: importarCSV };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaConsejos = api;
 })(typeof window !== "undefined" ? window : this);

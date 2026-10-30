@@ -513,6 +513,10 @@
         <button type="button" id="btn-pin"><span class="menu-icono">🔒</span><span><strong>Bloqueo con PIN</strong><small id="pin-estado">Pide un PIN cada vez que abres NOVA</small></span></button>
         <button type="button" id="btn-restaurar"><span class="menu-icono">♻️</span><span><strong>Restaurar respaldo</strong><small>Agrega los movimientos de un archivo de respaldo, sin borrar nada</small></span></button>
         <input type="file" id="archivo-respaldo" accept=".json,application/json" hidden>
+        <button type="button" id="btn-importar"><span class="menu-icono">📥</span><span><strong>Importar desde Excel o CSV</strong><small>Columnas: fecha, descripcion, monto (y tipo, categoria si quieres)</small></span></button>
+        <input type="file" id="archivo-csv" accept=".csv,text/csv,text/plain" hidden>
+        <button type="button" id="btn-papelera"><span class="menu-icono">🗑️</span><span><strong>Papelera</strong><small id="papelera-estado">Recupera lo que borraste en los últimos 30 días</small></span></button>
+        <label class="menu-fila"><span class="menu-icono">📳</span><span><strong>Sacudir para ocultar valores</strong><small>Sacude el celular 3 veces para ocultar o mostrar</small></span><input type="checkbox" id="sacudir-ocultar" class="interruptor"></label>
       </div>
       <p class="mensaje" id="respaldo-mensaje" role="status"></p>
 
@@ -764,7 +768,8 @@
       <input id="reg-viajes" inputmode="numeric" maxlength="4" placeholder="Ej. 6">
     </div>
     <label for="reg-desc">Descripción (opcional)</label>
-    <input id="reg-desc" maxlength="120" placeholder="¿En qué gastaste?">
+    <input id="reg-desc" maxlength="120" placeholder="¿En qué gastaste?" list="lista-desc" autocomplete="off">
+    <datalist id="lista-desc"></datalist>
     <label>Categoría</label>
     <button type="button" id="reg-categoria" class="selector"><span class="mov-icono chico" id="reg-cat-icono"></span><span id="reg-cat-nombre">Seleccionar categoría</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <label id="reg-cuenta-etiqueta" for="reg-cuenta">Cuenta</label>
@@ -890,6 +895,7 @@
     <button type="button" id="abono-editar-icono" class="icono-btn" aria-label="Editar la deuda"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></button>
     <button type="button" id="abono-borrar-icono" class="icono-btn" aria-label="Borrar la deuda"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
   <article id="abono-resumen" class="tarjeta"></article>
+  <button type="button" id="abono-whatsapp" class="mini" hidden>📲 Recordarle por WhatsApp</button>
   <form id="form-abono" class="formulario" autocomplete="off">
     <label for="abono-monto" class="centro" id="abono-et">Registrar un abono</label>
     <input id="abono-monto" class="monto-entrada" inputmode="numeric" placeholder="$ 0">
@@ -941,6 +947,11 @@
   <div class="seccion-cabecera"><h2>Movimientos del grupo</h2></div>
   <ul id="lista-gastos-grupo" class="lista-simple"></ul>
   <button type="button" id="grupo-borrar" class="peligro">🗑 Borrar este grupo</button>
+</section>
+<section id="pantalla-papelera" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Papelera</h1></div>
+  <p class="nota">Lo que borras queda aquí 30 días en este dispositivo. Después se elimina para siempre.</p>
+  <ul id="lista-papelera" class="lista-simple"></ul>
 </section>
 <section id="pantalla-documento" class="capa" hidden>
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="doc-titulo">Nuevo vencimiento</h1></div>
@@ -1044,6 +1055,15 @@
   </div>
 </div>
 
+<div id="tutorial" class="bloqueo" hidden>
+  <div class="bloqueo-caja">
+    <div class="logo grande"><span>NOVA</span><svg class="chispa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></div>
+    <h2 id="tutorial-titulo"></h2>
+    <p id="tutorial-texto" class="nota"></p>
+    <button type="button" class="primario" id="tutorial-siguiente">Siguiente</button>
+    <button type="button" class="enlace" id="tutorial-saltar">Saltar</button>
+  </div>
+</div>
 <div id="bloqueo" class="bloqueo" hidden>
   <div class="bloqueo-caja">
     <div class="logo grande"><span>NOVA</span><svg class="chispa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></div>

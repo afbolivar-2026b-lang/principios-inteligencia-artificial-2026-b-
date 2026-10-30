@@ -102,3 +102,45 @@ test("reto de 52 semanas", () => {
   assert.strictEqual(r.ahorrado, 6000);
   assert.strictEqual(r.semanas.length, 52);
 });
+
+test("suscripciones detectadas", () => {
+  const ahora = new Date(2026, 9, 20);
+  const f = (m, d, monto, desc) => ({ tipo: "gasto", fecha: new Date(2026, m, d, 10).toISOString(), monto, descripcion: desc });
+  const todos = [f(7, 5, 26900, "Netflix"), f(8, 5, 26900, "Netflix"), f(9, 5, 27500, "Netflix"), f(8, 2, 20000, "Taxi"), f(9, 3, 90000, "Taxi"), f(7, 1, 1000, "tinto"), f(8, 1, 1000, "tinto"), f(9, 1, 1000, "tinto")];
+  const s = C.suscripciones(todos, ahora);
+  assert.deepStrictEqual(s.lista.map((x) => x.nombre), ["Netflix"]);
+  assert.strictEqual(s.mensual, 27500);
+  assert.strictEqual(s.lista[0].anual, 330000);
+});
+
+test("inflación personal", () => {
+  const f = (m, d, monto) => ({ tipo: "gasto", fecha: new Date(2026, m, d, 10).toISOString(), monto, descripcion: "Café" });
+  const r = C.inflacionPersonal([f(0, 1, 3000), f(2, 1, 3000), f(6, 1, 3600), f(8, 1, 3600)]);
+  assert.strictEqual(r.lista[0].cambioPct, 20);
+  assert.strictEqual(r.general, 20);
+  assert.strictEqual(C.inflacionPersonal([f(0, 1, 3000), f(0, 5, 3300)]).general, null);
+});
+
+test("comparar meses y costo de un evento", () => {
+  const f = (m, d, monto, cat, et) => ({ tipo: "gasto", fecha: new Date(2026, m, d, 10).toISOString(), monto, categoria_id: cat, etiquetas: et || [] });
+  const todos = [f(8, 2, 100, 1), f(8, 3, 50, 2), f(9, 2, 300, 1), f(9, 9, 20, 3, ["viaje"]), f(9, 10, 80, 3, ["viaje"])];
+  const cmp = C.compararMeses(todos, 8 + 2026 * 12, 9 + 2026 * 12);
+  assert.strictEqual(cmp.totalA, 150); assert.strictEqual(cmp.totalB, 400); assert.strictEqual(cmp.filas[0].categoria_id, 1);
+  assert.strictEqual(C.mesesConDatos(todos).length, 2);
+  const ev = C.costoEvento(todos, "viaje");
+  assert.strictEqual(ev.total, 100); assert.strictEqual(ev.cantidad, 2);
+  assert.strictEqual(C.costoEvento(todos, "nada"), null);
+  assert.deepStrictEqual(C.etiquetasUsadas(todos), ["viaje"]);
+});
+
+test("importar CSV", () => {
+  const csv = "Fecha;Descripción;Monto;Tipo\n2026-10-01;Mercado;120.000;gasto\n05/10/2026;Sueldo;\"2.000.000\";ingreso\n2026-10-03;Taxi;-15000,50;\nmala;x;y;z\n";
+  const r = C.importarCSV(csv);
+  assert.strictEqual(r.filas.length, 3);
+  assert.strictEqual(r.errores.length, 1);
+  assert.deepStrictEqual(r.filas.map((x) => [x.descripcion, x.monto, x.tipo]), [["Mercado", 120000, "gasto"], ["Sueldo", 2000000, "ingreso"], ["Taxi", 15000.5, "gasto"]]);
+  assert.strictEqual(new Date(r.filas[1].fecha).getDate(), 5);
+  const sinTipo = C.importarCSV("fecha,detalle,valor\n2026-10-01,Almuerzo,-20000\n2026-10-02,Pago,50000");
+  assert.deepStrictEqual(sinTipo.filas.map((x) => x.tipo), ["gasto", "ingreso"]);
+  assert.ok(C.importarCSV("a,b\n1,2").errores[0].includes("columnas"));
+});
