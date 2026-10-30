@@ -482,6 +482,14 @@
         <button type="button" data-ir="ajustes-exportar"><span class="menu-icono">⬇</span><span><strong>Exportar datos</strong><small>Informe PDF, Excel con dashboard, CSV y respaldo</small></span></button>
       </div>
 
+      <h2 class="grupo-ajustes">Seguridad y respaldo</h2>
+      <div class="menu">
+        <button type="button" id="btn-pin"><span class="menu-icono">🔒</span><span><strong>Bloqueo con PIN</strong><small id="pin-estado">Pide un PIN cada vez que abres NOVA</small></span></button>
+        <button type="button" id="btn-restaurar"><span class="menu-icono">♻️</span><span><strong>Restaurar respaldo</strong><small>Agrega los movimientos de un archivo de respaldo, sin borrar nada</small></span></button>
+        <input type="file" id="archivo-respaldo" accept=".json,application/json" hidden>
+      </div>
+      <p class="mensaje" id="respaldo-mensaje" role="status"></p>
+
       <h2 class="grupo-ajustes">Apariencia</h2>
       <article class="tarjeta formulario">
         <span class="etiqueta">Tema</span>
@@ -959,7 +967,18 @@
   </div>
 </div>
 
-<div id="toast" class="toast" role="status" hidden></div>
+<div id="bloqueo" class="bloqueo" hidden>
+  <div class="bloqueo-caja">
+    <div class="logo grande"><span>NOVA</span><svg class="chispa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/></svg></div>
+    <h2 id="bloqueo-titulo">Escribe tu PIN</h2>
+    <input id="bloqueo-pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" aria-label="PIN">
+    <p class="mensaje" id="bloqueo-mensaje" role="alert"></p>
+    <button type="button" class="primario" id="bloqueo-ok">Continuar</button>
+    <button type="button" class="enlace" id="bloqueo-cancelar" hidden>Cancelar</button>
+    <button type="button" class="enlace" id="bloqueo-olvide" hidden>Olvidé mi PIN</button>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 
 <p id="cargando" class="cargando">Cargando…</p>

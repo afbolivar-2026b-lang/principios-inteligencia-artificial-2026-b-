@@ -91,12 +91,32 @@
   }
 
   var toastTimer = null;
-  function toast(texto) {
+  // Mascota de NOVA (Novi, un búho verde con la chispa del logo), dibujada aquí mismo.
+  var NOVI = '<svg class="toast-novi" viewBox="0 0 64 76" aria-hidden="true"><ellipse cx="32" cy="72" rx="20" ry="3" fill="rgba(0,0,0,.18)"/>' +
+    '<path d="M10 30 L8 8 L24 20 Z M54 30 L56 8 L40 20 Z" fill="#12805c"/><ellipse cx="32" cy="44" rx="25" ry="27" fill="#1f9d6f"/>' +
+    '<ellipse cx="32" cy="52" rx="16" ry="18" fill="#cdeee0"/><path d="M32 40l2.2 7.8L42 50l-7.8 2.2L32 60l-2.2-7.8L22 50l7.8-2.2z" fill="#1f9d6f"/>' +
+    '<circle cx="22" cy="31" r="9" fill="#fff"/><circle cx="42" cy="31" r="9" fill="#fff"/><circle cx="23" cy="32" r="4.6" fill="#17302a"/><circle cx="41" cy="32" r="4.6" fill="#17302a"/>' +
+    '<circle cx="24.6" cy="30.2" r="1.5" fill="#fff"/><circle cx="42.6" cy="30.2" r="1.5" fill="#fff"/><path d="M28 38 L32 44 L36 38 Z" fill="#f3b23c"/>' +
+    '<path d="M50 52c6-2 10 2 8 8-1 3-6 4-9 1z" fill="#1f9d6f"/><rect x="53" y="44" width="5" height="11" rx="2.5" fill="#1f9d6f" transform="rotate(-18 55 50)"/>' +
+    '<path d="M24 70l-3 4h8zM40 70l3 4h-8z" fill="#f3b23c"/></svg>';
+  // Tarjeta de arriba: titulo, detalle y valor opcionales.
+  function toast(titulo, detalle, valor) {
     var t = $("toast");
-    t.textContent = texto;
+    var falla = /^(No se pudo|No pude|Un cambio guardado sin internet)/.test(titulo);
+    t.className = "toast" + (falla ? " toast-error" : "");
+    t.textContent = "";
+    t.insertAdjacentHTML("afterbegin", NOVI);
+    var col = el("div", "toast-texto");
+    if (detalle == null && valor == null) col.append(el("strong", "toast-titulo solo", titulo));
+    else { col.append(el("span", "toast-titulo", titulo)); col.append(el("strong", "toast-detalle", detalle || "")); }
+    t.append(col);
+    if (valor != null) t.append(el("span", "toast-valor", valor));
+    var barra = el("span", "toast-barra"); t.append(barra);
     t.hidden = false;
+    try { if (!falla && navigator.vibrate) navigator.vibrate(25); } catch (e) { /* sin vibración */ }
+    barra.style.animation = "none"; void barra.offsetWidth; barra.style.animation = "";
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.hidden = true; }, 2600);
+    toastTimer = setTimeout(function () { t.hidden = true; }, 3200);
   }
 
   // Convierte "2 millones", "850.000" o "20k" en número usando el mismo intérprete.
@@ -1933,7 +1953,7 @@
         return fuente.actualizar("deudas", d.id, { movimiento_id: m.id }).then(function (n) { Object.assign(d, n); return d; });
       });
     }).then(function (d) {
-      toast("✓ Deuda guardada: " + d.persona + " " + pesos.format(num(d.monto)));
+      toast("¡Deuda guardada!", d.persona, pesos.format(num(d.monto)));
       cerrarCapa(); pintar(); programarAvisos();
     }).catch(function (err) { mensaje("deuda-mensaje", "No se pudo guardar: " + err.message, true); });
   });
@@ -2058,10 +2078,22 @@
   });
 
   // Avisos en el celular (solo en la app instalada): se vuelven a programar cada vez que cambia algo.
+  // Cada domingo a las 7 p. m. un recordatorio para revisar la semana (4 domingos hacia adelante).
+  function avisosSemanales() {
+    var lista = [], d = new Date();
+    d.setHours(19, 0, 0, 0);
+    d.setDate(d.getDate() + ((7 - d.getDay()) % 7));
+    if (d < new Date()) d.setDate(d.getDate() + 7);
+    for (var k = 0; k < 4; k++) {
+      lista.push({ id: 800000001 + k, titulo: "Tu semana en NOVA", texto: "Es domingo: mira cómo te fue esta semana y planea la siguiente.", cuando: new Date(d.getTime()) });
+      d.setDate(d.getDate() + 7);
+    }
+    return lista;
+  }
   function programarAvisos() {
     var N = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
     if (!N || !fuente || fuente.demo) return Promise.resolve();
-    var avisos = (conductor() ? A.avisosDocumentos(datos.documentos) : []).concat(A.avisosDeudas(resumenDeDeudas().lista)).slice(0, 60);
+    var avisos = (conductor() ? A.avisosDocumentos(datos.documentos) : []).concat(A.avisosDeudas(resumenDeDeudas().lista)).concat(avisosSemanales()).slice(0, 60);
     return N.getPending().then(function (p) {
       var viejos = (p && p.notifications || []).map(function (n) { return { id: n.id }; });
       return viejos.length ? N.cancel({ notifications: viejos }) : null;
@@ -2757,8 +2789,9 @@
       ordenarMovimientos();
       if (docId) renovarDocumentoListo(docId);
       var etiquetaDesc = r.m ? r.m.descripcion : r.programado.descripcion;
-      toast((editar ? "✓ Cambios guardados: " : "✓ ¡Guardado! ") + etiquetaDesc + " " + pesos.format(monto) + (ext ? " (" + Mon.formatoMonto(montoOriginal, reg.moneda) + ")" : "") + (r.m && r.m.viajes ? " · " + r.m.viajes + (r.m.viajes === 1 ? " viaje" : " viajes") : "") + (r.programado ? " · 🔁 " + A.FRECUENCIAS[r.programado.frecuencia].toLowerCase() : ""));
+      toast(editar ? "¡Cambios guardados!" : "¡Guardado!", etiquetaDesc + (ext ? " · " + Mon.formatoMonto(montoOriginal, reg.moneda) : "") + (r.m && r.m.viajes ? " · " + r.m.viajes + (r.m.viajes === 1 ? " viaje" : " viajes") : "") + (r.programado ? " · 🔁 " + A.FRECUENCIAS[r.programado.frecuencia].toLowerCase() : ""), pesos.format(monto));
       pintar();
+      if (!editar && r.m && r.m.tipo === "gasto") alertaLimites(r.m.categoria_id);
       if (otro && !editar) {
         reg.expr = ""; reg.etiquetas = []; $("reg-desc").value = ""; $("reg-nota").value = ""; $("teclado").hidden = false;
         mensaje("reg-mensaje", ""); pintarRegistro();
@@ -3850,6 +3883,7 @@
       datos = Object.assign(datosVacios(), d);
       ordenarMovimientos();
       mostrar("app"); ir("inicio"); pintar();
+      if (!fuente.demo) bloquearSiHayPin();
       programarAvisos();
       // Si salieron categorías nuevas del modo conductor (como "Cuota del vehículo"), se agregan solas.
       if (conductor()) asegurarCategoriasConductor().then(pintar).catch(function () { /* se intentará la próxima vez */ });
@@ -3996,6 +4030,101 @@
         return entrar(fuenteSupabase(cliente, r.data.user));
       }).catch(function (err) { mensaje("auth-mensaje", "No se pudo entrar con Google: " + err.message, true); });
     });
+  }
+
+  // ---------- Bloqueo con PIN (el PIN se guarda solo en este dispositivo, cifrado) ----------
+  var PIN_CLAVE = "nova-pin", pinModo = null, pinPrimero = "", ocultoDesde = 0;
+  function leerPin() { try { return localStorage.getItem(PIN_CLAVE); } catch (e) { return null; } }
+  function hashPin(pin) {
+    var txt = "nova-sal:" + pin;
+    if (!(window.crypto && crypto.subtle && window.TextEncoder)) return Promise.resolve("p:" + btoa(txt));
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt)).then(function (b) {
+      return Array.prototype.map.call(new Uint8Array(b), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
+    });
+  }
+  function pintarEstadoPin() { $("pin-estado").textContent = leerPin() ? "Activado: se pide al abrir NOVA" : "Pide un PIN cada vez que abres NOVA"; }
+  function abrirBloqueo(modo) {
+    pinModo = modo; pinPrimero = "";
+    var t = { crear: "Crea un PIN de 4 a 6 números", repetir: "Repite el PIN", abrir: "Escribe tu PIN", quitar: "Escribe tu PIN para quitarlo" };
+    $("bloqueo-titulo").textContent = t[modo]; $("bloqueo-pin").value = ""; mensaje("bloqueo-mensaje", "");
+    $("bloqueo-cancelar").hidden = modo === "abrir"; $("bloqueo-olvide").hidden = modo === "crear";
+    $("bloqueo").hidden = false; setTimeout(function () { $("bloqueo-pin").focus(); }, 50);
+  }
+  function cerrarBloqueo() { $("bloqueo").hidden = true; $("bloqueo-pin").value = ""; pinModo = null; }
+  function confirmarPin() {
+    var pin = $("bloqueo-pin").value.replace(/\D/g, "");
+    if (pin.length < 4) return mensaje("bloqueo-mensaje", "Escribe de 4 a 6 números.", true);
+    if (pinModo === "crear") { pinPrimero = pin; pinModo = "repetir"; $("bloqueo-titulo").textContent = "Repite el PIN"; $("bloqueo-pin").value = ""; return; }
+    if (pinModo === "repetir") {
+      if (pin !== pinPrimero) { mensaje("bloqueo-mensaje", "No coinciden. Empieza de nuevo.", true); return abrirBloqueo("crear"); }
+      return hashPin(pin).then(function (hp) { try { localStorage.setItem(PIN_CLAVE, hp); } catch (e) { /* nada */ } cerrarBloqueo(); pintarEstadoPin(); toast("¡PIN activado!", "Se pedirá al abrir NOVA"); });
+    }
+    hashPin(pin).then(function (hp) {
+      if (hp !== leerPin()) { $("bloqueo-pin").value = ""; return mensaje("bloqueo-mensaje", "PIN incorrecto.", true); }
+      if (pinModo === "quitar") { try { localStorage.removeItem(PIN_CLAVE); } catch (e) { /* nada */ } pintarEstadoPin(); toast("PIN quitado"); }
+      cerrarBloqueo();
+    });
+  }
+  function bloquearSiHayPin() { if (leerPin() && fuente) abrirBloqueo("abrir"); }
+  $("bloqueo-ok").addEventListener("click", confirmarPin);
+  $("bloqueo-pin").addEventListener("keydown", function (e) { if (e.key === "Enter") confirmarPin(); });
+  $("bloqueo-cancelar").addEventListener("click", cerrarBloqueo);
+  $("bloqueo-olvide").addEventListener("click", function () {
+    if (!confirm("Para quitar el PIN tienes que cerrar sesión y volver a entrar con tu correo. Tus datos no se borran. ¿Seguimos?")) return;
+    try { localStorage.removeItem(PIN_CLAVE); } catch (e) { /* nada */ }
+    cerrarBloqueo(); pintarEstadoPin(); $("btn-salir").click();
+  });
+  $("btn-pin").addEventListener("click", function () { abrirBloqueo(leerPin() ? "quitar" : "crear"); });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) ocultoDesde = Date.now();
+    else if (ocultoDesde && Date.now() - ocultoDesde > 30000 && $("bloqueo").hidden) bloquearSiHayPin();
+  });
+  pintarEstadoPin();
+
+  // ---------- Restaurar respaldo: solo agrega lo que falta, nunca borra ----------
+  function claveMov(m) { return [String(m.fecha).slice(0, 16), num(m.monto), m.tipo, m.descripcion || ""].join("|"); }
+  $("btn-restaurar").addEventListener("click", function () { $("archivo-respaldo").click(); });
+  $("archivo-respaldo").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    f.text().then(function (txt) {
+      var c; try { c = JSON.parse(txt); } catch (err) { return mensaje("respaldo-mensaje", "Ese archivo no es un respaldo de NOVA.", true); }
+      if (!c || c.app !== "NOVA" || !Array.isArray(c.movimientos)) return mensaje("respaldo-mensaje", "Ese archivo no es un respaldo de NOVA.", true);
+      var existentes = {}; datos.movimientos.forEach(function (m) { existentes[claveMov(m)] = true; });
+      var nuevos = c.movimientos.filter(function (m) { return m && m.monto != null && m.fecha && !existentes[claveMov(m)]; });
+      if (!nuevos.length) return mensaje("respaldo-mensaje", "No había nada nuevo: todos esos movimientos ya están en NOVA.");
+      if (!confirm("Se van a agregar " + nuevos.length + " movimientos que no tienes. No se borra nada. ¿Seguimos?")) return;
+      var cuentaDe = function (id) { var o = (c.cuentas || []).filter(function (x) { return x.id === id; })[0]; var d = o && datos.cuentas.filter(function (x) { return x.nombre === o.nombre; })[0]; return (d || datos.cuentas[0]).id; };
+      var catDe = function (id, tipo) { var o = (c.categorias || []).filter(function (x) { return x.id === id; })[0]; var d = o && datos.categorias.filter(function (x) { return x.nombre === o.nombre && x.tipo === tipo; })[0]; return (d || datos.categorias.filter(function (x) { return x.tipo === tipo; })[0] || datos.categorias[0]).id; };
+      mensaje("respaldo-mensaje", "Restaurando " + nuevos.length + " movimientos…");
+      var hechos = 0;
+      return nuevos.reduce(function (p, m) {
+        return p.then(function () {
+          var fila = { cuenta_id: cuentaDe(m.cuenta_id), categoria_id: catDe(m.categoria_id, m.tipo), tipo: m.tipo, monto: m.monto, descripcion: m.descripcion || null, fecha: m.fecha, etiquetas: m.etiquetas || [] };
+          if (m.nota) fila.nota = m.nota;
+          return fuente.crear("movimientos", fila).then(function (n) { datos.movimientos.push(n); hechos++; });
+        });
+      }, Promise.resolve()).then(function () {
+        ordenarMovimientos(); pintar(); mensaje("respaldo-mensaje", "Listo: se agregaron " + hechos + " movimientos."); toast("¡Respaldo restaurado!", hechos + " movimientos agregados");
+      });
+    }).catch(function (err) { mensaje("respaldo-mensaje", "No se pudo restaurar: " + err.message, true); });
+  });
+
+  // ---------- Alerta de límites: avisa al 80 % y al 100 % ----------
+  function alertaLimites(categoriaId) {
+    var peor = null;
+    datos.limites.forEach(function (l) {
+      if (l.categoria_id != null && l.categoria_id !== categoriaId) return;
+      var e = estadoLimite(l); if (!e.vigente || !(num(l.monto) > 0)) return;
+      var p = e.gastado / num(l.monto);
+      if (p >= 0.8 && (!peor || p > peor.p)) peor = { p: p, l: l, falta: num(l.monto) - e.gastado };
+    });
+    if (!peor) return;
+    var nombre = peor.l.categoria_id != null ? nombreCategoria(peor.l.categoria_id) : "tus gastos";
+    setTimeout(function () {
+      if (peor.p >= 1) toast("¡Te pasaste del límite!", nombre, "+" + pesos.format(-peor.falta));
+      else toast("Ojo con el límite de " + nombre, "Llevas el " + Math.round(peor.p * 100) + " %", "Faltan " + pesos.format(peor.falta));
+    }, 3400);
   }
 
   $("btn-demo").addEventListener("click", function () { entrar(fuenteDemo()); });

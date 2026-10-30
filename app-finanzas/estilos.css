@@ -321,10 +321,22 @@ body.con-capa { overflow: hidden; }
 .chip-opcion.activo { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 
 /* Toast */
-.toast { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); top: max(16px, env(safe-area-inset-top)); width: max-content; max-width: calc(100% - 32px);
-  background: var(--surface); color: var(--ink); border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line)); border-radius: 16px; padding: 12px 18px;
-  font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 18px var(--glow); animation: bajar .2s ease-out; }
-@keyframes bajar { from { transform: translate(-50%, -16px); opacity: 0; } }
+.toast { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); top: max(14px, env(safe-area-inset-top)); width: min(440px, calc(100% - 24px));
+  display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 20px 12px 84px; overflow: visible;
+  background: var(--surface); color: var(--ink); border-radius: 36px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  box-shadow: 0 12px 32px rgba(0,0,0,.30), 0 0 18px var(--glow); animation: bajar .25s ease-out; }
+.toast-novi { position: absolute; left: 8px; bottom: 2px; width: 64px; height: 76px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); animation: saltito .6s ease-out; }
+.toast-texto { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.toast-titulo { font-size: .8rem; font-weight: 800; color: var(--accent); }
+.toast-titulo.solo { font-size: .95rem; color: var(--ink); line-height: 1.25; }
+.toast-detalle { font-size: 1.05rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast-valor { font-size: 1.2rem; font-weight: 800; white-space: nowrap; }
+.toast-barra { position: absolute; left: 22px; right: 22px; bottom: 0; height: 4px; border-radius: 4px; background: var(--accent); transform-origin: left; animation: barra-toast 3.2s linear forwards; }
+.toast-error { border-color: var(--danger); } .toast-error .toast-titulo { color: var(--danger); } .toast-error .toast-barra { background: var(--danger); }
+@keyframes bajar { from { transform: translate(-50%, -24px); opacity: 0; } }
+@keyframes saltito { 0% { transform: translateY(14px) scale(.7); } 60% { transform: translateY(-6px) scale(1.05); } 100% { transform: none; } }
+@keyframes barra-toast { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { .toast, .toast-novi { animation: none; } }
 
 /* Planes */
 .vacio-grande { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 28px 18px; }
@@ -633,3 +645,9 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 .cuenta { cursor: pointer; }
 /* El formulario de la deuda se abre encima del detalle de la deuda */
 #pantalla-deuda { z-index: 32; }
+
+/* Bloqueo con PIN */
+.bloqueo { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.bloqueo-caja { width: min(340px, 100%); display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+.bloqueo-caja input { width: 100%; text-align: center; font-size: 1.8rem; letter-spacing: .5em; padding: 12px; }
+.bloqueo-caja .primario { width: 100%; }

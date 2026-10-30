@@ -275,3 +275,10 @@ Todo se puede corregir y borrar: movimientos (lápiz y papelera en el detalle), 
 cada abono, metas, cuentas (se borran solo si hay más de una y no tienen movimientos), registros comunes, programaciones, límites,
 categorías, etiquetas y vencimientos. Un editor general (`abrirEditor` en `app.js`) arma el formulario de metas, abonos, cuentas,
 registros comunes y programaciones, con los campos de plata con puntos automáticos y un botón de borrar con confirmación.
+
+## Novedades: tarjeta con mascota, PIN, restaurar respaldo y alertas
+
+- Aviso de arriba con la mascota **Novi** (búho verde dibujado en el código) al guardar movimientos, deudas, etc.
+- **Bloqueo con PIN** (Configuración → Seguridad y respaldo). El PIN queda solo en el dispositivo.
+- **Restaurar respaldo**: agrega los movimientos que faltan de un archivo `nova-respaldo-*.json`, nunca borra.
+- **Alerta de límites** al 80 % y al 100 % tras guardar un gasto, y recordatorio semanal los domingos (app Android).
