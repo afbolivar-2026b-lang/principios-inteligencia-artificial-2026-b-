@@ -651,3 +651,9 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 .bloqueo-caja { width: min(340px, 100%); display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
 .bloqueo-caja input { width: 100%; text-align: center; font-size: 1.8rem; letter-spacing: .5em; padding: 12px; }
 .bloqueo-caja .primario { width: 100%; }
+
+/* Foto del recibo */
+.det-foto { display: flex; flex-direction: column; gap: 10px; }
+.det-foto-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; cursor: zoom-in; background: var(--surface-2); }
+.det-foto-img.grande { max-height: none; object-fit: contain; cursor: zoom-out; }
+.det-foto-botones { display: flex; gap: 8px; flex-wrap: wrap; }

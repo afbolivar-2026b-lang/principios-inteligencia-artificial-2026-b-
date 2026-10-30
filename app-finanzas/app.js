@@ -348,12 +348,23 @@
   function fuenteSupabase(cliente, usuario) {
     // Se recuerda quién es para poder abrir la app sin internet (los datos se guardan por usuario).
     guardarLocal("nova-identidad", { id: usuario.id, email: usuario.email, user_metadata: usuario.user_metadata || {}, created_at: usuario.created_at || null });
-    return NovaSync.envolver(fuenteSupabaseBase(cliente, usuario), {
+    var f = NovaSync.envolver(fuenteSupabaseBase(cliente, usuario), {
       almacen: almacenLocal, usuarioId: usuario.id, enLinea: enLinea,
       antes: function () { return cliente.auth.getSession(); },     // renueva la sesión antes de enviar lo pendiente
       alMapear: remapearDatos, alCambiar: pintarAvisoRed,
       alFallar: function () { toast("Un cambio guardado sin internet no se pudo enviar y se descartó."); }
     });
+    // Fotos de recibos: espacio privado "recibos", una carpeta por usuario. Solo con internet.
+    var bucket = cliente.storage.from("recibos");
+    f.fotos = {
+      subir: function (blob, movId) {
+        var ruta = usuario.id + "/" + movId + "-" + Date.now() + ".jpg";
+        return bucket.upload(ruta, blob, { contentType: "image/jpeg" }).then(function (r) { if (r.error) throw new Error(r.error.message); return ruta; });
+      },
+      url: function (ruta) { return bucket.createSignedUrl(ruta, 3600).then(function (r) { if (r.error) throw new Error(r.error.message); return r.data.signedUrl; }); },
+      borrar: function (ruta) { return bucket.remove([ruta]).then(function () { return null; }, function () { return null; }); }
+    };
+    return f;
   }
   window.addEventListener("online", function () { pintarAvisoRed(); if (fuente && fuente.sincronizar) fuente.sincronizar().then(function () { pintarAvisoRed(); }); });
   window.addEventListener("offline", function () { pintarAvisoRed(); });
@@ -434,7 +445,15 @@
       },
       borrar: function (nombre, id) { tabla[nombre] = tabla[nombre].filter(function (x) { return x.id !== id; }); return Promise.resolve(); },
       guardarPerfil: function (cambios) { Object.assign(perfil, cambios); return Promise.resolve(copia(perfil)); },
-      salir: function () { return Promise.resolve(); }
+      salir: function () { return Promise.resolve(); },
+      fotos: (function () {
+        var guardadas = {};
+        return {
+          subir: function (blob, movId) { var r = "demo:" + movId + ":" + Date.now(); guardadas[r] = URL.createObjectURL(blob); return Promise.resolve(r); },
+          url: function (ruta) { return guardadas[ruta] ? Promise.resolve(guardadas[ruta]) : Promise.reject(new Error("sin foto")); },
+          borrar: function (ruta) { delete guardadas[ruta]; return Promise.resolve(null); }
+        };
+      })()
     };
   }
 
@@ -2827,6 +2846,7 @@
     if (!m || !confirm("¿Borrar «" + m.descripcion + "» de " + pesos.format(num(m.monto)) + "?")) return;
     fuente.borrar("movimientos", m.id).then(function () {
       datos.movimientos = datos.movimientos.filter(function (x) { return x.id !== m.id; });
+      if (m.foto_ruta && fuente.fotos) fuente.fotos.borrar(m.foto_ruta);
       toast("Movimiento borrado"); cerrarCapa(); pintar();
     }).catch(function (err) { mensaje("reg-mensaje", err.message, true); });
   });
@@ -2859,6 +2879,7 @@
     if (!m || !confirm("¿Borrar «" + m.descripcion + "» de " + pesos.format(num(m.monto)) + "?")) return;
     fuente.borrar("movimientos", m.id).then(function () {
       datos.movimientos = datos.movimientos.filter(function (x) { return x.id !== m.id; });
+      if (m.foto_ruta && fuente.fotos) fuente.fotos.borrar(m.foto_ruta);
       toast("Movimiento borrado"); cerrarCapa(); pintar();
     }).catch(function (err) { toast("No se pudo borrar: " + err.message); });
   });
@@ -2953,6 +2974,64 @@
     f.append(el("span", null, titulo), v);
     return f;
   }
+  // ---------- Foto del recibo ----------
+  function achicarFoto(archivo) {
+    return new Promise(function (ok, mal) {
+      var url = URL.createObjectURL(archivo), img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 1400 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (b) { b ? ok(b) : mal(new Error("No se pudo preparar la foto.")); }, "image/jpeg", 0.72);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); mal(new Error("No se pudo abrir la foto.")); };
+      img.src = url;
+    });
+  }
+  function pintarFotoRecibo(m) {
+    var caja = el("article", "tarjeta det-foto");
+    caja.append(el("span", "titulo-det", "📷 Foto del recibo"));
+    var puede = fuente && fuente.fotos && m.id > 0;
+    var aviso = el("p", "mensaje", ""); aviso.setAttribute("role", "status");
+    var idAhora = detalleId;
+    if (m.foto_ruta && puede) {
+      var img = el("img", "det-foto-img"); img.alt = "Foto del recibo"; img.loading = "lazy";
+      img.addEventListener("click", function () { img.classList.toggle("grande"); });
+      caja.append(img);
+      fuente.fotos.url(m.foto_ruta).then(function (u) { if (detalleId === idAhora) img.src = u; })
+        .catch(function () { aviso.textContent = "No se pudo mostrar la foto (¿sin internet?)."; aviso.classList.add("error"); });
+    }
+    var archivo = el("input"); archivo.type = "file"; archivo.accept = "image/*"; archivo.hidden = true;
+    var agregar = el("button", "mini", m.foto_ruta ? "🔄 Cambiar foto" : "📷 Agregar foto"); agregar.type = "button";
+    var quitar = el("button", "mini", "🗑 Quitar foto"); quitar.type = "button"; quitar.hidden = !m.foto_ruta;
+    agregar.addEventListener("click", function () {
+      if (!puede) { aviso.textContent = "La foto se puede agregar cuando tengas internet y el movimiento ya esté enviado."; aviso.classList.add("error"); return; }
+      archivo.click();
+    });
+    archivo.addEventListener("change", function () {
+      var f = archivo.files && archivo.files[0]; archivo.value = "";
+      if (!f) return;
+      agregar.disabled = true; aviso.classList.remove("error"); aviso.textContent = "Guardando la foto…";
+      var vieja = m.foto_ruta;
+      achicarFoto(f).then(function (blob) { return fuente.fotos.subir(blob, m.id); })
+        .then(function (ruta) { return fuente.actualizar("movimientos", m.id, { foto_ruta: ruta }).then(function (n) { Object.assign(m, n); return vieja ? fuente.fotos.borrar(vieja) : null; }); })
+        .then(function () { toast("¡Foto guardada!", m.descripcion); if (detalleId === idAhora) pintarDetalle(); })
+        .catch(function (err) { aviso.textContent = "No se pudo guardar la foto: " + err.message; aviso.classList.add("error"); })
+        .finally(function () { agregar.disabled = false; });
+    });
+    quitar.addEventListener("click", function () {
+      if (!confirm("¿Quitar la foto de este recibo?")) return;
+      var vieja = m.foto_ruta;
+      fuente.actualizar("movimientos", m.id, { foto_ruta: null }).then(function (n) { Object.assign(m, n); return fuente.fotos.borrar(vieja); })
+        .then(function () { toast("Foto quitada"); if (detalleId === idAhora) pintarDetalle(); })
+        .catch(function (err) { aviso.textContent = "No se pudo quitar: " + err.message; aviso.classList.add("error"); });
+    });
+    var fila = el("div", "det-foto-botones"); fila.append(agregar, quitar, archivo);
+    caja.append(fila, aviso);
+    return caja;
+  }
+
   function pintarDetalle() {
     var m = datos.movimientos.find(function (x) { return x.id === detalleId; });
     var cont = $("det-contenido");
@@ -2977,6 +3056,7 @@
     if (m.nota) datosCaja.append(filaDetalle("Nota", m.nota));
     if (m.viajes) datosCaja.append(filaDetalle("Viajes", String(m.viajes)));
     cont.append(datosCaja);
+    cont.append(pintarFotoRecibo(m));
 
     // Etiquetas: se quitan con la x y se agregan escribiéndolas o tocando una sugerencia
     var tagCaja = el("article", "tarjeta det-etiquetas"), actuales = m.etiquetas || [];
