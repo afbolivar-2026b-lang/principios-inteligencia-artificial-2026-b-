@@ -2342,6 +2342,51 @@
         return texto;
       });
   }
+  // Mapa del detalle: satélite (Esri) por defecto, con nombres de calles, o mapa de calles (OpenStreetMap).
+  var leafletListo = null, mapaDetalle = null;
+  function cargarLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (!leafletListo) {
+      leafletListo = new Promise(function (ok, mal) {
+        var css = document.createElement("link"); css.rel = "stylesheet"; css.href = "vendor/leaflet/leaflet.css"; document.head.append(css);
+        var js = document.createElement("script"); js.src = "vendor/leaflet/leaflet.js"; js.onload = ok; js.onerror = function () { leafletListo = null; mal(new Error("mapa")); };
+        document.head.append(js);
+      });
+    }
+    return leafletListo;
+  }
+  function pintarMapaDetalle(caja, m, cerca, bSat, bMapa) {
+    cargarLeaflet().then(function () {
+      if (!caja.isConnected) return;
+      if (mapaDetalle) { mapaDetalle.remove(); mapaDetalle = null; }
+      var L = window.L, lat = Number(m.lat), lng = Number(m.lng);
+      var map = L.map(caja, { center: [lat, lng], zoom: 18, maxZoom: 20, zoomControl: true, scrollWheelZoom: false });
+      map.attributionControl.setPrefix(false);
+      var esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+      var satelite = L.layerGroup([
+        L.tileLayer(esri + "World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19, attribution: "Imágenes © Esri, Maxar, Earthstar Geographics" }),
+        L.tileLayer(esri + "Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19 }),
+        L.tileLayer(esri + "Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19 })
+      ]);
+      var calles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, maxNativeZoom: 19, className: "mapa-oscuro", attribution: "© OpenStreetMap" });
+      var modo = leerLocal("nova-mapa", "sat");
+      function fijar(nuevo) {
+        modo = nuevo; guardarLocal("nova-mapa", nuevo);
+        if (nuevo === "sat") { map.removeLayer(calles); satelite.addTo(map); } else { map.removeLayer(satelite); calles.addTo(map); }
+        bSat.setAttribute("aria-pressed", String(nuevo === "sat")); bMapa.setAttribute("aria-pressed", String(nuevo !== "sat"));
+      }
+      bSat.onclick = function () { fijar("sat"); }; bMapa.onclick = function () { fijar("mapa"); };
+      fijar(modo);
+      // Otros pagos del mismo lugar: puntos verdes; este pago: el pin rojo, justo donde se gastó.
+      cerca.forEach(function (o) { L.circleMarker([Number(o.lat), Number(o.lng)], { radius: 6, color: "#fff", weight: 2, fillColor: "#2ee06f", fillOpacity: 1 }).addTo(map); });
+      L.marker([lat, lng], { icon: L.divIcon({ className: "", html: '<span class="pin-gasto"></span>', iconSize: [30, 30], iconAnchor: [15, 36] }), keyboard: false }).addTo(map);
+      mapaDetalle = map;
+      // la pantalla se abre después de armar el mapa: se recalcula el tamaño para que quede centrado
+      [120, 450].forEach(function (t) { setTimeout(function () { if (mapaDetalle === map) { map.invalidateSize(); map.setView([lat, lng], 18); } }, t); });
+    }).catch(function () {
+      caja.classList.add("sin-mapa"); caja.textContent = "No se pudo cargar el mapa. Revisa tu conexión.";
+    });
+  }
   function filaDetalle(titulo, valor) {
     var f = el("div", "det-fila"), v = el("span");
     if (valor && valor.nodeType) v.append(valor); else v.textContent = valor;
@@ -2418,13 +2463,16 @@
     // Ubicación: mapa, dirección y otros pagos en el mismo lugar
     if (tieneUbicacion(m)) {
       var lat = Number(m.lat), lng = Number(m.lng), d = 0.004, mapaCaja = el("article", "tarjeta");
-      var marco = el("iframe", "det-mapa"); marco.title = "Mapa del pago"; marco.loading = "lazy"; marco.referrerPolicy = "no-referrer";
-      marco.src = "https://www.openstreetmap.org/export/embed.html?bbox=" + [lng - d, lat - d, lng + d, lat + d].join("%2C") + "&layer=mapnik&marker=" + lat + "%2C" + lng;
+      var marco = el("div", "det-mapa"); marco.setAttribute("role", "img"); marco.setAttribute("aria-label", "Mapa satelital del lugar del pago");
+      var modos = el("div", "det-mapa-modos"), bSat = el("button", null, "🛰 Satélite"), bMapa = el("button", null, "🗺 Mapa");
+      bSat.type = "button"; bMapa.type = "button";
+      modos.append(bSat, bMapa);
       var dir = el("div", "det-direccion"), dirTxt = el("span", null, "Buscando la dirección…");
       var abrir = el("a", null, "Abrir en Mapas"); abrir.href = "https://www.google.com/maps/search/?api=1&query=" + lat + "," + lng; abrir.target = "_blank"; abrir.rel = "noopener";
       dir.append(dirTxt, abrir);
-      mapaCaja.append(marco, dir); cont.append(mapaCaja);
+      mapaCaja.append(marco, modos, dir); cont.append(mapaCaja);
       var idAhora = detalleId;
+      pintarMapaDetalle(marco, m, pagosCerca(m), bSat, bMapa);
       direccionDe(lat, lng).then(function (t) { if (detalleId === idAhora) dirTxt.textContent = "📍 " + t; })
         .catch(function () { if (detalleId === idAhora) dirTxt.textContent = "📍 " + lat.toFixed(5) + ", " + lng.toFixed(5); });
       var cerca = pagosCerca(m);

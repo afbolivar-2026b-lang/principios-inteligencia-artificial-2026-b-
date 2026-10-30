@@ -231,5 +231,5 @@ Las deudas salen en los informes PDF y Excel y la IA las conoce. Tablas nuevas `
 
 Al tocar un movimiento se abre su **detalle**: nombre, tipo y valor; categoría, fecha y origen (cuenta); etiquetas que se
 quitan con la ✕ o se agregan escribiéndolas o tocando una sugerencia; cómo va el presupuesto del periodo; y, si el pago tiene
-ubicación, el **mapa** (OpenStreetMap), la dirección (Nominatim), «Abrir en Mapas» y los otros pagos hechos en el mismo lugar.
+ubicación, el **mapa satelital** (Esri, con nombres de calles; también hay mapa de calles de OpenStreetMap) con un pin en el lugar exacto, la dirección (Nominatim), «Abrir en Mapas» y los otros pagos hechos en el mismo lugar.
 El lápiz de arriba abre la edición y el ojo oculta los valores. Si el pago no tiene ubicación, un botón activa «Guardar ubicación».
