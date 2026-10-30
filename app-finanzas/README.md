@@ -317,3 +317,8 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - Análisis: **pagos fijos del mes**, **pronóstico del próximo mes**, **tu año en NOVA** (con botón de compartir), **plan para pagar tus deudas** (bola de nieve) y **alcancía de redondeo**.
 - Inicio: **tu próximo pago** (Configuración → «Tu plata» → día de pago).
 - Al escribir la descripción se **sugiere la categoría** que ya usaste con ella. Aviso opcional de **prima y aguinaldo**.
+
+## Arreglo: chat con la IA
+
+- Cada pregunta se **guarda en el historial de inmediato** (antes solo se guardaba si la IA respondía), y la respuesta se agrega cuando llega. Si la IA falla, la pregunta queda guardada y el texto vuelve al campo para reintentar.
+- El botón de enviar ya no se bloquea: si haces otra pregunta mientras la anterior espera, se cancela la anterior. La tecla «enviar» del teclado funciona siempre.

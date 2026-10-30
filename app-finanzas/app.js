@@ -3772,12 +3772,13 @@
       : estado === 429 ? "Se acabó el cupo gratis de la IA por hoy. Intenta mañana."
       : "La IA no pudo responder. Intenta otra vez en un momento." + (detalle ? " (" + detalle + ")" : "");
   }
-  function preguntarEnFlujo(cuerpo, alTexto) {
+  function preguntarEnFlujo(cuerpo, alTexto, externo) {
     if (!enLinea()) return Promise.reject(new Error("Sin internet: la IA necesita conexión. Todo lo demás de NOVA sigue funcionando sin internet."));
     return cliente.auth.getSession().then(function (s) {
       var token = s.data && s.data.session && s.data.session.access_token;
       if (!token) throw new Error("Vuelve a iniciar sesión para usar la IA.");
       var control = new AbortController(), aviso = setTimeout(function () { control.abort(); }, 50000);
+      if (externo) externo.signal.addEventListener("abort", function () { control.abort(); });
       return fetch(cfg.supabaseUrl + "/functions/v1/nova-ia", {
         method: "POST", signal: control.signal,
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token, apikey: cfg.supabaseKey },
@@ -3951,21 +3952,28 @@
     chatActual = { id: null, titulo: "", mensajes: [] };
     $("chat-buscar").value = "";
   }
+  // Guarda en orden: así una pregunta rápida tras otra no crea dos conversaciones.
   function guardarConversacion() {
-    var mensajes = chatActual.mensajes.slice(-40).map(function (m) { return { rol: m.rol, texto: String(m.texto).slice(0, 4000) }; });
+    var chat = chatActual;
+    chat.guardando = (chat.guardando || Promise.resolve()).catch(function () { /* el intento anterior ya avisó */ }).then(function () { return guardarConversacionYa(chat); });
+    return chat.guardando;
+  }
+  function guardarConversacionYa(chat) {
+    var mensajes = chat.mensajes.slice(-40).map(function (m) { return { rol: m.rol, texto: String(m.texto).slice(0, 4000) }; });
     var ahora = new Date().toISOString();
-    if (chatActual.id) {
-      var c = datos.conversaciones.find(function (x) { return x.id === chatActual.id; });
-      return fuente.actualizar("conversaciones", chatActual.id, { mensajes: mensajes, actualizado_en: ahora }).then(function (n) {
+    if (chat.id) {
+      var c = datos.conversaciones.find(function (x) { return x.id === chat.id; });
+      return fuente.actualizar("conversaciones", chat.id, { mensajes: mensajes, actualizado_en: ahora }).then(function (n) {
         if (c) Object.assign(c, n);
         datos.conversaciones.sort(function (a, b) { return new Date(b.actualizado_en) - new Date(a.actualizado_en); });
       });
     }
-    var titulo = chatActual.mensajes[0].texto.replace(/\s+/g, " ").trim().slice(0, 60) || "Conversación";
+    var titulo = chat.mensajes[0].texto.replace(/\s+/g, " ").trim().slice(0, 60) || "Conversación";
     return fuente.crear("conversaciones", { titulo: titulo, mensajes: mensajes, actualizado_en: ahora }).then(function (c) {
       datos.conversaciones.unshift(c);
-      chatActual.id = c.id; chatActual.titulo = c.titulo;
-      $("chat-titulo").textContent = c.titulo; $("chat-borrar").hidden = false;
+      chat.id = c.id; chat.titulo = c.titulo;
+      if (chat === chatActual) { $("chat-titulo").textContent = c.titulo; $("chat-borrar").hidden = false; }
+      pintarIA();
     });
   }
   $("chat-borrar").addEventListener("click", function () {
@@ -3977,38 +3985,51 @@
     }).catch(function (e) { mensaje("chat-mensaje", e.message, true); });
   });
 
+  var chatToken = 0, chatControl = null;
   function preguntarNova(pregunta) {
-    pregunta = pregunta.trim();
+    pregunta = String(pregunta || "").trim();
     if (!pregunta) return;
     if (!cliente || !fuente || fuente.demo) {
       mensaje("chat-mensaje", "Inicia sesión con tu cuenta para preguntarle a la IA.", true);
       return;
     }
-    var boton = $("form-chat").querySelector("button[type=submit]");
-    boton.disabled = true;
+    // Si todavía hay una pregunta esperando, se cancela: así nunca se queda trabado.
+    if (chatControl) { try { chatControl.abort(); } catch (e) { /* ya terminó */ } }
+    var mio = ++chatToken, control = chatControl = new AbortController();
+    var chat = chatActual;
     $("chat-bienvenida").hidden = true;
     mensaje("chat-mensaje", "");
+    $("chat").querySelectorAll("li.pensando").forEach(function (x) { x.remove(); });
     burbuja("yo", pregunta);
+    $("chat-pregunta").value = "";
     var espera = burbuja("nova pensando", "✦ Pensando…");
-    var historial = chatActual.mensajes.slice(-6);
-    preguntarEnFlujo({ pregunta: pregunta, historial: historial, contexto: contextoFinanzas() }, function (texto) {
-      espera.textContent = texto;
-      espera.classList.remove("pensando");
-      espera.scrollIntoView({ block: "nearest" });
+    var historial = chat.mensajes.slice(-6);
+    // La pregunta se guarda de una vez: aunque la IA falle o tarde, queda en tu historial.
+    chat.mensajes.push({ rol: "usuario", texto: pregunta });
+    var guardada = guardarConversacion().catch(function () { mensaje("chat-mensaje", "La pregunta no se pudo guardar en tu historial, pero puedes seguir chateando.", true); });
+    Promise.resolve().then(function () {
+      return preguntarEnFlujo({ pregunta: pregunta, historial: historial, contexto: contextoFinanzas() }, function (texto) {
+        if (mio !== chatToken) return;
+        espera.textContent = texto;
+        espera.classList.remove("pensando");
+        espera.scrollIntoView({ block: "nearest" });
+      }, control);
     }).then(function (respuesta) {
+      if (mio !== chatToken) return;
       respuesta = (respuesta || "").trim();
       if (!respuesta) throw new Error("La IA no pudo responder. Intenta otra vez en un momento.");
       espera.textContent = respuesta;
       espera.classList.remove("pensando");
-      chatActual.mensajes.push({ rol: "usuario", texto: pregunta }, { rol: "nova", texto: respuesta });
-      $("chat-pregunta").value = "";
-      return guardarConversacion().catch(function () { mensaje("chat-mensaje", "La respuesta no se pudo guardar en tu historial, pero puedes seguir chateando.", true); });
-    }).then(pintarIA).catch(function (e) {
+      chat.mensajes.push({ rol: "nova", texto: respuesta });
+      return guardada.then(function () { return guardarConversacion(); }).catch(function () { mensaje("chat-mensaje", "La respuesta no se pudo guardar en tu historial, pero puedes seguir chateando.", true); }).then(pintarIA);
+    }).catch(function (e) {
+      if (mio !== chatToken) return;
       espera.remove();
-      if (!chatActual.mensajes.length) $("chat-bienvenida").hidden = false;
-      mensaje("chat-mensaje", e.message, true);
-    }).finally(function () { boton.disabled = false; });
+      mensaje("chat-mensaje", (e && e.message) || "No se pudo responder. Intenta otra vez.", true);
+      $("chat-pregunta").value = pregunta;      // para reintentar con un toque
+    }).finally(function () { if (mio === chatToken) chatControl = null; });
   }
+  $("chat-pregunta").addEventListener("focus", function () { setTimeout(function () { try { $("chat-pregunta").scrollIntoView({ block: "center" }); } catch (e) { /* sin scroll */ } }, 350); });
   $("form-chat").addEventListener("submit", function (e) { e.preventDefault(); preguntarNova($("chat-pregunta").value); });
 
   var consulta = 0;
