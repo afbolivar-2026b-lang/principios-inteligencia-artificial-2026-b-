@@ -3008,8 +3008,9 @@
   var plugNavegador = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
   if (cliente && cfg.supabaseUrl) {
     fetch(cfg.supabaseUrl + "/auth/v1/settings", { headers: { apikey: cfg.supabaseKey } }).then(function (r) { return r.json(); }).then(function (a) {
-      $("bloque-google").hidden = !(a && a.external && a.external.google);
-    }).catch(function () { /* sin conexión: el botón no se muestra */ });
+      // Solo se esconde si el servidor dice claramente que Google está apagado; si la consulta falla, el botón se queda.
+      if (a && a.external && a.external.google === false) $("bloque-google").hidden = true;
+    }).catch(function () { /* sin conexión: el botón se queda y, al tocarlo, dice qué pasó */ });
   }
   $("btn-google").addEventListener("click", function () {
     var b = $("btn-google");
