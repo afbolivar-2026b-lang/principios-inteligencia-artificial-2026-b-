@@ -23,24 +23,25 @@ function responder(estado: number, cuerpo: unknown) {
 const MODELOS = ["gemini-flash-lite-latest", "gemini-2.5-flash", MODELO].filter((m, i, a) => a.indexOf(m) === i);
 type ResultadoGemini = { r: Response | null; detalle: string; limite: boolean };
 
-async function llamarModelo(modelo: string, clave: string, cuerpo: Record<string, unknown>) {
-  return await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+async function llamarModelo(modelo: string, clave: string, cuerpo: Record<string, unknown>, flujo = false) {
+  const metodo = flujo ? "streamGenerateContent?alt=sse" : "generateContent";
+  return await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:${metodo}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": clave },
     body: JSON.stringify(cuerpo),
-    signal: AbortSignal.timeout(15_000), // sin esto una respuesta colgada dejaba a la app "pensando" para siempre
+    signal: AbortSignal.timeout(flujo ? 45_000 : 15_000), // sin esto una respuesta colgada dejaba a la app "pensando" para siempre
   });
 }
 
 // Llama a Gemini sin "pensar" (más rápido) y, si falla, prueba con los otros modelos.
-async function llamarGemini(clave: string, cuerpo: Record<string, unknown>, sinPensar = true): Promise<ResultadoGemini> {
+async function llamarGemini(clave: string, cuerpo: Record<string, unknown>, sinPensar = true, flujo = false): Promise<ResultadoGemini> {
   let detalle = "";
   let todosLimite = true;
   for (const modelo of MODELOS) {
     try {
       const config = { ...(cuerpo.generationConfig as Record<string, unknown> || {}) };
-      let r = await llamarModelo(modelo, clave, sinPensar ? { ...cuerpo, generationConfig: { ...config, thinkingConfig: { thinkingBudget: 0 } } } : cuerpo);
-      if (r.status === 400 && sinPensar) r = await llamarModelo(modelo, clave, cuerpo); // ese modelo no admite apagar el pensamiento
+      let r = await llamarModelo(modelo, clave, sinPensar ? { ...cuerpo, generationConfig: { ...config, thinkingConfig: { thinkingBudget: 0 } } } : cuerpo, flujo);
+      if (r.status === 400 && sinPensar) r = await llamarModelo(modelo, clave, cuerpo, flujo); // ese modelo no admite apagar el pensamiento
       if (r.ok) return { r, detalle: "", limite: false };
       const texto = (await r.text()).slice(0, 300);
       console.error("Gemini", modelo, r.status, texto);
@@ -56,7 +57,7 @@ async function llamarGemini(clave: string, cuerpo: Record<string, unknown>, sinP
 }
 
 // "Pregúntale a NOVA": responde preguntas sobre las finanzas de la persona con el resumen que manda la app.
-async function conversar(clave: string, entrada: { pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown }) {
+async function conversar(clave: string, entrada: { pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown; stream?: boolean }) {
   const pregunta = (entrada.pregunta || "").slice(0, 2000).trim();
   if (!pregunta) return responder(400, { error: "Falta la pregunta" });
   const contexto = JSON.stringify(entrada.contexto ?? {}).slice(0, 20_000);
@@ -73,13 +74,41 @@ Si no sabes algo, o necesitas información de hoy que no tienes (noticias, preci
 Los datos traen: saldo y cuentas, el periodo actual (ingresos, gastos y gastos por categoría), gastos por mes de los últimos 6 meses, gastos por categoría de los últimos 90 días, cuánto puede gastar por día sin pasarse (seguro_para_gastar_por_dia), límites, metas, pagos programados y los últimos movimientos. Si un movimiento vino en otra moneda trae moneda y monto_original (el monto ya está en pesos). Si hay "trabajo", la persona es conductora de apps de transporte (Didi, Uber, inDrive…): trae lo ganado, los gastos del vehículo, la ganancia neta, los viajes y la ganancia por viaje de hoy, esta semana y este mes (por app y por categoría), su meta diaria y los vencimientos de sus documentos (SOAT, tecnomecánica…, con los días que faltan; si dias es negativo ya venció).
 Datos de la persona: ${contexto}`;
 
+  const flujo = entrada.stream === true;
   const g = await llamarGemini(clave, {
     systemInstruction: { parts: [{ text: instrucciones }] },
     contents: [...historial, { role: "user", parts: [{ text: pregunta }] }],
     generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
-  });
+  }, true, flujo);
   if (!g.r) return g.limite ? responder(429, { error: "limite" }) : responder(502, { error: "La IA no respondió bien", detalle: g.detalle });
   const r = g.r;
+  if (flujo && r.body) {
+    // Respuesta en vivo: se reenvía el texto a medida que Gemini lo escribe, para que la app lo muestre de inmediato.
+    const lector = r.body.getReader(), dec = new TextDecoder(), enc = new TextEncoder();
+    let buf = "";
+    const salida = new ReadableStream({
+      async pull(ctrl) {
+        try {
+          const { done, value } = await lector.read();
+          if (done) { ctrl.close(); return; }
+          buf += dec.decode(value, { stream: true });
+          let texto = "", i: number;
+          while ((i = buf.indexOf("\n")) >= 0) {
+            const linea = buf.slice(0, i).trim();
+            buf = buf.slice(i + 1);
+            if (!linea.startsWith("data:")) continue;
+            try {
+              const d = JSON.parse(linea.slice(5));
+              texto += (d.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join("");
+            } catch (_e) { /* línea incompleta */ }
+          }
+          if (texto) ctrl.enqueue(enc.encode(texto));
+        } catch (_e) { ctrl.close(); }
+      },
+      cancel() { lector.cancel(); },
+    });
+    return new Response(salida, { headers: { ...CORS, "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-cache", "X-Accel-Buffering": "no" } });
+  }
   try {
     const datos = await r.json();
     const texto = (datos.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join("").trim();
@@ -111,7 +140,7 @@ Deno.serve(async (req) => {
 
   let entrada: {
     texto?: string; imagen?: string; mime?: string; categorias?: string[]; hoy?: string; tasas?: boolean;
-    pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown; varios?: boolean;
+    pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown; varios?: boolean; stream?: boolean;
   };
   try { entrada = await req.json(); } catch { return responder(400, { error: "JSON inválido" }); }
 
