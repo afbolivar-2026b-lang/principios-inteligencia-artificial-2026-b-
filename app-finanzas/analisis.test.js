@@ -173,3 +173,31 @@ test("avisos por defecto y presets de documentos", () => {
   assert.ok(A.DOCUMENTOS.every((d) => A.CATEGORIAS_CONDUCTOR.some((c) => c.nombre === d.categoria) || d.categoria === "Multas" || d.categoria === "Mantenimiento y arreglos"));
   assert.strictEqual(new Set(A.DOCUMENTOS.map((d) => d.clave)).size, A.DOCUMENTOS.length);
 });
+
+test("resumenDeudas: lo abonado, lo que falta y los totales de cada lado", () => {
+  const deudas = [
+    { id: 1, tipo: "debo", persona: "Banco", monto: 1000000, vence: "2026-11-05" },
+    { id: 2, tipo: "me_deben", persona: "Carlos", monto: 300000, vence: "2026-10-20" },
+    { id: 3, tipo: "debo", persona: "Mamá", monto: 200000 }
+  ];
+  const abonos = [{ deuda_id: 1, monto: 250000 }, { deuda_id: 1, monto: 150000 }, { deuda_id: 3, monto: 200000 }, { deuda_id: 3, monto: 50000 }];
+  const r = A.resumenDeudas(deudas, abonos, HOY);
+  assert.equal(r.lista[0].abonado, 400000);
+  assert.equal(r.lista[0].falta, 600000);
+  assert.equal(r.lista[0].avance, 0.4);
+  assert.equal(r.lista[0].estado, "pendiente");
+  assert.equal(r.lista[0].dias, 7);
+  assert.equal(r.lista[1].estado, "vencida");        // Carlos debía pagar el 20 de octubre
+  assert.equal(r.lista[2].estado, "pagada");          // se pasó del abono: no queda negativo
+  assert.equal(r.lista[2].falta, 0);
+  assert.equal(r.lista[2].abonado, 200000);
+  assert.equal(r.debo, 600000);
+  assert.equal(r.meDeben, 300000);
+  assert.equal(r.balance, -300000);
+  assert.equal(r.pendientes, 2);
+});
+
+test("resumenDeudas: sin deudas", () => {
+  const r = A.resumenDeudas([], [], HOY);
+  assert.equal(r.debo, 0); assert.equal(r.meDeben, 0); assert.equal(r.lista.length, 0);
+});

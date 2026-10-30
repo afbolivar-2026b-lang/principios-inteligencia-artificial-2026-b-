@@ -160,6 +160,10 @@
       L.push({ titulo: u > 100 ? "Te pasaste del presupuesto" : u >= 80 ? "Estás cerca del límite" : "Vas bien con el presupuesto", texto: "Llevas " + cop(gen.gastado) + " de " + cop(gen.limite) + " en " + gen.nombre.toLowerCase() + " (" + pct(u) + ").", tono: u > 100 ? "alerta" : u >= 80 ? "alerta" : "ok" });
     }
     if (K.ahorroPct != null && K.ahorroPct < 10 && K.ahorroPct >= 0) L.push({ titulo: "Una meta sencilla", texto: "Guardar al menos el 10 % de lo que ganas (" + cop(K.ingresos * 0.1) + " este periodo) te ayuda a tener un colchón para imprevistos.", tono: "info" });
+    if (inf.deudas && (inf.deudas.debo > 0 || inf.deudas.meDeben > 0)) {
+      var venc = inf.deudas.lista.filter(function (d) { return d.estado === "vencida"; }).length;
+      L.push({ titulo: "Tus deudas", texto: (inf.deudas.debo > 0 ? "Debes " + cop(inf.deudas.debo) + ". " : "") + (inf.deudas.meDeben > 0 ? "Te deben " + cop(inf.deudas.meDeben) + ". " : "") + (venc ? "Hay " + venc + (venc === 1 ? " deuda vencida." : " deudas vencidas.") : "Ninguna está vencida."), tono: venc ? "alerta" : "info" });
+    }
     L.push({ titulo: "Hacia dónde vas", texto: "Si sigues con el ritmo de los últimos 90 días, en 30 días tendrías " + cop(inf.proyeccion30) + " en tus cuentas.", tono: inf.proyeccion30 >= 0 ? "info" : "alerta" });
     return L;
   }
@@ -179,6 +183,7 @@
     ["Por categoría", "Cuánto se gastó en cada categoría y qué porcentaje del total."],
     ["Evolución", "Ingresos, gastos y balance de los últimos periodos."],
     ["Cuentas y límites", "Saldo de cada cuenta y cómo van los presupuestos."],
+    ["Deudas", "Lo que debes y lo que te deben, con lo abonado y lo que falta."],
     ["Metas y vencimientos", "Avance de tus metas de ahorro y fechas de SOAT, tecnomecánica y otros."]
   ];
 
@@ -356,6 +361,18 @@
           foot: [["Total", "", cop(K.saldoTotal)]], footStyles: { fillColor: [232, 240, 235], textColor: [21, 32, 26], fontStyle: "bold" }, columnStyles: { 2: { halign: "right" } }
         }) + 8;
       }
+      if (inf.deudas && inf.deudas.lista.length) {
+        titulo("Deudas y préstamos", 40);
+        y = tabla({
+          startY: y, head: [["Quién", "Tipo", "Total", "Abonado", "Falta", "Estado"]],
+          body: inf.deudas.lista.map(function (d) { return [d.persona, d.tipo === "debo" ? "Yo debo" : "Me deben", cop(d.total), cop(d.abonado), cop(d.falta), d.estado === "pagada" ? "Pagada" : d.estado === "vencida" ? "Vencida" : (d.vence ? "Vence " + fechaCortaTxt(new Date(d.vence + "T00:00:00")) : "Pendiente")]; }),
+          foot: [["Pendiente", "", "", "", "Debo " + cop(inf.deudas.debo), "Me deben " + cop(inf.deudas.meDeben)]], footStyles: { fillColor: [232, 240, 235], textColor: [21, 32, 26], fontStyle: "bold", fontSize: 7.5 },
+          columnStyles: { 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "right" } },
+          didParseCell: function (d) {
+            if (d.section === "body" && d.column.index === 5) { var e = inf.deudas.lista[d.row.index].estado; d.cell.styles.fontStyle = "bold"; d.cell.styles.textColor = e === "vencida" ? hex(ROJO) : e === "pagada" ? hex(VERDE_OSC) : [60, 80, 68]; }
+          }
+        }) + 8;
+      }
       if (inf.metas.length) {
         titulo("Mis metas de ahorro", 30);
         y = tabla({
@@ -471,6 +488,7 @@
       VARIAS.forEach(function (v) {
         if (v[0] === "Portada y resumen") return;
         if (v[0] === "Metas y vencimientos" && !inf.metas.length && !inf.documentos.length) return;
+        if (v[0] === "Deudas" && !(inf.deudas && inf.deudas.lista.length)) return;
         po.mergeCells(fila, 3, fila, 4);
         var a = po.getCell(fila, 2), b = po.getCell(fila, 3); a.value = { text: v[0], hyperlink: "#'" + v[0] + "'!A1" }; a.font = { bold: true, underline: true, color: { argb: "FF1F5FAE" } };
         b.value = v[1]; b.alignment = { wrapText: true, vertical: "middle" }; a.alignment = { vertical: "middle" }; po.getRow(fila).height = 30;
@@ -599,6 +617,27 @@
       });
       if (!inf.presupuestos.length) cu.getCell(fp + 1, 1).value = "Aún no tienes presupuestos ni límites.";
       pie(cu, fp + inf.presupuestos.length + 4, 6);
+
+      // ---- Deudas ----
+      if (inf.deudas && inf.deudas.lista.length) {
+        var de = wb.addWorksheet("Deudas", { views: [{ showGridLines: false }], properties: { tabColor: { argb: argb("#c0392b") } } });
+        de.columns = [{ width: 26 }, { width: 12 }, { width: 28 }, { width: 14 }, { width: 14 }, { width: 16 }, { width: 16 }, { width: 16 }, { width: 14 }];
+        de.mergeCells("A1:I1"); de.getCell("A1").value = "Deudas y préstamos · " + inf.persona.nombre; de.getCell("A1").font = { bold: true, size: 14, color: { argb: argb(VERDE_OSC) } }; de.getRow(1).height = 26;
+        encabezado(de, 3, ["Quién", "Tipo", "Para qué", "Fecha", "Vence", "Total", "Abonado", "Falta", "Estado"]);
+        inf.deudas.lista.forEach(function (d, i) {
+          var r = de.getRow(4 + i);
+          r.values = [d.persona, d.tipo === "debo" ? "Yo debo" : "Me deben", d.concepto, utc(new Date(d.fecha + "T00:00:00")), d.vence ? utc(new Date(d.vence + "T00:00:00")) : "", d.total, d.abonado, { formula: "F" + (4 + i) + "-G" + (4 + i), result: d.falta }, d.estado === "pagada" ? "Pagada" : d.estado === "vencida" ? "Vencida" : "Pendiente"];
+          r.getCell(4).numFmt = "dd/mm/yyyy"; r.getCell(5).numFmt = "dd/mm/yyyy"; [6, 7, 8].forEach(function (k) { r.getCell(k).numFmt = MON; });
+          r.getCell(9).font = { bold: true, color: { argb: argb(d.estado === "vencida" ? ROJO : d.estado === "pagada" ? VERDE_OSC : "#3c5044") } };
+          r.getCell(2).font = { bold: true, color: { argb: argb(d.tipo === "debo" ? ROJO : VERDE_OSC) } };
+          for (var k = 1; k <= 9; k++) r.getCell(k).border = bordes;
+        });
+        var fd = 4 + inf.deudas.lista.length + 1;
+        de.getCell(fd, 5).value = "Yo debo"; de.getCell(fd, 8).value = inf.deudas.debo; de.getCell(fd, 8).numFmt = MON;
+        de.getCell(fd + 1, 5).value = "Me deben"; de.getCell(fd + 1, 8).value = inf.deudas.meDeben; de.getCell(fd + 1, 8).numFmt = MON;
+        [fd, fd + 1].forEach(function (f) { de.getCell(f, 5).font = { bold: true }; de.getCell(f, 8).font = { bold: true }; });
+        pie(de, fd + 4, 9);
+      }
 
       // ---- Metas y vencimientos ----
       if (inf.metas.length || inf.documentos.length) {

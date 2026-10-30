@@ -277,6 +277,12 @@
         <button type="button" class="enlace" data-nuevo-limite>+ Nuevo límite</button>
       </div>
       <ul id="lista-limites" class="lista-simple"></ul>
+      <div class="seccion-cabecera">
+        <h2>Deudas</h2>
+        <button type="button" class="enlace" id="btn-nueva-deuda">+ Nueva deuda</button>
+      </div>
+      <div id="deudas-resumen" class="deudas-resumen" hidden></div>
+      <ul id="lista-deudas" class="lista-simple"></ul>
       <div class="seccion-cabecera"><h2>Metas de ahorro</h2></div>
       <ul id="lista-metas" class="lista-metas"></ul>
       <form id="form-meta" class="tarjeta formulario">
@@ -757,6 +763,50 @@
     <button type="submit" class="primario">Guardar</button>
     <button type="button" class="peligro" id="lim-borrar" hidden>Borrar límite</button>
   </form>
+</section>
+
+<!-- Nueva o editar deuda -->
+<section id="pantalla-deuda" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="deuda-titulo">Nueva deuda</h1></div>
+  <form id="form-deuda" class="formulario" autocomplete="off">
+    <div class="segmentado dos" id="deuda-tipo" role="radiogroup" aria-label="Tipo de deuda">
+      <button type="button" role="radio" data-t="debo">Yo debo</button>
+      <button type="button" role="radio" data-t="me_deben">Me deben</button>
+    </div>
+    <label for="deuda-monto" class="centro">¿Cuánto es?</label>
+    <input id="deuda-monto" class="monto-entrada" inputmode="numeric" placeholder="$ 0" required>
+    <label for="deuda-persona" id="deuda-persona-et">¿A quién le debes?</label>
+    <input id="deuda-persona" maxlength="60" required placeholder="Banco, mamá, Juan…">
+    <label for="deuda-concepto">¿Para qué fue? (opcional)</label>
+    <input id="deuda-concepto" maxlength="100" placeholder="Préstamo para la moto">
+    <label for="deuda-fecha">Fecha del préstamo</label>
+    <input id="deuda-fecha" type="date" required>
+    <label for="deuda-vence">¿Para cuándo hay que pagar? (opcional)</label>
+    <input id="deuda-vence" type="date">
+    <label class="menu-fila" id="deuda-anotar-fila"><span class="menu-icono">🧾</span><span><strong>Anotarlo en mis movimientos</strong><small id="deuda-anotar-nota"></small></span><input type="checkbox" id="deuda-anotar" class="interruptor" checked></label>
+    <p class="mensaje" id="deuda-mensaje" role="status"></p>
+    <button type="submit" class="primario">Guardar</button>
+    <button type="button" class="peligro" id="deuda-borrar" hidden>Borrar esta deuda</button>
+  </form>
+</section>
+
+<!-- Detalle de una deuda y sus abonos -->
+<section id="pantalla-abonos" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="abono-titulo">Deuda</h1></div>
+  <article id="abono-resumen" class="tarjeta"></article>
+  <form id="form-abono" class="formulario" autocomplete="off">
+    <label for="abono-monto" class="centro" id="abono-et">Registrar un abono</label>
+    <input id="abono-monto" class="monto-entrada" inputmode="numeric" placeholder="$ 0">
+    <button type="button" class="chip-opcion" id="abono-todo">Es todo lo que falta</button>
+    <label for="abono-nota">Nota (opcional)</label>
+    <input id="abono-nota" maxlength="200" placeholder="Pago de la quincena">
+    <label class="menu-fila"><span class="menu-icono">🧾</span><span><strong>Anotarlo en mis movimientos</strong><small id="abono-anotar-nota"></small></span><input type="checkbox" id="abono-anotar" class="interruptor" checked></label>
+    <p class="mensaje" id="abono-mensaje" role="status"></p>
+    <button type="submit" class="primario" id="abono-guardar">Registrar abono</button>
+  </form>
+  <div class="seccion-cabecera"><h2>Abonos</h2></div>
+  <ul id="lista-abonos" class="lista-simple"></ul>
+  <button type="button" id="abono-editar" class="enlace">Editar esta deuda</button>
 </section>
 
 <!-- Nuevo o editar vencimiento (SOAT, tecnomecánica…) -->

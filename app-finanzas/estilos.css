@@ -540,3 +540,21 @@ button.inf-ico { width: 44px; height: 44px; padding: 6px; border-radius: 12px; b
 #hoja-informe .hoja { display: flex; flex-direction: column; gap: 12px; }
 #hoja-informe .pestanas { flex-wrap: wrap; overflow: visible; }
 #hoja-informe .pestanas button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+/* Deudas */
+.deudas-resumen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+.deuda-total { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.deuda-total small { color: var(--muted); font-size: .78rem; }
+.deuda-total strong { font-size: 1.15rem; }
+.deuda-total.debo strong { color: var(--danger); }
+.deuda-total.me-deben strong { color: var(--positivo); }
+.fila-deuda { cursor: pointer; align-items: center; }
+.fila-deuda .barra-deuda { height: 6px; border-radius: 99px; background: var(--barra-vacia); overflow: hidden; margin-top: 6px; }
+.fila-deuda .barra-deuda span { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+.fila-deuda.debo .barra-deuda span { background: var(--danger); }
+.fila-deuda.pagada { opacity: .6; }
+.fila-deuda small.estado-vencida { color: var(--danger); font-weight: 700; }
+.fila-deuda .deuda-falta { text-align: right; font-weight: 800; white-space: nowrap; }
+.abono-datos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; text-align: center; }
+.abono-datos small { display: block; color: var(--muted); font-size: .75rem; }
+.abono-datos strong { font-size: 1rem; }

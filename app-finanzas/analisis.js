@@ -402,6 +402,26 @@
     return "﻿" + lineas.join("\r\n");
   }
 
+  // ---------- Deudas ----------
+  // deudas: [{ id, tipo: "debo" | "me_deben", persona, monto, vence }], abonos: [{ deuda_id, monto, fecha }].
+  // Devuelve cada deuda con lo abonado, lo que falta, el avance (0 a 1) y su estado, y los totales pendientes.
+  function resumenDeudas(deudas, abonos, hoy) {
+    var porDeuda = {};
+    (abonos || []).forEach(function (a) { porDeuda[a.deuda_id] = (porDeuda[a.deuda_id] || 0) + num(a.monto); });
+    var lista = (deudas || []).map(function (d) {
+      var total = num(d.monto), abonado = Math.min(total, porDeuda[d.id] || 0), falta = Math.max(0, total - abonado);
+      var estado = falta <= 0 ? "pagada" : "pendiente", dias = null;
+      if (falta > 0 && d.vence) {
+        dias = Math.round((parteFecha(d.vence) - inicioDia(hoy || new Date())) / DIA);
+        if (dias < 0) estado = "vencida";
+      }
+      return { deuda: d, total: total, abonado: abonado, falta: falta, avance: total > 0 ? abonado / total : 0, estado: estado, dias: dias };
+    });
+    var t = { debo: 0, me_deben: 0, pendientes: 0 };
+    lista.forEach(function (x) { if (x.falta > 0) { t[x.deuda.tipo] += x.falta; t.pendientes++; } });
+    return { lista: lista, debo: t.debo, meDeben: t.me_deben, pendientes: t.pendientes, balance: t.me_deben - t.debo };
+  }
+
   var api = {
     desplazar: desplazar, nombrePeriodo: nombrePeriodo, nombreCorto: nombreCorto, enRango: enRango, totales: totales,
     porCategoria: porCategoria, porEtiqueta: porEtiqueta, vistaRapida: vistaRapida, serie: serie, proyeccion: proyeccion,
@@ -411,7 +431,8 @@
     GRUPO_APPS: GRUPO_APPS, GRUPO_TRABAJO: GRUPO_TRABAJO, CATEGORIAS_CONDUCTOR: CATEGORIAS_CONDUCTOR, DOCUMENTOS: DOCUMENTOS,
     avisoPorDefecto: avisoPorDefecto, presetDe: presetDe,
     esGanancia: esGanancia, esGastoTrabajo: esGastoTrabajo, esFijo: esFijo, rangoJornada: rangoJornada, resumenTrabajo: resumenTrabajo,
-    estadoDocumento: estadoDocumento, sumarMeses: sumarMeses, proximoVencimiento: proximoVencimiento, avisosDocumentos: avisosDocumentos
+    estadoDocumento: estadoDocumento, sumarMeses: sumarMeses, proximoVencimiento: proximoVencimiento, avisosDocumentos: avisosDocumentos,
+    resumenDeudas: resumenDeudas
   };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaAnalisis = api;

@@ -217,3 +217,12 @@ En la app de Android el archivo se guarda en la caché y se abre el menú de com
 Los iconos **PDF** y **XLS** aparecen en Inicio, Planes (límites y metas), Análisis, Mi trabajo, Buscar y Exportar datos.
 Al tocarlos se abre una hoja para elegir el formato y el periodo: diario, semanal, quincenal, mensual, trimestral,
 semestral o anual, y cuál (actual, anterior, hace 2 o hace 3). Cada icono propone el periodo de la pantalla donde está.
+
+## Deudas
+
+En **Planes → Deudas** se anotan los préstamos: **Yo debo** (por ejemplo, un préstamo del banco) y **Me deben** (plata que le
+prestaste a alguien). Cada deuda guarda quién, cuánto, la fecha y, si quieres, para cuándo hay que pagar. Al tocarla se ve lo
+abonado, lo que falta y cada abono; se puede registrar un abono o marcar «Es todo lo que falta».
+Al crear la deuda y al abonar se puede anotar el movimiento (categoría «Deudas») para que el saldo cuadre.
+Las deudas salen en los informes PDF y Excel y la IA las conoce. Tablas nuevas `fin_deudas` y `fin_abonos`
+(`supabase/migrations/nova_deudas.sql`, solo agrega, con seguridad por usuario).
