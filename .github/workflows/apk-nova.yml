@@ -63,13 +63,16 @@ jobs:
           # Número de versión: uno más en cada armado
           sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
           grep -E "versionCode|versionName" android/app/build.gradle
+          # Versión de lanzamiento (no "debug"): sin la marca de depuración, que Google Play Protect mira con más desconfianza.
+          sed -i '0,/^android {/s//android {\n    lint {\n        checkReleaseBuilds = false\n        abortOnError = false\n    }/' android/app/build.gradle
+          grep -n "checkReleaseBuilds" android/app/build.gradle
 
       # Firma fija (firma/debug.keystore): así cada versión nueva se instala encima de la anterior.
       # Copiarla a ~/.android no bastaba: Gradle creaba otra firma en cada armado.
       - name: Armar la APK
         working-directory: app-android-nova/android
         run: |
-          ./gradlew assembleDebug --no-daemon \
+          ./gradlew assembleRelease --no-daemon \
             -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/app-android-nova/firma/debug.keystore" \
             -Pandroid.injected.signing.store.password=android \
             -Pandroid.injected.signing.key.alias=androiddebugkey \
@@ -78,13 +81,16 @@ jobs:
       - name: Comprobar que la APK quedó con la firma fija
         run: |
           APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
-          "$APKSIGNER" verify --print-certs app-android-nova/android/app/build/outputs/apk/debug/app-debug.apk | tee firma.txt
+          "$APKSIGNER" verify --print-certs app-android-nova/android/app/build/outputs/apk/release/app-release.apk | tee firma.txt
           grep -qi "SHA-256 digest: fe1d04b95f1cfc5efb06c5c40abce525f9813f9f9ef0c5f6f725a2a60c24c5aa" firma.txt
+          # Debe ser una APK de lanzamiento, no de depuración
+          AAPT=$(ls -d "$ANDROID_HOME"/build-tools/*/aapt | sort -V | tail -1)
+          if "$AAPT" dump xmltree app-android-nova/android/app/build/outputs/apk/release/app-release.apk AndroidManifest.xml | grep -E "debuggable.*0xffffffff"; then echo "La APK quedó como depuración"; exit 1; fi
 
       - name: Guardar la APK en la app
         run: |
           mkdir -p app-finanzas/descargas
-          cp app-android-nova/android/app/build/outputs/apk/debug/app-debug.apk app-finanzas/descargas/NOVA.apk
+          cp app-android-nova/android/app/build/outputs/apk/release/app-release.apk app-finanzas/descargas/NOVA.apk
           # Número de esta APK, para que la app instalada sepa si hay una más nueva (se baja de la misma página)
           echo '{"versionCode": ${{ github.run_number }}, "versionName": "1.${{ github.run_number }}"}' > app-finanzas/descargas/version.json
           ls -la app-finanzas/descargas
