@@ -100,6 +100,31 @@
     return { falta: falta, dias: dias, porSemana: Math.ceil(falta / (dias / 7)), porMes: Math.ceil(falta / (dias / 30.44)) };
   }
 
+  // Gastos compartidos: cuánto puso y cuánto le tocaba a cada persona, y quién le paga a quién para quedar a mano.
+  // Un "pago" es un gasto cuyo pagador le da la plata a la única persona de "repartido".
+  function saldosGrupo(miembros, gastos) {
+    var s = {};
+    miembros.forEach(function (m) { s[m] = 0; });
+    gastos.forEach(function (g) {
+      var monto = num(g.monto), rep = g.repartido && g.repartido.length ? g.repartido : miembros;
+      s[g.pagador] = (s[g.pagador] || 0) + monto;
+      rep.forEach(function (n) { s[n] = (s[n] || 0) - monto / rep.length; });
+    });
+    var nombres = Object.keys(s);
+    nombres.forEach(function (n) { s[n] = Math.round(s[n]); if (Math.abs(s[n]) < 1) s[n] = 0; });
+    var deben = nombres.filter(function (n) { return s[n] < 0; }).map(function (n) { return { n: n, v: -s[n] }; }).sort(function (a, b) { return b.v - a.v; });
+    var cobran = nombres.filter(function (n) { return s[n] > 0; }).map(function (n) { return { n: n, v: s[n] }; }).sort(function (a, b) { return b.v - a.v; });
+    var transferencias = [], i = 0, j = 0;
+    while (i < deben.length && j < cobran.length) {
+      var m = Math.min(deben[i].v, cobran[j].v);
+      if (m > 0) transferencias.push({ de: deben[i].n, a: cobran[j].n, monto: m });
+      deben[i].v -= m; cobran[j].v -= m;
+      if (deben[i].v <= 0) i++;
+      if (cobran[j].v <= 0) j++;
+    }
+    return { saldos: s, transferencias: transferencias };
+  }
+
   // ---------- Análisis ----------
   // { id de categoría (o "sin") : total gastado }, de mayor a menor.
   function porCategoria(movs, tipo) {
@@ -501,7 +526,7 @@
     avisoPorDefecto: avisoPorDefecto, presetDe: presetDe,
     esGanancia: esGanancia, esGastoTrabajo: esGastoTrabajo, esFijo: esFijo, rangoJornada: rangoJornada, resumenTrabajo: resumenTrabajo,
     estadoDocumento: estadoDocumento, sumarMeses: sumarMeses, proximoVencimiento: proximoVencimiento, avisosDocumentos: avisosDocumentos,
-    resumenDeudas: resumenDeudas, avisosDeudas: avisosDeudas, racha: racha, cuotaMeta: cuotaMeta, proyeccionPeriodo: proyeccionPeriodo
+    resumenDeudas: resumenDeudas, avisosDeudas: avisosDeudas, racha: racha, saldosGrupo: saldosGrupo, cuotaMeta: cuotaMeta, proyeccionPeriodo: proyeccionPeriodo
   };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaAnalisis = api;

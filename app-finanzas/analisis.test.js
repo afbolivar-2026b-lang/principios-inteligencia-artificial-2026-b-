@@ -253,3 +253,19 @@ test("cuota sugerida de una meta con fecha", () => {
   assert.ok(A.cuotaMeta({ objetivo: 100, ahorrado: 0, fecha_limite: "2026-10-01" }, ahora).vencida);
   assert.ok(A.cuotaMeta({ objetivo: 100, ahorrado: 100, fecha_limite: "2026-10-01" }, ahora).hecha);
 });
+
+test("gastos compartidos: saldos y quién le paga a quién", () => {
+  const miembros = ["Yo", "Ana", "Pedro"];
+  const g = [
+    { monto: 90000, pagador: "Yo", repartido: [] },                    // entre los 3: 30.000 c/u
+    { monto: 30000, pagador: "Ana", repartido: ["Ana", "Pedro"] }      // 15.000 c/u
+  ];
+  const r = A.saldosGrupo(miembros, g);
+  assert.deepStrictEqual(r.saldos, { Yo: 60000, Ana: -15000 + 0, Pedro: -45000 }.Yo === 60000 ? { Yo: 60000, Ana: -15000, Pedro: -45000 } : null);
+  const total = r.transferencias.reduce((s, x) => s + x.monto, 0);
+  assert.strictEqual(total, 60000);
+  assert.ok(r.transferencias.every((x) => x.a === "Yo"));
+  // un pago deja las cuentas a mano
+  const pagado = A.saldosGrupo(miembros, g.concat([{ monto: 45000, pagador: "Pedro", repartido: ["Yo"] }, { monto: 15000, pagador: "Ana", repartido: ["Yo"] }]));
+  assert.deepStrictEqual(pagado.transferencias, []);
+});

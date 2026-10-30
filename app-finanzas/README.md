@@ -282,3 +282,11 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - **Bloqueo con PIN** (Configuración → Seguridad y respaldo). El PIN queda solo en el dispositivo.
 - **Restaurar respaldo**: agrega los movimientos que faltan de un archivo `nova-respaldo-*.json`, nunca borra.
 - **Alerta de límites** al 80 % y al 100 % tras guardar un gasto, y recordatorio semanal los domingos (app Android).
+
+## Novedades: racha, proyección, metas con fecha, foto del recibo y gastos compartidos
+
+- Inicio: tarjetas de **proyección del periodo** y **racha** de días anotando.
+- **Metas con fecha** (`fin_metas.fecha_limite`): cuota sugerida por semana y por mes.
+- **Foto del recibo** en el detalle (bucket privado `recibos`, `fin_movimientos.foto_ruta`).
+- **Gastos compartidos** (Planes): grupos con nombres de personas, quién pagó y entre quiénes, saldos y "quién le paga a quién" (`fin_grupos`, `fin_gastos_grupo`).
+- Todas las migraciones son aditivas: `supabase/migrations/nova_metas_fecha.sql`, `nova_fotos_recibos.sql`, `nova_gastos_compartidos.sql`.

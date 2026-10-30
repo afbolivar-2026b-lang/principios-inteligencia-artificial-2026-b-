@@ -217,7 +217,7 @@
 
   // ---------- Fuentes de datos ----------
   // Las dos fuentes (Supabase y demostración) ofrecen las mismas operaciones sobre las mismas tablas.
-  var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites", "conversaciones", "documentos", "deudas", "abonos"];
+  var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites", "conversaciones", "documentos", "deudas", "abonos", "grupos", "gastos_grupo"];
 
   function fuenteSupabaseBase(cliente, usuario) {
     function q(promesa) {
@@ -254,9 +254,11 @@
           q(t("conversaciones").select("*").order("actualizado_en", { ascending: false }).limit(60)),
           q(t("documentos").select("*").order("vence")),
           q(t("deudas").select("*").order("fecha", { ascending: false })),
-          q(t("abonos").select("*").order("fecha", { ascending: false }))
+          q(t("abonos").select("*").order("fecha", { ascending: false })),
+          q(t("grupos").select("*").order("id")),
+          q(t("gastos_grupo").select("*").order("fecha", { ascending: false }))
         ]).then(function (r) {
-          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5], programados: r[6], limites: r[7], conversaciones: r[8], documentos: r[9], deudas: r[10], abonos: r[11] };
+          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5], programados: r[6], limites: r[7], conversaciones: r[8], documentos: r[9], deudas: r[10], abonos: r[11], grupos: r[12], gastos_grupo: r[13] };
           // Primera vez: crear el perfil, la cuenta principal y las categorías por defecto.
           var pendientes = [];
           if (!datos.perfil) {
@@ -396,6 +398,11 @@
       deudas: [
         { id: 1, tipo: "debo", persona: "Banco", concepto: "Préstamo para la moto", monto: 2000000, fecha: A.claveDia(hace(40, 10)), vence: A.claveDia(hace(-20, 10)), nota: null },
         { id: 2, tipo: "me_deben", persona: "Carlos", concepto: "Me pidió prestado", monto: 300000, fecha: A.claveDia(hace(12, 10)), vence: null, nota: null }
+      ],
+      grupos: [{ id: 1, nombre: "Paseo a Neiva", miembros: ["Yo", "Ana", "Pedro"] }],
+      gastos_grupo: [
+        { id: 1, grupo_id: 1, tipo: "gasto", descripcion: "Hotel", monto: 240000, pagador: "Yo", repartido: ["Yo", "Ana", "Pedro"], fecha: A.claveDia(hace(5, 10)) },
+        { id: 2, grupo_id: 1, tipo: "gasto", descripcion: "Gasolina", monto: 90000, pagador: "Ana", repartido: ["Yo", "Ana", "Pedro"], fecha: A.claveDia(hace(4, 10)) }
       ],
       abonos: [{ id: 1, deuda_id: 1, monto: 500000, fecha: A.claveDia(hace(10, 10)), nota: "Primera cuota" }],
       movimientos: [
@@ -2371,7 +2378,7 @@
   // ---------- Pintar todo ----------
   function pintar() {
     if (!fuente) return;
-    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA(); pintarConductor(); pintarDeudas(); if (pilaCapas.indexOf("pantalla-detalle") >= 0) pintarDetalle(); if (deudaAbierta && pilaCapas.indexOf("pantalla-abonos") >= 0) pintarAbonos();
+    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA(); pintarConductor(); pintarDeudas(); pintarGrupos(); if (pilaCapas.indexOf("pantalla-detalle") >= 0) pintarDetalle(); if (deudaAbierta && pilaCapas.indexOf("pantalla-abonos") >= 0) pintarAbonos();
   }
 
   function alerta(e) { mensaje("rapido-mensaje", "No se pudo guardar: " + (e && e.message ? e.message : e), true); }
@@ -2974,6 +2981,143 @@
     f.append(el("span", null, titulo), v);
     return f;
   }
+  // ---------- Gastos compartidos ----------
+  var grupoId = null;
+  function grupoAbierto() { return datos.grupos.find(function (g) { return g.id === grupoId; }); }
+  function gastosDelGrupo(g) { return datos.gastos_grupo.filter(function (x) { return x.grupo_id === g.id; }); }
+  function pintarGrupos() {
+    var ul = $("lista-grupos");
+    ul.replaceChildren();
+    if (!datos.grupos.length) ul.append(el("li", "vacio", "Sin grupos. Para un viaje o una cuenta entre amigos, toca «+ Nuevo grupo»."));
+    datos.grupos.forEach(function (g) {
+      var r = A.saldosGrupo(g.miembros, gastosDelGrupo(g)), yo = r.saldos.Yo || 0;
+      var li = el("li", "mov"), txt = el("div", "mov-texto");
+      txt.append(el("strong", null, g.nombre), el("small", null, g.miembros.join(", ")));
+      var est = el("span", "mov-monto" + (yo >= 0 ? " positivo" : ""), yo === 0 ? "A mano" : (yo > 0 ? "Te deben " : "Debes ") + pesos.format(Math.abs(yo)));
+      li.append(el("span", "mov-icono", "👥"), txt, est);
+      li.tabIndex = 0;
+      li.addEventListener("click", function () { abrirGrupo(g); });
+      ul.append(li);
+    });
+    if (grupoId && pilaCapas.indexOf("pantalla-grupo") >= 0) pintarGrupo();
+  }
+  function abrirGrupo(g) { grupoId = g.id; $("gg-fecha").value = A.claveDia(new Date()); $("gg-desc").value = ""; $("gg-monto").value = ""; mensaje("gg-mensaje", ""); pintarGrupo(); abrirCapa("pantalla-grupo"); }
+  function pintarGrupo() {
+    var g = grupoAbierto(); if (!g) return;
+    $("grupo-titulo").textContent = g.nombre;
+    var gastos = gastosDelGrupo(g).sort(function (a, b) { return String(b.fecha).localeCompare(String(a.fecha)) || b.id - a.id; });
+    var r = A.saldosGrupo(g.miembros, gastos);
+    var total = gastos.filter(function (x) { return x.tipo !== "pago"; }).reduce(function (s, x) { return s + num(x.monto); }, 0);
+    var caja = $("grupo-balance"); caja.replaceChildren();
+    caja.append(el("span", "etiqueta", "Total gastado en el grupo"), el("strong", "saldo-valor", pesos.format(total)));
+    var cuentas = el("ul", "lista-simple");
+    g.miembros.forEach(function (n) {
+      var v = r.saldos[n] || 0;
+      cuentas.append(el("li", null, n + ": " + (v === 0 ? "a mano" : v > 0 ? "le deben " + pesos.format(v) : "debe " + pesos.format(-v))));
+    });
+    caja.append(cuentas);
+    if (r.transferencias.length) {
+      caja.append(el("strong", null, "Para quedar a mano"));
+      r.transferencias.forEach(function (t) {
+        var fila = el("div", "meta-abono");
+        fila.append(el("span", null, t.de + " le paga " + pesos.format(t.monto) + " a " + t.a));
+        var b = el("button", "mini", "✓ Ya pagó"); b.type = "button";
+        b.addEventListener("click", function () {
+          b.disabled = true;
+          fuente.crear("gastos_grupo", { grupo_id: g.id, tipo: "pago", descripcion: "Pago de " + t.de + " a " + t.a, monto: t.monto, pagador: t.de, repartido: [t.a], fecha: A.claveDia(new Date()) })
+            .then(function (n) { datos.gastos_grupo.push(n); toast("¡Pago anotado!", t.de + " → " + t.a, pesos.format(t.monto)); pintar(); })
+            .catch(function (err) { b.disabled = false; mensaje("gg-mensaje", "No se pudo anotar: " + err.message, true); });
+        });
+        fila.append(b); caja.append(fila);
+      });
+    } else if (gastos.length) caja.append(el("span", "nota", "✅ Todos están a mano."));
+    // formulario: quién pagó y entre quiénes
+    var sel = $("gg-pagador"), previo = sel.value;
+    sel.replaceChildren();
+    g.miembros.forEach(function (n) { var o = el("option", null, n); o.value = n; sel.append(o); });
+    sel.value = g.miembros.indexOf(previo) >= 0 ? previo : "Yo";
+    var rep = $("gg-reparto"), marcados = {};
+    Array.prototype.forEach.call(rep.querySelectorAll("input"), function (i) { marcados[i.value] = i.checked; });
+    rep.replaceChildren();
+    g.miembros.forEach(function (n) {
+      var l = el("label", "chip-opcion"), i = el("input"); i.type = "checkbox"; i.value = n; i.checked = marcados[n] !== false;
+      l.append(i, document.createTextNode(" " + n)); rep.append(l);
+    });
+    var ul = $("lista-gastos-grupo"); ul.replaceChildren();
+    if (!gastos.length) ul.append(el("li", "vacio", "Aún no hay gastos en este grupo."));
+    gastos.forEach(function (x) {
+      var li = el("li", "mov"), txt = el("div", "mov-texto");
+      var quien = x.tipo === "pago" ? x.pagador + " le pagó a " + (x.repartido[0] || "") : "Pagó " + x.pagador + " · entre " + ((x.repartido && x.repartido.length) || g.miembros.length);
+      txt.append(el("strong", null, (x.tipo === "pago" ? "💸 " : "") + x.descripcion), el("small", null, fechaCorta.format(parteFechaLocal(x.fecha)) + " · " + quien));
+      li.append(txt, el("span", "mov-monto", pesos.format(num(x.monto))));
+      li.tabIndex = 0;
+      li.addEventListener("click", function () {
+        abrirEditor({
+          titulo: "Editar " + (x.tipo === "pago" ? "pago" : "gasto"),
+          campos: [{ clave: "descripcion", etiqueta: "¿Qué fue?", tipo: "texto", valor: x.descripcion, requerido: true, max: 100 }, { clave: "monto", etiqueta: "Valor", tipo: "plata", valor: num(x.monto) },
+            { clave: "pagador", etiqueta: "¿Quién pagó?", tipo: "select", valor: x.pagador, opciones: g.miembros.map(function (n) { return [n, n]; }) }, { clave: "fecha", etiqueta: "Fecha", tipo: "fecha", valor: x.fecha }],
+          guardar: function (v) { return fuente.actualizar("gastos_grupo", x.id, { descripcion: v.descripcion, monto: v.monto, pagador: v.pagador, fecha: v.fecha || x.fecha }).then(function (n) { Object.assign(x, n); }); },
+          borrar: function () { return fuente.borrar("gastos_grupo", x.id).then(function () { datos.gastos_grupo = datos.gastos_grupo.filter(function (y) { return y.id !== x.id; }); }); },
+          textoBorrar: "🗑 Borrar este movimiento", confirmar: "¿Borrar «" + x.descripcion + "» del grupo?", avisoBorrado: "Borrado del grupo"
+        });
+      });
+      ul.append(li);
+    });
+  }
+  function miembrosDeTexto(txt) {
+    var vistos = {}, lista = ["Yo"];
+    String(txt).split(",").forEach(function (n) { n = n.trim().replace(/\s+/g, " ").slice(0, 40); var k = n.toLowerCase(); if (n && !vistos[k] && k !== "yo" && k !== "tú" && k !== "tu") { vistos[k] = true; lista.push(n); } });
+    return lista;
+  }
+  $("btn-nuevo-grupo").addEventListener("click", function () { $("form-grupo").reset(); mensaje("grupo-mensaje", ""); abrirCapa("pantalla-grupo-nuevo"); });
+  $("form-grupo").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nombre = $("grupo-nombre").value.trim(), miembros = miembrosDeTexto($("grupo-miembros").value);
+    if (!nombre) return mensaje("grupo-mensaje", "Ponle un nombre al grupo.", true);
+    if (miembros.length < 2) return mensaje("grupo-mensaje", "Escribe al menos una persona además de ti.", true);
+    var b = e.target.querySelector("button[type=submit]"); b.disabled = true;
+    fuente.crear("grupos", { nombre: nombre, miembros: miembros }).then(function (g) {
+      datos.grupos.push(g); cerrarCapa(); pintar(); toast("¡Grupo creado!", g.nombre);
+      setTimeout(function () { abrirGrupo(g); }, 120);
+    }).catch(function (err) { mensaje("grupo-mensaje", "No se pudo crear: " + err.message, true); }).finally(function () { b.disabled = false; });
+  });
+  $("form-gasto-grupo").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var g = grupoAbierto(); if (!g) return;
+    var monto = leerValor($("gg-monto").value), desc = $("gg-desc").value.trim();
+    var entre = Array.prototype.filter.call($("gg-reparto").querySelectorAll("input"), function (i) { return i.checked; }).map(function (i) { return i.value; });
+    if (!(monto > 0)) return mensaje("gg-mensaje", "No entendí el valor. Escribe por ejemplo 90 mil.", true);
+    if (!entre.length) return mensaje("gg-mensaje", "Marca al menos una persona.", true);
+    var b = e.target.querySelector("button[type=submit]"); b.disabled = true;
+    fuente.crear("gastos_grupo", { grupo_id: g.id, tipo: "gasto", descripcion: desc, monto: monto, pagador: $("gg-pagador").value, repartido: entre, fecha: $("gg-fecha").value || A.claveDia(new Date()) }).then(function (n) {
+      datos.gastos_grupo.push(n); $("gg-desc").value = ""; $("gg-monto").value = ""; mensaje("gg-mensaje", "");
+      toast("¡Gasto agregado!", desc, pesos.format(monto)); pintar();
+    }).catch(function (err) { mensaje("gg-mensaje", "No se pudo guardar: " + err.message, true); }).finally(function () { b.disabled = false; });
+  });
+  $("grupo-editar").addEventListener("click", function () {
+    var g = grupoAbierto(); if (!g) return;
+    abrirEditor({
+      titulo: "Editar grupo", ayuda: "Puedes agregar personas. A quien ya tiene gastos no se le puede quitar. «Yo» siempre está.",
+      campos: [{ clave: "nombre", etiqueta: "Nombre del grupo", tipo: "texto", valor: g.nombre, requerido: true, max: 60 }, { clave: "miembros", etiqueta: "Personas (separadas por coma)", tipo: "texto", valor: g.miembros.filter(function (n) { return n !== "Yo"; }).join(", "), requerido: true, max: 200 }],
+      guardar: function (v) {
+        var miembros = miembrosDeTexto(v.miembros), usados = {};
+        gastosDelGrupo(g).forEach(function (x) { usados[x.pagador] = true; (x.repartido || []).forEach(function (n) { usados[n] = true; }); });
+        var faltan = Object.keys(usados).filter(function (n) { return miembros.indexOf(n) < 0; });
+        if (faltan.length) return Promise.reject(new Error("No se puede quitar a " + faltan.join(", ") + " porque tiene gastos."));
+        return fuente.actualizar("grupos", g.id, { nombre: v.nombre, miembros: miembros }).then(function (n) { Object.assign(g, n); });
+      }
+    });
+  });
+  $("grupo-borrar").addEventListener("click", function () {
+    var g = grupoAbierto(); if (!g) return;
+    if (!confirm("¿Borrar el grupo «" + g.nombre + "» y todos sus gastos? Esto no se puede deshacer.")) return;
+    fuente.borrar("grupos", g.id).then(function () {
+      datos.grupos = datos.grupos.filter(function (x) { return x.id !== g.id; });
+      datos.gastos_grupo = datos.gastos_grupo.filter(function (x) { return x.grupo_id !== g.id; });
+      grupoId = null; cerrarCapa(); pintar(); toast("Grupo borrado");
+    }).catch(function (err) { mensaje("gg-mensaje", "No se pudo borrar: " + err.message, true); });
+  });
+
   // ---------- Foto del recibo ----------
   function achicarFoto(archivo) {
     return new Promise(function (ok, mal) {

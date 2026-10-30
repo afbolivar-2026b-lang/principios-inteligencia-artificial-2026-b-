@@ -300,6 +300,11 @@
       </div>
       <div id="deudas-resumen" class="deudas-resumen" hidden></div>
       <ul id="lista-deudas" class="lista-simple"></ul>
+      <div class="seccion-cabecera">
+        <h2>Gastos compartidos</h2>
+        <button type="button" class="enlace" id="btn-nuevo-grupo">+ Nuevo grupo</button>
+      </div>
+      <ul id="lista-grupos" class="lista-simple"></ul>
       <div class="seccion-cabecera"><h2>Metas de ahorro</h2></div>
       <ul id="lista-metas" class="lista-metas"></ul>
       <form id="form-meta" class="tarjeta formulario">
@@ -878,6 +883,39 @@
 </section>
 
 <!-- Nuevo o editar vencimiento (SOAT, tecnomecánica…) -->
+<section id="pantalla-grupo-nuevo" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Nuevo grupo</h1></div>
+  <form id="form-grupo" class="formulario" autocomplete="off">
+    <label for="grupo-nombre">¿Para qué es el grupo?</label>
+    <input id="grupo-nombre" maxlength="60" required placeholder="Viaje a la costa, apartamento…">
+    <label for="grupo-miembros">¿Con quién? (nombres separados por coma)</label>
+    <input id="grupo-miembros" maxlength="200" required placeholder="Ana, Pedro, Laura">
+    <p class="nota">Tú ya estás incluido como «Yo». Cada persona es solo un nombre: no necesita cuenta en NOVA.</p>
+    <p class="mensaje" id="grupo-mensaje" role="status"></p>
+    <button type="submit" class="primario">Crear grupo</button>
+  </form>
+</section>
+<section id="pantalla-grupo" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="grupo-titulo">Grupo</h1>
+    <button type="button" id="grupo-editar" class="icono-btn" aria-label="Editar el grupo"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></button></div>
+  <article id="grupo-balance" class="tarjeta"></article>
+  <form id="form-gasto-grupo" class="formulario" autocomplete="off">
+    <label for="gg-desc">Nuevo gasto del grupo</label>
+    <input id="gg-desc" maxlength="100" required placeholder="Cena, hotel, gasolina…">
+    <input id="gg-monto" class="monto-entrada" inputmode="numeric" placeholder="$ 0" required aria-label="Valor del gasto">
+    <label for="gg-pagador">¿Quién pagó?</label>
+    <select id="gg-pagador"></select>
+    <label>¿Entre quiénes se divide?</label>
+    <div id="gg-reparto" class="chips-reparto"></div>
+    <label for="gg-fecha">Fecha</label>
+    <input id="gg-fecha" type="date" required>
+    <p class="mensaje" id="gg-mensaje" role="status"></p>
+    <button type="submit" class="primario">Agregar gasto</button>
+  </form>
+  <div class="seccion-cabecera"><h2>Movimientos del grupo</h2></div>
+  <ul id="lista-gastos-grupo" class="lista-simple"></ul>
+  <button type="button" id="grupo-borrar" class="peligro">🗑 Borrar este grupo</button>
+</section>
 <section id="pantalla-documento" class="capa" hidden>
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="doc-titulo">Nuevo vencimiento</h1></div>
   <form id="form-documento" class="formulario" autocomplete="off">

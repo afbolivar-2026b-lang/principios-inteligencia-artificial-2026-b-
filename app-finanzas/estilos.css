@@ -657,3 +657,8 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 .det-foto-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; cursor: zoom-in; background: var(--surface-2); }
 .det-foto-img.grande { max-height: none; object-fit: contain; cursor: zoom-out; }
 .det-foto-botones { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Gastos compartidos */
+#pantalla-grupo-nuevo, #pantalla-grupo { z-index: 31; }
+.chips-reparto { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips-reparto .chip-opcion { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
