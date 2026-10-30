@@ -124,7 +124,46 @@
     while (i < f.length && n < antes) { if (/[\d,]/.test(f.charAt(i))) n++; i++; }
     try { campo.setSelectionRange(i, i); } catch (e) { /* algunos teclados no dejan mover el cursor */ }
   }
-  document.addEventListener("input", function (e) { if (e.target && e.target.matches && e.target.matches(CAMPOS_PLATA)) formatearMontoEscrito(e.target); });
+  // En los textos libres ("gasté 20000 en almuerzo") los números de 4 cifras o más también se van separando: 20000 → 20.000.
+  // No toca palabras, #etiquetas ni decimales con coma; los números cortos (1.5, 12) se quedan como están.
+  var CAMPOS_TEXTO = "#entrada-rapida, #comun-texto, #asis-texto";
+  function agruparNumerosEnTexto(texto) {
+    return texto.replace(/(^|[^\p{L}\d#.,])(\d[\d.]*)(?![\p{L}\d])/gu, function (todo, antes, num) {
+      if (/\.$/.test(num)) return todo;                       // acaba de escribir un punto: todavía no se toca
+      var cifras = num.replace(/\./g, "");
+      if (cifras.length < 4 || /^0/.test(cifras)) return todo;
+      return antes + cifras.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    });
+  }
+  function formatearTextoEscrito(campo) {
+    var v = campo.value, pos = campo.selectionStart == null ? v.length : campo.selectionStart, nuevo = agruparNumerosEnTexto(v);
+    if (nuevo === v) return;
+    var nuevaPos = agruparNumerosEnTexto(v.slice(0, pos)).length;
+    campo.value = nuevo;
+    try { campo.setSelectionRange(nuevaPos, nuevaPos); } catch (e) { /* algunos teclados no dejan mover el cursor */ }
+  }
+  // Tasa de cambio ("¿cuántos pesos vale 1?"): puntos de miles y coma decimal (hasta 6 decimales).
+  function formatearTasaEscrita(campo) {
+    var v = campo.value;
+    if (/[^\d.,\s]/.test(v) || /\s$/.test(v)) return;
+    var pos = campo.selectionStart == null ? v.length : campo.selectionStart;
+    var antes = v.slice(0, pos).replace(/[^\d,]/g, "").length, partes = v.replace(/[^\d,]/g, "").split(",");
+    var entero = partes[0].replace(/^0+(?=\d)/, ""), dec = partes.length > 1 ? partes.slice(1).join("").slice(0, 6) : null;
+    if (entero === "" && dec !== null) entero = "0";
+    var f = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (dec !== null ? "," + dec : "");
+    if (f === v) return;
+    campo.value = f;
+    var n = 0, i = 0;
+    while (i < f.length && n < antes) { if (/[\d,]/.test(f.charAt(i))) n++; i++; }
+    try { campo.setSelectionRange(i, i); } catch (e) { /* ver arriba */ }
+  }
+  document.addEventListener("input", function (e) {
+    var c = e.target;
+    if (!c || !c.matches) return;
+    if (c.matches(CAMPOS_PLATA)) formatearMontoEscrito(c);
+    else if (c.matches(CAMPOS_TEXTO)) formatearTextoEscrito(c);
+    else if (c.id === "reg-tasa") formatearTasaEscrita(c);
+  });
 
   function guardarLocal(clave, valor) { try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) { /* sin almacenamiento */ } }
   function leerLocal(clave, defecto) { try { var v = localStorage.getItem(clave); return v ? JSON.parse(v) : defecto; } catch (e) { return defecto; } }

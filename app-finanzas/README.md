@@ -243,3 +243,11 @@ Los ids temporales se cambian por los reales al enviar, y un error real de la ba
 Los mapas ya vistos y los del lugar de cada pago nuevo (se bajan al guardarlo) se guardan con el service worker (`sw.js`).
 Necesitan internet: entrar por primera vez, crear cuenta, entrar con Google, la IA y los mapas de lugares que nunca se abrieron.
 En el detalle de un pago, el mapa tiene tres vistas: Google (satélite con calles, necesita internet), Satélite (Esri) y Calles.
+
+## Números con puntos automáticos
+
+Los campos de plata (deudas, abonos, metas, límites, presupuesto, saldo, costos) ponen los puntos de miles mientras se
+escribe (10000 → 10.000); la coma es solo para decimales y `10,000` se toma como miles. En los textos libres (entrada rápida,
+registros comunes, asistente de varios registros) los números de 4 cifras o más también se separan: «gasté 20000» → «gasté 20.000».
+La tasa de cambio usa puntos de miles y coma decimal. Los valores se muestran con puntos puestos a mano (no con Intl), para que
+salgan igual en cualquier celular.
