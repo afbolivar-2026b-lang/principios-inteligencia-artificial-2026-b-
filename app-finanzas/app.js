@@ -117,7 +117,10 @@
     b.innerHTML = ocultos ? OJO_CERRADO : OJO_ABIERTO;
     b.setAttribute("aria-pressed", String(ocultos));
     b.setAttribute("aria-label", ocultos ? "Mostrar los valores" : "Ocultar los valores");
+    var d = $("det-ojo");
+    d.innerHTML = b.innerHTML; d.setAttribute("aria-pressed", String(ocultos)); d.setAttribute("aria-label", b.getAttribute("aria-label"));
   }
+  $("det-ojo").addEventListener("click", function () { $("btn-ojo").click(); });
   $("btn-ojo").addEventListener("click", function () { ocultos = !ocultos; guardarLocal("nova-ocultos", ocultos); pintarOjo(); if (fuente) pintar(); });
   pintarOjo();
 
@@ -311,7 +314,7 @@
     var li = el("li", "mov");
     li.tabIndex = 0;
     li.setAttribute("role", "button");
-    li.setAttribute("aria-label", "Editar " + m.descripcion);
+    li.setAttribute("aria-label", "Ver el detalle de " + m.descripcion);
     var ic = pintarIcono(el("span", "mov-icono"), c);
     var txt = el("div", "mov-texto");
     var otraMoneda = m.moneda && m.moneda !== "COP" && num(m.monto_original) > 0;
@@ -336,8 +339,8 @@
     var val = el("div", "mov-valor");
     val.append(el("strong", m.tipo === "ingreso" ? "positivo" : null, dineroSigno(num(m.monto), m.tipo)), el("small", null, (conFecha ? fechaCorta.format(new Date(m.fecha)) + " · " : "") + hora.format(new Date(m.fecha))));
     li.append(ic, txt, val);
-    li.addEventListener("click", function () { abrirRegistro({ movimiento: m }); });
-    li.addEventListener("keydown", function (e) { if (e.key === "Enter") abrirRegistro({ movimiento: m }); });
+    li.addEventListener("click", function () { abrirDetalle(m); });
+    li.addEventListener("keydown", function (e) { if (e.key === "Enter") abrirDetalle(m); });
     return li;
   }
 
@@ -1967,7 +1970,7 @@
   // ---------- Pintar todo ----------
   function pintar() {
     if (!fuente) return;
-    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA(); pintarConductor(); pintarDeudas(); if (deudaAbierta && pilaCapas.indexOf("pantalla-abonos") >= 0) pintarAbonos();
+    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA(); pintarConductor(); pintarDeudas(); if (pilaCapas.indexOf("pantalla-detalle") >= 0) pintarDetalle(); if (deudaAbierta && pilaCapas.indexOf("pantalla-abonos") >= 0) pintarAbonos();
   }
 
   function alerta(e) { mensaje("rapido-mensaje", "No se pudo guardar: " + (e && e.message ? e.message : e), true); }
@@ -2310,6 +2313,146 @@
       toast("Movimiento borrado"); cerrarCapa(); pintar();
     }).catch(function (err) { mensaje("reg-mensaje", err.message, true); });
   });
+
+
+  // ---------- Detalle de un movimiento ----------
+  var detalleId = null;
+  function abrirDetalle(m) {
+    detalleId = m.id;
+    pintarDetalle();
+    abrirCapa("pantalla-detalle");
+  }
+  $("det-editar").addEventListener("click", function () {
+    var m = datos.movimientos.find(function (x) { return x.id === detalleId; });
+    if (m) cerrarYLuego(function () { abrirRegistro({ movimiento: m }); });
+  });
+  function direccionDe(lat, lng) {
+    var clave = Number(lat).toFixed(4) + "," + Number(lng).toFixed(4), cache = leerLocal("nova-direcciones", {});
+    if (cache[clave]) return Promise.resolve(cache[clave]);
+    return fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&accept-language=es&lat=" + Number(lat) + "&lon=" + Number(lng))
+      .then(function (r) { if (!r.ok) throw new Error("direccion"); return r.json(); })
+      .then(function (d) {
+        var a = d.address || {};
+        var calle = (a.road || a.pedestrian || a.footway || "") + (a.house_number ? " #" + a.house_number : "");
+        var texto = [calle, a.suburb || a.neighbourhood || a.quarter, a.city || a.town || a.village].filter(Boolean).join(", ") || String(d.display_name || "").split(",").slice(0, 3).join(",");
+        if (!texto) throw new Error("direccion");
+        var claves = Object.keys(cache);
+        if (claves.length > 150) delete cache[claves[0]];
+        cache[clave] = texto; guardarLocal("nova-direcciones", cache);
+        return texto;
+      });
+  }
+  function filaDetalle(titulo, valor) {
+    var f = el("div", "det-fila"), v = el("span");
+    if (valor && valor.nodeType) v.append(valor); else v.textContent = valor;
+    f.append(el("span", null, titulo), v);
+    return f;
+  }
+  function pintarDetalle() {
+    var m = datos.movimientos.find(function (x) { return x.id === detalleId; });
+    var cont = $("det-contenido");
+    if (!m) return;
+    cont.replaceChildren();
+    var c = categoria(m.categoria_id) || { nombre: "Sin categoría", icono: "otro" };
+    var cuenta = datos.cuentas.find(function (x) { return x.id === m.cuenta_id; });
+    var esIngreso = m.tipo === "ingreso", otraMoneda = m.moneda && m.moneda !== "COP" && num(m.monto_original) > 0;
+
+    // Cabecera: nombre, tipo y valor
+    var cab = el("article", "tarjeta det-cabecera"), txt = el("div", "mov-texto");
+    txt.append(el("strong", null, m.descripcion), el("small", null, (esIngreso ? "Ingreso" : "Gasto") + (m.estado === "pendiente" ? " · pendiente" : "") + (otraMoneda ? " · " + Mon.formatoMonto(m.monto_original, m.moneda) : "")));
+    cab.append(pintarIcono(el("span", "mov-icono"), c), txt, el("span", "det-monto" + (esIngreso ? " positivo" : ""), dineroSigno(num(m.monto), m.tipo)));
+    cont.append(cab);
+
+    // Datos
+    var datosCaja = el("article", "tarjeta det-filas");
+    var cat = el("span"); var punto = el("span", "punto"); punto.style.setProperty("--c", colorDe(c)); cat.append(punto, document.createTextNode(" " + c.nombre));
+    var cuando = new Date(m.fecha);
+    datosCaja.append(filaDetalle("Categoría", cat), filaDetalle("Fecha", fechaLarga.format(cuando) + " · " + hora.format(cuando)));
+    if (cuenta) datosCaja.append(filaDetalle("Origen", el("span", "chip-cuenta", cuenta.nombre)));
+    if (m.nota) datosCaja.append(filaDetalle("Nota", m.nota));
+    if (m.viajes) datosCaja.append(filaDetalle("Viajes", String(m.viajes)));
+    cont.append(datosCaja);
+
+    // Etiquetas: se quitan con la x y se agregan escribiéndolas o tocando una sugerencia
+    var tagCaja = el("article", "tarjeta det-etiquetas"), actuales = m.etiquetas || [];
+    function guardarEtiquetas(lista) {
+      fuente.actualizar("movimientos", m.id, { etiquetas: lista }).then(function (n) { Object.assign(m, n); pintar(); }).catch(function (err) { toast("No se pudo guardar: " + err.message); });
+    }
+    actuales.forEach(function (t) {
+      var chip = el("span", "etiqueta-chip activa", "#" + t), x = el("button", null, "✕"); x.type = "button"; x.setAttribute("aria-label", "Quitar #" + t);
+      x.addEventListener("click", function () { guardarEtiquetas(actuales.filter(function (y) { return y !== t; })); });
+      chip.append(x); tagCaja.append(chip);
+    });
+    var entrada = el("input"); entrada.placeholder = "+ #etiqueta"; entrada.maxLength = 30; entrada.setAttribute("aria-label", "Agregar etiqueta");
+    function agregar() {
+      var t = limpiarEtiqueta(entrada.value);
+      if (t && actuales.indexOf(t) < 0) guardarEtiquetas(actuales.concat([t])); else entrada.value = "";
+    }
+    entrada.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " " || e.key === ",") { e.preventDefault(); agregar(); } });
+    entrada.addEventListener("blur", agregar);
+    tagCaja.append(entrada);
+    var usos = {};
+    datos.movimientos.forEach(function (x) { (x.etiquetas || []).forEach(function (t) { usos[t] = (usos[t] || 0) + 1; }); });
+    Object.keys(usos).filter(function (t) { return actuales.indexOf(t) < 0; }).sort(function (a, b) { return usos[b] - usos[a]; }).slice(0, 5).forEach(function (t) {
+      var b = el("button", "etiqueta-chip", "+ #" + t); b.type = "button";
+      b.addEventListener("click", function () { guardarEtiquetas(actuales.concat([t])); });
+      tagCaja.append(b);
+    });
+    cont.append(tagCaja);
+
+    // Presupuesto del periodo (solo para gastos)
+    if (!esIngreso) {
+      var pr = presupuestoActual();
+      if (pr.conPresupuesto && pr.limite > 0) {
+        var pct = Math.min(100, Math.round((pr.gastado / pr.limite) * 100)), caja = el("article", "tarjeta det-presupuesto");
+        var tit = el("div", "fila-titulo"); tit.style.cssText = "display:flex;justify-content:space-between";
+        var lb = el("span", "titulo-det", "Presupuesto del periodo"), pc = el("strong", null, Math.round((pr.gastado / pr.limite) * 100) + " %");
+        pc.style.color = pr.gastado > pr.limite ? "var(--danger)" : "var(--accent)";
+        tit.append(lb, pc);
+        var barra = el("div", "barra-presupuesto" + (pr.gastado > pr.limite ? " pasado" : "")), i = el("span"); i.style.width = pct + "%"; barra.append(i);
+        caja.append(tit, barra, el("small", null, dinero(pr.gastado) + " / " + dinero(pr.limite)));
+        cont.append(caja);
+      }
+    }
+
+    // Ubicación: mapa, dirección y otros pagos en el mismo lugar
+    if (tieneUbicacion(m)) {
+      var lat = Number(m.lat), lng = Number(m.lng), d = 0.004, mapaCaja = el("article", "tarjeta");
+      var marco = el("iframe", "det-mapa"); marco.title = "Mapa del pago"; marco.loading = "lazy"; marco.referrerPolicy = "no-referrer";
+      marco.src = "https://www.openstreetmap.org/export/embed.html?bbox=" + [lng - d, lat - d, lng + d, lat + d].join("%2C") + "&layer=mapnik&marker=" + lat + "%2C" + lng;
+      var dir = el("div", "det-direccion"), dirTxt = el("span", null, "Buscando la dirección…");
+      var abrir = el("a", null, "Abrir en Mapas"); abrir.href = "https://www.google.com/maps/search/?api=1&query=" + lat + "," + lng; abrir.target = "_blank"; abrir.rel = "noopener";
+      dir.append(dirTxt, abrir);
+      mapaCaja.append(marco, dir); cont.append(mapaCaja);
+      var idAhora = detalleId;
+      direccionDe(lat, lng).then(function (t) { if (detalleId === idAhora) dirTxt.textContent = "📍 " + t; })
+        .catch(function () { if (detalleId === idAhora) dirTxt.textContent = "📍 " + lat.toFixed(5) + ", " + lng.toFixed(5); });
+      var cerca = pagosCerca(m);
+      if (cerca.length) {
+        var otros = el("article", "tarjeta det-otros"), ul = el("ul", "lista-simple");
+        otros.append(el("span", "titulo-det", "Otros pagos en este lugar"));
+        cerca.slice().sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); }).slice(0, 8).forEach(function (o) {
+          var oc = categoria(o.categoria_id) || { nombre: "Sin categoría", icono: "otro" }, li = el("li", "mov"), t2 = el("div", "mov-texto"), v = el("div", "mov-valor");
+          t2.append(el("strong", null, o.descripcion), el("small", null, fechaCorta.format(new Date(o.fecha)) + " de " + new Date(o.fecha).getFullYear() + " · " + oc.nombre));
+          v.append(el("strong", o.tipo === "ingreso" ? "positivo" : null, dineroSigno(num(o.monto), o.tipo)));
+          li.tabIndex = 0; li.append(pintarIcono(el("span", "mov-icono chico"), oc), t2, v);
+          li.addEventListener("click", function () { detalleId = o.id; pintarDetalle(); document.querySelector("#pantalla-detalle").scrollTop = 0; });
+          ul.append(li);
+        });
+        otros.append(ul); cont.append(otros);
+      }
+    } else {
+      var sin = el("article", "tarjeta"), ayuda = el("p", "nota");
+      ayuda.textContent = datos.perfil.guardar_ubicacion ? "Este pago no tiene ubicación." : "Para ver el mapa de tus compras, activa «Guardar ubicación» en Ajustes. Solo se guarda la de los pagos nuevos que anotes.";
+      sin.append(el("strong", null, "📍 Sin ubicación"), ayuda);
+      if (!datos.perfil.guardar_ubicacion) {
+        var act = el("button", "primario", "Activar la ubicación"); act.type = "button";
+        act.addEventListener("click", function () { guardarPerfil({ guardar_ubicacion: true }, "exportar-mensaje", "").then(function () { toast("Ubicación activada: los próximos pagos la guardan"); pintarDetalle(); }); });
+        sin.append(act);
+      }
+      cont.append(sin);
+    }
+  }
 
   // ---------- Entrada rápida ----------
   function opcionesCategoria(tipo, elegida) {
