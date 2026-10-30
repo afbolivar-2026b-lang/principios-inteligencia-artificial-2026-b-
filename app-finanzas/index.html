@@ -521,6 +521,7 @@
         <input type="file" id="archivo-respaldo" accept=".json,application/json" hidden>
         <button type="button" id="btn-importar"><span class="menu-icono">📥</span><span><strong>Importar desde Excel o CSV</strong><small>Columnas: fecha, descripcion, monto (y tipo, categoria si quieres)</small></span></button>
         <input type="file" id="archivo-csv" accept=".csv,text/csv,text/plain" hidden>
+        <button type="button" id="btn-pruebas"><span class="menu-icono">🧪</span><span><strong>Probar las funciones nuevas</strong><small>Prueba con un toque la foto, la IA, el widget y las teclas rápidas en tu celular</small></span></button>
         <button type="button" id="btn-historial"><span class="menu-icono">🕘</span><span><strong>Historial de cambios</strong><small>Qué creaste, editaste o borraste y cuándo</small></span></button>
         <button type="button" id="btn-papelera"><span class="menu-icono">🗑️</span><span><strong>Papelera</strong><small id="papelera-estado">Recupera lo que borraste en los últimos 30 días</small></span></button>
         <label class="menu-fila"><span class="menu-icono">📳</span><span><strong>Sacudir para ocultar valores</strong><small>Sacude el celular 3 veces para ocultar o mostrar</small></span><input type="checkbox" id="sacudir-ocultar" class="interruptor"></label>
@@ -992,6 +993,18 @@
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Mapa de calor de gastos</h1></div>
   <p class="nota">Cada círculo es un lugar donde pagaste: entre más grande y rojo, más gastaste ahí.</p>
   <div id="mapa-calor" class="det-mapa mapa-calor"></div>
+</section>
+<section id="pantalla-pruebas" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Probar las funciones</h1></div>
+  <p class="nota">Toca «Ejecutar pruebas». NOVA prueba de verdad en tu celular la foto, el historial, la IA que lee recibos, el widget y las teclas rápidas, y te dice qué funcionó. No toca tus datos: usa archivos y notificaciones de prueba.</p>
+  <button type="button" class="primario" id="pruebas-ejecutar">▶ Ejecutar pruebas</button>
+  <ul id="lista-pruebas" class="lista-simple"></ul>
+  <button type="button" class="mini" id="pruebas-copiar" hidden>📋 Copiar el resultado</button>
+  <article id="pruebas-widget" class="tarjeta" hidden>
+    <strong>Widget</strong>
+    <p class="nota">1) Deja el dedo presionado en la pantalla de inicio → Widgets → NOVA y agrégalo. Debe decir «✓ Widget OK». 2) Luego toca el botón de abajo para que vuelva a mostrar tus datos reales.</p>
+    <button type="button" class="mini" id="pruebas-widget-real">Volver a mostrar mis datos reales</button>
+  </article>
 </section>
 <section id="pantalla-documento" class="capa" hidden>
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="doc-titulo">Nuevo vencimiento</h1></div>

@@ -351,3 +351,7 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 
 - Widget «NOVA saldo» (clic largo en la pantalla de inicio → Widgets → NOVA): muestra el saldo y cuánto puedes gastar hoy; al tocarlo abre NOVA. Se actualiza al abrir la app y cada 30 minutos. Si tienes PIN o los valores ocultos, muestra «$ ••••».
 - La app guarda los datos con `@capacitor/preferences`; el widget (`app-android-nova/recursos/java/SaldoWidget.java`) los lee y se agrega al proyecto de Android en el flujo `apk-nova.yml`.
+
+## Probar las funciones nuevas en el celular
+
+- **Configuración → «Probar las funciones nuevas»**: ejecuta con un toque pruebas reales de foto (sube, descarga y borra una imagen de prueba), historial, IA que lee los productos de un recibo de prueba, datos del widget y notificación con botones (teclas rápidas), y muestra ✅ o ❌ con el motivo. Se puede copiar el resultado.

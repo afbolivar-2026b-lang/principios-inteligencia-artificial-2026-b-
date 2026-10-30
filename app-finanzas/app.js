@@ -2732,6 +2732,7 @@
     var N = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
     if (!N || !N.addListener) return;
     N.addListener("localNotificationActionPerformed", function (ev) {
+      if (ev && ev.notification && ev.notification.id === 700000900) { toast("Botón tocado", "Tecla rápida: " + (ev.actionId === "uno" ? "Botón 1" : ev.actionId === "dos" ? "Botón 2" : String(ev.actionId))); return; }
       if (!ev || !ev.notification || ev.notification.id !== RAPIDO_ID || !/^f\d+$/.test(String(ev.actionId))) return;
       if (fuente && datos && datos.frecuentes.length) anotarTeclaRapida(ev.actionId); else accionesPendientes.push(ev.actionId);   // si la app aún está abriendo, queda en espera
     });
@@ -4890,6 +4891,7 @@
     var http = window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp;
     if (!http || !cfg.apkVersionUrl || !cfg.apkUrl) return;
     fetch("version-app.json").then(function (r) { return r.json(); }).then(function (local) {
+      window.__novaVersion = local && local.versionName;
       return http.get({ url: cfg.apkVersionUrl + "?t=" + Date.now(), responseType: "json" }).then(function (res) {
         var remota = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
         if (!(Number(remota.versionCode) > Number(local.versionCode))) return;
@@ -5292,6 +5294,87 @@
     var x = datosDeDeuda(d); if (!x) return;
     compartirTexto("Recordatorio de pago", "Hola " + d.persona + ", te escribo para recordarte lo que me debes" + (d.concepto ? " (" + d.concepto + ")" : "") + ": faltan " + pesos.format(x.falta) + ". ¡Gracias! 🙏");
   });
+
+  // ---------- Pruebas con un toque (en el celular real) ----------
+  function imagenDePrueba(lineas, ancho, alto, calidad) {
+    var c = document.createElement("canvas"); c.width = ancho; c.height = alto;
+    var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, ancho, alto); g.fillStyle = "#111";
+    g.font = "bold 30px monospace"; var y = 50;
+    lineas.forEach(function (l) { g.fillText(l, 30, y); y += 48; });
+    return new Promise(function (ok) { c.toBlob(ok, "image/jpeg", calidad || 0.85); });
+  }
+  function aBase64(blob) { return new Promise(function (ok, mal) { var fr = new FileReader(); fr.onload = function () { ok(String(fr.result).split(",")[1] || ""); }; fr.onerror = mal; fr.readAsDataURL(blob); }); }
+  var resultadoPruebas = "";
+  function ejecutarPruebas() {
+    var ul = $("lista-pruebas"); ul.replaceChildren(); resultadoPruebas = "";
+    var P = (window.Capacitor && window.Capacitor.Plugins) || {};
+    function fila(nombre) {
+      var li = el("li", "consejo"), ic = el("span", "consejo-icono", "⏳"), d = el("div"), t = el("strong", null, nombre), s = el("small", null, "Probando…");
+      d.append(t, s); li.append(ic, d); ul.append(li);
+      return function (ok, detalle) { ic.textContent = ok === null ? "➖" : ok ? "✅" : "❌"; s.textContent = detalle; resultadoPruebas += (ok === null ? "-" : ok ? "OK" : "FALLA") + " · " + nombre + ": " + detalle + "\n"; };
+    }
+    if (!fuente || fuente.demo) { ul.append(el("li", "vacio", "Entra con tu cuenta (no el modo demostración) para ejecutar las pruebas.")); return Promise.resolve(); }
+    var versionTxt = (window.__novaVersion || ""), ent = enApp ? "app Android" : "navegador";
+    var info = fila("Dónde estás probando"); info(null, ent + (versionTxt ? " · versión " + versionTxt : ""));
+    var f1 = fila("Foto: subir, ver y quitar una foto de prueba");
+    var f2 = fila("Historial de cambios");
+    var f3 = fila("IA: leer los productos de un recibo de prueba");
+    var f4 = fila("Widget: guardar los datos para el widget");
+    var f5 = fila("Teclas rápidas: notificación con botones");
+    // 1) Foto
+    return imagenDePrueba(["PRUEBA NOVA", "foto de prueba"], 400, 200, 0.7).then(function (blob) {
+      if (!fuente.fotos) throw new Error("no hay espacio de fotos");
+      return fuente.fotos.subir(blob, "prueba").then(function (ruta) {
+        return fuente.fotos.url(ruta).then(function (u) { return fetch(u); }).then(function (r) { if (!r.ok) throw new Error("no se pudo bajar (" + r.status + ")"); return r.blob(); })
+          .then(function (b) { return fuente.fotos.borrar(ruta).then(function () { f1(true, "subió, se pudo ver (" + Math.round(b.size / 1024) + " KB) y se borró la de prueba"); }); });
+      });
+    }).catch(function (e) { f1(false, String((e && e.message) || e)); })
+    // 2) Historial
+    .then(function () { return fuente.historial ? fuente.historial().then(function (l) { f2(true, l.length + (l.length === 1 ? " cambio guardado" : " cambios guardados") + " en el historial"); }) : f2(false, "no disponible"); })
+    .catch(function (e) { f2(false, String((e && e.message) || e)); })
+    // 3) IA productos
+    .then(function () {
+      if (!iaDisponible()) return f3(false, "la IA no está disponible ahora mismo");
+      return imagenDePrueba(["TIENDA LA ESQUINA", "2 Pan       $ 4.000", "1 Leche     $ 3.500", "TOTAL       $ 7.500"], 640, 280, 0.9)
+        .then(aBase64).then(function (b64) { return invocarIA({ productos: true, imagen: b64, mime: "image/jpeg" }); })
+        .then(function (d) {
+          var n = (d.productos || []).length;
+          f3(n > 0, n ? n + " productos leídos: " + d.productos.map(function (x) { return x.nombre + " " + pesos.format(x.valor); }).join(", ") + (d.total ? " · total " + pesos.format(d.total) : "") : "la IA respondió pero no encontró productos");
+        });
+    }).catch(function (e) { f3(false, String((e && e.message) || e)); })
+    // 4) Widget
+    .then(function () {
+      var Pf = P.Preferences;
+      if (!enApp) return f4(null, "solo se prueba en la app de Android");
+      if (!Pf) return f4(false, "esta APK no trae el complemento del widget (instala la última versión)");
+      var marca = JSON.stringify({ saldo: "✓ Widget OK", linea: "Si ves esto, funciona" });
+      return Pf.set({ key: "nova-widget", value: marca }).then(function () { return Pf.get({ key: "nova-widget" }); }).then(function (r) {
+        var ok = r && r.value === marca; ultimoWidget = "";
+        f4(ok, ok ? "datos guardados. Agrega el widget NOVA a tu pantalla de inicio y debe decir «✓ Widget OK»" : "no se pudo leer lo guardado");
+        $("pruebas-widget").hidden = !ok;
+      });
+    }).catch(function (e) { f4(false, String((e && e.message) || e)); })
+    // 5) Teclas rápidas
+    .then(function () {
+      var N = P.LocalNotifications;
+      if (!enApp) return f5(null, "solo se prueba en la app de Android");
+      if (!N) return f5(false, "esta APK no trae las notificaciones");
+      return N.requestPermissions().then(function (perm) {
+        if (!perm || perm.display !== "granted") throw new Error("falta el permiso de notificaciones (actívalo en los ajustes de Android)");
+        return N.registerActionTypes({ types: [{ id: "PRUEBA", actions: [{ id: "uno", title: "Botón 1" }, { id: "dos", title: "Botón 2" }] }] });
+      }).then(function () {
+        return N.schedule({ notifications: [{ id: 700000900, title: "🧪 Prueba de teclas rápidas", body: "Baja esta notificación y toca «Botón 1» o «Botón 2».", actionTypeId: "PRUEBA", schedule: { at: new Date(Date.now() + 5000), allowWhileIdle: true } }] });
+      }).then(function () { f5(true, "en 5 segundos llega una notificación: bájala y toca un botón. Si NOVA se abre y dice «Botón tocado», funciona"); });
+    }).catch(function (e) { f5(false, String((e && e.message) || e)); })
+    .then(function () { $("pruebas-copiar").hidden = false; });
+  }
+  $("btn-pruebas").addEventListener("click", function () { $("lista-pruebas").replaceChildren(); $("pruebas-copiar").hidden = true; $("pruebas-widget").hidden = true; abrirCapa("pantalla-pruebas"); });
+  $("pruebas-ejecutar").addEventListener("click", function (e) { var b = e.target; b.disabled = true; ejecutarPruebas().finally(function () { b.disabled = false; }); });
+  $("pruebas-copiar").addEventListener("click", function () {
+    var txt = "Pruebas de NOVA\n" + resultadoPruebas;
+    (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () { toast("¡Copiado!", "Pégalo en el chat"); }, function () { compartirTexto("Pruebas de NOVA", txt); });
+  });
+  $("pruebas-widget-real").addEventListener("click", function () { ultimoWidget = ""; actualizarWidget(); toast("Listo", "El widget vuelve a mostrar tus datos"); });
 
   // ---------- Alerta de límites: avisa al 80 % y al 100 % ----------
   function alertaLimites(categoriaId) {
