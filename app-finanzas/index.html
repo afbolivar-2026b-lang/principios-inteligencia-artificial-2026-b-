@@ -219,7 +219,7 @@
 
       <button type="button" class="tarjeta acceso-ia" data-abrir="pantalla-chat">
         <span class="acceso-ia-icono">✦</span>
-        <span><strong>Pregúntale a NOVA</strong><small>Chatea con la IA sobre tu plata: en qué gastas más, cuánto te queda, cómo ahorrar.</small></span>
+        <span><strong>Pregúntale a NOVA</strong><small>Chatea con la IA: pregúntale lo que quieras, de tu plata o de cualquier tema.</small></span>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
       </button>
 
@@ -805,13 +805,13 @@
   <div id="chat-bienvenida" class="chat-bienvenida">
     <span class="chat-logo"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>
     <h2>Hola, soy NOVA IA.</h2>
-    <p>Pregúntame lo que quieras sobre tu dinero: cuánto gastaste y en qué, si te alcanza para algo o cómo ahorrar más. Respondo con tus propios números.</p>
+    <p>Pregúntame lo que quieras, de cualquier tema. Si es sobre tu dinero, respondo con tus propios números: cuánto gastaste y en qué, si te alcanza para algo o cómo ahorrar más.</p>
     <div id="chat-sugerencias" class="sugerencias"></div>
   </div>
   <ol id="chat" class="chat" aria-live="polite"></ol>
   <form id="form-chat" class="rapido-fila chat-entrada" autocomplete="off">
     <label for="chat-pregunta" class="sr">Tu pregunta</label>
-    <input id="chat-pregunta" type="text" placeholder="Pregunta sobre tu dinero" maxlength="500" enterkeyhint="send">
+    <input id="chat-pregunta" type="text" placeholder="Pregúntame lo que quieras" maxlength="1500" enterkeyhint="send">
     <button type="submit" class="icono-btn redondo primario" aria-label="Preguntar"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
   </form>
   <p id="chat-mensaje" class="mensaje" role="status"></p>
