@@ -692,3 +692,9 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 .logro small { color: var(--muted); font-size: .72rem; }
 .calc { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line); }
 .calc-res { margin: 4px 0 0; font-weight: 700; color: var(--accent); }
+
+.salud-puntaje { display: flex; align-items: baseline; gap: 8px; }
+.salud-puntaje strong { font-size: 2.6rem; color: var(--accent); }
+.reto-semanas { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.reto-sem { aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); font-size: .72rem; padding: 0; }
+.reto-sem.hecha { background: var(--accent); color: var(--accent-ink); font-weight: 800; border-color: var(--accent); }

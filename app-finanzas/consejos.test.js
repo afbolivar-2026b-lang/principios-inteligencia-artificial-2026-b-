@@ -56,3 +56,49 @@ test("calendario de gastos", () => {
   assert.strictEqual(cal.max, 3000);
   assert.strictEqual(cal.dias[1].valor, 1500);
 });
+
+test("salud financiera", () => {
+  const buena = C.salud({ ingresos: 3000000, gastos: 2000000, saldo: 9000000, gastoMensual: 2000000, deudaPendiente: 0 });
+  assert.ok(buena.puntaje >= 90 && buena.nivel === "Excelente");
+  const mala = C.salud({ ingresos: 1000000, gastos: 1200000, saldo: 0, gastoMensual: 1200000, deudaPendiente: 4000000 });
+  assert.ok(mala.puntaje < 20 && mala.nivel === "Para mejorar");
+  assert.ok(C.salud({ ingresos: 0, gastos: 0, saldo: 0, gastoMensual: 0, deudaPendiente: 0 }).puntaje >= 0);
+});
+
+test("gasto mensual promedio y mejor/peor mes", () => {
+  const f = (m, d, monto, tipo) => ({ tipo: tipo || "gasto", fecha: new Date(2026, m, d, 10).toISOString(), monto });
+  const todos = [f(6, 3, 1000000), f(7, 3, 2000000), f(8, 3, 3000000), f(9, 3, 500000), f(7, 1, 4000000, "ingreso")];
+  assert.strictEqual(C.gastoMensualPromedio(todos, new Date(2026, 9, 20)), 2000000);   // jul, ago, sep (oct no cuenta)
+  const mp = C.mejorPeorMes(todos);
+  assert.ok(mp.mejor.mes.startsWith("agosto") && mp.peor.mes.startsWith("septiembre"));
+  assert.strictEqual(C.mejorPeorMes([f(9, 1, 100)]), null);
+});
+
+test("IVA, propina y hábitos", () => {
+  assert.deepStrictEqual(C.iva(100000, 19, "mas"), { base: 100000, iva: 19000, total: 119000 });
+  assert.deepStrictEqual(C.iva(119000, 19, "menos"), { base: 100000, iva: 19000, total: 119000 });
+  assert.deepStrictEqual(C.dividirCuenta(200000, 4, 10), { propina: 20000, total: 220000, porPersona: 55000 });
+  assert.strictEqual(C.dividirCuenta(100, 0, 10), null);
+  assert.deepStrictEqual(C.costoHabito(5000, 5), { semana: 25000, mes: 108333, anio: 1300000 });
+});
+
+test("contado vs cuotas, CDT, prima y deudas", () => {
+  const sin = C.contadoVsCuotas(1200000, 12, 100000);
+  assert.strictEqual(sin.conInteres, false);
+  const con = C.contadoVsCuotas(1000000, 12, 100000);
+  assert.ok(con.conInteres && con.extra === 200000 && con.tasaMensualPct > 2 && con.tasaMensualPct < 3.5);
+  assert.strictEqual(C.cdt(1000000, 12, 12).ganancia, 120000);
+  const p = C.primaCesantias(2000000, 0, 360);
+  assert.deepStrictEqual(p, { prima: 1000000, cesantias: 2000000, intereses: 240000 });
+  const d = C.salirDeDeuda(1000000, 0, 100000);
+  assert.strictEqual(d.meses, 10);
+  assert.ok(C.salirDeDeuda(1000000, 2, 10000).imposible);
+  assert.ok(C.salirDeDeuda(1000000, 2, 100000).total > 1000000);
+});
+
+test("reto de 52 semanas", () => {
+  const r = C.reto52(1000, [1, 2, 3]);
+  assert.strictEqual(r.total, 1378000);
+  assert.strictEqual(r.ahorrado, 6000);
+  assert.strictEqual(r.semanas.length, 52);
+});

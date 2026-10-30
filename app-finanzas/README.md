@@ -298,3 +298,9 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - Inicio: saludo y tarjeta «Tu semana» con botón para compartir; aviso de gasto fuera de lo normal al guardar.
 - Detalle: «Repetir este gasto». Grupos: compartir las cuentas por WhatsApp u otras apps.
 - Apariencia: color (verde, azul, morado, naranja) y letra grande. Recordatorios opcionales (noche y víspera de pagos programados, app Android).
+
+## Novedades: salud financiera y más calculadoras (50 funciones)
+
+- **Salud financiera** (Análisis): puntaje 0–100, fondo de emergencia, deudas frente a ingresos, mejor y peor mes.
+- **Más calculadoras**: IVA, dividir la cuenta con propina, costo anual de un hábito, ¿contado o a cuotas?, CDT, prima y cesantías (estimado) y cuándo sales de una deuda.
+- **Reto de ahorro de 52 semanas** (se guarda en el dispositivo). El recordatorio del domingo ahora trae las cifras de la semana.

@@ -900,7 +900,10 @@
     { id: "consejos", nombre: "Consejos de NOVA" },
     { id: "calendario", nombre: "Calendario de gastos" },
     { id: "logros", nombre: "Logros" },
-    { id: "herramientas", nombre: "Calculadoras" }
+    { id: "herramientas", nombre: "Calculadoras" },
+    { id: "salud", nombre: "Salud financiera" },
+    { id: "calculadoras2", nombre: "Más calculadoras" },
+    { id: "reto", nombre: "Reto de ahorro 52 semanas" }
   ];
   function configWidgets() {
     var guardado = leerLocal("nova-widgets", null) || [];
@@ -929,7 +932,7 @@
       if (!w.visible) return;
       var art = el("article", "tarjeta widget");
       art.dataset.widget = w.id;
-      ({ rapida: wRapida, categorias: wCategorias, etiquetas: wEtiquetas, "ingresos-gastos": wIngresosGastos, tendencia: wTendencia, proyeccion: wProyeccion, consejos: wConsejos, calendario: wCalendario, logros: wLogros, herramientas: wHerramientas })[w.id](art, movs, ciclo, ref, rango);
+      ({ rapida: wRapida, categorias: wCategorias, etiquetas: wEtiquetas, "ingresos-gastos": wIngresosGastos, tendencia: wTendencia, proyeccion: wProyeccion, consejos: wConsejos, calendario: wCalendario, logros: wLogros, herramientas: wHerramientas, salud: wSalud, calculadoras2: wMasCalculadoras, reto: wReto })[w.id](art, movs, ciclo, ref, rango);
       cont.append(art);
     });
   }
@@ -1009,6 +1012,98 @@
     art.append(c, a, r);
   }
   function leerTasa(t) { var v = parseFloat(String(t).replace(",", ".")); return isNaN(v) ? 0 : v; }
+
+  // Salud financiera: puntaje, fondo de emergencia, deudas y mejor/peor mes.
+  function wSalud(art, movs) {
+    titulo(art, "Salud financiera");
+    var t = A.totales(movs), deuda = resumenDeDeudas().debo;
+    var s = NovaConsejos.salud({ ingresos: t.ingresos, gastos: t.gastos, saldo: saldoTotal(), gastoMensual: NovaConsejos.gastoMensualPromedio(datos.movimientos), deudaPendiente: deuda });
+    var grande = el("div", "salud-puntaje"); grande.append(el("strong", null, ocultos ? "••" : String(s.puntaje)), el("span", null, "de 100 · " + s.nivel));
+    var barra = el("div", "barra"), i = el("span"); i.style.width = s.puntaje + "%"; barra.append(i);
+    art.append(grande, barra);
+    var ul = el("ul", "lista-simple");
+    function fila(icono, tit, txt) { var li = el("li", "consejo"); li.append(el("span", "consejo-icono", icono)); var d = el("div"); d.append(el("strong", null, tit), el("small", null, ocultos ? "••••" : txt)); li.append(d); ul.append(li); }
+    fila("🛟", "Fondo de emergencia", s.fondoMeses == null ? "Cuando tengas gastos de meses anteriores te digo cuántos meses cubre tu saldo." : "Tu saldo cubre " + (Math.round(s.fondoMeses * 10) / 10) + " meses de gastos. La meta es 3 o más.");
+    fila("⚖️", "Deudas frente a ingresos", deuda === 0 ? "No tienes deudas pendientes. ¡Bien!" : s.ratioDeuda == null ? "Debes " + dinero(deuda) + "." : "Debes " + dinero(deuda) + ", que equivale a " + (Math.round(s.ratioDeuda * 10) / 10) + " veces tus ingresos de este periodo.");
+    var mp = NovaConsejos.mejorPeorMes(datos.movimientos);
+    if (mp) fila("🗓️", "Mejor y peor mes", "Tu mejor mes fue " + mp.mejor.mes + " (" + dinero(mp.mejor.neto) + ") y el más apretado " + mp.peor.mes + " (" + dinero(mp.peor.neto) + ").");
+    fila("💡", "Lo que más te ayuda", s.consejo);
+    art.append(ul);
+  }
+  // Calculadora genérica: campos [{ id, etq, ph, plata }], calcular(valores) -> texto o null.
+  function calculadora(art, tit, campos, calcular) {
+    var c = el("div", "calc"); c.append(el("strong", null, tit));
+    var res = el("p", "calc-res", "Escribe los datos."), entradas = {};
+    campos.forEach(function (f) { var par = campoCalc(f.etq, f.id, f.ph, f.plata); c.append(par[0], par[1]); entradas[f.id] = { el: par[1], plata: f.plata }; });
+    c.append(res);
+    function actualizar() {
+      var v = {}; Object.keys(entradas).forEach(function (k) { v[k] = entradas[k].plata ? leerValor(entradas[k].el.value) : leerTasa(entradas[k].el.value); });
+      var txt; try { txt = calcular(v); } catch (e) { txt = null; }
+      res.textContent = txt || "Escribe los datos.";
+    }
+    Object.keys(entradas).forEach(function (k) { entradas[k].el.addEventListener("input", actualizar); });
+    art.append(c);
+  }
+  function wMasCalculadoras(art) {
+    titulo(art, "Más calculadoras");
+    var N = NovaConsejos;
+    calculadora(art, "🧾 IVA (19 %)", [{ id: "iva-valor", etq: "Valor", ph: "100 mil", plata: true }, { id: "iva-pct", etq: "IVA (%)", ph: "19" }, { id: "iva-modo", etq: "¿El valor ya incluye IVA? (1 = sí, 0 = no)", ph: "0" }], function (v) {
+      var r = N.iva(v["iva-valor"], v["iva-pct"] || 19, v["iva-modo"] === 1 ? "menos" : "mas");
+      return r ? "Sin IVA " + dinero(r.base) + " · IVA " + dinero(r.iva) + " · Con IVA " + dinero(r.total) : null;
+    });
+    calculadora(art, "🍽️ Dividir la cuenta con propina", [{ id: "pr-total", etq: "Total de la cuenta", ph: "200 mil", plata: true }, { id: "pr-personas", etq: "¿Cuántas personas?", ph: "4" }, { id: "pr-pct", etq: "Propina (%)", ph: "10" }], function (v) {
+      var r = N.dividirCuenta(v["pr-total"], v["pr-personas"], v["pr-pct"]);
+      return r ? "Propina " + dinero(r.propina) + " · Total " + dinero(r.total) + " · Cada uno " + dinero(r.porPersona) : null;
+    });
+    calculadora(art, "☕ ¿Cuánto cuesta un hábito?", [{ id: "ha-monto", etq: "¿Cuánto gastas cada vez?", ph: "5 mil", plata: true }, { id: "ha-veces", etq: "¿Cuántas veces por semana?", ph: "5" }], function (v) {
+      var r = N.costoHabito(v["ha-monto"], v["ha-veces"]);
+      return r ? "Por semana " + dinero(r.semana) + " · por mes " + dinero(r.mes) + " · por año " + dinero(r.anio) : null;
+    });
+    calculadora(art, "🛍️ ¿Contado o a cuotas?", [{ id: "cu-precio", etq: "Precio de contado", ph: "1 millón", plata: true }, { id: "cu-n", etq: "Número de cuotas", ph: "12" }, { id: "cu-valor", etq: "Valor de cada cuota", ph: "100 mil", plata: true }], function (v) {
+      var r = N.contadoVsCuotas(v["cu-precio"], v["cu-n"], v["cu-valor"]);
+      return r ? (r.conInteres ? "En cuotas pagas " + dinero(r.total) + ": " + dinero(r.extra) + " de más (≈ " + String(r.tasaMensualPct).replace(".", ",") + " % mensual)." : "Las cuotas no cuestan más que el contado. ¡Te conviene a cuotas!") : null;
+    });
+    calculadora(art, "🏦 CDT o ahorro a plazo", [{ id: "cd-monto", etq: "¿Cuánto inviertes?", ph: "5 millones", plata: true }, { id: "cd-tasa", etq: "Tasa efectiva anual (%)", ph: "10" }, { id: "cd-meses", etq: "¿Cuántos meses?", ph: "12" }], function (v) {
+      var r = N.cdt(v["cd-monto"], v["cd-tasa"], v["cd-meses"]);
+      return r ? "Ganarías " + dinero(r.ganancia) + " y tendrías " + dinero(r.total) + " (antes de impuestos)." : null;
+    });
+    calculadora(art, "💼 Prima y cesantías (estimado)", [{ id: "pc-sal", etq: "Salario mensual", ph: "2 millones", plata: true }, { id: "pc-aux", etq: "Auxilio de transporte (opcional)", ph: "0", plata: true }, { id: "pc-dias", etq: "Días trabajados en el año", ph: "360" }], function (v) {
+      var r = N.primaCesantias(v["pc-sal"], v["pc-aux"] > 0 ? v["pc-aux"] : 0, v["pc-dias"]);
+      return r ? "Prima " + dinero(r.prima) + " · Cesantías " + dinero(r.cesantias) + " · Intereses " + dinero(r.intereses) + ". Es un cálculo aproximado." : null;
+    });
+    calculadora(art, "🕊️ ¿Cuándo salgo de una deuda?", [{ id: "sd-saldo", etq: "¿Cuánto debes?", ph: "5 millones", plata: true }, { id: "sd-tasa", etq: "Interés mensual (%)", ph: "2" }, { id: "sd-cuota", etq: "¿Cuánto pagas al mes?", ph: "300 mil", plata: true }], function (v) {
+      var r = N.salirDeDeuda(v["sd-saldo"], v["sd-tasa"], v["sd-cuota"]);
+      if (!r) return null;
+      if (r.imposible) return "Con esa cuota no alcanzas ni a pagar los intereses. Sube la cuota por encima de " + dinero(r.minima) + ".";
+      var a = Math.floor(r.meses / 12), m = r.meses % 12;
+      return "Terminas en " + (a ? a + (a === 1 ? " año" : " años") + (m ? " y " : "") : "") + (m ? m + (m === 1 ? " mes" : " meses") : "") + " y pagas " + dinero(r.total) + " en total.";
+    });
+  }
+  // Reto de ahorro de 52 semanas: se marcan las semanas cumplidas (se guarda en este dispositivo).
+  function wReto(art) {
+    titulo(art, "Reto de ahorro 52 semanas");
+    art.append(el("p", "nota", "La semana 1 ahorras el valor base, la 2 el doble, la 3 el triple… Marca cada semana que cumplas. Se guarda en este dispositivo."));
+    var base = leerLocal("nova-reto-base", 1000), hechas = leerLocal("nova-reto-hechas", []);
+    var l = el("label", null, "Valor base de la semana 1"); l.setAttribute("for", "reto-base");
+    var inp = el("input"); inp.id = "reto-base"; inp.className = "campo-plata"; inp.inputMode = "numeric"; inp.value = numeroCO.format(base);
+    var resumen = el("p", "calc-res"), grid = el("div", "reto-semanas");
+    function pintarReto() {
+      var r = NovaConsejos.reto52(base, hechas);
+      resumen.textContent = "Llevas " + dinero(r.ahorrado) + " de " + dinero(r.total) + " (" + hechas.length + " de 52 semanas).";
+      grid.replaceChildren();
+      r.semanas.forEach(function (s) {
+        var b = el("button", "reto-sem" + (s.hecho ? " hecha" : ""), String(s.semana)); b.type = "button"; b.title = "Semana " + s.semana + ": " + dinero(s.valor);
+        b.setAttribute("aria-pressed", String(s.hecho));
+        b.addEventListener("click", function () {
+          var i = hechas.indexOf(s.semana); if (i >= 0) hechas.splice(i, 1); else hechas.push(s.semana);
+          guardarLocal("nova-reto-hechas", hechas); pintarReto();
+        });
+        grid.append(b);
+      });
+    }
+    inp.addEventListener("change", function () { var v = leerValor(inp.value); if (v > 0) { base = v; guardarLocal("nova-reto-base", v); pintarReto(); } });
+    art.append(l, inp, resumen, grid); pintarReto();
+  }
 
   function pintarSemanaYSaludo() {
     var h = new Date().getHours(), nombre = (fuente && fuente.nombre ? String(fuente.nombre).split(" ")[0] : "");
@@ -2248,7 +2343,9 @@
     d.setDate(d.getDate() + ((7 - d.getDay()) % 7));
     if (d < new Date()) d.setDate(d.getDate() + 7);
     for (var k = 0; k < 4; k++) {
-      lista.push({ id: 800000001 + k, titulo: "Tu semana en NOVA", texto: "Es domingo: mira cómo te fue esta semana y planea la siguiente.", cuando: new Date(d.getTime()) });
+      var sem = k === 0 ? NovaConsejos.semana(datos.movimientos, d) : null;
+      var texto = sem && sem.movimientos ? "Esta semana gastaste " + pesos.format(sem.gastos) + (sem.ingresos ? " e ingresaste " + pesos.format(sem.ingresos) : "") + (sem.cambio != null ? " (" + Math.abs(sem.cambio) + " % " + (sem.cambio > 0 ? "más" : "menos") + " que la anterior)" : "") + ". ¡Mira cómo planear la próxima!" : "Es domingo: mira cómo te fue esta semana y planea la siguiente.";
+      lista.push({ id: 800000001 + k, titulo: "Tu semana en NOVA", texto: texto, cuando: new Date(d.getTime()) });
       d.setDate(d.getDate() + 7);
     }
     return lista;

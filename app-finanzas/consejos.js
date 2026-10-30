@@ -162,7 +162,119 @@
     return { dias: dias, max: max };
   }
 
-  var api = { consejos: consejos, gastoInusual: gastoInusual, semana: semana, logros: logros, cuotaCredito: cuotaCredito, ahorroFuturo: ahorroFuturo, regla503020: regla503020, calendario: calendario, plata: plata };
+  // ---------- Salud financiera y calculadoras extra ----------
+  function mesDe(f) { var x = new Date(f); return x.getFullYear() * 12 + x.getMonth(); }
+  var MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  function nombreMes(k) { return MESES[k % 12] + " " + Math.floor(k / 12); }
+
+  // Promedio mensual de gasto en los últimos meses completos con datos (hasta 3).
+  function gastoMensualPromedio(todos, ahora) {
+    var actual = mesDe(ahora || new Date()), por = {};
+    gastos(todos).forEach(function (m) { var k = mesDe(m.fecha); if (k < actual && k >= actual - 3) por[k] = (por[k] || 0) + num(m.monto); });
+    var v = Object.keys(por).map(function (k) { return por[k]; });
+    return v.length ? v.reduce(function (s, x) { return s + x; }, 0) / v.length : 0;
+  }
+
+  // Mejor y peor mes (por lo que sobra: ingresos menos gastos). Necesita al menos 2 meses con movimientos.
+  function mejorPeorMes(todos) {
+    var por = {};
+    todos.forEach(function (m) { var k = mesDe(m.fecha); por[k] = (por[k] || 0) + (m.tipo === "ingreso" ? num(m.monto) : -num(m.monto)); });
+    var ks = Object.keys(por).map(Number);
+    if (ks.length < 2) return null;
+    ks.sort(function (a, b) { return por[b] - por[a]; });
+    return { mejor: { mes: nombreMes(ks[0]), neto: por[ks[0]] }, peor: { mes: nombreMes(ks[ks.length - 1]), neto: por[ks[ks.length - 1]] } };
+  }
+
+  // Salud financiera de 0 a 100: ahorro (40), fondo de emergencia (30) y deudas (30).
+  // ctx: { ingresos, gastos (del periodo), saldo, gastoMensual, deudaPendiente }
+  function salud(ctx) {
+    var ing = num(ctx.ingresos), gas = num(ctx.gastos);
+    var tasa = ing > 0 ? (ing - gas) / ing : null;
+    var puntosAhorro = tasa == null ? 0 : Math.max(0, Math.min(1, tasa / 0.2)) * 40;
+    var fondo = num(ctx.gastoMensual) > 0 ? Math.max(0, num(ctx.saldo)) / num(ctx.gastoMensual) : null;
+    var puntosFondo = fondo == null ? 0 : Math.min(1, fondo / 3) * 30;
+    var ratio = ing > 0 ? num(ctx.deudaPendiente) / ing : null;
+    var puntosDeuda = num(ctx.deudaPendiente) === 0 ? 30 : ratio == null ? 0 : Math.max(0, 1 - ratio / 3) * 30;
+    var puntaje = Math.round(puntosAhorro + puntosFondo + puntosDeuda);
+    var nivel = puntaje >= 80 ? "Excelente" : puntaje >= 60 ? "Buena" : puntaje >= 40 ? "Regular" : "Para mejorar";
+    var consejo = tasa != null && tasa < 0.1 ? "Lo que más te ayudaría: gastar un poco menos de lo que ingresa." : fondo != null && fondo < 3 ? "Lo que más te ayudaría: armar un fondo de emergencia de 3 meses de gastos." : num(ctx.deudaPendiente) > 0 ? "Lo que más te ayudaría: bajar tus deudas." : "¡Vas muy bien! Sigue así.";
+    return { puntaje: puntaje, nivel: nivel, tasaAhorro: tasa, fondoMeses: fondo, ratioDeuda: ratio, consejo: consejo };
+  }
+
+  // IVA: de un valor sin IVA a con IVA (modo "mas") o al revés (modo "menos").
+  function iva(valor, pct, modo) {
+    var p = num(pct) / 100, v = num(valor);
+    if (!(v > 0)) return null;
+    if (modo === "menos") { var base = v / (1 + p); return { base: Math.round(base), iva: Math.round(v - base), total: Math.round(v) }; }
+    return { base: Math.round(v), iva: Math.round(v * p), total: Math.round(v * (1 + p)) };
+  }
+
+  // Dividir la cuenta del restaurante con propina.
+  function dividirCuenta(total, personas, propinaPct) {
+    var t = num(total), n = Math.round(num(personas));
+    if (!(t > 0) || n < 1) return null;
+    var propina = t * num(propinaPct) / 100;
+    return { propina: Math.round(propina), total: Math.round(t + propina), porPersona: Math.round((t + propina) / n) };
+  }
+
+  // ¿Cuánto cuesta un hábito? (veces por semana)
+  function costoHabito(monto, vecesPorSemana) {
+    var m = num(monto), v = num(vecesPorSemana);
+    if (!(m > 0) || !(v > 0)) return null;
+    var semana = m * v;
+    return { semana: Math.round(semana), mes: Math.round(semana * 52 / 12), anio: Math.round(semana * 52) };
+  }
+
+  // ¿Contado o a cuotas? Compara el precio de contado con lo que pagarías en cuotas.
+  function contadoVsCuotas(precio, cuotas, valorCuota) {
+    var p = num(precio), n = Math.round(num(cuotas)), c = num(valorCuota);
+    if (!(p > 0) || n < 1 || !(c > 0)) return null;
+    var total = c * n, extra = total - p;
+    var tasa = 0;
+    if (extra > 0) {          // tasa mensual implícita: p = c · (1 - (1+i)^-n) / i
+      var lo = 0, hi = 1;
+      for (var k = 0; k < 80; k++) { var i = (lo + hi) / 2, vp = c * (1 - Math.pow(1 + i, -n)) / i; if (vp > p) lo = i; else hi = i; }
+      tasa = (lo + hi) / 2;
+    }
+    return { total: Math.round(total), extra: Math.round(extra), tasaMensualPct: Math.round(tasa * 10000) / 100, conInteres: extra > 1 };
+  }
+
+  // CDT o ahorro a plazo con tasa efectiva anual (antes de impuestos).
+  function cdt(monto, tasaEA, meses) {
+    var m = num(monto), n = num(meses);
+    if (!(m > 0) || !(n > 0)) return null;
+    var ganancia = m * (Math.pow(1 + num(tasaEA) / 100, n / 12) - 1);
+    return { ganancia: Math.round(ganancia), total: Math.round(m + ganancia) };
+  }
+
+  // Prima de servicios y cesantías estimadas (Colombia). Base mensual = salario + auxilio de transporte.
+  function primaCesantias(salario, auxilio, dias) {
+    var base = num(salario) + num(auxilio), d = Math.min(360, Math.max(0, Math.round(num(dias))));
+    if (!(base > 0) || !(d > 0)) return null;
+    var cesantias = base * d / 360;
+    return { prima: Math.round(base * Math.min(d, 180) / 360), cesantias: Math.round(cesantias), intereses: Math.round(cesantias * d * 0.12 / 360) };
+  }
+
+  // ¿En cuánto tiempo salgo de una deuda pagando una cuota fija?
+  function salirDeDeuda(saldo, tasaMensualPct, cuota) {
+    var s = num(saldo), i = num(tasaMensualPct) / 100, c = num(cuota);
+    if (!(s > 0) || !(c > 0)) return null;
+    if (c <= s * i) return { imposible: true, minima: Math.ceil(s * i) + 1 };
+    var meses = 0, total = 0;
+    while (s > 0.5 && meses < 1200) { var interes = s * i, pago = Math.min(c, s + interes); s = s + interes - pago; total += pago; meses++; }
+    return { meses: meses, total: Math.round(total) };
+  }
+
+  // Reto de ahorro de 52 semanas: la semana k ahorras k veces el valor base.
+  function reto52(base, hechas) {
+    var b = num(base), semanas = [], ahorrado = 0, total = 0;
+    for (var k = 1; k <= 52; k++) { var hecho = (hechas || []).indexOf(k) >= 0; semanas.push({ semana: k, valor: b * k, hecho: hecho }); total += b * k; if (hecho) ahorrado += b * k; }
+    return { semanas: semanas, ahorrado: ahorrado, total: total };
+  }
+
+  var api = { consejos: consejos, gastoInusual: gastoInusual, semana: semana, logros: logros, cuotaCredito: cuotaCredito, ahorroFuturo: ahorroFuturo, regla503020: regla503020, calendario: calendario, plata: plata,
+    gastoMensualPromedio: gastoMensualPromedio, mejorPeorMes: mejorPeorMes, salud: salud, iva: iva, dividirCuenta: dividirCuenta, costoHabito: costoHabito,
+    contadoVsCuotas: contadoVsCuotas, cdt: cdt, primaCesantias: primaCesantias, salirDeDeuda: salirDeDeuda, reto52: reto52 };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaConsejos = api;
 })(typeof window !== "undefined" ? window : this);
