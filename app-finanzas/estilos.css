@@ -558,3 +558,7 @@ button.inf-ico { width: 44px; height: 44px; padding: 6px; border-radius: 12px; b
 .abono-datos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; text-align: center; }
 .abono-datos small { display: block; color: var(--muted); font-size: .75rem; }
 .abono-datos strong { font-size: 1rem; }
+.tarjeta-deudas { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+.tarjeta-deudas strong { font-size: 1.05rem; }
+.tarjeta-deudas.alerta { border-color: var(--danger); }
+.tarjeta-deudas .nota.estado-vencida { color: var(--danger); font-weight: 700; }

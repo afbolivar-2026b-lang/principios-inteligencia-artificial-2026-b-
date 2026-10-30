@@ -1545,8 +1545,32 @@
     var f = fechaCorta.format(parteFechaLocal(x.deuda.vence));
     return x.estado === "vencida" ? "Venció el " + f : "Vence el " + f;
   }
+  // Recuadro de Inicio: para no olvidarse de lo que se debe, lo que le deben y lo que está por vencer.
+  function pintarDeudasInicio(r) {
+    var t = $("tarjeta-deudas"), pend = r.lista.filter(function (x) { return x.falta > 0; });
+    t.hidden = !pend.length;
+    if (!pend.length) return;
+    var partes = [];
+    if (r.debo > 0) partes.push("Debes " + dinero(r.debo));
+    if (r.meDeben > 0) partes.push("Te deben " + dinero(r.meDeben));
+    $("deudas-inicio-valor").textContent = partes.join(" · ");
+    var vencidas = pend.filter(function (x) { return x.estado === "vencida"; });
+    var proximas = pend.filter(function (x) { return x.estado !== "vencida" && x.dias != null; }).sort(function (a, b) { return a.dias - b.dias; });
+    var nota = $("deudas-inicio-nota");
+    nota.className = "nota";
+    if (vencidas.length) {
+      nota.classList.add("estado-vencida");
+      nota.textContent = vencidas.length === 1 ? "⛔ " + vencidas[0].deuda.persona + ": se pasó la fecha de pago" : "⛔ " + vencidas.length + " deudas con la fecha de pago pasada";
+    } else if (proximas.length) {
+      var x = proximas[0];
+      nota.textContent = x.deuda.persona + ": " + (x.dias === 0 ? "vence hoy" : x.dias === 1 ? "vence mañana" : "vence en " + x.dias + " días");
+    } else nota.textContent = pend.length === 1 ? "1 deuda pendiente" : pend.length + " deudas pendientes";
+    t.classList.toggle("alerta", vencidas.length > 0);
+  }
+  $("tarjeta-deudas").addEventListener("click", function () { ir("planes"); });
   function pintarDeudas() {
     var r = resumenDeDeudas(), ul = $("lista-deudas"), caja = $("deudas-resumen");
+    pintarDeudasInicio(r);
     ul.replaceChildren();
     caja.hidden = !datos.deudas.length;
     caja.replaceChildren();
