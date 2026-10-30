@@ -94,9 +94,30 @@
 
   // Convierte "2 millones", "850.000" o "20k" en número usando el mismo intérprete.
   function leerValor(texto) {
+    // Números ya escritos con puntos de miles y coma decimal (10.000 · 1.500.000 · 2.500,50): se leen tal cual.
+    var t = String(texto).replace(/[$\s\u00a0]/g, "");
+    if (/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(t) || /^\d+(,\d{1,2})?$/.test(t)) return Number(t.replace(/\./g, "").replace(",", "."));
     var r = Parser.interpretar(texto);
     return r.ok ? r.monto : NaN;
   }
+  // En los campos de plata se van poniendo los puntos de miles mientras se escribe: 10000 → 10.000.
+  // Si la persona escribe letras ("500 mil", "1 millón") se deja tal cual.
+  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo";
+  function formatearMontoEscrito(campo) {
+    var v = campo.value;
+    if (/[^\d.,$\s\u00a0]/.test(v) || /\s$/.test(v)) return;   // letras o un espacio al final (va a escribir "mil"): no se toca
+    var pos = campo.selectionStart == null ? v.length : campo.selectionStart;
+    var antes = v.slice(0, pos).replace(/[^\d,]/g, "").length;      // cifras (y coma) que hay antes del cursor
+    var partes = v.replace(/[^\d,]/g, "").split(",");
+    var entero = partes[0].replace(/^0+(?=\d)/, ""), dec = partes.length > 1 ? partes.slice(1).join("").slice(0, 2) : null;
+    var f = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (dec !== null ? "," + dec : "");
+    if (f === v) return;
+    campo.value = f;
+    var n = 0, i = 0;
+    while (i < f.length && n < antes) { if (/[\d,]/.test(f.charAt(i))) n++; i++; }
+    try { campo.setSelectionRange(i, i); } catch (e) { /* algunos teclados no dejan mover el cursor */ }
+  }
+  document.addEventListener("input", function (e) { if (e.target && e.target.matches && e.target.matches(CAMPOS_PLATA)) formatearMontoEscrito(e.target); });
 
   function guardarLocal(clave, valor) { try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) { /* sin almacenamiento */ } }
   function leerLocal(clave, defecto) { try { var v = localStorage.getItem(clave); return v ? JSON.parse(v) : defecto; } catch (e) { return defecto; } }
