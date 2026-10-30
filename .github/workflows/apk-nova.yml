@@ -60,6 +60,13 @@ jobs:
           grep -q 'android:scheme="co.novafinanzas.app"' android/app/src/main/AndroidManifest.xml
           grep -q RECORD_AUDIO android/app/src/main/AndroidManifest.xml
           grep -q RecognitionService android/app/src/main/AndroidManifest.xml
+          # Widget de la pantalla de inicio: muestra el saldo y cuánto se puede gastar hoy
+          mkdir -p android/app/src/main/java/co/novafinanzas/app
+          cp recursos/java/SaldoWidget.java android/app/src/main/java/co/novafinanzas/app/SaldoWidget.java
+          sed -i 's#</application>#    <receiver android:name=".SaldoWidget" android:exported="true" android:label="NOVA saldo">\n            <intent-filter>\n                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />\n            </intent-filter>\n            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_saldo_info" />\n        </receiver>\n    </application>#' android/app/src/main/AndroidManifest.xml
+          grep -q 'android:name=".SaldoWidget"' android/app/src/main/AndroidManifest.xml
+          test -f android/app/src/main/res/xml/widget_saldo_info.xml
+          test -f android/app/src/main/res/layout/widget_saldo.xml
           # Número de versión: uno más en cada armado
           sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
           grep -E "versionCode|versionName" android/app/build.gradle
