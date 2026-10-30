@@ -104,13 +104,26 @@
     var n = Number(s);
     return n > 0 && isFinite(n) ? n : NaN;
   }
+  // Convierte entre dos monedas cualesquiera con una tabla de tasas con base en USD. null si falta alguna tasa.
+  function convertir(monto, de, a, tasas) {
+    if (!tasas) return null;
+    var x = Number(tasas[de]), y = Number(tasas[a]);
+    return x > 0 && y > 0 && isFinite(Number(monto)) ? (Number(monto) / x) * y : null;
+  }
+  // Número con puntos de miles y coma decimal: pocos decimales si es grande y más si es pequeño.
+  function formatoNumero(n) {
+    n = Number(n);
+    if (!isFinite(n)) return "";
+    var a = Math.abs(n), p = a.toFixed(a >= 100 ? 0 : a >= 1 ? 2 : a >= 0.01 ? 4 : 6).split("."), dec = (p[1] || "").replace(/0+$/, "");
+    return (n < 0 ? "-" : "") + p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (dec ? "," + dec : "");
+  }
   function formatoMonto(monto, codigo) {
     var n = Number(monto);
     try { return new Intl.NumberFormat("es-CO", { style: "currency", currency: codigo, maximumFractionDigits: Math.abs(n) >= 1000 ? 0 : 2 }).format(n); }
     catch (e) { return codigo + " " + n; }
   }
 
-  var api = { MONEDAS: MONEDAS, BASE: BASE, info: info, buscar: buscar, tasaACOP: tasaACOP, aCOP: aCOP, formatoTasa: formatoTasa, leerTasa: leerTasa, formatoMonto: formatoMonto };
+  var api = { MONEDAS: MONEDAS, BASE: BASE, info: info, buscar: buscar, tasaACOP: tasaACOP, aCOP: aCOP, formatoTasa: formatoTasa, leerTasa: leerTasa, formatoMonto: formatoMonto, convertir: convertir, formatoNumero: formatoNumero };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaMonedas = api;
 })(typeof window !== "undefined" ? window : this);

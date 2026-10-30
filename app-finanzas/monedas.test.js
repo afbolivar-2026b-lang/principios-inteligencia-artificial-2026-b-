@@ -63,3 +63,20 @@ test("leer tasas mientras se escriben (el punto es de miles)", () => {
   assert.strictEqual(M.leerTasa("3.9000"), 39000);
   assert.strictEqual(M.leerTasa("3900"), 3900);
 });
+
+test("convertir entre cualquier par de monedas", () => {
+  const tasas = { USD: 1, COP: 4000, EUR: 0.8, JPY: 160 };
+  assert.strictEqual(M.convertir(12, "USD", "COP", tasas), 48000);
+  assert.strictEqual(M.convertir(48000, "COP", "USD", tasas), 12);
+  assert.strictEqual(M.convertir(10, "EUR", "JPY", tasas), 2000);    // 10 EUR = 12,5 USD = 2.000 JPY
+  assert.strictEqual(M.convertir(5, "USD", "XXX", tasas), null);
+  assert.strictEqual(M.convertir(5, "USD", "COP", null), null);
+});
+
+test("formato de números con puntos y coma", () => {
+  assert.strictEqual(M.formatoNumero(48000), "48.000");
+  assert.strictEqual(M.formatoNumero(25.64), "25,64");
+  assert.strictEqual(M.formatoNumero(0.00025), "0,00025");
+  assert.strictEqual(M.formatoNumero(1234567.4), "1.234.567");
+  assert.strictEqual(M.formatoNumero(12.5), "12,5");
+});

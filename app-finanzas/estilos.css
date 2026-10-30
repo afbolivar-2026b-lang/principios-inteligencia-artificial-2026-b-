@@ -607,3 +607,11 @@ button.inf-ico { width: 44px; height: 44px; padding: 6px; border-radius: 12px; b
 /* Sin internet */
 .banner-red { position: sticky; top: 0; z-index: 30; margin: 0 0 8px; padding: 8px 12px; border-radius: 12px; font-size: .82rem; font-weight: 600; background: var(--accent-soft); color: var(--ink); border: 1px solid var(--accent); text-align: center; }
 .banner-red.sin { background: rgba(255, 193, 7, .16); border-color: #d9a400; }
+
+/* Tasas de cambio */
+.conv-fila { display: flex; gap: 8px; align-items: stretch; }
+.conv-fila input { flex: 1; min-width: 0; font-size: 1.25rem; font-weight: 700; }
+.conv-fila button { white-space: nowrap; }
+.fila-tasa { cursor: pointer; align-items: center; }
+.fila-tasa .tasa-valor { text-align: right; font-weight: 700; font-size: .85rem; white-space: nowrap; }
+.fila-tasa .tasa-valor small { display: block; color: var(--muted); font-weight: 500; }

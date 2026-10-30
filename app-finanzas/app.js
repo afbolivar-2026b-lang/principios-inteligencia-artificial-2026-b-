@@ -106,7 +106,7 @@
   }
   // En los campos de plata se van poniendo los puntos de miles mientras se escribe: 10000 → 10.000.
   // Si la persona escribe letras ("500 mil", "1 millón") se deja tal cual.
-  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo, #reg-orig, #reg-cop, .asis-monto, .meta-abono input";
+  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo, #reg-orig, #reg-cop, #conv-monto, #conv-resultado, .asis-monto, .meta-abono input";
   function formatearMontoEscrito(campo) {
     var v = campo.value;
     if (/[^\d.,$\s\u00a0]/.test(v) || /\s$/.test(v)) return;   // letras o un espacio al final (va a escribir "mil"): no se toca
@@ -2133,6 +2133,7 @@
     actualizarFab();
     if (vista === "buscar") pintarBuscar();
     if (vista === "ia") pintarIA();
+    if (vista === "ajustes-tasas") abrirTasas();
     window.scrollTo(0, 0);
   }
   // El botón + se esconde donde estorba: en pantallas de configuración y mientras se ve la entrada rápida del inicio.
@@ -2254,11 +2255,15 @@
       return t;
     }).catch(function () { return g && g.rates ? g : null; });
   }
-  function elegirMoneda() {
+  // La hoja de monedas (con buscador) la usan el registro y el convertidor: guarda cuál está elegida y qué hacer al elegir otra.
+  var eleccionMoneda = { actual: "COP", fn: null };
+  function abrirHojaMoneda(actual, fn) {
+    eleccionMoneda = { actual: actual, fn: fn };
     abrirCapa("hoja-moneda");
     $("hoja-moneda-buscar").value = "";
     pintarHojaMoneda();
   }
+  function elegirMoneda() { abrirHojaMoneda(reg.moneda, cambiarMoneda); }
   function pintarHojaMoneda() {
     var cont = $("hoja-moneda-lista");
     cont.replaceChildren();
@@ -2267,12 +2272,71 @@
     lista.forEach(function (m) {
       var b = el("button", "fila-moneda"); b.type = "button";
       var txt = el("span", "mov-texto"); txt.append(el("strong", null, m.codigo), el("small", null, m.nombre));
-      b.append(el("span", "bandera", m.bandera), txt, el("span", "marca", m.codigo === reg.moneda ? "✓" : ""));
-      b.addEventListener("click", function () { cerrarYLuego(function () { cambiarMoneda(m.codigo); }); });
+      b.append(el("span", "bandera", m.bandera), txt, el("span", "marca", m.codigo === eleccionMoneda.actual ? "✓" : ""));
+      b.addEventListener("click", function () { cerrarYLuego(function () { eleccionMoneda.fn(m.codigo); }); });
       cont.append(b);
     });
   }
   $("hoja-moneda-buscar").addEventListener("input", pintarHojaMoneda);
+
+  // ---------- Tasas de cambio: convertidor y lista de todas las monedas ----------
+  var conv = { de: "USD", a: "COP", tasas: null, fecha: "" };
+  function botonMoneda(btn, cod) { var mi = Mon.info(cod); btn.textContent = mi.bandera + " " + mi.codigo + " ▾"; }
+  // Los dos valores se pueden editar: lo que se escribe en uno calcula el otro.
+  function pintarConversor(origen) {
+    botonMoneda($("conv-de"), conv.de); botonMoneda($("conv-a"), conv.a);
+    var r = conv.tasas, nota = $("conv-nota");
+    if (!r) { nota.textContent = "Todavía no hay tasas guardadas. Conéctate a internet una vez para descargarlas."; return; }
+    var uno = Mon.convertir(1, conv.de, conv.a, r);
+    nota.textContent = uno != null ? "1 " + conv.de + " = " + Mon.formatoNumero(uno) + " " + conv.a : "No hay tasa para una de estas dos monedas.";
+    if (origen === "resultado") {
+      var v = leerDecimalCO($("conv-resultado").value), x = Mon.convertir(v, conv.a, conv.de, r);
+      if (document.activeElement !== $("conv-monto")) $("conv-monto").value = v > 0 && x != null ? Mon.formatoNumero(x) : "";
+    } else {
+      var m = leerDecimalCO($("conv-monto").value), y = Mon.convertir(m, conv.de, conv.a, r);
+      if (document.activeElement !== $("conv-resultado")) $("conv-resultado").value = m > 0 && y != null ? Mon.formatoNumero(y) : "";
+    }
+  }
+  function pintarListaTasas() {
+    var ul = $("lista-tasas"), r = conv.tasas;
+    ul.replaceChildren();
+    var lista = Mon.buscar($("tasas-buscar").value);
+    if (!lista.length) ul.append(el("li", "vacio", "No hay monedas con ese nombre."));
+    lista.forEach(function (m) {
+      var li = el("li", "fila-categoria fila-tasa"), txt = el("span", "mov-texto"), val = el("span", "tasa-valor");
+      li.tabIndex = 0; li.setAttribute("role", "button");
+      txt.append(el("strong", null, m.codigo), el("small", null, m.nombre));
+      var aCop = r ? Mon.convertir(1, m.codigo, "COP", r) : null, deUsd = r ? Mon.convertir(1, "USD", m.codigo, r) : null;
+      if (aCop != null) { val.append(document.createTextNode("1 " + m.codigo + " = $ " + Mon.formatoNumero(aCop)), el("small", null, "1 USD = " + Mon.formatoNumero(deUsd) + " " + m.codigo)); }
+      else val.append(document.createTextNode(r ? "Sin tasa" : "—"));
+      li.append(el("span", "bandera", m.bandera), txt, val);
+      function elegir() {
+        conv.de = m.codigo; if (conv.a === conv.de) conv.a = conv.de === "COP" ? "USD" : "COP";
+        if (!$("conv-monto").value) $("conv-monto").value = "1";
+        pintarConversor("monto"); window.scrollTo(0, 0);
+      }
+      li.addEventListener("click", elegir);
+      li.addEventListener("keydown", function (ev) { if (ev.key === "Enter") elegir(); });
+      ul.append(li);
+    });
+  }
+  function abrirTasas() {
+    pintarConversor("monto"); pintarListaTasas();
+    cargarTasas().then(function (t) {
+      conv.tasas = t ? t.rates : null; conv.fecha = t ? t.fecha : "";
+      $("tasas-fecha").textContent = t ? "Tasas de ExchangeRate-API" + (t.fecha ? " · " + t.fecha.slice(5, 16) : "") + ". Se actualizan una vez al día y, sin internet, se usan las últimas guardadas." : "No pude descargar las tasas. Sin internet no hay tasas guardadas todavía.";
+      pintarConversor("monto"); pintarListaTasas();
+    });
+  }
+  $("conv-monto").addEventListener("input", function () { pintarConversor("monto"); });
+  $("conv-resultado").addEventListener("input", function () { pintarConversor("resultado"); });
+  $("conv-de").addEventListener("click", function () { abrirHojaMoneda(conv.de, function (c) { conv.de = c; pintarConversor("monto"); }); });
+  $("conv-a").addEventListener("click", function () { abrirHojaMoneda(conv.a, function (c) { conv.a = c; pintarConversor("monto"); }); });
+  $("conv-cambiar").addEventListener("click", function () {
+    var t = conv.de; conv.de = conv.a; conv.a = t;
+    $("conv-monto").value = $("conv-resultado").value; pintarConversor("monto");
+  });
+  $("tasas-buscar").addEventListener("input", pintarListaTasas);
   $("reg-moneda").addEventListener("click", elegirMoneda);
   function cambiarMoneda(codigo) {
     reg.moneda = codigo;

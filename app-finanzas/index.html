@@ -478,6 +478,7 @@
 
       <h2 class="grupo-ajustes">Datos</h2>
       <div class="menu">
+        <button type="button" data-ir="ajustes-tasas"><span class="menu-icono">💱</span><span><strong>Tasas de cambio</strong><small>Convertidor y las 162 monedas del mundo, con buscador</small></span></button>
         <button type="button" data-ir="ajustes-exportar"><span class="menu-icono">⬇</span><span><strong>Exportar datos</strong><small>Informe PDF, Excel con dashboard, CSV y respaldo</small></span></button>
       </div>
 
@@ -590,6 +591,24 @@
         <button type="submit" class="primario">Agregar cuenta</button>
         <p class="mensaje" id="cuenta-mensaje" role="status"></p>
       </form>
+    </section>
+
+    <!-- Tasas de cambio: convertidor y todas las monedas -->
+    <section class="vista" data-vista="ajustes-tasas" hidden>
+      <div class="sub-cabecera"><button type="button" class="icono-btn" data-ir="ajustes" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Tasas de cambio</h1></div>
+      <article class="tarjeta formulario conversor">
+        <strong>Convertidor</strong>
+        <label for="conv-monto">Tengo</label>
+        <div class="conv-fila"><input id="conv-monto" inputmode="decimal" placeholder="0" autocomplete="off"><button type="button" id="conv-de" class="chip-opcion"></button></div>
+        <button type="button" id="conv-cambiar" class="chip-opcion" aria-label="Cambiar de lugar las dos monedas">⇅ Cambiar de lugar</button>
+        <label for="conv-resultado">Equivale a</label>
+        <div class="conv-fila"><input id="conv-resultado" inputmode="decimal" placeholder="0" autocomplete="off"><button type="button" id="conv-a" class="chip-opcion"></button></div>
+        <span id="conv-nota" class="nota"></span>
+      </article>
+      <div class="seccion-cabecera"><h2>Todas las monedas</h2></div>
+      <input id="tasas-buscar" type="search" placeholder="Buscar moneda (nombre o código)" autocomplete="off">
+      <ul id="lista-tasas" class="lista-simple"></ul>
+      <p id="tasas-fecha" class="nota"></p>
     </section>
 
     <!-- Configuración: exportar -->
