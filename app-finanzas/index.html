@@ -184,6 +184,11 @@
         <span id="racha-nota" class="nota"></span>
       </article>
 
+      <article id="tarjeta-pago" class="tarjeta seguro" hidden>
+        <span class="etiqueta">💵 Tu próximo pago</span>
+        <strong id="pago-valor"></strong>
+        <span id="pago-nota" class="nota"></span>
+      </article>
       <article id="tarjeta-semana" class="tarjeta seguro" hidden>
         <span class="etiqueta">🗓 Tu semana</span>
         <strong id="semana-valor"></strong>
@@ -541,9 +546,19 @@
           <button type="button" role="radio" data-letra="grande">Grande</button>
         </div>
       </article>
+      <h2 class="grupo-ajustes">Tu plata</h2>
+      <article class="tarjeta formulario">
+        <label for="dia-pago">¿Qué día del mes te pagan? (opcional)</label>
+        <input id="dia-pago" type="number" inputmode="numeric" min="1" max="31" placeholder="Por ejemplo 30">
+        <p class="nota">Con eso te digo cuántos días faltan y cuánto puedes gastar por día hasta tu próximo pago.</p>
+      </article>
+      <div class="menu">
+        <label class="menu-fila"><span class="menu-icono">🪙</span><span><strong>Redondeo ahorrador</strong><small>Cada gasto se redondea a mil y lo que sobra se aparta en una alcancía virtual</small></span><input type="checkbox" id="redondeo-activo" class="interruptor"></label>
+      </div>
       <h2 class="grupo-ajustes">Recordatorios (app Android)</h2>
       <div class="menu">
         <label class="menu-fila"><span class="menu-icono">🌙</span><span><strong>Anotar mis gastos de hoy</strong><small>Un aviso cada noche a las 8 p. m.</small></span><input type="checkbox" id="rec-noche" class="interruptor"></label>
+        <label class="menu-fila"><span class="menu-icono">🎁</span><span><strong>Prima y aguinaldo</strong><small>Un aviso en junio y diciembre para apartar plata</small></span><input type="checkbox" id="rec-prima" class="interruptor"></label>
         <label class="menu-fila"><span class="menu-icono">🔔</span><span><strong>Antes de un pago programado</strong><small>Un aviso el día anterior</small></span><input type="checkbox" id="rec-programados" class="interruptor"></label>
       </div>
       <a id="perfil-apk" class="boton-apk" href="descargas/NOVA.apk" hidden>

@@ -144,3 +144,32 @@ test("importar CSV", () => {
   assert.deepStrictEqual(sinTipo.filas.map((x) => x.tipo), ["gasto", "ingreso"]);
   assert.ok(C.importarCSV("a,b\n1,2").errores[0].includes("columnas"));
 });
+
+test("pagos fijos del mes y pronóstico", () => {
+  const ahora = new Date(2026, 9, 20);
+  const f = (m, d, monto, desc, tipo) => ({ tipo: tipo || "gasto", fecha: new Date(2026, m, d, 10).toISOString(), monto, descripcion: desc });
+  const todos = [f(7, 5, 26900, "Netflix"), f(8, 5, 26900, "Netflix"), f(9, 5, 26900, "Netflix"), f(6, 6, 50000, "Internet"), f(7, 6, 50000, "Internet"), f(8, 6, 50000, "Internet"), f(7, 1, 3000000, "Sueldo", "ingreso"), f(8, 1, 3000000, "Sueldo", "ingreso")];
+  const p = C.pagosFijosMes(todos, ahora);
+  assert.strictEqual(p.lista.length, 2);
+  assert.strictEqual(p.pagados, 1);
+  assert.strictEqual(p.faltan, 50000);
+  const pr = C.pronosticoMes(todos, ahora);
+  assert.ok(pr.mes.startsWith("noviembre")); assert.strictEqual(pr.ingresos, 3000000); assert.strictEqual(pr.gastos, 67933); assert.strictEqual(pr.basadoEn, 3);
+  assert.strictEqual(C.pronosticoMes([f(9, 1, 100)], ahora), null);
+});
+
+test("tu año, bola de nieve, día de pago, redondeo y categoría sugerida", () => {
+  const f = (m, d, monto, cat, tipo) => ({ tipo: tipo || "gasto", fecha: new Date(2026, m, d, 10).toISOString(), monto, categoria_id: cat, descripcion: "x" + monto });
+  const y = C.tuAnio([f(0, 1, 100, 1), f(0, 2, 300, 2), f(1, 1, 1000, 1, "ingreso"), f(1, 3, 50, 1)], 2026);
+  assert.strictEqual(y.gastos, 450); assert.strictEqual(y.top[0].categoria_id, 2); assert.strictEqual(y.diasRegistrados, 4); assert.strictEqual(C.tuAnio([], 2026), null);
+  assert.deepStrictEqual(C.bolaDeNieve([{ persona: "A", falta: 500 }, { persona: "B", falta: 100 }, { persona: "C", falta: 0 }]), [{ orden: 1, persona: "B", falta: 100 }, { orden: 2, persona: "A", falta: 500 }]);
+  const d = C.diasParaPago(30, new Date(2026, 9, 20), 100000);
+  assert.strictEqual(d.dias, 10); assert.strictEqual(d.porDia, 10000);
+  assert.strictEqual(C.diasParaPago(15, new Date(2026, 9, 20), 0).dias, 26);
+  assert.strictEqual(C.diasParaPago(31, new Date(2026, 1, 10), 0).fecha.getDate(), 28);
+  assert.strictEqual(C.diasParaPago(0, new Date(), 0), null);
+  assert.strictEqual(C.redondeo(8500), 500); assert.strictEqual(C.redondeo(9000), 0); assert.strictEqual(C.redondeo(0), 0);
+  const hist = [{ tipo: "gasto", descripcion: "Tinto", categoria_id: 7 }, { tipo: "gasto", descripcion: "tinto", categoria_id: 7 }, { tipo: "gasto", descripcion: "Tinto", categoria_id: 8 }];
+  assert.strictEqual(C.sugerirCategoria("TINTO", "gasto", hist), 7);
+  assert.strictEqual(C.sugerirCategoria("bus", "gasto", hist), null);
+});

@@ -311,3 +311,9 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - **Importar desde CSV**, **sacudir para ocultar valores**, **tutorial de bienvenida** y **autocompletar** la descripción.
 - Análisis: **suscripciones y pagos fijos**, **inflación personal**, **comparar dos meses** y **costo de un evento**; botón de **fondo de emergencia** en Salud financiera.
 - Deudas: «Recordarle por WhatsApp» cuando te deben.
+
+## Novedades: pagos fijos, pronóstico, tu año, plan de deudas, día de pago y alcancía
+
+- Análisis: **pagos fijos del mes**, **pronóstico del próximo mes**, **tu año en NOVA** (con botón de compartir), **plan para pagar tus deudas** (bola de nieve) y **alcancía de redondeo**.
+- Inicio: **tu próximo pago** (Configuración → «Tu plata» → día de pago).
+- Al escribir la descripción se **sugiere la categoría** que ya usaste con ella. Aviso opcional de **prima y aguinaldo**.

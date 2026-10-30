@@ -390,10 +390,80 @@
     return { filas: filas, errores: errores };
   }
 
+  // ---------- Pagos fijos, pronóstico, tu año, deudas, día de pago y redondeo ----------
+  // Pagos fijos detectados y si ya se pagaron este mes.
+  function pagosFijosMes(todos, ahora) {
+    ahora = new Date(ahora || new Date());
+    var mes = mesDe(ahora), s = suscripciones(todos, ahora).lista.filter(function (x) { return x.ultimoMes >= mes - 1; });
+    var hechos = {};
+    gastos(todos).forEach(function (m) { if (mesDe(m.fecha) === mes) hechos[String(m.descripcion || "").trim().toLowerCase()] = true; });
+    var lista = s.map(function (x) { return { nombre: x.nombre, monto: x.monto, pagado: !!hechos[x.nombre.toLowerCase()] }; });
+    return { lista: lista, pagados: lista.filter(function (x) { return x.pagado; }).length, faltan: lista.filter(function (x) { return !x.pagado; }).reduce(function (s2, x) { return s2 + x.monto; }, 0) };
+  }
+
+  // Pronóstico del próximo mes con el promedio de los últimos meses.
+  function pronosticoMes(todos, ahora) {
+    ahora = new Date(ahora || new Date());
+    var actual = mesDe(ahora), ing = {}, gas = {};
+    todos.forEach(function (m) { var k = mesDe(m.fecha); if (k >= actual || k < actual - 3) return; if (m.tipo === "ingreso") ing[k] = (ing[k] || 0) + num(m.monto); else gas[k] = (gas[k] || 0) + num(m.monto); });
+    var prom = function (o) { var v = Object.keys(o).map(function (k) { return o[k]; }); return v.length ? v.reduce(function (s, x) { return s + x; }, 0) / v.length : 0; };
+    var meses = Object.keys(gas).length;
+    if (!meses) return null;
+    var g = Math.round(prom(gas)), i = Math.round(prom(ing)), sig = actual + 1;
+    return { mes: nombreMes(sig), gastos: g, ingresos: i, resultado: i - g, basadoEn: meses };
+  }
+
+  // Tu año en NOVA.
+  function tuAnio(todos, anio) {
+    var l = todos.filter(function (m) { return new Date(m.fecha).getFullYear() === anio; });
+    if (!l.length) return null;
+    var g = gastos(l), porCat = {}, dias = {};
+    g.forEach(function (m) { porCat[m.categoria_id] = (porCat[m.categoria_id] || 0) + num(m.monto); });
+    l.forEach(function (m) { dias[clave(m.fecha)] = true; });
+    var top = Object.keys(porCat).sort(function (a, b) { return porCat[b] - porCat[a]; }).slice(0, 3).map(function (k) { return { categoria_id: Number(k), total: porCat[k] }; });
+    var mp = mejorPeorMes(l);
+    return { movimientos: l.length, gastos: suma(g), ingresos: suma(l.filter(function (m) { return m.tipo === "ingreso"; })), top: top, diasRegistrados: Object.keys(dias).length, mejorMes: mp ? mp.mejor.mes : null, mayor: g.slice().sort(function (a, b) { return num(b.monto) - num(a.monto); })[0] || null };
+  }
+
+  // Orden para pagar varias deudas: primero la más pequeña (bola de nieve).
+  function bolaDeNieve(deudas) {
+    var l = deudas.filter(function (d) { return d.falta > 0; }).sort(function (a, b) { return a.falta - b.falta; });
+    return l.map(function (d, i) { return { orden: i + 1, persona: d.persona, falta: d.falta }; });
+  }
+
+  // Días que faltan para el próximo pago (día del mes) y cuánto puedes gastar por día hasta entonces.
+  function diasParaPago(diaPago, ahora, saldo) {
+    var hoy = dia(ahora || new Date()), d = Math.min(31, Math.max(1, Math.round(num(diaPago))));
+    if (!diaPago) return null;
+    var ultimo = function (y, m) { return new Date(y, m + 1, 0).getDate(); };
+    var f = new Date(hoy.getFullYear(), hoy.getMonth(), Math.min(d, ultimo(hoy.getFullYear(), hoy.getMonth())));
+    if (f <= hoy) f = new Date(hoy.getFullYear(), hoy.getMonth() + 1, Math.min(d, ultimo(hoy.getFullYear(), hoy.getMonth() + 1)));
+    var dias = Math.round((f - hoy) / 86400000);
+    return { dias: dias, fecha: f, porDia: saldo > 0 && dias > 0 ? Math.floor(saldo / dias) : 0 };
+  }
+
+  // Lo que sobra al redondear un gasto hacia arriba (a miles).
+  function redondeo(monto, paso) {
+    var m = num(monto), p = paso || 1000;
+    if (!(m > 0)) return 0;
+    return (Math.ceil(m / p) * p) - m;
+  }
+
+  // Categoría más usada con la misma descripción (al menos 2 veces).
+  function sugerirCategoria(descripcion, tipo, todos) {
+    var k = String(descripcion || "").trim().toLowerCase();
+    if (k.length < 3) return null;
+    var cuenta = {};
+    todos.forEach(function (m) { if (m.tipo === tipo && String(m.descripcion || "").trim().toLowerCase() === k && m.categoria_id != null) cuenta[m.categoria_id] = (cuenta[m.categoria_id] || 0) + 1; });
+    var ids = Object.keys(cuenta).sort(function (a, b) { return cuenta[b] - cuenta[a]; });
+    return ids.length && cuenta[ids[0]] >= 2 ? Number(ids[0]) : null;
+  }
+
   var api = { consejos: consejos, gastoInusual: gastoInusual, semana: semana, logros: logros, cuotaCredito: cuotaCredito, ahorroFuturo: ahorroFuturo, regla503020: regla503020, calendario: calendario, plata: plata,
     gastoMensualPromedio: gastoMensualPromedio, mejorPeorMes: mejorPeorMes, salud: salud, iva: iva, dividirCuenta: dividirCuenta, costoHabito: costoHabito,
     contadoVsCuotas: contadoVsCuotas, cdt: cdt, primaCesantias: primaCesantias, salirDeDeuda: salirDeDeuda, reto52: reto52,
-    suscripciones: suscripciones, inflacionPersonal: inflacionPersonal, mesesConDatos: mesesConDatos, compararMeses: compararMeses, costoEvento: costoEvento, etiquetasUsadas: etiquetasUsadas, importarCSV: importarCSV };
+    suscripciones: suscripciones, inflacionPersonal: inflacionPersonal, mesesConDatos: mesesConDatos, compararMeses: compararMeses, costoEvento: costoEvento, etiquetasUsadas: etiquetasUsadas, importarCSV: importarCSV,
+    pagosFijosMes: pagosFijosMes, pronosticoMes: pronosticoMes, tuAnio: tuAnio, bolaDeNieve: bolaDeNieve, diasParaPago: diasParaPago, redondeo: redondeo, sugerirCategoria: sugerirCategoria };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaConsejos = api;
 })(typeof window !== "undefined" ? window : this);

@@ -605,7 +605,7 @@
     $("tarjeta-deficit").hidden = t.neto >= 0;
     $("deficit-valor").textContent = ocultos ? "$ ••••" : "−" + pesos.format(Math.abs(t.neto));
 
-    pintarSeguro(); pintarPresupuesto(); pintarFrecuentes(); pintarMiniTarjetas(); pintarProyeccionYRacha(movs, rango); pintarSemanaYSaludo(); pintarSugerencias();
+    pintarSeguro(); pintarPresupuesto(); pintarFrecuentes(); pintarMiniTarjetas(); pintarProyeccionYRacha(movs, rango); pintarSemanaYSaludo(); pintarSugerencias(); pintarProximoPago();
     listaPorDia($("lista-inicio"), movs, desfaseInicio === 0 ? "Aún no hay movimientos en este periodo. Toca + para agregar el primero." : "No hubo movimientos en este periodo.", 60);
   }
   document.querySelectorAll("[data-periodo-inicio]").forEach(function (b) {
@@ -915,7 +915,12 @@
     { id: "suscripciones", nombre: "Suscripciones y pagos fijos" },
     { id: "inflacion", nombre: "Tu inflación personal" },
     { id: "comparar", nombre: "Comparar dos meses" },
-    { id: "evento", nombre: "Costo de un evento" }
+    { id: "evento", nombre: "Costo de un evento" },
+    { id: "fijos", nombre: "Pagos fijos del mes" },
+    { id: "pronostico", nombre: "Pronóstico del próximo mes" },
+    { id: "anio", nombre: "Tu año en NOVA" },
+    { id: "bola", nombre: "Plan para pagar tus deudas" },
+    { id: "alcancia", nombre: "Alcancía de redondeo" }
   ];
   function configWidgets() {
     var guardado = leerLocal("nova-widgets", null) || [];
@@ -944,7 +949,7 @@
       if (!w.visible) return;
       var art = el("article", "tarjeta widget");
       art.dataset.widget = w.id;
-      ({ rapida: wRapida, categorias: wCategorias, etiquetas: wEtiquetas, "ingresos-gastos": wIngresosGastos, tendencia: wTendencia, proyeccion: wProyeccion, consejos: wConsejos, calendario: wCalendario, logros: wLogros, herramientas: wHerramientas, salud: wSalud, calculadoras2: wMasCalculadoras, reto: wReto, suscripciones: wSuscripciones, inflacion: wInflacion, comparar: wComparar, evento: wEvento })[w.id](art, movs, ciclo, ref, rango);
+      ({ rapida: wRapida, categorias: wCategorias, etiquetas: wEtiquetas, "ingresos-gastos": wIngresosGastos, tendencia: wTendencia, proyeccion: wProyeccion, consejos: wConsejos, calendario: wCalendario, logros: wLogros, herramientas: wHerramientas, salud: wSalud, calculadoras2: wMasCalculadoras, reto: wReto, suscripciones: wSuscripciones, inflacion: wInflacion, comparar: wComparar, evento: wEvento, fijos: wFijos, pronostico: wPronostico, anio: wAnio, bola: wBola, alcancia: wAlcancia })[w.id](art, movs, ciclo, ref, rango);
       cont.append(art);
     });
   }
@@ -1076,6 +1081,82 @@
         el("p", "nota", ocultos ? "" : "Del " + fechaCorta.format(r.desde) + " al " + fechaCorta.format(r.hasta) + ". El más grande: «" + r.mayor.descripcion + "» por " + dinero(num(r.mayor.monto)) + "."));
     }
     sel.addEventListener("change", pintarEv); pintarEv();
+  }
+
+  function wFijos(art) {
+    titulo(art, "Pagos fijos del mes");
+    var r = NovaConsejos.pagosFijosMes(datos.movimientos);
+    if (!r.lista.length) return art.append(el("p", "nota", "Cuando tengas pagos que se repiten cada mes (arriendo, internet, plataformas), aquí ves cuáles ya pagaste este mes."));
+    art.append(el("p", "calc-res", r.pagados + " de " + r.lista.length + " pagados" + (r.faltan > 0 && !ocultos ? " · faltan " + dinero(r.faltan) : "")));
+    var ul = el("ul", "lista-simple");
+    r.lista.forEach(function (x) { var li = el("li", "consejo"); li.append(el("span", "consejo-icono", x.pagado ? "✅" : "⏳")); var d = el("div"); d.append(el("strong", null, x.nombre), el("small", null, ocultos ? "••••" : dinero(x.monto) + (x.pagado ? " · ya lo pagaste" : " · pendiente"))); li.append(d); ul.append(li); });
+    art.append(ul);
+  }
+  function wPronostico(art) {
+    titulo(art, "Pronóstico del próximo mes");
+    var r = NovaConsejos.pronosticoMes(datos.movimientos);
+    if (!r) return art.append(el("p", "nota", "Necesito movimientos de algún mes anterior para calcular el pronóstico."));
+    art.append(el("p", "calc-res", ocultos ? "••••" : "En " + r.mes + " gastarías cerca de " + dinero(r.gastos) + "."));
+    art.append(el("p", "nota", ocultos ? "" : (r.ingresos > 0 ? "Con ingresos de " + dinero(r.ingresos) + " te " + (r.resultado >= 0 ? "sobrarían " : "faltarían ") + dinero(Math.abs(r.resultado)) + ". " : "") + "Se calcula con el promedio de tus últimos " + r.basadoEn + (r.basadoEn === 1 ? " mes." : " meses.")));
+  }
+  function wAnio(art) {
+    var anio = new Date().getFullYear();
+    titulo(art, "Tu año en NOVA " + anio);
+    var r = NovaConsejos.tuAnio(datos.movimientos, anio);
+    if (!r) return art.append(el("p", "nota", "Cuando tengas movimientos este año, aquí ves tu resumen."));
+    var ul = el("ul", "lista-simple");
+    function fila(i, t, x) { var li = el("li", "consejo"); li.append(el("span", "consejo-icono", i)); var d = el("div"); d.append(el("strong", null, t), el("small", null, ocultos ? "••••" : x)); li.append(d); ul.append(li); }
+    fila("🧾", "Movimientos anotados", r.movimientos + " en " + r.diasRegistrados + " días distintos");
+    fila("💸", "Gastaste", dinero(r.gastos)); fila("💰", "Ingresaste", dinero(r.ingresos));
+    if (r.top.length) fila("🥇", "Lo que más pesó", r.top.map(function (t) { return nombreCategoria(t.categoria_id) + " (" + dinero(t.total) + ")"; }).join(" · "));
+    if (r.mejorMes) fila("🌟", "Tu mejor mes", r.mejorMes);
+    if (r.mayor) fila("🏆", "Tu mayor gasto", "«" + r.mayor.descripcion + "» por " + dinero(num(r.mayor.monto)));
+    art.append(ul);
+    var b = el("button", "mini", "📤 Compartir mi año"); b.type = "button";
+    b.addEventListener("click", function () { compartirTexto("Mi año en NOVA", "Mi año en NOVA " + anio + ": anoté " + r.movimientos + " movimientos, gasté " + pesos.format(r.gastos) + " e ingresé " + pesos.format(r.ingresos) + (r.mejorMes ? ". Mi mejor mes: " + r.mejorMes : "") + ". — NOVA · OPITA-DIGITAL"); });
+    art.append(b);
+  }
+  function wBola(art) {
+    titulo(art, "Plan para pagar tus deudas");
+    var pend = resumenDeDeudas().lista.filter(function (x) { return x.deuda.tipo === "debo" && x.falta > 0; }).map(function (x) { return { persona: x.deuda.persona, falta: x.falta }; });
+    if (!pend.length) return art.append(el("p", "nota", "No tienes deudas pendientes. ¡Bien!"));
+    art.append(el("p", "nota", "Método bola de nieve: paga el mínimo en todas y todo lo que te sobre a la más pequeña. Al cerrarla, sigues con la siguiente y ganas ánimo."));
+    var ul = el("ul", "lista-simple");
+    NovaConsejos.bolaDeNieve(pend).forEach(function (x) { var li = el("li", "consejo"); li.append(el("span", "consejo-icono", String(x.orden) + "️⃣")); var d = el("div"); d.append(el("strong", null, x.persona), el("small", null, ocultos ? "••••" : "Faltan " + dinero(x.falta))); li.append(d); ul.append(li); });
+    art.append(ul);
+  }
+
+  // Alcancía de redondeo: lo que sobra al redondear cada gasto a mil (apartado virtual; se pasa a una meta cuando quieras).
+  function claveAlcancia() { return "nova-alcancia:" + ((fuente && fuente.email) || "demo"); }
+  function sumarAlcancia(monto) { if (!leerLocal("nova-redondeo", false)) return 0; var r = NovaConsejos.redondeo(monto); if (r > 0) guardarLocal(claveAlcancia(), leerLocal(claveAlcancia(), 0) + r); return r; }
+  function wAlcancia(art) {
+    titulo(art, "Alcancía de redondeo");
+    var total = leerLocal(claveAlcancia(), 0);
+    if (!leerLocal("nova-redondeo", false) && !total) return art.append(el("p", "nota", "Actívala en Configuración → «Tu plata»: cada gasto se redondea a mil y lo que sobra se aparta aquí."));
+    art.append(el("p", "calc-res", ocultos ? "••••" : "Llevas " + dinero(total) + " apartados."));
+    if (!(total > 0) || !datos.metas.length) return art.append(el("p", "nota", datos.metas.length ? "Registra gastos y esto se irá llenando." : "Crea una meta de ahorro para poder pasarle lo que apartes."));
+    var sel = el("select"); datos.metas.forEach(function (m) { var o = el("option", null, m.nombre); o.value = m.id; sel.append(o); });
+    var b = el("button", "mini", "Pasar a la meta"); b.type = "button";
+    b.addEventListener("click", function () {
+      var m = datos.metas.find(function (x) { return String(x.id) === sel.value; }); if (!m) return;
+      b.disabled = true;
+      fuente.actualizar("metas", m.id, { ahorrado: num(m.ahorrado) + total }).then(function (n) { Object.assign(m, n); guardarLocal(claveAlcancia(), 0); toast("¡Pasado a la meta!", m.nombre, pesos.format(total)); pintar(); })
+        .catch(function (err) { b.disabled = false; toast("No se pudo pasar: " + err.message); });
+    });
+    art.append(sel, b);
+  }
+  $("redondeo-activo").checked = !!leerLocal("nova-redondeo", false);
+  $("redondeo-activo").addEventListener("change", function (e) { guardarLocal("nova-redondeo", e.target.checked); toast(e.target.checked ? "Redondeo ahorrador activado" : "Redondeo ahorrador apagado"); });
+
+  // Día de pago: cuántos días faltan y cuánto puedes gastar por día.
+  $("dia-pago").value = leerLocal("nova-dia-pago", "") || "";
+  $("dia-pago").addEventListener("change", function (e) { var v = parseInt(e.target.value, 10); guardarLocal("nova-dia-pago", v >= 1 && v <= 31 ? v : ""); if (fuente) pintar(); });
+  function pintarProximoPago() {
+    var r = NovaConsejos.diasParaPago(leerLocal("nova-dia-pago", ""), new Date(), saldoTotal());
+    $("tarjeta-pago").hidden = !r;
+    if (!r) return;
+    $("pago-valor").textContent = r.dias === 1 ? "Mañana" : "Faltan " + r.dias + " días";
+    $("pago-nota").textContent = ocultos ? "" : (r.porDia > 0 ? "Con tu saldo de " + dinero(saldoTotal()) + " puedes gastar hasta " + dinero(r.porDia) + " por día hasta entonces." : "Ojo: tu saldo no alcanza para llegar sin gastar de más.");
   }
 
   function wSalud(art, movs) {
@@ -2442,6 +2523,13 @@
         if (d > ahora) lista.push({ id: 700000001 + k, titulo: "¿Ya anotaste tus gastos de hoy?", texto: "Tómate un minuto para registrar lo de hoy en NOVA.", cuando: d });
       }
     }
+    if (leerLocal("nova-rec-prima", false)) {
+      [[5, 15, "prima de mitad de año"], [11, 10, "prima y aguinaldo de diciembre"]].forEach(function (x, i) {
+        var d = new Date(ahora.getFullYear(), x[0], x[1], 9, 0, 0, 0);
+        if (d <= ahora) d = new Date(ahora.getFullYear() + 1, x[0], x[1], 9, 0, 0, 0);
+        lista.push({ id: 700000100 + i, titulo: "🎁 Se acerca la " + x[2], texto: "Aparta una parte para tus metas y tus deudas antes de gastarla.", cuando: d });
+      });
+    }
     if (leerLocal("nova-rec-programados", false)) {
       datos.programados.filter(function (p) { return p.activo !== false && p.proxima; }).forEach(function (p) {
         var f = parteFechaLocal(p.proxima); f.setDate(f.getDate() - 1); f.setHours(9, 0, 0, 0);
@@ -2452,6 +2540,8 @@
   }
   $("rec-noche").checked = !!leerLocal("nova-rec-noche", false);
   $("rec-programados").checked = !!leerLocal("nova-rec-programados", false);
+  $("rec-prima").checked = !!leerLocal("nova-rec-prima", false);
+  $("rec-prima").addEventListener("change", function (e) { guardarLocal("nova-rec-prima", e.target.checked); programarAvisos(); toast(e.target.checked ? "Aviso de prima y aguinaldo activado" : "Aviso de prima y aguinaldo apagado"); });
   $("rec-noche").addEventListener("change", function (e) { guardarLocal("nova-rec-noche", e.target.checked); programarAvisos(); toast(e.target.checked ? "Recordatorio nocturno activado" : "Recordatorio nocturno apagado"); });
   $("rec-programados").addEventListener("change", function (e) { guardarLocal("nova-rec-programados", e.target.checked); programarAvisos(); toast(e.target.checked ? "Avisos de pagos programados activados" : "Avisos de pagos programados apagados"); });
 
@@ -3083,9 +3173,15 @@
     var b = t && document.querySelector('[data-tecla="' + t + '"]');
     if (b) { e.preventDefault(); b.click(); }
   });
+  $("reg-desc").addEventListener("input", function () {
+    if (!reg || reg.editar || (reg.categoriaId != null && !reg.catAuto)) return;
+    var id = NovaConsejos.sugerirCategoria($("reg-desc").value, reg.tipo, datos.movimientos);
+    if (id != null && categoria(id)) { reg.categoriaId = id; reg.catAuto = true; pintarRegistro(); }
+    else if (reg.catAuto) { reg.categoriaId = null; reg.catAuto = false; pintarRegistro(); }
+  });
   ["reg-desc", "reg-etiqueta", "reg-nota"].forEach(function (id) { $(id).addEventListener("focus", function () { $("teclado").hidden = true; }); });
   $("reg-categoria").addEventListener("click", function () {
-    elegirCategoria(reg.tipo, function (c) { if (c) { reg.categoriaId = c.id; if (c.tipo !== reg.tipo) reg.tipo = c.tipo; } pintarRegistro(); });
+    elegirCategoria(reg.tipo, function (c) { if (c) { reg.catAuto = false; reg.categoriaId = c.id; if (c.tipo !== reg.tipo) reg.tipo = c.tipo; } pintarRegistro(); });
   });
   function agregarEtiquetaEscrita() {
     var t = limpiarEtiqueta($("reg-etiqueta").value);
@@ -3154,6 +3250,7 @@
       });
     }).then(function (r) {
       ordenarMovimientos();
+      if (!editar && r.m && r.m.tipo === "gasto") sumarAlcancia(num(r.m.monto));
       if (docId) renovarDocumentoListo(docId);
       var etiquetaDesc = r.m ? r.m.descripcion : r.programado.descripcion;
       toast(editar ? "¡Cambios guardados!" : "¡Guardado!", etiquetaDesc + (ext ? " · " + Mon.formatoMonto(montoOriginal, reg.moneda) : "") + (r.m && r.m.viajes ? " · " + r.m.viajes + (r.m.viajes === 1 ? " viaje" : " viajes") : "") + (r.programado ? " · 🔁 " + A.FRECUENCIAS[r.programado.frecuencia].toLowerCase() : ""), pesos.format(monto));
