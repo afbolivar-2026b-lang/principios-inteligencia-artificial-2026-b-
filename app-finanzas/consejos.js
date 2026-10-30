@@ -555,13 +555,39 @@
     return { total: total, objetivo: obj, falta: Math.max(0, obj - total), pct: obj > 0 ? Math.min(100, Math.round((total / obj) * 100)) : 0, porPersona: por, cumplida: obj > 0 && total >= obj };
   }
 
+  // ---------- Mensajes de bancos ----------
+  // Convierte un mensaje de texto de un banco o billetera (Bancolombia, Nequi, Davivienda…) en una frase simple
+  // ("gasté 45000 en Rappi") que el intérprete de NOVA ya sabe leer. Devuelve null si no parece un mensaje de banco.
+  function mensajeBancoATexto(texto) {
+    var t = String(texto || "").replace(/\s+/g, " ").trim();
+    if (t.length < 15) return null;
+    var sin = t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    var monto = t.match(/\$\s?([\d]{1,3}(?:[.,]\d{3})+|\d+)(?:[.,]\d{1,2})?/);
+    if (!monto) return null;
+    var banco = /bancolombia|nequi|davivienda|daviplata|bbva|banco de bogota|av villas|scotiabank|colpatria|nu |lulo|movii|bre-b|pse|tarjeta|t\.deb|t\.cre|cta|cuenta/.test(sin);
+    var ingreso = /(recibiste|te llego|te llegaron|te enviaron|te consignaron|te transfirieron|abono|deposito|consignacion recibida|recargaste con exito|te pagaron)/.test(sin);
+    var gasto = /(compra|pagaste|pago |retiro|transferiste|enviaste|debito|cargo|avance|transaccion|compraste)/.test(sin);
+    if (!banco || !(ingreso || gasto)) return null;
+    var valor = Number(monto[1].replace(/[.,]/g, ""));
+    if (!(valor > 0)) return null;
+    var comercio = "";
+    var L = "[\\p{L}\\d]", FIN = "(?=\\s+(?:el|a las|con|desde|tarjeta|t\\.|cta|saldo)(?![\\p{L}\\d])|[.,;:]|$)";
+    var NOM = "(" + L + "[\\p{L}\\d .&'\\-]{1,30}?)";
+    var m = t.match(new RegExp("(?<![\\p{L}\\d])en\\s+" + NOM + FIN, "iu"))
+      || t.match(new RegExp("(?<![\\p{L}\\d])a\\s+(?:la cuenta de |nombre de )?(\\p{Lu}[\\p{L}\\d .&'\\-]{1,30}?)" + FIN, "u"))
+      || t.match(new RegExp("(?<![\\p{L}\\d])de\\s+(\\p{Lu}[\\p{L}\\d .&'\\-]{1,30}?)" + FIN, "u"));
+    if (m) comercio = m[1].trim();
+    if (ingreso && !gasto) return "me pagaron " + valor + (comercio ? " de " + comercio : "");
+    return "gasté " + valor + (comercio ? " en " + comercio : "");
+  }
+
   var api = { consejos: consejos, gastoInusual: gastoInusual, semana: semana, logros: logros, cuotaCredito: cuotaCredito, ahorroFuturo: ahorroFuturo, regla503020: regla503020, calendario: calendario, plata: plata,
     gastoMensualPromedio: gastoMensualPromedio, mejorPeorMes: mejorPeorMes, salud: salud, iva: iva, dividirCuenta: dividirCuenta, costoHabito: costoHabito,
     contadoVsCuotas: contadoVsCuotas, cdt: cdt, primaCesantias: primaCesantias, salirDeDeuda: salirDeDeuda, reto52: reto52,
     suscripciones: suscripciones, inflacionPersonal: inflacionPersonal, mesesConDatos: mesesConDatos, compararMeses: compararMeses, costoEvento: costoEvento, etiquetasUsadas: etiquetasUsadas, importarCSV: importarCSV,
     pagosFijosMes: pagosFijosMes, pronosticoMes: pronosticoMes, tuAnio: tuAnio, bolaDeNieve: bolaDeNieve, diasParaPago: diasParaPago, redondeo: redondeo, sugerirCategoria: sugerirCategoria,
     planQuincena: planQuincena, lugares: lugares, semanasDelMes: semanasDelMes, diasSinGasto: diasSinGasto, progresoReduccion: progresoReduccion,
-    describirCambio: describirCambio, progresoMetaGrupo: progresoMetaGrupo };
+    describirCambio: describirCambio, progresoMetaGrupo: progresoMetaGrupo, mensajeBancoATexto: mensajeBancoATexto };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaConsejos = api;
 })(typeof window !== "undefined" ? window : this);

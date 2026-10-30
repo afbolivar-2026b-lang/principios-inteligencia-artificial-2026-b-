@@ -2668,6 +2668,14 @@
         if (d > ahora) lista.push({ id: 700000001 + k, titulo: "¿Ya anotaste tus gastos de hoy?", texto: "Tómate un minuto para registrar lo de hoy en NOVA.", cuando: d });
       }
     }
+    if (leerLocal("nova-rec-respaldo", false)) {
+      var dom = new Date(); dom.setHours(18, 0, 0, 0); dom.setDate(dom.getDate() + ((7 - dom.getDay()) % 7));
+      if (dom < ahora) dom.setDate(dom.getDate() + 7);
+      for (var s = 0; s < 4; s++) { lista.push({ id: 700000300 + s, titulo: "💾 Hora de tu respaldo semanal", texto: "Entra a Configuración → Exportar datos → «Guardar copia en Google Drive».", cuando: new Date(dom.getTime()) }); dom.setDate(dom.getDate() + 7); }
+    }
+    if (leerLocal("nova-rec-rapido", false) && datos.frecuentes.length) {
+      lista.push({ id: RAPIDO_ID, titulo: "⚡ Anotar rápido", texto: "Toca un botón para anotar al instante.", cuando: new Date(Date.now() + 4000), rapido: true });
+    }
     if (leerLocal("nova-rec-prima", false)) {
       [[5, 15, "prima de mitad de año"], [11, 10, "prima y aguinaldo de diciembre"]].forEach(function (x, i) {
         var d = new Date(ahora.getFullYear(), x[0], x[1], 9, 0, 0, 0);
@@ -2685,11 +2693,37 @@
   }
   $("rec-noche").checked = !!leerLocal("nova-rec-noche", false);
   $("rec-programados").checked = !!leerLocal("nova-rec-programados", false);
+  $("rec-respaldo").checked = !!leerLocal("nova-rec-respaldo", false);
+  $("rec-rapido").checked = !!leerLocal("nova-rec-rapido", false);
+  $("rec-respaldo").addEventListener("change", function (e) { guardarLocal("nova-rec-respaldo", e.target.checked); programarAvisos(); toast(e.target.checked ? "Respaldo semanal activado" : "Respaldo semanal apagado"); });
+  $("rec-rapido").addEventListener("change", function (e) {
+    guardarLocal("nova-rec-rapido", e.target.checked);
+    if (e.target.checked && !datos.frecuentes.length) toast("Primero crea registros comunes", "Se usan para los botones");
+    else toast(e.target.checked ? "Teclas rápidas activadas" : "Teclas rápidas apagadas");
+    programarAvisos();
+  });
   $("rec-prima").checked = !!leerLocal("nova-rec-prima", false);
   $("rec-prima").addEventListener("change", function (e) { guardarLocal("nova-rec-prima", e.target.checked); programarAvisos(); toast(e.target.checked ? "Aviso de prima y aguinaldo activado" : "Aviso de prima y aguinaldo apagado"); });
   $("rec-noche").addEventListener("change", function (e) { guardarLocal("nova-rec-noche", e.target.checked); programarAvisos(); toast(e.target.checked ? "Recordatorio nocturno activado" : "Recordatorio nocturno apagado"); });
   $("rec-programados").addEventListener("change", function (e) { guardarLocal("nova-rec-programados", e.target.checked); programarAvisos(); toast(e.target.checked ? "Avisos de pagos programados activados" : "Avisos de pagos programados apagados"); });
 
+  // Teclas rápidas: al tocar un botón de la notificación se anota ese registro común.
+  var RAPIDO_ID = 700000200, accionesPendientes = [];
+  function anotarTeclaRapida(actionId) {
+    var f = datos.frecuentes.find(function (x) { return "f" + x.id === actionId; });
+    if (!f) return;
+    var r = Parser.interpretar(f.texto);
+    if (!r.ok) return toast("No se pudo anotar", f.texto);
+    guardarRegistro(r, r.categoria, false).then(function () { programarAvisos(); }).catch(function () { /* el aviso de error ya salió */ });
+  }
+  (function escucharTeclasRapidas() {
+    var N = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
+    if (!N || !N.addListener) return;
+    N.addListener("localNotificationActionPerformed", function (ev) {
+      if (!ev || !ev.notification || ev.notification.id !== RAPIDO_ID || !/^f\d+$/.test(String(ev.actionId))) return;
+      if (fuente && datos && datos.frecuentes.length) anotarTeclaRapida(ev.actionId); else accionesPendientes.push(ev.actionId);   // si la app aún está abriendo, queda en espera
+    });
+  })();
   function programarAvisos() {
     var N = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
     if (!N || !fuente || fuente.demo) return Promise.resolve();
@@ -2701,9 +2735,15 @@
       if (!avisos.length) return null;
       return N.requestPermissions().then(function (perm) {
         if (!perm || perm.display !== "granted") return null;
-        return N.schedule({ notifications: avisos.map(function (a) {
-          return { id: a.id, title: a.titulo, body: a.texto, schedule: { at: a.cuando, allowWhileIdle: true } };
-        }) });
+        var teclas = datos.frecuentes.slice(0, 3).map(function (f) { return { id: "f" + f.id, title: String(f.texto).slice(0, 24) }; });
+        var tipos = avisos.some(function (a) { return a.rapido; }) && teclas.length ? N.registerActionTypes({ types: [{ id: "RAPIDO", actions: teclas }] }) : Promise.resolve();
+        return tipos.then(function () {
+          return N.schedule({ notifications: avisos.map(function (a) {
+            var n = { id: a.id, title: a.titulo, body: a.texto, schedule: { at: a.cuando, allowWhileIdle: true } };
+            if (a.rapido) { n.ongoing = true; n.autoCancel = false; n.actionTypeId = "RAPIDO"; }
+            return n;
+          }) });
+        });
       });
     }).catch(function () { /* sin permiso o sin el complemento: los avisos dentro de la app siguen funcionando */ });
   }
@@ -2764,6 +2804,12 @@
   document.querySelectorAll("[data-exportar]").forEach(function (b) {
     b.addEventListener("click", function () {
       var que = b.dataset.exportar;
+      if (que === "respaldo-drive") { avisoExp("Elige «Drive» en el menú para guardar tu copia."); que = "respaldo"; }
+      if (que === "hojas") {
+        avisoExp(enApp ? "Elige «Hojas de cálculo» en el menú para abrir tu Excel." : "Se descargará el Excel; en Google Sheets usa Archivo → Importar para abrirlo.");
+        if (!enApp) setTimeout(function () { window.open("https://sheets.new", "_blank", "noopener"); }, 1500);
+        que = "excel";
+      }
       if (que === "movimientos") return exportarMovimientos(datos.movimientos);
       if (que === "categorias") {
         return descargar("nova-categorias-" + hoyArchivo() + ".csv", A.csv(datos.categorias, [
@@ -4310,7 +4356,10 @@
   var consulta = 0;
   $("form-rapido").addEventListener("submit", function (e) {
     e.preventDefault();
-    var texto = $("entrada-rapida").value, local = Parser.interpretar(texto), id = ++consulta;
+    var texto = $("entrada-rapida").value, id = ++consulta;
+    var deBanco = NovaConsejos.mensajeBancoATexto(texto);          // mensaje de un banco pegado: se convierte en una frase simple
+    if (deBanco) { texto = deBanco; $("entrada-rapida").value = deBanco; }
+    var local = Parser.interpretar(texto);
     if (!texto.trim() || !iaDisponible()) return terminar(local);
     var enviar = e.target.querySelector("button[type=submit]");
     enviar.disabled = true;
@@ -4864,6 +4913,7 @@
       mostrar("app"); ir("inicio"); pintar();
       if (!fuente.demo) bloquearSiHayPin();
       pintarEstadoPapelera(); tutorialSiHaceFalta();
+      while (accionesPendientes.length) anotarTeclaRapida(accionesPendientes.shift());
       programarAvisos();
       // Si salieron categorías nuevas del modo conductor (como "Cuota del vehículo"), se agregan solas.
       if (conductor()) asegurarCategoriasConductor().then(pintar).catch(function () { /* se intentará la próxima vez */ });

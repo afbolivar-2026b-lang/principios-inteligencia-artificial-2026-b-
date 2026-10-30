@@ -567,6 +567,8 @@
       <h2 class="grupo-ajustes">Recordatorios (app Android)</h2>
       <div class="menu">
         <label class="menu-fila"><span class="menu-icono">🌙</span><span><strong>Anotar mis gastos de hoy</strong><small>Un aviso cada noche a las 8 p. m.</small></span><input type="checkbox" id="rec-noche" class="interruptor"></label>
+        <label class="menu-fila"><span class="menu-icono">⚡</span><span><strong>Teclas rápidas en la notificación</strong><small>Una notificación con botones para anotar tus registros comunes de un toque</small></span><input type="checkbox" id="rec-rapido" class="interruptor"></label>
+        <label class="menu-fila"><span class="menu-icono">💾</span><span><strong>Respaldo semanal</strong><small>Cada domingo a las 6 p. m. un aviso para guardar tu copia en Drive</small></span><input type="checkbox" id="rec-respaldo" class="interruptor"></label>
         <label class="menu-fila"><span class="menu-icono">🎁</span><span><strong>Prima y aguinaldo</strong><small>Un aviso en junio y diciembre para apartar plata</small></span><input type="checkbox" id="rec-prima" class="interruptor"></label>
         <label class="menu-fila"><span class="menu-icono">🔔</span><span><strong>Antes de un pago programado</strong><small>Un aviso el día anterior</small></span><input type="checkbox" id="rec-programados" class="interruptor"></label>
       </div>
@@ -705,6 +707,8 @@
         <button type="button" data-exportar="categorias"><span class="menu-icono">🗂</span><span><strong>Categorías</strong><small id="exp-categorias"></small></span></button>
         <button type="button" data-exportar="limites"><span class="menu-icono">🎯</span><span><strong>Presupuestos y límites</strong><small id="exp-limites"></small></span></button>
         <button type="button" data-exportar="respaldo"><span class="menu-icono">💾</span><span><strong>Todo (respaldo)</strong><small>Un archivo con todos tus datos</small></span></button>
+        <button type="button" data-exportar="respaldo-drive"><span class="menu-icono">☁️</span><span><strong>Guardar copia en Google Drive</strong><small>Se abre el menú de compartir: elige Drive</small></span></button>
+        <button type="button" data-exportar="hojas"><span class="menu-icono">📊</span><span><strong>Abrir en Hojas de cálculo de Google</strong><small>Descarga el Excel y te lleva a Google Sheets</small></span></button>
       </div>
       <p class="mensaje" id="exportar-mensaje" role="status"></p>
       <p class="nota">Tus datos ya se guardan en la nube con tu cuenta: si cambias de celular, solo entra con tu correo.</p>

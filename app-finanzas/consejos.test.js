@@ -200,3 +200,13 @@ test("historial de cambios y meta del grupo", () => {
   assert.strictEqual(p.total, 500000); assert.strictEqual(p.pct, 50); assert.strictEqual(p.falta, 500000); assert.deepStrictEqual(p.porPersona, { Yo: 300000, Ana: 200000, Pedro: 0 });
   assert.ok(C.progresoMetaGrupo(100, [{ persona: "Yo", monto: 100 }], ["Yo"]).cumplida);
 });
+
+test("mensajes de bancos", () => {
+  const f = C.mensajeBancoATexto;
+  assert.strictEqual(f("Bancolombia le informa Compra por $45.000 en RAPPI el 30/10/2026 a las 14:20. T.Deb *1234"), "gasté 45000 en RAPPI");
+  assert.strictEqual(f("Nequi: Pagaste $12.000 a Juan Pérez. Tu saldo es $30.000"), "gasté 12000 en Juan Pérez");
+  assert.strictEqual(f("Nequi: Recibiste $50.000 de María López. Saldo: $80.000"), "me pagaron 50000 de María López");
+  assert.strictEqual(f("Davivienda: Compra aprobada por $23.500 en D1 SUPERMERCADO con tu tarjeta *4321"), "gasté 23500 en D1 SUPERMERCADO");
+  assert.strictEqual(f("gasté 20 mil en almuerzo"), null);                      // frase normal: la lee el intérprete de siempre
+  assert.strictEqual(f("Hola, cuánto cuesta $5.000 el almuerzo?"), null);        // sin palabras de banco
+});

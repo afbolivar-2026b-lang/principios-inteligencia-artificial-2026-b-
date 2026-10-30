@@ -340,3 +340,9 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 ## Novedad: separar los productos de un recibo
 
 - En el detalle de un movimiento con foto, **🧾 Separar los productos** le pide a la IA (función `nova-ia`, modo `productos`) la lista de lo comprado con su valor; se puede guardar en la nota del movimiento.
+
+## Novedades: mensajes de bancos, teclas rápidas, respaldo semanal, Drive y Hojas
+
+- **Mensajes de bancos**: al pegar en «Anotar rápido» un mensaje de Bancolombia, Nequi, Davivienda y similares, NOVA lo convierte en un gasto o ingreso (no lee tus SMS solos: eso exigiría el permiso de leer mensajes, que Google Play Protect mira con desconfianza).
+- **Teclas rápidas en la notificación** (Configuración → Recordatorios, app Android): botones con tus 3 primeros registros comunes.
+- **Respaldo semanal**: aviso los domingos; **Guardar copia en Google Drive** y **Abrir en Hojas de cálculo de Google** en Exportar datos (usan el menú de compartir; no piden permisos de Google).
