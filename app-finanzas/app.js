@@ -601,6 +601,18 @@
   // ---------- Inicio ----------
   function rangoInicio() { return A.desplazar(cicloEfectivo(), new Date(), desfaseInicio); }
 
+  // Widget de la pantalla de inicio (Android): se guardan el saldo y lo que se puede gastar hoy en un lugar que el widget lee.
+  var ultimoWidget = "";
+  function actualizarWidget() {
+    var P = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences;
+    if (!P || !fuente || fuente.demo) return;
+    var protegido = ocultos || !!leerPin(), saldo = saldoTotal(), b = presupuestoActual(), seguro = b.limite > 0 ? A.seguroParaGastar(b.limite, b.gastado, b.rango) : null;
+    var linea = protegido ? "Valores protegidos" : (seguro && seguro.porDia > 0 ? "Hoy puedes gastar " + pesos.format(Math.round(seguro.porDia)) : "Toca para anotar un gasto");
+    var valor = JSON.stringify({ saldo: protegido ? "$ ••••" : (saldo < 0 ? "-" : "") + pesos.format(Math.abs(saldo)), linea: linea });
+    if (valor === ultimoWidget) return;
+    ultimoWidget = valor;
+    P.set({ key: "nova-widget", value: valor }).catch(function () { /* sin widget no pasa nada */ });
+  }
   function pintarInicio() {
     var ciclo = cicloEfectivo(), rango = rangoInicio();
     $("inicio-periodo").textContent = A.nombrePeriodo(ciclo, rango);
@@ -615,7 +627,7 @@
     $("tarjeta-deficit").hidden = t.neto >= 0;
     $("deficit-valor").textContent = ocultos ? "$ ••••" : "−" + pesos.format(Math.abs(t.neto));
 
-    pintarSeguro(); pintarPresupuesto(); pintarFrecuentes(); pintarMiniTarjetas(); pintarProyeccionYRacha(movs, rango); pintarSemanaYSaludo(); pintarSugerencias(); pintarProximoPago(); pintarApartar();
+    pintarSeguro(); pintarPresupuesto(); pintarFrecuentes(); pintarMiniTarjetas(); pintarProyeccionYRacha(movs, rango); pintarSemanaYSaludo(); pintarSugerencias(); pintarProximoPago(); pintarApartar(); actualizarWidget();
     listaPorDia($("lista-inicio"), movs, desfaseInicio === 0 ? "Aún no hay movimientos en este periodo. Toca + para agregar el primero." : "No hubo movimientos en este periodo.", 60);
   }
   document.querySelectorAll("[data-periodo-inicio]").forEach(function (b) {
@@ -5308,6 +5320,7 @@
     fuente.salir().finally(function () {
       try { localStorage.removeItem("kv:nova-identidad"); localStorage.removeItem("nova-identidad"); } catch (e) { /* nada */ }
       if (vieja.limpiar) vieja.limpiar();
+      try { var PW = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences; if (PW) { ultimoWidget = ""; PW.remove({ key: "nova-widget" }); } } catch (e) { /* nada */ }
       fuente = null; datos = datosVacios();
       $("form-auth").reset(); mensaje("auth-mensaje", ""); mostrar("auth");
     });

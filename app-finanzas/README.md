@@ -346,3 +346,8 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - **Mensajes de bancos**: al pegar en «Anotar rápido» un mensaje de Bancolombia, Nequi, Davivienda y similares, NOVA lo convierte en un gasto o ingreso (no lee tus SMS solos: eso exigiría el permiso de leer mensajes, que Google Play Protect mira con desconfianza).
 - **Teclas rápidas en la notificación** (Configuración → Recordatorios, app Android): botones con tus 3 primeros registros comunes.
 - **Respaldo semanal**: aviso los domingos; **Guardar copia en Google Drive** y **Abrir en Hojas de cálculo de Google** en Exportar datos (usan el menú de compartir; no piden permisos de Google).
+
+## Novedad: widget de la pantalla de inicio (Android)
+
+- Widget «NOVA saldo» (clic largo en la pantalla de inicio → Widgets → NOVA): muestra el saldo y cuánto puedes gastar hoy; al tocarlo abre NOVA. Se actualiza al abrir la app y cada 30 minutos. Si tienes PIN o los valores ocultos, muestra «$ ••••».
+- La app guarda los datos con `@capacitor/preferences`; el widget (`app-android-nova/recursos/java/SaldoWidget.java`) los lee y se agrega al proyecto de Android en el flujo `apk-nova.yml`.
