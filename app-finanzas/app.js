@@ -3837,12 +3837,45 @@
         .catch(function (err) { aviso.textContent = "No se pudo quitar: " + err.message; aviso.classList.add("error"); });
     });
     var fila = el("div", "det-foto-botones"); fila.append(agregar, quitar, archivo);
+    if (opc.productos && m.foto_ruta && puede) {
+      var sep = el("button", "mini", "🧾 Separar los productos"); sep.type = "button";
+      var lista = el("div", "productos-recibo");
+      sep.addEventListener("click", function () {
+        if (!iaDisponible()) { aviso.textContent = "La IA no está disponible ahora mismo."; aviso.classList.add("error"); return; }
+        sep.disabled = true; aviso.classList.remove("error"); aviso.textContent = "✦ La IA está leyendo el recibo…"; lista.replaceChildren();
+        fuente.fotos.url(m.foto_ruta).then(function (u) { return fetch(u); }).then(function (r) { return r.blob(); })
+          .then(function (blob) { return new Promise(function (ok, mal) { var fr = new FileReader(); fr.onload = function () { ok(String(fr.result).split(",")[1] || ""); }; fr.onerror = function () { mal(new Error("No se pudo leer la foto.")); }; fr.readAsDataURL(blob); }); })
+          .then(function (b64) { return invocarIA({ productos: true, imagen: b64, mime: "image/jpeg" }); })
+          .then(function (d) {
+            aviso.textContent = "";
+            var items = d.productos || [];
+            if (!items.length) { aviso.textContent = "No pude leer productos en esta foto. Prueba con una foto más cercana y con buena luz."; aviso.classList.add("error"); return; }
+            var ul = el("ul", "lista-simple");
+            items.forEach(function (x) { var li = el("li", "consejo"); var t = el("div"); t.append(el("strong", null, (x.cantidad > 1 ? x.cantidad + "× " : "") + x.nombre), el("small", null, ocultos ? "••••" : pesos.format(x.valor))); li.append(t); ul.append(li); });
+            lista.append(el("p", "calc-res", (d.comercio ? d.comercio + " · " : "") + items.length + (items.length === 1 ? " producto" : " productos")), ul);
+            var guardar = el("button", "mini", "📝 Guardar en la nota"); guardar.type = "button";
+            guardar.addEventListener("click", function () {
+              var txt = "Productos: " + items.map(function (x) { return (x.cantidad > 1 ? x.cantidad + " " : "") + x.nombre + " " + pesos.format(x.valor); }).join(", ");
+              var base = m.nota ? m.nota + "\n" : "", nota = (base + txt).slice(0, 500);
+              guardar.disabled = true;
+              fuente.actualizar("movimientos", m.id, { nota: nota }).then(function (n) { Object.assign(m, n); toast("¡Guardado en la nota!", opc.nombre(m)); opc.repintar(); })
+                .catch(function (err) { guardar.disabled = false; aviso.textContent = "No se pudo guardar: " + err.message; aviso.classList.add("error"); });
+            });
+            lista.append(guardar);
+          })
+          .catch(function (err) { aviso.textContent = (err && err.message) || "No se pudo leer el recibo."; aviso.classList.add("error"); })
+          .finally(function () { sep.disabled = false; });
+      });
+      fila.append(sep);
+      caja.append(fila, aviso, lista);
+      return caja;
+    }
     caja.append(fila, aviso);
     return caja;
   }
   function pintarFotoRecibo(m) {
     var idAhora = detalleId;
-    return pintarFotoDe(m, { tabla: "movimientos", titulo: "📷 Foto del recibo", clave: "mov", nombre: function (x) { return x.descripcion; }, repintar: function () { if (detalleId === idAhora) pintarDetalle(); } });
+    return pintarFotoDe(m, { tabla: "movimientos", titulo: "📷 Foto del recibo", clave: "mov", productos: true, nombre: function (x) { return x.descripcion; }, repintar: function () { if (detalleId === idAhora) pintarDetalle(); } });
   }
 
   function pintarDetalle() {

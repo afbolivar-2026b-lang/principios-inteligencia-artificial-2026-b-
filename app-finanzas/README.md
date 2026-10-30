@@ -336,3 +336,7 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - **Meta compartida del grupo** con aportes por persona (`fin_aportes_grupo`, `fin_grupos.meta_*`).
 - **Mapa de calor** de los lugares donde más gastas (desde «Dónde más gastas»).
 - Migración aditiva: `supabase/migrations/nova_fotos_deudas_metas_historial_aportes.sql`.
+
+## Novedad: separar los productos de un recibo
+
+- En el detalle de un movimiento con foto, **🧾 Separar los productos** le pide a la IA (función `nova-ia`, modo `productos`) la lista de lo comprado con su valor; se puede guardar en la nota del movimiento.

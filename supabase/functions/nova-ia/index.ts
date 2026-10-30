@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
 
   let entrada: {
     texto?: string; imagen?: string; mime?: string; categorias?: string[]; hoy?: string; tasas?: boolean;
-    pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown; varios?: boolean; stream?: boolean;
+    pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown; varios?: boolean; stream?: boolean; productos?: boolean;
   };
   try { entrada = await req.json(); } catch { return responder(400, { error: "JSON inválido" }); }
 
@@ -166,6 +166,49 @@ Deno.serve(async (req) => {
   const categorias = Array.isArray(entrada.categorias) && entrada.categorias.length
     ? entrada.categorias.filter((c) => typeof c === "string").slice(0, 40).map((c) => c.slice(0, 40))
     : CATEGORIAS_BASE;
+
+  // Foto de un recibo: lista de productos con su valor (para ver en qué se fue la compra).
+  if (entrada.productos === true && imagen) {
+    const instruccionesP = `Eres el asistente de NOVA, una app colombiana de finanzas personales.
+Lee la foto de un recibo o factura y lista los productos o servicios comprados.
+Reglas:
+- Moneda: pesos colombianos (COP), sin decimales. En recibos "30.000" es treinta mil.
+- nombre: corto (máx. 40 caracteres), en español, con mayúscula inicial.
+- cantidad: número (1 si no se ve).
+- valor: el valor total de esa línea (cantidad por precio), no el precio unitario.
+- comercio: el nombre del negocio. total: el total pagado.
+- Ignora subtotales, IVA, propina, efectivo recibido y cambio. Máximo 40 productos.`;
+    const cuerpoP = {
+      systemInstruction: { parts: [{ text: instruccionesP }] },
+      contents: [{ role: "user", parts: [{ text: "Lista los productos de este recibo." }, { inline_data: { mime_type: mime, data: imagen } }] }],
+      generationConfig: {
+        temperature: 0,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            comercio: { type: "STRING" }, total: { type: "NUMBER" },
+            productos: { type: "ARRAY", items: { type: "OBJECT", properties: { nombre: { type: "STRING" }, cantidad: { type: "NUMBER" }, valor: { type: "NUMBER" } }, required: ["nombre", "cantidad", "valor"] } },
+          },
+          required: ["comercio", "total", "productos"],
+        },
+      },
+    };
+    const gp = await llamarGemini(clave, cuerpoP);
+    if (!gp.r) return gp.limite ? responder(429, { error: "limite" }) : responder(502, { error: "La IA no respondió bien", detalle: gp.detalle });
+    try {
+      const datosP = await gp.r.json();
+      const salidaP = JSON.parse(datosP.candidates[0].content.parts[0].text);
+      const productos = (Array.isArray(salidaP.productos) ? salidaP.productos : []).slice(0, 40).map((p: Record<string, unknown>) => ({
+        nombre: String(p.nombre || "").slice(0, 60),
+        cantidad: Math.max(1, Math.min(999, Math.round(Number(p.cantidad) || 1))),
+        valor: Math.max(0, Math.min(10_000_000_000, Math.round(Number(p.valor) || 0))),
+      })).filter((p: { nombre: string }) => p.nombre);
+      return responder(200, { comercio: String(salidaP.comercio || "").slice(0, 60), total: Math.max(0, Math.round(Number(salidaP.total) || 0)), productos });
+    } catch (_e) {
+      return responder(502, { error: "La IA respondió algo que no se entendió" });
+    }
+  }
 
   const varios = entrada.varios === true && !imagen;
   const instrucciones = `Eres el asistente de NOVA, una app colombiana de finanzas personales.
