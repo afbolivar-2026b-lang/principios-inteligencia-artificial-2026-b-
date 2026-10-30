@@ -19,7 +19,8 @@ function responder(estado: number, cuerpo: unknown) {
 }
 
 // Modelos de respaldo: si el principal está saturado o falla, se prueba el siguiente.
-const MODELOS = [MODELO, "gemini-2.5-flash", "gemini-flash-lite-latest"].filter((m, i, a) => a.indexOf(m) === i);
+// Se empieza por el más rápido (lite); el principal queda de respaldo para cuando haga falta más calidad.
+const MODELOS = ["gemini-flash-lite-latest", "gemini-2.5-flash", MODELO].filter((m, i, a) => a.indexOf(m) === i);
 type ResultadoGemini = { r: Response | null; detalle: string; limite: boolean };
 
 async function llamarModelo(modelo: string, clave: string, cuerpo: Record<string, unknown>) {
@@ -27,7 +28,7 @@ async function llamarModelo(modelo: string, clave: string, cuerpo: Record<string
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": clave },
     body: JSON.stringify(cuerpo),
-    signal: AbortSignal.timeout(20_000), // sin esto una respuesta colgada dejaba a la app "pensando" para siempre
+    signal: AbortSignal.timeout(15_000), // sin esto una respuesta colgada dejaba a la app "pensando" para siempre
   });
 }
 
@@ -58,7 +59,7 @@ async function llamarGemini(clave: string, cuerpo: Record<string, unknown>, sinP
 async function conversar(clave: string, entrada: { pregunta?: string; historial?: { rol?: string; texto?: string }[]; contexto?: unknown }) {
   const pregunta = (entrada.pregunta || "").slice(0, 2000).trim();
   if (!pregunta) return responder(400, { error: "Falta la pregunta" });
-  const contexto = JSON.stringify(entrada.contexto ?? {}).slice(0, 40_000);
+  const contexto = JSON.stringify(entrada.contexto ?? {}).slice(0, 20_000);
   const historial = (Array.isArray(entrada.historial) ? entrada.historial : []).slice(-6)
     .filter((t) => typeof t?.texto === "string" && t.texto.trim())
     .map((t) => ({ role: t.rol === "nova" ? "model" : "user", parts: [{ text: t.texto!.slice(0, 2000) }] }));
@@ -75,7 +76,7 @@ Datos de la persona: ${contexto}`;
   const g = await llamarGemini(clave, {
     systemInstruction: { parts: [{ text: instrucciones }] },
     contents: [...historial, { role: "user", parts: [{ text: pregunta }] }],
-    generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
+    generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
   });
   if (!g.r) return g.limite ? responder(429, { error: "limite" }) : responder(502, { error: "La IA no respondió bien", detalle: g.detalle });
   const r = g.r;
