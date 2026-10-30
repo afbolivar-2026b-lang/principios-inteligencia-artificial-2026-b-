@@ -672,9 +672,14 @@
     <button type="button" id="reg-moneda" class="chip-opcion moneda-boton" aria-label="Cambiar la moneda"><span id="reg-moneda-bandera">🇨🇴</span><span id="reg-moneda-codigo">COP</span><span aria-hidden="true">▾</span></button>
     <div id="reg-bloque-moneda" class="tarjeta formulario moneda-bloque" hidden>
       <strong id="reg-conversion"></strong>
+      <label for="reg-orig" id="reg-orig-etiqueta">Valor en dólares</label>
+      <input id="reg-orig" inputmode="decimal" autocomplete="off" placeholder="0">
+      <label for="reg-cop">Equivale en pesos (COP)</label>
+      <input id="reg-cop" inputmode="numeric" autocomplete="off" placeholder="0">
       <label for="reg-tasa" id="reg-tasa-etiqueta">Tasa</label>
       <input id="reg-tasa" inputmode="decimal" autocomplete="off" placeholder="¿Cuántos pesos vale 1?">
       <span id="reg-tasa-nota" class="nota"></span>
+      <button type="button" id="reg-tasa-auto" class="chip-opcion" hidden>Volver a la tasa del día</button>
     </div>
     <div id="teclado" class="teclado">
       <button type="button" data-tecla="7">7</button><button type="button" data-tecla="8">8</button><button type="button" data-tecla="9">9</button><button type="button" data-tecla="÷" class="op">÷</button>

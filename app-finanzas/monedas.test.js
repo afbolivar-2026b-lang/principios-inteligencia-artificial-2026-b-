@@ -47,3 +47,19 @@ test("formatos", () => {
   assert.ok(/EUR|€/.test(M.formatoMonto(50, "EUR")));
   assert.strictEqual(M.formatoMonto(5, "AB"), "AB 5");
 });
+
+test("lista completa de monedas del mundo", () => {
+  assert.ok(M.MONEDAS.length >= 150);
+  const codigos = M.MONEDAS.map((m) => m[0]);
+  assert.strictEqual(new Set(codigos).size, codigos.length);              // sin repetidas
+  ["COP", "USD", "EUR", "JPY", "XOF", "VND", "AED", "ZAR", "KRW", "NGN"].forEach((c) => assert.ok(codigos.includes(c), c));
+  assert.ok(M.buscar("yen").some((m) => m.codigo === "JPY"));
+  assert.ok(M.buscar("franco").length >= 4);
+  assert.strictEqual(M.info("JPY").bandera, "🇯🇵");
+  M.MONEDAS.forEach((m) => assert.ok(m[1] && m[2], m[0]));                 // todas con nombre y bandera
+});
+
+test("leer tasas mientras se escriben (el punto es de miles)", () => {
+  assert.strictEqual(M.leerTasa("3.9000"), 39000);
+  assert.strictEqual(M.leerTasa("3900"), 3900);
+});

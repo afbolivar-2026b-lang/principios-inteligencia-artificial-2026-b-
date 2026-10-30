@@ -251,3 +251,10 @@ escribe (10000 → 10.000); la coma es solo para decimales y `10,000` se toma co
 registros comunes, asistente de varios registros) los números de 4 cifras o más también se separan: «gasté 20000» → «gasté 20.000».
 La tasa de cambio usa puntos de miles y coma decimal. Los valores se muestran con puntos puestos a mano (no con Intl), para que
 salgan igual en cualquier celular.
+
+## Otras monedas (162) y conversión en los dos sentidos
+
+Al anotar un pago en otra moneda se puede elegir entre las 162 monedas del mundo con tasa de cambio (las más usadas primero; buscador por
+nombre o código). Salen tres campos enlazados: el valor en esa moneda, los pesos (COP) y la tasa. Se puede escribir en cualquiera y los otros
+se calculan solos; si la persona escribe los pesos, esos pesos exactos son los que se guardan. «Volver a la tasa del día» deshace una tasa
+cambiada. Las tasas vienen de open.er-api.com (una vez al día, guardadas en el celular); si falta una, se escribe a mano.

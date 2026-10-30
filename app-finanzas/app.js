@@ -106,7 +106,7 @@
   }
   // En los campos de plata se van poniendo los puntos de miles mientras se escribe: 10000 → 10.000.
   // Si la persona escribe letras ("500 mil", "1 millón") se deja tal cual.
-  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo, .asis-monto, .meta-abono input";
+  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo, #reg-orig, #reg-cop, .asis-monto, .meta-abono input";
   function formatearMontoEscrito(campo) {
     var v = campo.value;
     if (/[^\d.,$\s\u00a0]/.test(v) || /\s$/.test(v)) return;   // letras o un espacio al final (va a escribir "mil"): no se toca
@@ -2288,6 +2288,38 @@
       pintarRegistro();
     });
   }
+  // Convertir en los dos sentidos: se puede escribir el valor en la moneda de afuera, los pesos o la tasa, y lo demás se calcula solo.
+  function leerDecimalCO(t) {
+    var s = String(t || "").replace(/[^\d.,]/g, "");
+    if (!s) return NaN;
+    s = s.replace(/\./g, "").replace(",", ".");   // el punto es de miles y la coma de decimales (los campos los ponen solos)
+    var n = Number(s);
+    return isFinite(n) ? n : NaN;
+  }
+  $("reg-orig").addEventListener("input", function (e) {
+    var v = leerDecimalCO(e.target.value);
+    reg.expr = v > 0 ? textoMonto(v) : "";
+    pintarRegistro();
+  });
+  $("reg-cop").addEventListener("input", function (e) {
+    var cop = leerDecimalCO(e.target.value);
+    reg.copManual = null;
+    if (cop > 0) {
+      var usd = A.evaluar(reg.expr);
+      if (reg.tasa > 0) reg.expr = textoMonto(Math.round((cop / reg.tasa) * 100) / 100);
+      else if (usd > 0) { reg.tasa = cop / usd; reg.tasaEditada = true; }
+      if (reg.tasa > 0) { reg.copManual = cop; reg.copExpr = reg.expr; reg.copTasa = reg.tasa; }
+    }
+    pintarRegistro();
+  });
+  $("reg-tasa-auto").addEventListener("click", function () {
+    if (!reg.tasaAuto) return;
+    reg.tasa = reg.tasaAuto; reg.tasaEditada = false; pintarRegistro();
+  });
+  // Pesos que valen los dólares (o la moneda que sea): si la persona escribió los pesos, se respetan tal cual.
+  function pesosDelRegistro(valor) {
+    return reg.copManual > 0 && reg.copExpr === reg.expr && reg.copTasa === reg.tasa ? reg.copManual : Mon.aCOP(valor, reg.tasa);
+  }
   $("reg-tasa").addEventListener("input", function (e) {
     var v = Mon.leerTasa(e.target.value);
     reg.tasa = isNaN(v) ? null : v;
@@ -2302,10 +2334,16 @@
     var v = A.evaluar(reg.expr), ext = reg.moneda !== "COP", mi = Mon.info(reg.moneda);
     $("reg-resultado").textContent = /[+\-×÷−]/.test(reg.expr.replace(/^-/, "")) ? (isNaN(v) ? "…" : "= " + (ext ? Mon.formatoMonto(v, reg.moneda) : pesos.format(v))) : "";
     $("reg-moneda-bandera").textContent = mi.bandera; $("reg-moneda-codigo").textContent = mi.codigo;
+    $("reg-monto").querySelector("span").textContent = ext ? mi.codigo : "$";
     $("reg-moneda").classList.toggle("activo", ext);
     $("reg-bloque-moneda").hidden = !ext;
     if (ext) {
-      $("reg-conversion").textContent = v > 0 && reg.tasa > 0 ? "= " + pesos.format(Mon.aCOP(v, reg.tasa)) + " COP" : "Escribe el valor y la tasa para ver los pesos";
+      var copCalc = v > 0 && reg.tasa > 0 ? pesosDelRegistro(v) : null;
+      $("reg-conversion").textContent = copCalc != null ? Mon.formatoMonto(v, reg.moneda) + " = " + pesos.format(copCalc) + " COP" : "Escribe cuánto es en " + mi.nombre.toLowerCase() + " o en pesos: el otro valor se calcula solo.";
+      $("reg-orig-etiqueta").textContent = "Valor en " + mi.nombre.toLowerCase() + " (" + mi.codigo + ")";
+      if (document.activeElement !== $("reg-orig")) $("reg-orig").value = v > 0 ? formatearExpr(/[+\-×÷−]/.test(reg.expr.replace(/^-/, "")) ? textoMonto(v) : reg.expr) : "";
+      if (document.activeElement !== $("reg-cop")) $("reg-cop").value = copCalc != null ? numeroCO.format(copCalc) : "";
+      $("reg-tasa-auto").hidden = !(reg.tasaAuto && reg.tasa && Math.abs(reg.tasa - reg.tasaAuto) > 1e-9);
       $("reg-tasa-etiqueta").textContent = "Tasa: 1 " + reg.moneda + " = ? COP";
       if (document.activeElement !== $("reg-tasa")) $("reg-tasa").value = reg.tasa ? Mon.formatoTasa(reg.tasa) : "";
       $("reg-tasa-nota").textContent = reg.tasa && reg.tasaAuto && Math.abs(reg.tasa - reg.tasaAuto) < 1e-9 ? "Tasa del día" + (reg.tasaFecha ? " · " + reg.tasaFecha.slice(5, 16) : "")
@@ -2399,7 +2437,7 @@
     var montoOriginal = A.evaluar(reg.expr), ext = reg.moneda !== "COP";
     if (!(montoOriginal > 0)) { $("teclado").hidden = false; return mensaje("reg-mensaje", "Escribe el valor con el teclado de números.", true); }
     if (ext && !(reg.tasa > 0)) return mensaje("reg-mensaje", "Escribe la tasa de cambio: cuántos pesos vale 1 " + reg.moneda + ".", true);
-    var monto = ext ? Mon.aCOP(montoOriginal, reg.tasa) : montoOriginal;
+    var monto = ext ? pesosDelRegistro(montoOriginal) : montoOriginal;
     if (!(monto > 0)) return mensaje("reg-mensaje", "El valor en pesos quedó en cero. Revisa la tasa.", true);
     var fechaTxt = $("reg-fecha").value;
     if (!fechaTxt) return mensaje("reg-mensaje", "Elige la fecha.", true);

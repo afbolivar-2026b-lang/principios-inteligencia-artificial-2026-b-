@@ -3,7 +3,8 @@
 (function (raiz) {
   "use strict";
 
-  // [código, nombre, bandera]. La primera es la moneda de la app.
+  // [código, nombre, bandera]. La primera es la moneda de la app. Son las monedas de todo el mundo para las que hay tasa de cambio
+  // (las más usadas van primero, el resto en orden alfabético).
   var MONEDAS = [
     ["COP", "Peso Colombiano", "🇨🇴"], ["USD", "Dólar Estadounidense", "🇺🇸"], ["EUR", "Euro", "🇪🇺"],
     ["CAD", "Dólar Canadiense", "🇨🇦"], ["MXN", "Peso Mexicano", "🇲🇽"], ["BRL", "Real Brasileño", "🇧🇷"],
@@ -16,7 +17,49 @@
     ["NIO", "Córdoba Nicaragüense", "🇳🇮"], ["CUP", "Peso Cubano", "🇨🇺"], ["SEK", "Corona Sueca", "🇸🇪"],
     ["NOK", "Corona Noruega", "🇳🇴"], ["DKK", "Corona Danesa", "🇩🇰"], ["PLN", "Esloti Polaco", "🇵🇱"],
     ["TRY", "Lira Turca", "🇹🇷"], ["INR", "Rupia India", "🇮🇳"], ["KRW", "Won Surcoreano", "🇰🇷"],
-    ["AED", "Dírham de EAU", "🇦🇪"], ["ILS", "Nuevo Séquel", "🇮🇱"], ["ZAR", "Rand Sudafricano", "🇿🇦"]
+    ["AED", "Dírham de EAU", "🇦🇪"], ["ILS", "Nuevo Séquel", "🇮🇱"], ["ZAR", "Rand Sudafricano", "🇿🇦"],
+    ["AFN", "Afgani Afgano", "🇦🇫"], ["MGA", "Ariari Malgache", "🇲🇬"], ["THB", "Bat Tailandés", "🇹🇭"],
+    ["ETB", "Bir Etíope", "🇪🇹"], ["GHS", "Cedi Ghanés", "🇬🇭"], ["KES", "Chelín Keniano", "🇰🇪"],
+    ["SOS", "Chelín Somalí", "🇸🇴"], ["TZS", "Chelín Tanzano", "🇹🇿"], ["UGX", "Chelín Ugandés", "🇺🇬"],
+    ["CZK", "Corona Checa", "🇨🇿"], ["FOK", "Corona Feroesa", "🇫🇴"], ["ISK", "Corona Islandesa", "🇮🇸"],
+    ["GMD", "Dalasi Gambiano", "🇬🇲"], ["DZD", "Dinar Argelino", "🇩🇿"], ["BHD", "Dinar Bareiní", "🇧🇭"],
+    ["IQD", "Dinar Iraquí", "🇮🇶"], ["JOD", "Dinar Jordano", "🇯🇴"], ["KWD", "Dinar Kuwaití", "🇰🇼"],
+    ["LYD", "Dinar Libio", "🇱🇾"], ["MKD", "Dinar Macedonio", "🇲🇰"], ["RSD", "Dinar Serbio", "🇷🇸"],
+    ["TND", "Dinar Tunecino", "🇹🇳"], ["MAD", "Dírham Marroquí", "🇲🇦"], ["STN", "Dobra de Santo Tomé", "🇸🇹"],
+    ["BSD", "Dólar Bahameño", "🇧🇸"], ["BBD", "Dólar Barbadense", "🇧🇧"], ["BZD", "Dólar Beliceño", "🇧🇿"],
+    ["BMD", "Dólar Bermudeño", "🇧🇲"], ["BND", "Dólar Bruneano", "🇧🇳"], ["KID", "Dólar de Kiribati", "🇰🇮"],
+    ["KYD", "Dólar de las Islas Caimán", "🇰🇾"], ["TTD", "Dólar de Trinidad y Tobago", "🇹🇹"], ["TVD", "Dólar de Tuvalu", "🇹🇻"],
+    ["XCD", "Dólar del Caribe Oriental", "🌎"], ["FJD", "Dólar Fiyiano", "🇫🇯"], ["GYD", "Dólar Guyanés", "🇬🇾"],
+    ["HKD", "Dólar Hongkonés", "🇭🇰"], ["JMD", "Dólar Jamaicano", "🇯🇲"], ["LRD", "Dólar Liberiano", "🇱🇷"],
+    ["NAD", "Dólar Namibio", "🇳🇦"], ["SBD", "Dólar Salomonense", "🇸🇧"], ["SGD", "Dólar Singapurense", "🇸🇬"],
+    ["SRD", "Dólar Surinamés", "🇸🇷"], ["ZWL", "Dólar Zimbabuense", "🇿🇼"], ["VND", "Dong Vietnamita", "🇻🇳"],
+    ["AMD", "Dram Armenio", "🇦🇲"], ["CVE", "Escudo de Cabo Verde", "🇨🇻"], ["ANG", "Florín Antillano Neerlandés", "🇨🇼"],
+    ["AWG", "Florín Arubeño", "🇦🇼"], ["XCG", "Florín Caribeño", "🇨🇼"], ["HUF", "Forinto Húngaro", "🇭🇺"],
+    ["BIF", "Franco Burundés", "🇧🇮"], ["XAF", "Franco CFA de África Central", "🌍"], ["XOF", "Franco CFA de África Occidental", "🌍"],
+    ["XPF", "Franco CFP", "🇵🇫"], ["KMF", "Franco Comorense", "🇰🇲"], ["CDF", "Franco Congoleño", "🇨🇩"],
+    ["GNF", "Franco Guineano", "🇬🇳"], ["RWF", "Franco Ruandés", "🇷🇼"], ["DJF", "Franco Yibutiano", "🇩🇯"],
+    ["UAH", "Grivna Ucraniana", "🇺🇦"], ["BTN", "Gultrum Butanés", "🇧🇹"], ["HTG", "Gurde Haitiano", "🇭🇹"],
+    ["MMK", "Kiat de Myanmar", "🇲🇲"], ["PGK", "Kina Papú", "🇵🇬"], ["LAK", "Kip Laosiano", "🇱🇦"],
+    ["MWK", "Kuacha Malauí", "🇲🇼"], ["ZMW", "Kuacha Zambiano", "🇿🇲"], ["AOA", "Kuanza Angoleño", "🇦🇴"],
+    ["HRK", "Kuna Croata", "🇭🇷"], ["GEL", "Lari Georgiano", "🇬🇪"], ["ALL", "Lek Albanés", "🇦🇱"],
+    ["SLL", "Leone Antiguo de Sierra Leona", "🇸🇱"], ["SLE", "Leone de Sierra Leona", "🇸🇱"], ["MDL", "Leu Moldavo", "🇲🇩"],
+    ["RON", "Leu Rumano", "🇷🇴"], ["BGN", "Leva Búlgara", "🇧🇬"], ["GGP", "Libra de Guernsey", "🇬🇬"],
+    ["JEP", "Libra de Jersey", "🇯🇪"], ["IMP", "Libra de Man", "🇮🇲"], ["SHP", "Libra de Santa Elena", "🇸🇭"],
+    ["EGP", "Libra Egipcia", "🇪🇬"], ["GIP", "Libra Gibraltareña", "🇬🇮"], ["LBP", "Libra Libanesa", "🇱🇧"],
+    ["FKP", "Libra Malvinense", "🇫🇰"], ["SYP", "Libra Siria", "🇸🇾"], ["SDG", "Libra Sudanesa", "🇸🇩"],
+    ["SSP", "Libra Sursudanesa", "🇸🇸"], ["SZL", "Lilangeni Esuatiní", "🇸🇿"], ["LSL", "Loti Lesotense", "🇱🇸"],
+    ["AZN", "Manat Azerbaiyano", "🇦🇿"], ["TMT", "Manat Turcomano", "🇹🇲"], ["BAM", "Marco Convertible de Bosnia y Herzegovina", "🇧🇦"],
+    ["MZN", "Metical Mozambiqueño", "🇲🇿"], ["NGN", "Naira Nigeriano", "🇳🇬"], ["ERN", "Nakfa Eritreo", "🇪🇷"],
+    ["TWD", "Nuevo Dólar Taiwanés", "🇹🇼"], ["TOP", "Paanga Tongano", "🇹🇴"], ["MOP", "Pataca Macaense", "🇲🇴"],
+    ["PHP", "Peso Filipino", "🇵🇭"], ["BWP", "Pula Botsuano", "🇧🇼"], ["QAR", "Rial Catarí", "🇶🇦"],
+    ["IRR", "Rial Iraní", "🇮🇷"], ["OMR", "Rial Omaní", "🇴🇲"], ["SAR", "Rial Saudí", "🇸🇦"],
+    ["YER", "Rial Yemení", "🇾🇪"], ["KHR", "Riel Camboyano", "🇰🇭"], ["MYR", "Ringit Malasio", "🇲🇾"],
+    ["BYN", "Rublo Bielorruso", "🇧🇾"], ["RUB", "Rublo Ruso", "🇷🇺"], ["MVR", "Rufiya Maldiva", "🇲🇻"],
+    ["LKR", "Rupia Esrilanquesa", "🇱🇰"], ["IDR", "Rupia Indonesia", "🇮🇩"], ["MUR", "Rupia Mauriciana", "🇲🇺"],
+    ["NPR", "Rupia Nepalí", "🇳🇵"], ["PKR", "Rupia Pakistaní", "🇵🇰"], ["SCR", "Rupia Seychellense", "🇸🇨"],
+    ["KGS", "Som Kirguís", "🇰🇬"], ["TJS", "Somoni Tayiko", "🇹🇯"], ["UZS", "Sum Uzbeko", "🇺🇿"],
+    ["BDT", "Taka Bangladesí", "🇧🇩"], ["WST", "Tala Samoano", "🇼🇸"], ["KZT", "Tengue Kazajo", "🇰🇿"],
+    ["MNT", "Tugrik Mongol", "🇲🇳"], ["MRU", "Uguiya Mauritano", "🇲🇷"], ["VUV", "Vatu Vanuatense", "🇻🇺"]
   ];
   var BASE = "COP";
 
@@ -55,8 +98,9 @@
   function leerTasa(texto) {
     var s = String(texto || "").replace(/\s/g, "");
     if (!s) return NaN;
-    if (s.indexOf(",") >= 0) s = s.replace(/\./g, "").replace(",", ".");
-    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+    // El punto es siempre de miles (3.900 · 1.234.567) y la coma de decimales (0,00025): así se escribe en Colombia
+    // y así los campos los ponen solos, incluso mientras la persona va escribiendo (3.9000 → 39.000).
+    s = s.replace(/\./g, "").replace(",", ".");
     var n = Number(s);
     return n > 0 && isFinite(n) ? n : NaN;
   }
