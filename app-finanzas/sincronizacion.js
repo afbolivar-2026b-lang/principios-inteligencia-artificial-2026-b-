@@ -215,7 +215,7 @@
             Object.keys(estado).forEach(function (t) {
               if (!Array.isArray(estado[t]) || t === nombre) return;
               if (nombre === "deudas" && t === "abonos") estado[t] = estado[t].filter(function (x) { return x.deuda_id !== id; });
-              if (nombre === "grupos" && t === "gastos_grupo") estado[t] = estado[t].filter(function (x) { return x.grupo_id !== id; });
+              if (nombre === "grupos" && (t === "gastos_grupo" || t === "aportes_grupo")) estado[t] = estado[t].filter(function (x) { return x.grupo_id !== id; });
             });
           }
           function local() {

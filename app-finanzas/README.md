@@ -328,3 +328,11 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - Análisis: **mis sobres** (límites como sobres), **plan de quincena**, **días sin gastar**, **dónde más gastas** (lugares), **en qué parte del mes gastas** y **metas de reducción**; el consejo de **gastos fuera de lo normal**.
 - **Apartar al cobrar** (Configuración → «Tu plata»): al anotar un ingreso propone mover un porcentaje a una meta.
 - **PIN discreto**: un segundo PIN que abre NOVA con los valores ocultos.
+
+## Novedades: fotos en deudas y metas, historial de cambios, meta del grupo y mapa de calor
+
+- **Foto o documento en cada deuda** y **foto en cada meta** (mismo espacio privado `recibos`; columnas `foto_ruta`).
+- **Historial de cambios** (Configuración): lo que creas, editas o borras en movimientos, metas, deudas, abonos, límites y cuentas. Lo escriben disparadores de la base (`fin_historial`, solo lectura para la app).
+- **Meta compartida del grupo** con aportes por persona (`fin_aportes_grupo`, `fin_grupos.meta_*`).
+- **Mapa de calor** de los lugares donde más gastas (desde «Dónde más gastas»).
+- Migración aditiva: `supabase/migrations/nova_fotos_deudas_metas_historial_aportes.sql`.

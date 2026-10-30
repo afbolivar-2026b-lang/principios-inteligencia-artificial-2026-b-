@@ -188,3 +188,15 @@ test("plan de quincena, lugares, semanas, días sin gasto y reducción", () => {
   const r = C.progresoReduccion([g(1, 270000, 0, 0, "a", 5)], [g(1, 300000, 0, 0, "a", 5)], 5, 10);
   assert.strictEqual(r.meta, 270000); assert.ok(r.cumple); assert.strictEqual(C.progresoReduccion([], [], 5, 10), null);
 });
+
+test("historial de cambios y meta del grupo", () => {
+  const e = C.describirCambio({ tabla: "movimientos", accion: "editar", antes: { descripcion: "Tinto", monto: 2000 }, despues: { descripcion: "Tinto", monto: 3000 } });
+  assert.strictEqual(e.texto, "Editaste el movimiento «Tinto»"); assert.strictEqual(e.detalle, "valor $ 2.000 → $ 3.000"); assert.strictEqual(e.icono, "✏️");
+  const b = C.describirCambio({ tabla: "metas", accion: "borrar", antes: { nombre: "Moto", monto: null } });
+  assert.strictEqual(b.texto, "Borraste la meta «Moto»"); assert.strictEqual(b.icono, "🗑️");
+  const n = C.describirCambio({ tabla: "deudas", accion: "crear", despues: { persona: "Ana", monto: 50000 } });
+  assert.strictEqual(n.texto, "Creaste la deuda «Ana»"); assert.strictEqual(n.detalle, "$ 50.000");
+  const p = C.progresoMetaGrupo(1000000, [{ persona: "Yo", monto: 300000 }, { persona: "Ana", monto: 200000 }], ["Yo", "Ana", "Pedro"]);
+  assert.strictEqual(p.total, 500000); assert.strictEqual(p.pct, 50); assert.strictEqual(p.falta, 500000); assert.deepStrictEqual(p.porPersona, { Yo: 300000, Ana: 200000, Pedro: 0 });
+  assert.ok(C.progresoMetaGrupo(100, [{ persona: "Yo", monto: 100 }], ["Yo"]).cumplida);
+});

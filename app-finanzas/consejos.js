@@ -521,12 +521,47 @@
     return { antes: antes, actual: actual, meta: meta, ahorrado: Math.max(0, antes - actual), cumple: actual <= meta, faltaParaMeta: Math.max(0, actual - meta), uso: Math.round((actual / meta) * 100) };
   }
 
+  // ---------- Historial de cambios y meta del grupo ----------
+  var TABLAS_HIST = { movimientos: "movimiento", metas: "meta", deudas: "deuda", abonos: "abono", limites: "límite", cuentas: "cuenta" };
+  var CAMPOS_HIST = [["descripcion", "nombre", false], ["nombre", "nombre", false], ["persona", "persona", false], ["monto", "valor", true], ["objetivo", "objetivo", true], ["ahorrado", "ahorrado", true], ["tipo", "tipo", false], ["fecha", "fecha", false], ["vence", "vence", false], ["estado", "estado", false], ["saldo_inicial", "saldo inicial", true]];
+  // Convierte una fila del historial en una frase corta: «Editaste el movimiento "Tinto": valor $ 2.000 → $ 3.000».
+  function describirCambio(h) {
+    var obj = h.despues || h.antes || {}, tabla = TABLAS_HIST[h.tabla] || h.tabla;
+    var nombre = obj.descripcion || obj.nombre || obj.persona || (obj.monto != null ? plata(obj.monto) : "");
+    var verbo = h.accion === "crear" ? "Creaste" : h.accion === "borrar" ? "Borraste" : "Editaste";
+    var artic = h.tabla === "cuentas" || h.tabla === "deudas" || h.tabla === "metas" ? "la" : "el";
+    var texto = verbo + " " + artic + " " + tabla + (nombre ? " «" + nombre + "»" : "");
+    var detalle = "";
+    if (h.accion === "editar" && h.antes && h.despues) {
+      var cambios = [];
+      CAMPOS_HIST.forEach(function (c) {
+        var a = h.antes[c[0]], d = h.despues[c[0]];
+        if (a === undefined || String(a) === String(d)) return;
+        cambios.push(c[1] + " " + (c[2] ? plata(a) + " → " + plata(d) : String(a == null ? "—" : a).slice(0, 30) + " → " + String(d == null ? "—" : d).slice(0, 30)));
+      });
+      if (!cambios.length) cambios.push("otros datos");
+      detalle = cambios.slice(0, 3).join(" · ");
+    } else if (h.accion === "borrar" && obj.monto != null) detalle = plata(obj.monto);
+    else if (h.accion === "crear" && obj.monto != null) detalle = plata(obj.monto);
+    return { texto: texto, detalle: detalle, icono: h.accion === "crear" ? "➕" : h.accion === "borrar" ? "🗑️" : "✏️" };
+  }
+
+  // Avance de la meta compartida de un grupo: total aportado, porcentaje y aporte de cada persona.
+  function progresoMetaGrupo(objetivo, aportes, miembros) {
+    var por = {}, total = 0;
+    (miembros || []).forEach(function (m) { por[m] = 0; });
+    (aportes || []).forEach(function (a) { por[a.persona] = (por[a.persona] || 0) + num(a.monto); total += num(a.monto); });
+    var obj = num(objetivo);
+    return { total: total, objetivo: obj, falta: Math.max(0, obj - total), pct: obj > 0 ? Math.min(100, Math.round((total / obj) * 100)) : 0, porPersona: por, cumplida: obj > 0 && total >= obj };
+  }
+
   var api = { consejos: consejos, gastoInusual: gastoInusual, semana: semana, logros: logros, cuotaCredito: cuotaCredito, ahorroFuturo: ahorroFuturo, regla503020: regla503020, calendario: calendario, plata: plata,
     gastoMensualPromedio: gastoMensualPromedio, mejorPeorMes: mejorPeorMes, salud: salud, iva: iva, dividirCuenta: dividirCuenta, costoHabito: costoHabito,
     contadoVsCuotas: contadoVsCuotas, cdt: cdt, primaCesantias: primaCesantias, salirDeDeuda: salirDeDeuda, reto52: reto52,
     suscripciones: suscripciones, inflacionPersonal: inflacionPersonal, mesesConDatos: mesesConDatos, compararMeses: compararMeses, costoEvento: costoEvento, etiquetasUsadas: etiquetasUsadas, importarCSV: importarCSV,
     pagosFijosMes: pagosFijosMes, pronosticoMes: pronosticoMes, tuAnio: tuAnio, bolaDeNieve: bolaDeNieve, diasParaPago: diasParaPago, redondeo: redondeo, sugerirCategoria: sugerirCategoria,
-    planQuincena: planQuincena, lugares: lugares, semanasDelMes: semanasDelMes, diasSinGasto: diasSinGasto, progresoReduccion: progresoReduccion };
+    planQuincena: planQuincena, lugares: lugares, semanasDelMes: semanasDelMes, diasSinGasto: diasSinGasto, progresoReduccion: progresoReduccion,
+    describirCambio: describirCambio, progresoMetaGrupo: progresoMetaGrupo };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaConsejos = api;
 })(typeof window !== "undefined" ? window : this);

@@ -239,7 +239,7 @@
 
   // ---------- Fuentes de datos ----------
   // Las dos fuentes (Supabase y demostración) ofrecen las mismas operaciones sobre las mismas tablas.
-  var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites", "conversaciones", "documentos", "deudas", "abonos", "grupos", "gastos_grupo"];
+  var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites", "conversaciones", "documentos", "deudas", "abonos", "grupos", "gastos_grupo", "aportes_grupo"];
 
   function fuenteSupabaseBase(cliente, usuario) {
     function q(promesa) {
@@ -278,9 +278,10 @@
           q(t("deudas").select("*").order("fecha", { ascending: false })),
           q(t("abonos").select("*").order("fecha", { ascending: false })),
           q(t("grupos").select("*").order("id")),
-          q(t("gastos_grupo").select("*").order("fecha", { ascending: false }))
+          q(t("gastos_grupo").select("*").order("fecha", { ascending: false })),
+          q(t("aportes_grupo").select("*").order("fecha", { ascending: false }))
         ]).then(function (r) {
-          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5], programados: r[6], limites: r[7], conversaciones: r[8], documentos: r[9], deudas: r[10], abonos: r[11], grupos: r[12], gastos_grupo: r[13] };
+          var datos = { cuentas: r[0], categorias: r[1], movimientos: r[2], metas: r[3], perfil: r[4], frecuentes: r[5], programados: r[6], limites: r[7], conversaciones: r[8], documentos: r[9], deudas: r[10], abonos: r[11], grupos: r[12], gastos_grupo: r[13], aportes_grupo: r[14] };
           // Primera vez: crear el perfil, la cuenta principal y las categorías por defecto.
           var pendientes = [];
           if (!datos.perfil) {
@@ -378,11 +379,15 @@
       alMapear: remapearDatos, alCambiar: pintarAvisoRed,
       alFallar: function () { toast("Un cambio guardado sin internet no se pudo enviar y se descartó."); }
     });
+    // Historial de cambios: lo escriben disparadores de la base de datos; aquí solo se lee.
+    f.historial = function () {
+      return cliente.from("fin_historial").select("*").order("creado_en", { ascending: false }).limit(100).then(function (r) { if (r.error) throw new Error(r.error.message); return r.data; });
+    };
     // Fotos de recibos: espacio privado "recibos", una carpeta por usuario. Solo con internet.
     var bucket = cliente.storage.from("recibos");
     f.fotos = {
-      subir: function (blob, movId) {
-        var ruta = usuario.id + "/" + movId + "-" + Date.now() + ".jpg";
+      subir: function (blob, clave) {
+        var ruta = usuario.id + "/" + clave + "-" + Date.now() + ".jpg";
         return bucket.upload(ruta, blob, { contentType: "image/jpeg" }).then(function (r) { if (r.error) throw new Error(r.error.message); return ruta; });
       },
       url: function (ruta) { return bucket.createSignedUrl(ruta, 3600).then(function (r) { if (r.error) throw new Error(r.error.message); return r.data.signedUrl; }); },
@@ -421,7 +426,11 @@
         { id: 1, tipo: "debo", persona: "Banco", concepto: "Préstamo para la moto", monto: 2000000, fecha: A.claveDia(hace(40, 10)), vence: A.claveDia(hace(-20, 10)), nota: null },
         { id: 2, tipo: "me_deben", persona: "Carlos", concepto: "Me pidió prestado", monto: 300000, fecha: A.claveDia(hace(12, 10)), vence: null, nota: null }
       ],
-      grupos: [{ id: 1, nombre: "Paseo a Neiva", miembros: ["Yo", "Ana", "Pedro"] }],
+      grupos: [{ id: 1, nombre: "Paseo a Neiva", miembros: ["Yo", "Ana", "Pedro"], meta_nombre: "Hotel de diciembre", meta_objetivo: 1200000 }],
+      aportes_grupo: [
+        { id: 1, grupo_id: 1, persona: "Yo", monto: 200000, fecha: A.claveDia(hace(6, 10)) },
+        { id: 2, grupo_id: 1, persona: "Ana", monto: 150000, fecha: A.claveDia(hace(3, 10)) }
+      ],
       gastos_grupo: [
         { id: 1, grupo_id: 1, tipo: "gasto", descripcion: "Hotel", monto: 240000, pagador: "Yo", repartido: ["Yo", "Ana", "Pedro"], fecha: A.claveDia(hace(5, 10)) },
         { id: 2, grupo_id: 1, tipo: "gasto", descripcion: "Gasolina", monto: 90000, pagador: "Ana", repartido: ["Yo", "Ana", "Pedro"], fecha: A.claveDia(hace(4, 10)) }
@@ -475,10 +484,11 @@
       borrar: function (nombre, id) { tabla[nombre] = tabla[nombre].filter(function (x) { return x.id !== id; }); return Promise.resolve(); },
       guardarPerfil: function (cambios) { Object.assign(perfil, cambios); return Promise.resolve(copia(perfil)); },
       salir: function () { return Promise.resolve(); },
+      historial: function () { return Promise.resolve([]); },
       fotos: (function () {
         var guardadas = {};
         return {
-          subir: function (blob, movId) { var r = "demo:" + movId + ":" + Date.now(); guardadas[r] = URL.createObjectURL(blob); return Promise.resolve(r); },
+          subir: function (blob, clave) { var r = "demo:" + clave + ":" + Date.now(); guardadas[r] = URL.createObjectURL(blob); return Promise.resolve(r); },
           url: function (ruta) { return guardadas[ruta] ? Promise.resolve(guardadas[ruta]) : Promise.reject(new Error("sin foto")); },
           borrar: function (ruta) { delete guardadas[ruta]; return Promise.resolve(null); }
         };
@@ -824,6 +834,7 @@
         }).catch(function (err) { del.disabled = false; mensaje("meta-mensaje", err.message, true); });
       });
       li.append(cab, el("span", null, dinero(num(m.ahorrado)) + " de " + dinero(num(m.objetivo))), barra);
+      li.append(pintarFotoDe(m, { tabla: "metas", titulo: "📷 Foto de tu meta", clave: "meta", nombre: function (z) { return z.nombre; }, repintar: function () { pintar(); } }));
       var cuota = A.cuotaMeta(m);
       if (cuota) {
         var txt = cuota.hecha ? "🎉 ¡Meta cumplida!" : cuota.vencida ? "⏰ La fecha ya pasó y te faltan " + dinero(cuota.falta) :
@@ -1236,6 +1247,7 @@
       d.append(el("strong", null, x.nombre), el("small", null, ocultos ? "••••" : dinero(x.total) + " en " + x.veces + (x.veces === 1 ? " compra" : " compras")), a); li.append(d); ul.append(li);
     });
     art.append(ul);
+    var bc = el("button", "mini", "🔥 Ver mapa de calor"); bc.type = "button"; bc.addEventListener("click", abrirMapaCalor); art.append(bc);
   }
   function wSemanasMes(art) {
     titulo(art, "En qué parte del mes gastas");
@@ -2523,6 +2535,7 @@
     (tambien ? borrarMovimientos(ligados) : Promise.resolve()).then(function () { return fuente.borrar("deudas", id); }).then(function () {
       datos.deudas = datos.deudas.filter(function (x) { return x.id !== id; });
       datos.abonos = datos.abonos.filter(function (x) { return x.deuda_id !== id; });
+      if (d.foto_ruta && fuente.fotos) fuente.fotos.borrar(d.foto_ruta);
       toast("Deuda borrada"); programarAvisos();
       if (!desdeFormulario) { cerrarCapa(); pintar(); return; }
       // cierra el formulario y también el detalle si estaba abierto
@@ -2544,6 +2557,8 @@
     var debo = d.tipo === "debo";
     $("abono-titulo").textContent = d.persona;
     $("abono-whatsapp").hidden = debo || x.falta <= 0;
+    var cajaFoto = $("abono-foto"); cajaFoto.replaceChildren();
+    cajaFoto.append(pintarFotoDe(d, { tabla: "deudas", titulo: "📎 Foto o documento de la deuda", clave: "deuda", nombre: function (z) { return z.persona; }, repintar: function () { pintarAbonos(); } }));
     var r = $("abono-resumen");
     r.replaceChildren();
     var datosFila = el("div", "abono-datos");
@@ -3580,6 +3595,7 @@
         fila.append(b); caja.append(fila);
       });
     } else if (gastos.length) caja.append(el("span", "nota", "✅ Todos están a mano."));
+    pintarMetaGrupo(g);
     // formulario: quién pagó y entre quiénes
     var sel = $("gg-pagador"), previo = sel.value;
     sel.replaceChildren();
@@ -3676,6 +3692,95 @@
     }).catch(function (err) { mensaje("gg-mensaje", "No se pudo borrar: " + err.message, true); });
   });
 
+  // ---------- Historial de cambios ----------
+  $("btn-historial").addEventListener("click", function () {
+    var ul = $("lista-historial"); ul.replaceChildren(); ul.append(el("li", "vacio", "Cargando…"));
+    abrirCapa("pantalla-historial");
+    if (!fuente || fuente.demo || !fuente.historial) { ul.replaceChildren(el("li", "vacio", "En el modo demostración no se guarda historial. Entra con tu cuenta para verlo.")); return; }
+    fuente.historial().then(function (lista) {
+      ul.replaceChildren();
+      if (!lista.length) return ul.append(el("li", "vacio", "Todavía no hay cambios guardados. Desde ahora, todo lo que crees, edites o borres aparecerá aquí."));
+      lista.forEach(function (h) {
+        var d = NovaConsejos.describirCambio(h), li = el("li", "consejo"), cuando = new Date(h.creado_en);
+        li.append(el("span", "consejo-icono", d.icono));
+        var t = el("div"); t.append(el("strong", null, d.texto), el("small", null, (d.detalle ? d.detalle + " · " : "") + fechaCorta.format(cuando) + " " + hora.format(cuando))); li.append(t); ul.append(li);
+      });
+    }).catch(function (err) { ul.replaceChildren(el("li", "vacio", "No se pudo cargar el historial (" + err.message + "). Revisa tu conexión.")); });
+  });
+
+  // ---------- Mapa de calor de gastos ----------
+  var mapaCalor = null;
+  function abrirMapaCalor() {
+    var lugs = NovaConsejos.lugares(datos.movimientos, 60);
+    abrirCapa("pantalla-calor");
+    if (!lugs.length) { $("mapa-calor").textContent = "Todavía no hay pagos con ubicación guardada."; return; }
+    $("mapa-calor").textContent = "Cargando el mapa…";
+    cargarLeaflet().then(function () {
+      var L = window.L, caja = $("mapa-calor");
+      if (mapaCalor) { mapaCalor.remove(); mapaCalor = null; }
+      caja.textContent = "";
+      mapaCalor = L.map(caja, { zoomControl: true, scrollWheelZoom: false });
+      mapaCalor.attributionControl.setPrefix(false);
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, attribution: "Imágenes © Esri, Maxar, Earthstar Geographics" }).addTo(mapaCalor);
+      var max = lugs[0].total, grupo = L.featureGroup();
+      lugs.forEach(function (x) {
+        var r = Math.sqrt(x.total / max), color = "hsl(" + Math.round(120 - r * 120) + ", 90%, 50%)";
+        L.circleMarker([x.lat, x.lng], { radius: 8 + r * 26, color: "#fff", weight: 1, fillColor: color, fillOpacity: 0.65 }).bindPopup(x.nombre + "<br>" + (ocultos ? "••••" : pesos.format(x.total)) + " · " + x.veces + (x.veces === 1 ? " compra" : " compras")).addTo(grupo);
+      });
+      grupo.addTo(mapaCalor);
+      setTimeout(function () { mapaCalor.invalidateSize(); mapaCalor.fitBounds(grupo.getBounds().pad(0.3), { maxZoom: 17 }); }, 200);
+    }).catch(function () { $("mapa-calor").textContent = "No se pudo cargar el mapa. Revisa tu conexión."; });
+  }
+
+  // ---------- Meta compartida del grupo ----------
+  function pintarMetaGrupo(g) {
+    var caja = $("grupo-meta"); caja.replaceChildren();
+    caja.append(el("span", "titulo-det", "🎯 Meta del grupo"));
+    if (!g.meta_objetivo) {
+      caja.append(el("p", "nota", "Ahorren juntos para algo (un viaje, un regalo): cada uno anota lo que aporta y se ve el avance de todos."));
+      var crear = el("button", "mini", "🎯 Crear una meta para el grupo"); crear.type = "button";
+      crear.addEventListener("click", function () {
+        abrirEditor({ titulo: "Meta del grupo", campos: [{ clave: "nombre", etiqueta: "¿Para qué ahorran?", tipo: "texto", valor: "", requerido: true, max: 60 }, { clave: "objetivo", etiqueta: "¿Cuánto necesitan?", tipo: "plata", valor: "" }],
+          guardar: function (v) { return fuente.actualizar("grupos", g.id, { meta_nombre: v.nombre, meta_objetivo: v.objetivo }).then(function (n) { Object.assign(g, n); }); } });
+      });
+      return caja.append(crear);
+    }
+    var aportes = datos.aportes_grupo.filter(function (x) { return x.grupo_id === g.id; }).sort(function (a, b) { return String(b.fecha).localeCompare(String(a.fecha)) || b.id - a.id; });
+    var r = NovaConsejos.progresoMetaGrupo(g.meta_objetivo, aportes, g.miembros);
+    caja.append(el("strong", null, g.meta_nombre || "Meta"), barraSimple(r.pct), el("p", "calc-res", ocultos ? "••••" : (r.cumplida ? "🎉 ¡Meta cumplida! " : "") + dinero(r.total) + " de " + dinero(r.objetivo) + " (" + r.pct + " %)" + (r.falta > 0 ? " · faltan " + dinero(r.falta) : "")));
+    var ul = el("ul", "lista-simple");
+    g.miembros.forEach(function (n) { ul.append(el("li", null, n + ": " + (ocultos ? "••••" : dinero(r.porPersona[n] || 0)))); });
+    caja.append(ul);
+    var fila = el("div", "meta-abono"), sel = el("select"), inp = el("input"), ok = el("button", "primario", "Aportar");
+    g.miembros.forEach(function (n) { var o = el("option", null, n); o.value = n; sel.append(o); });
+    inp.className = "campo-plata"; inp.inputMode = "numeric"; inp.placeholder = "Aporte, ej. 50 mil"; inp.setAttribute("aria-label", "Valor del aporte"); ok.type = "button";
+    ok.addEventListener("click", function () {
+      var v = leerValor(inp.value); if (!(v > 0)) { inp.focus(); return; }
+      ok.disabled = true;
+      fuente.crear("aportes_grupo", { grupo_id: g.id, persona: sel.value, monto: v, fecha: A.claveDia(new Date()) }).then(function (n) { datos.aportes_grupo.push(n); toast("¡Aporte anotado!", sel.value, pesos.format(v)); pintar(); })
+        .catch(function (err) { ok.disabled = false; toast("No se pudo anotar: " + err.message); });
+    });
+    fila.append(sel, inp, ok); caja.append(fila);
+    aportes.slice(0, 6).forEach(function (a) {
+      var li = el("li", "mov"), t = el("div", "mov-texto"); t.append(el("strong", null, a.persona), el("small", null, fechaCorta.format(parteFechaLocal(a.fecha)))); li.append(t, el("span", "mov-monto positivo", pesos.format(num(a.monto)))); li.tabIndex = 0;
+      li.addEventListener("click", function () {
+        abrirEditor({ titulo: "Editar aporte", campos: [{ clave: "persona", etiqueta: "¿Quién aportó?", tipo: "select", valor: a.persona, opciones: g.miembros.map(function (n) { return [n, n]; }) }, { clave: "monto", etiqueta: "Valor", tipo: "plata", valor: num(a.monto) }, { clave: "fecha", etiqueta: "Fecha", tipo: "fecha", valor: a.fecha }],
+          guardar: function (v) { return fuente.actualizar("aportes_grupo", a.id, { persona: v.persona, monto: v.monto, fecha: v.fecha || a.fecha }).then(function (n) { Object.assign(a, n); }); },
+          borrar: function () { return fuente.borrar("aportes_grupo", a.id).then(function () { datos.aportes_grupo = datos.aportes_grupo.filter(function (y) { return y.id !== a.id; }); }); },
+          textoBorrar: "🗑 Borrar este aporte", confirmar: "¿Borrar este aporte?", avisoBorrado: "Aporte borrado" });
+      });
+      caja.append(li);
+    });
+    var editar = el("button", "mini", "✏️ Editar la meta"); editar.type = "button";
+    editar.addEventListener("click", function () {
+      abrirEditor({ titulo: "Editar la meta del grupo", campos: [{ clave: "nombre", etiqueta: "¿Para qué ahorran?", tipo: "texto", valor: g.meta_nombre, requerido: true, max: 60 }, { clave: "objetivo", etiqueta: "¿Cuánto necesitan?", tipo: "plata", valor: num(g.meta_objetivo) }],
+        guardar: function (v) { return fuente.actualizar("grupos", g.id, { meta_nombre: v.nombre, meta_objetivo: v.objetivo }).then(function (n) { Object.assign(g, n); }); },
+        borrar: function () { return fuente.actualizar("grupos", g.id, { meta_nombre: null, meta_objetivo: null }).then(function (n) { Object.assign(g, n); }); },
+        textoBorrar: "Quitar la meta (los aportes se conservan)", confirmar: "¿Quitar la meta del grupo? Los aportes anotados no se borran.", avisoBorrado: "Meta quitada" });
+    });
+    caja.append(editar);
+  }
+
   // ---------- Foto del recibo ----------
   function achicarFoto(archivo) {
     return new Promise(function (ok, mal) {
@@ -3691,24 +3796,26 @@
       img.src = url;
     });
   }
-  function pintarFotoRecibo(m) {
+  // Foto de una fila (recibo de un movimiento, documento de una deuda o foto de una meta).
+  // opc: { tabla, titulo, clave, nombre(fila), repintar() }
+  function pintarFotoDe(m, opc) {
     var caja = el("article", "tarjeta det-foto");
-    caja.append(el("span", "titulo-det", "📷 Foto del recibo"));
+    caja.append(el("span", "titulo-det", opc.titulo));
     var puede = fuente && fuente.fotos && m.id > 0;
     var aviso = el("p", "mensaje", ""); aviso.setAttribute("role", "status");
-    var idAhora = detalleId;
+    var vivo = true;
     if (m.foto_ruta && puede) {
-      var img = el("img", "det-foto-img"); img.alt = "Foto del recibo"; img.loading = "lazy";
+      var img = el("img", "det-foto-img"); img.alt = opc.titulo; img.loading = "lazy";
       img.addEventListener("click", function () { img.classList.toggle("grande"); });
       caja.append(img);
-      fuente.fotos.url(m.foto_ruta).then(function (u) { if (detalleId === idAhora) img.src = u; })
+      fuente.fotos.url(m.foto_ruta).then(function (u) { if (vivo) img.src = u; })
         .catch(function () { aviso.textContent = "No se pudo mostrar la foto (¿sin internet?)."; aviso.classList.add("error"); });
     }
     var archivo = el("input"); archivo.type = "file"; archivo.accept = "image/*"; archivo.hidden = true;
     var agregar = el("button", "mini", m.foto_ruta ? "🔄 Cambiar foto" : "📷 Agregar foto"); agregar.type = "button";
     var quitar = el("button", "mini", "🗑 Quitar foto"); quitar.type = "button"; quitar.hidden = !m.foto_ruta;
     agregar.addEventListener("click", function () {
-      if (!puede) { aviso.textContent = "La foto se puede agregar cuando tengas internet y el movimiento ya esté enviado."; aviso.classList.add("error"); return; }
+      if (!puede) { aviso.textContent = "La foto se puede agregar cuando tengas internet y ya esté enviado."; aviso.classList.add("error"); return; }
       archivo.click();
     });
     archivo.addEventListener("change", function () {
@@ -3716,22 +3823,26 @@
       if (!f) return;
       agregar.disabled = true; aviso.classList.remove("error"); aviso.textContent = "Guardando la foto…";
       var vieja = m.foto_ruta;
-      achicarFoto(f).then(function (blob) { return fuente.fotos.subir(blob, m.id); })
-        .then(function (ruta) { return fuente.actualizar("movimientos", m.id, { foto_ruta: ruta }).then(function (n) { Object.assign(m, n); return vieja ? fuente.fotos.borrar(vieja) : null; }); })
-        .then(function () { toast("¡Foto guardada!", m.descripcion); if (detalleId === idAhora) pintarDetalle(); })
+      achicarFoto(f).then(function (blob) { return fuente.fotos.subir(blob, opc.clave + "-" + m.id); })
+        .then(function (ruta) { return fuente.actualizar(opc.tabla, m.id, { foto_ruta: ruta }).then(function (n) { Object.assign(m, n); return vieja ? fuente.fotos.borrar(vieja) : null; }); })
+        .then(function () { toast("¡Foto guardada!", opc.nombre(m)); vivo = false; opc.repintar(); })
         .catch(function (err) { aviso.textContent = "No se pudo guardar la foto: " + err.message; aviso.classList.add("error"); })
         .finally(function () { agregar.disabled = false; });
     });
     quitar.addEventListener("click", function () {
-      if (!confirm("¿Quitar la foto de este recibo?")) return;
+      if (!confirm("¿Quitar esta foto?")) return;
       var vieja = m.foto_ruta;
-      fuente.actualizar("movimientos", m.id, { foto_ruta: null }).then(function (n) { Object.assign(m, n); return fuente.fotos.borrar(vieja); })
-        .then(function () { toast("Foto quitada"); if (detalleId === idAhora) pintarDetalle(); })
+      fuente.actualizar(opc.tabla, m.id, { foto_ruta: null }).then(function (n) { Object.assign(m, n); return fuente.fotos.borrar(vieja); })
+        .then(function () { toast("Foto quitada"); vivo = false; opc.repintar(); })
         .catch(function (err) { aviso.textContent = "No se pudo quitar: " + err.message; aviso.classList.add("error"); });
     });
     var fila = el("div", "det-foto-botones"); fila.append(agregar, quitar, archivo);
     caja.append(fila, aviso);
     return caja;
+  }
+  function pintarFotoRecibo(m) {
+    var idAhora = detalleId;
+    return pintarFotoDe(m, { tabla: "movimientos", titulo: "📷 Foto del recibo", clave: "mov", nombre: function (x) { return x.descripcion; }, repintar: function () { if (detalleId === idAhora) pintarDetalle(); } });
   }
 
   function pintarDetalle() {

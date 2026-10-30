@@ -521,6 +521,7 @@
         <input type="file" id="archivo-respaldo" accept=".json,application/json" hidden>
         <button type="button" id="btn-importar"><span class="menu-icono">📥</span><span><strong>Importar desde Excel o CSV</strong><small>Columnas: fecha, descripcion, monto (y tipo, categoria si quieres)</small></span></button>
         <input type="file" id="archivo-csv" accept=".csv,text/csv,text/plain" hidden>
+        <button type="button" id="btn-historial"><span class="menu-icono">🕘</span><span><strong>Historial de cambios</strong><small>Qué creaste, editaste o borraste y cuándo</small></span></button>
         <button type="button" id="btn-papelera"><span class="menu-icono">🗑️</span><span><strong>Papelera</strong><small id="papelera-estado">Recupera lo que borraste en los últimos 30 días</small></span></button>
         <label class="menu-fila"><span class="menu-icono">📳</span><span><strong>Sacudir para ocultar valores</strong><small>Sacude el celular 3 veces para ocultar o mostrar</small></span><input type="checkbox" id="sacudir-ocultar" class="interruptor"></label>
       </div>
@@ -919,6 +920,7 @@
     <button type="button" id="abono-borrar-icono" class="icono-btn" aria-label="Borrar la deuda"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></div>
   <article id="abono-resumen" class="tarjeta"></article>
   <button type="button" id="abono-whatsapp" class="mini" hidden>📲 Recordarle por WhatsApp</button>
+  <div id="abono-foto"></div>
   <form id="form-abono" class="formulario" autocomplete="off">
     <label for="abono-monto" class="centro" id="abono-et">Registrar un abono</label>
     <input id="abono-monto" class="monto-entrada" inputmode="numeric" placeholder="$ 0">
@@ -954,6 +956,7 @@
     <button type="button" id="grupo-compartir" class="icono-btn" aria-label="Compartir las cuentas del grupo"><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg></button>
     <button type="button" id="grupo-editar" class="icono-btn" aria-label="Editar el grupo"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></button></div>
   <article id="grupo-balance" class="tarjeta"></article>
+  <article id="grupo-meta" class="tarjeta"></article>
   <form id="form-gasto-grupo" class="formulario" autocomplete="off">
     <label for="gg-desc">Nuevo gasto del grupo</label>
     <input id="gg-desc" maxlength="100" required placeholder="Cena, hotel, gasolina…">
@@ -975,6 +978,16 @@
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Papelera</h1></div>
   <p class="nota">Lo que borras queda aquí 30 días en este dispositivo. Después se elimina para siempre.</p>
   <ul id="lista-papelera" class="lista-simple"></ul>
+</section>
+<section id="pantalla-historial" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Historial de cambios</h1></div>
+  <p class="nota">Aquí ves lo que creaste, editaste o borraste en tus movimientos, metas, deudas, abonos, límites y cuentas (los últimos 100 cambios).</p>
+  <ul id="lista-historial" class="lista-simple"></ul>
+</section>
+<section id="pantalla-calor" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Mapa de calor de gastos</h1></div>
+  <p class="nota">Cada círculo es un lugar donde pagaste: entre más grande y rojo, más gastaste ahí.</p>
+  <div id="mapa-calor" class="det-mapa mapa-calor"></div>
 </section>
 <section id="pantalla-documento" class="capa" hidden>
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="doc-titulo">Nuevo vencimiento</h1></div>

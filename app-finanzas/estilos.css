@@ -707,3 +707,5 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 
 .sobre { display: flex; flex-direction: column; gap: 4px; padding: 6px 0; }
 .sobre small { color: var(--muted); }
+
+.mapa-calor { height: 70vh; min-height: 360px; }
