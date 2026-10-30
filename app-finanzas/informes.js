@@ -9,8 +9,10 @@
   var MARCA = "NOVA · Creada por OPITA-DIGITAL · © 2026. Todos los derechos reservados.";
 
   // ---------- Utilidades ----------
-  var fmtNum = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 });
-  var fmtDec = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+  // Puntos de miles y coma decimal puestos a mano: salen igual en cualquier celular, tenga o no el idioma es-CO.
+  function agrupar(texto) { return texto.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  var fmtNum = { format: function (v) { v = Math.round(Number(v) || 0); return (v < 0 ? "-" : "") + agrupar(String(Math.abs(v))); } };
+  var fmtDec = { format: function (v) { v = Number(v) || 0; var p = Math.abs(v).toFixed(1).split("."); return (v < 0 ? "-" : "") + agrupar(p[0]) + "," + p[1]; } };
   function cop(v) { v = Math.round(Number(v) || 0); return (v < 0 ? "-" : "") + "$ " + fmtNum.format(Math.abs(v)); }
   function pct(v) { return fmtDec.format(Number(v) || 0) + " %"; }
   function corto(v) {

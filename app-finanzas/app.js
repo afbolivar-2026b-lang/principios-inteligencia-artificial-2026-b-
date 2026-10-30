@@ -9,8 +9,11 @@
   // ¿Corre dentro de la app de Android (Capacitor)?
   var enApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   var $ = function (id) { return document.getElementById(id); };
-  var pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
-  var numeroCO = new Intl.NumberFormat("es-CO");
+  // Los puntos de miles se ponen a mano y no con Intl: así salen igual en cualquier celular (algunos no traen el
+  // idioma es-CO y no ponen punto en los números de 4 cifras: 1000 en vez de 1.000).
+  function miles(n) { return String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  var pesos = { format: function (v) { v = Math.round(Number(v) || 0); return (v < 0 ? "-" : "") + "$ " + miles(v); } };
+  var numeroCO = { format: function (v) { v = Math.round(Number(v) || 0); return (v < 0 ? "-" : "") + miles(v); } };
   var hora = new Intl.DateTimeFormat("es-CO", { hour: "numeric", minute: "2-digit" });
   var fechaCorta = new Intl.DateTimeFormat("es-CO", { day: "numeric", month: "short" });
   var fechaLarga = new Intl.DateTimeFormat("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -97,19 +100,23 @@
     // Números ya escritos con puntos de miles y coma decimal (10.000 · 1.500.000 · 2.500,50): se leen tal cual.
     var t = String(texto).replace(/[$\s\u00a0]/g, "");
     if (/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(t) || /^\d+(,\d{1,2})?$/.test(t)) return Number(t.replace(/\./g, "").replace(",", "."));
+    if (/^\d{1,3}(,\d{3})+$/.test(t)) return Number(t.replace(/,/g, ""));     // 10,000 · 1,000,000 escritos con comas
     var r = Parser.interpretar(texto);
     return r.ok ? r.monto : NaN;
   }
   // En los campos de plata se van poniendo los puntos de miles mientras se escribe: 10000 → 10.000.
   // Si la persona escribe letras ("500 mil", "1 millón") se deja tal cual.
-  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo";
+  var CAMPOS_PLATA = "input.monto-entrada, #meta-objetivo, #meta-diaria, #presupuesto-monto, #cuenta-saldo, #doc-costo, .asis-monto, .meta-abono input";
   function formatearMontoEscrito(campo) {
     var v = campo.value;
     if (/[^\d.,$\s\u00a0]/.test(v) || /\s$/.test(v)) return;   // letras o un espacio al final (va a escribir "mil"): no se toca
     var pos = campo.selectionStart == null ? v.length : campo.selectionStart;
     var antes = v.slice(0, pos).replace(/[^\d,]/g, "").length;      // cifras (y coma) que hay antes del cursor
     var partes = v.replace(/[^\d,]/g, "").split(",");
-    var entero = partes[0].replace(/^0+(?=\d)/, ""), dec = partes.length > 1 ? partes.slice(1).join("").slice(0, 2) : null;
+    // En Colombia la coma son los decimales (2.500,50). Si queda con 3 o más cifras después de la coma, o con varias comas
+    // (10,000 · 1,000,000), la persona la usó como separador de miles: se toma como miles.
+    var comoMiles = partes.length > 2 || (partes.length === 2 && partes[1].length >= 3);
+    var entero = (comoMiles ? partes.join("") : partes[0]).replace(/^0+(?=\d)/, ""), dec = !comoMiles && partes.length > 1 ? partes[1].slice(0, 2) : null;
     var f = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (dec !== null ? "," + dec : "");
     if (f === v) return;
     campo.value = f;

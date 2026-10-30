@@ -47,7 +47,9 @@
   function formatoTasa(t) {
     var n = Number(t);
     if (!(n > 0)) return "";
-    return new Intl.NumberFormat("es-CO", { maximumFractionDigits: n >= 100 ? 0 : n >= 1 ? 2 : 6 }).format(n);
+    var p = n.toFixed(n >= 100 ? 0 : n >= 1 ? 2 : 6).split(".");
+    var dec = (p[1] || "").replace(/0+$/, "");
+    return p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (dec ? "," + dec : "");   // puntos de miles y coma decimal, sin depender del idioma del celular
   }
   // Lee una tasa escrita por la persona: "3.900", "3900,50", "3 900".
   function leerTasa(texto) {
