@@ -557,7 +557,7 @@
     $("tarjeta-deficit").hidden = t.neto >= 0;
     $("deficit-valor").textContent = ocultos ? "$ ••••" : "−" + pesos.format(Math.abs(t.neto));
 
-    pintarSeguro(); pintarPresupuesto(); pintarFrecuentes(); pintarMiniTarjetas();
+    pintarSeguro(); pintarPresupuesto(); pintarFrecuentes(); pintarMiniTarjetas(); pintarProyeccionYRacha(movs, rango);
     listaPorDia($("lista-inicio"), movs, desfaseInicio === 0 ? "Aún no hay movimientos en este periodo. Toca + para agregar el primero." : "No hubo movimientos en este periodo.", 60);
   }
   document.querySelectorAll("[data-periodo-inicio]").forEach(function (b) {
@@ -611,6 +611,22 @@
       nota.textContent = "Te pasaste por " + dinero(-resto) + " en este periodo";
       nota.classList.add("mal");
       barra.classList.add("excedido");
+    }
+  }
+
+  function pintarProyeccionYRacha(movs, rango) {
+    var pr = desfaseInicio === 0 ? A.proyeccionPeriodo(movs, rango) : null;
+    $("tarjeta-proyeccion").hidden = !pr;
+    if (pr) {
+      $("proyeccion-valor").textContent = ocultos ? "$ ••••" : "Gastarías " + pesos.format(pr.gastosFinal);
+      $("proyeccion-nota").textContent = ocultos ? "" : "Vas gastando " + pesos.format(Math.round(pr.ritmoDiario)) + " al día. " +
+        (pr.ingresos > 0 ? (pr.saldoFinal >= 0 ? "Te sobrarían " + pesos.format(pr.saldoFinal) + " al terminar." : "Te faltarían " + pesos.format(-pr.saldoFinal) + " para llegar a fin de periodo.") : "Quedan " + pr.diasRestantes + " días.");
+    }
+    var r = A.racha(datos.movimientos);
+    $("tarjeta-racha").hidden = r < 2;
+    if (r >= 2) {
+      $("racha-valor").textContent = r + " días seguidos";
+      $("racha-nota").textContent = r >= 30 ? "¡Un mes entero anotando! Eres imparable." : r >= 7 ? "¡Una semana completa! Sigue así." : "Anota algo cada día para no perderla.";
     }
   }
 
@@ -734,8 +750,8 @@
       edit.addEventListener("click", function () {
         abrirEditor({
           titulo: "Editar meta",
-          campos: [{ clave: "nombre", etiqueta: "¿Para qué ahorras?", tipo: "texto", valor: m.nombre, requerido: true, max: 60 }, { clave: "objetivo", etiqueta: "¿Cuánto necesitas?", tipo: "plata", valor: num(m.objetivo) }, { clave: "ahorrado", etiqueta: "Lo que llevas ahorrado", tipo: "plata", valor: num(m.ahorrado), permiteCero: true }],
-          guardar: function (v) { return fuente.actualizar("metas", m.id, { nombre: v.nombre, objetivo: v.objetivo, ahorrado: v.ahorrado }).then(function (n) { Object.assign(m, n); }); },
+          campos: [{ clave: "nombre", etiqueta: "¿Para qué ahorras?", tipo: "texto", valor: m.nombre, requerido: true, max: 60 }, { clave: "objetivo", etiqueta: "¿Cuánto necesitas?", tipo: "plata", valor: num(m.objetivo) }, { clave: "ahorrado", etiqueta: "Lo que llevas ahorrado", tipo: "plata", valor: num(m.ahorrado), permiteCero: true }, { clave: "fecha_limite", etiqueta: "¿Para cuándo? (opcional)", tipo: "fecha", valor: m.fecha_limite }],
+          guardar: function (v) { return fuente.actualizar("metas", m.id, { nombre: v.nombre, objetivo: v.objetivo, ahorrado: v.ahorrado, fecha_limite: v.fecha_limite || null }).then(function (n) { Object.assign(m, n); }); },
           borrar: function () { return fuente.borrar("metas", m.id).then(function () { datos.metas = datos.metas.filter(function (x) { return x.id !== m.id; }); }); },
           textoBorrar: "🗑 Borrar esta meta", confirmar: "¿Borrar la meta «" + m.nombre + "»?", avisoBorrado: "Meta borrada"
         });
@@ -757,7 +773,14 @@
           datos.metas = datos.metas.filter(function (x) { return x.id !== m.id; }); pintar();
         }).catch(function (err) { del.disabled = false; mensaje("meta-mensaje", err.message, true); });
       });
-      li.append(cab, el("span", null, dinero(num(m.ahorrado)) + " de " + dinero(num(m.objetivo))), barra, abono);
+      li.append(cab, el("span", null, dinero(num(m.ahorrado)) + " de " + dinero(num(m.objetivo))), barra);
+      var cuota = A.cuotaMeta(m);
+      if (cuota) {
+        var txt = cuota.hecha ? "🎉 ¡Meta cumplida!" : cuota.vencida ? "⏰ La fecha ya pasó y te faltan " + dinero(cuota.falta) :
+          "📅 Quedan " + cuota.dias + " días. Para llegar ahorra " + dinero(cuota.porSemana) + " por semana o " + dinero(cuota.porMes) + " por mes.";
+        li.append(el("span", "nota", txt));
+      }
+      li.append(abono);
       ul.append(li);
     });
   }
@@ -767,7 +790,7 @@
     var nombre = $("meta-nombre").value.trim(), objetivo = leerValor($("meta-objetivo").value);
     if (!nombre) return mensaje("meta-mensaje", "Escribe para qué ahorras.", true);
     if (!(objetivo > 0)) return mensaje("meta-mensaje", "No entendí el valor. Escribe por ejemplo 2 millones.", true);
-    fuente.crear("metas", { nombre: nombre, objetivo: objetivo }).then(function (m) {
+    fuente.crear("metas", Object.assign({ nombre: nombre, objetivo: objetivo }, $("meta-fecha").value ? { fecha_limite: $("meta-fecha").value } : {})).then(function (m) {
       datos.metas.push(m); e.target.reset(); mensaje("meta-mensaje", "Meta creada."); pintar();
     }).catch(function (err) { mensaje("meta-mensaje", err.message, true); });
   });

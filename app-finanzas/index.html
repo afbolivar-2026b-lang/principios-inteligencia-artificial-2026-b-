@@ -172,6 +172,17 @@
         <span id="deudas-inicio-nota" class="nota"></span>
       </button>
 
+      <article id="tarjeta-proyeccion" class="tarjeta seguro" hidden>
+        <span class="etiqueta">🔮 Proyección del periodo</span>
+        <strong id="proyeccion-valor"></strong>
+        <span id="proyeccion-nota" class="nota"></span>
+      </article>
+      <article id="tarjeta-racha" class="tarjeta seguro" hidden>
+        <span class="etiqueta">🔥 Tu racha</span>
+        <strong id="racha-valor"></strong>
+        <span id="racha-nota" class="nota"></span>
+      </article>
+
       <div id="alertas-docs" class="alertas-docs"></div>
 
       <article id="tarjeta-jornada" class="tarjeta jornada" hidden>
@@ -297,6 +308,8 @@
         <input id="meta-nombre" required placeholder="Audífonos nuevos">
         <label for="meta-objetivo">¿Cuánto necesitas?</label>
         <input id="meta-objetivo" required inputmode="numeric" placeholder="2 millones">
+        <label for="meta-fecha">¿Para cuándo la quieres? (opcional)</label>
+        <input id="meta-fecha" type="date">
         <button type="submit" class="primario">Crear meta</button>
         <p class="mensaje" id="meta-mensaje" role="status"></p>
       </form>

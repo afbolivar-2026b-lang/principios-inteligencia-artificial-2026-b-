@@ -63,6 +63,43 @@
     return t;
   }
 
+  // Días seguidos registrando movimientos. Si hoy aún no hay, la racha cuenta desde ayer (todavía no se pierde).
+  function racha(movs, ahora) {
+    var dias = {};
+    movs.forEach(function (m) { dias[claveDia(m.fecha)] = true; });
+    var d = new Date(ahora || new Date());
+    d.setHours(12, 0, 0, 0);
+    if (!dias[claveDia(d)]) d.setDate(d.getDate() - 1);
+    var n = 0;
+    while (dias[claveDia(d)]) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+
+  // Cómo terminará el periodo si sigues gastando a este ritmo. Solo tiene sentido en el periodo actual.
+  function proyeccionPeriodo(movs, rango, ahora) {
+    ahora = new Date(ahora || new Date());
+    if (!(ahora >= rango.desde && ahora < rango.hasta)) return null;
+    var DIA = 86400000;
+    var total = Math.round((rango.hasta - rango.desde) / DIA);
+    var pasados = Math.max(1, Math.ceil((ahora - rango.desde) / DIA));
+    var t = totales(movs);
+    if (pasados < 3 || t.gastos <= 0) return null;
+    var ritmo = t.gastos / pasados;
+    return { gastosHoy: t.gastos, ritmoDiario: ritmo, gastosFinal: Math.round(ritmo * total), diasRestantes: Math.max(0, total - pasados), ingresos: t.ingresos, saldoFinal: Math.round(t.ingresos - ritmo * total) };
+  }
+
+  // Cuánto ahorrar para llegar a una meta con fecha: por mes y por semana.
+  function cuotaMeta(meta, ahora) {
+    var falta = Math.max(0, num(meta.objetivo) - num(meta.ahorrado));
+    if (!meta.fecha_limite) return null;
+    var hoy = new Date(ahora || new Date()); hoy.setHours(0, 0, 0, 0);
+    var f = new Date(String(meta.fecha_limite).slice(0, 10) + "T00:00:00");
+    var dias = Math.round((f - hoy) / 86400000);
+    if (falta <= 0) return { hecha: true, falta: 0, dias: dias };
+    if (dias <= 0) return { vencida: true, falta: falta, dias: dias };
+    return { falta: falta, dias: dias, porSemana: Math.ceil(falta / (dias / 7)), porMes: Math.ceil(falta / (dias / 30.44)) };
+  }
+
   // ---------- Análisis ----------
   // { id de categoría (o "sin") : total gastado }, de mayor a menor.
   function porCategoria(movs, tipo) {
@@ -464,7 +501,7 @@
     avisoPorDefecto: avisoPorDefecto, presetDe: presetDe,
     esGanancia: esGanancia, esGastoTrabajo: esGastoTrabajo, esFijo: esFijo, rangoJornada: rangoJornada, resumenTrabajo: resumenTrabajo,
     estadoDocumento: estadoDocumento, sumarMeses: sumarMeses, proximoVencimiento: proximoVencimiento, avisosDocumentos: avisosDocumentos,
-    resumenDeudas: resumenDeudas, avisosDeudas: avisosDeudas
+    resumenDeudas: resumenDeudas, avisosDeudas: avisosDeudas, racha: racha, cuotaMeta: cuotaMeta, proyeccionPeriodo: proyeccionPeriodo
   };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaAnalisis = api;

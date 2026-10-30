@@ -222,3 +222,34 @@ test("avisosDeudas: 3 días antes y el mismo día; las vencidas avisan unos día
   assert.equal(new Set(av.map((a) => a.id)).size, av.length);   // ids distintos
   assert.ok(av.every((a) => a.id >= 900000000 && a.cuando > HOY));
 });
+
+test("racha de días registrando", () => {
+  const ahora = new Date(2026, 9, 30, 15);
+  const m = (d) => ({ fecha: new Date(2026, 9, d, 10).toISOString(), monto: 1000, tipo: "gasto" });
+  assert.strictEqual(A.racha([], ahora), 0);
+  assert.strictEqual(A.racha([m(30), m(29), m(28), m(25)], ahora), 3);
+  assert.strictEqual(A.racha([m(29), m(28)], ahora), 2);      // hoy aún no: no se pierde
+  assert.strictEqual(A.racha([m(27)], ahora), 0);
+});
+
+test("proyección del periodo", () => {
+  const rango = { desde: new Date(2026, 9, 1), hasta: new Date(2026, 10, 1) };
+  const m = (d, v) => ({ fecha: new Date(2026, 9, d, 10).toISOString(), monto: v, tipo: "gasto" });
+  const ahora = new Date(2026, 9, 10, 12);
+  const p = A.proyeccionPeriodo([m(2, 100000), m(5, 100000)], rango, ahora);
+  assert.strictEqual(p.diasRestantes, 21);
+  assert.strictEqual(p.gastosFinal, Math.round(200000 / 10 * 31));
+  assert.strictEqual(A.proyeccionPeriodo([m(2, 100)], rango, new Date(2026, 9, 2, 12)), null);     // muy pronto
+  assert.strictEqual(A.proyeccionPeriodo([m(2, 100)], rango, new Date(2026, 10, 5)), null);        // periodo ya pasó
+});
+
+test("cuota sugerida de una meta con fecha", () => {
+  const ahora = new Date(2026, 9, 30);
+  assert.strictEqual(A.cuotaMeta({ objetivo: 1000, ahorrado: 0 }, ahora), null);
+  const c = A.cuotaMeta({ objetivo: 2000000, ahorrado: 200000, fecha_limite: "2027-01-28" }, ahora);   // 90 días
+  assert.strictEqual(c.dias, 90);
+  assert.strictEqual(c.porSemana, Math.ceil(1800000 / (90 / 7)));
+  assert.ok(c.porMes > 580000 && c.porMes < 620000);
+  assert.ok(A.cuotaMeta({ objetivo: 100, ahorrado: 0, fecha_limite: "2026-10-01" }, ahora).vencida);
+  assert.ok(A.cuotaMeta({ objetivo: 100, ahorrado: 100, fecha_limite: "2026-10-01" }, ahora).hecha);
+});
