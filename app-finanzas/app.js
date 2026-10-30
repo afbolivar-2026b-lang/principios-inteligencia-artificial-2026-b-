@@ -204,6 +204,18 @@
       return promesa.then(function (r) { if (r.error) throw new Error(r.error.message); return r.data; });
     }
     function t(nombre) { return cliente.from("fin_" + nombre); }
+    // Supabase entrega como máximo 1.000 filas por consulta: se pide por páginas hasta traer todo (tope 20.000).
+    function cargarTodos(nombre) {
+      var todos = [], pagina = 0, tam = 1000;
+      function siguiente() {
+        return q(t(nombre).select("*").order("fecha", { ascending: false }).order("id", { ascending: false }).range(pagina * tam, pagina * tam + tam - 1)).then(function (filas) {
+          todos = todos.concat(filas);
+          if (filas.length === tam && todos.length < 20000) { pagina++; return siguiente(); }
+          return todos;
+        });
+      }
+      return siguiente();
+    }
     return {
       demo: false,
       email: usuario.email,
@@ -213,7 +225,7 @@
         return Promise.all([
           q(t("cuentas").select("*").order("id")),
           q(t("categorias").select("*").order("nombre")),
-          q(t("movimientos").select("*").order("fecha", { ascending: false }).limit(3000)),
+          cargarTodos("movimientos"),
           q(t("metas").select("*").order("id")),
           q(t("perfiles").select("*").maybeSingle()),
           q(t("frecuentes").select("*").order("id")),
@@ -1869,15 +1881,27 @@
     $("deuda-vence").value = d && d.vence ? String(d.vence).slice(0, 10) : "";
     $("deuda-anotar-fila").hidden = !!d; $("deuda-anotar").checked = true;
     $("deuda-borrar").hidden = !d;
+    llenarCuentas("deuda-cuenta", "deuda-cuenta-bloque", d && d.cuenta_id);
     mensaje("deuda-mensaje", "");
     abrirCapa("pantalla-deuda");
   }
   $("btn-nueva-deuda").addEventListener("click", function () { abrirDeuda(null); });
 
   // Anota la plata en los movimientos (categoría «Deudas») para que el saldo cuadre.
-  function anotarMovimientoDeuda(tipo, monto, descripcion, fecha) {
+  function llenarCuentas(selectId, bloqueId, elegida) {
+    var sel = $(selectId);
+    sel.replaceChildren();
+    datos.cuentas.forEach(function (c) { var o = el("option", null, c.nombre); o.value = c.id; sel.append(o); });
+    sel.value = elegida && datos.cuentas.some(function (c) { return c.id === elegida; }) ? elegida : datos.cuentas[0].id;
+    $(bloqueId).hidden = datos.cuentas.length < 2;     // con una sola cuenta no hay nada que elegir
+  }
+  function cuentaElegida(selectId, deuda) {
+    var v = Number($(selectId).value);
+    return datos.cuentas.some(function (c) { return c.id === v; }) ? v : (deuda && deuda.cuenta_id) || datos.cuentas[0].id;
+  }
+  function anotarMovimientoDeuda(tipo, monto, descripcion, fecha, cuentaId) {
     return categoriaPorNombre("Deudas", tipo, "banco").then(function (c) {
-      return fuente.crear("movimientos", { cuenta_id: datos.cuentas[0].id, categoria_id: c.id, tipo: tipo, descripcion: descripcion, monto: monto, fecha: fecha, etiquetas: ["deuda"], estado: "pagado" });
+      return fuente.crear("movimientos", { cuenta_id: cuentaId || datos.cuentas[0].id, categoria_id: c.id, tipo: tipo, descripcion: descripcion, monto: monto, fecha: fecha, etiquetas: ["deuda"], estado: "pagado" });
     }).then(function (m) { datos.movimientos.push(m); ordenarMovimientos(); return m; });
   }
   function mediodia(clave) { var p = String(clave).slice(0, 10).split("-").map(Number); return new Date(p[0], p[1] - 1, p[2], 12).toISOString(); }
@@ -1889,30 +1913,50 @@
     if (!persona) return mensaje("deuda-mensaje", tipoDeuda === "debo" ? "Escribe a quién le debes." : "Escribe quién te debe.", true);
     if (!fecha) return mensaje("deuda-mensaje", "Elige la fecha.", true);
     if (vence && vence < fecha) return mensaje("deuda-mensaje", "La fecha de pago no puede ser antes del préstamo.", true);
-    var fila = { tipo: tipoDeuda, persona: persona, concepto: $("deuda-concepto").value.trim() || null, monto: monto, fecha: fecha, vence: vence || null };
+    var cuentaId = cuentaElegida("deuda-cuenta", deudaActual);
+    var fila = { tipo: tipoDeuda, persona: persona, concepto: $("deuda-concepto").value.trim() || null, monto: monto, fecha: fecha, vence: vence || null, cuenta_id: cuentaId };
     var editando = !!deudaActual, anotar = !editando && $("deuda-anotar").checked;
     var op = editando ? fuente.actualizar("deudas", deudaActual.id, fila) : fuente.crear("deudas", fila);
     op.then(function (d) {
       if (editando) Object.assign(deudaActual, d); else datos.deudas.push(d);
+      var recibi = d.tipo === "debo", tipoMov = recibi ? "ingreso" : "gasto", desc = (recibi ? "Préstamo de " : "Préstamo a ") + d.persona;  // si me prestaron, entra plata; si presté, sale
+      if (editando) {
+        // Si la deuda anotó un movimiento, se corrige también (valor, fecha, quién, cuenta).
+        var mov = d.movimiento_id && datos.movimientos.find(function (x) { return x.id === d.movimiento_id; });
+        if (!mov) return d;
+        return categoriaPorNombre("Deudas", tipoMov, "banco").then(function (c) {
+          return fuente.actualizar("movimientos", mov.id, { tipo: tipoMov, monto: num(d.monto), descripcion: desc, fecha: mediodia(d.fecha), cuenta_id: cuentaId, categoria_id: c.id });
+        }).then(function (n) { Object.assign(mov, n); ordenarMovimientos(); return d; });
+      }
       if (!anotar) return d;
-      var recibi = d.tipo === "debo";   // si me prestaron, entra plata; si presté, sale
-      return anotarMovimientoDeuda(recibi ? "ingreso" : "gasto", num(d.monto), (recibi ? "Préstamo de " : "Préstamo a ") + d.persona, mediodia(d.fecha)).then(function () { return d; });
+      return anotarMovimientoDeuda(tipoMov, num(d.monto), desc, mediodia(d.fecha), cuentaId).then(function (m) {
+        return fuente.actualizar("deudas", d.id, { movimiento_id: m.id }).then(function (n) { Object.assign(d, n); return d; });
+      });
     }).then(function (d) {
       toast("✓ Deuda guardada: " + d.persona + " " + pesos.format(num(d.monto)));
-      cerrarCapa(); pintar();
+      cerrarCapa(); pintar(); programarAvisos();
     }).catch(function (err) { mensaje("deuda-mensaje", "No se pudo guardar: " + err.message, true); });
   });
+  function borrarMovimientos(ids) {
+    return ids.reduce(function (p, id) {
+      return p.then(function () { return fuente.borrar("movimientos", id); }).then(function () { datos.movimientos = datos.movimientos.filter(function (m) { return m.id !== id; }); });
+    }, Promise.resolve());
+  }
   function borrarDeuda(d, desdeFormulario) {
-    if (!d || !confirm("¿Borrar la deuda con «" + d.persona + "» y todos sus abonos? Los movimientos que ya anotaste no se borran.")) return;
+    if (!d || !confirm("¿Borrar la deuda con «" + d.persona + "» y todos sus abonos?")) return;
     var id = d.id;
-    fuente.borrar("deudas", id).then(function () {
+    // Los movimientos que se anotaron con la deuda y sus abonos: se pregunta si también se borran, para que el saldo cuadre.
+    var ligados = [d.movimiento_id].concat(datos.abonos.filter(function (x) { return x.deuda_id === id; }).map(function (x) { return x.movimiento_id; }))
+      .filter(function (mid, i, a) { return mid && a.indexOf(mid) === i && datos.movimientos.some(function (m) { return m.id === mid; }); });
+    var tambien = ligados.length > 0 && confirm("Con esta deuda se anotaron " + ligados.length + (ligados.length === 1 ? " movimiento" : " movimientos") + " en tu saldo.\n\n¿Borrarlos también?\nAceptar: se borran y tu saldo vuelve a como estaba.\nCancelar: se quedan en tus movimientos.");
+    (tambien ? borrarMovimientos(ligados) : Promise.resolve()).then(function () { return fuente.borrar("deudas", id); }).then(function () {
       datos.deudas = datos.deudas.filter(function (x) { return x.id !== id; });
       datos.abonos = datos.abonos.filter(function (x) { return x.deuda_id !== id; });
-      toast("Deuda borrada");
+      toast("Deuda borrada"); programarAvisos();
       if (!desdeFormulario) { cerrarCapa(); pintar(); return; }
       // cierra el formulario y también el detalle si estaba abierto
       cerrarYLuego(function () { if (pilaCapas.length && pilaCapas[pilaCapas.length - 1] === "pantalla-abonos") cerrarCapa(); pintar(); });
-    }).catch(function (err) { mensaje(desdeFormulario ? "deuda-mensaje" : "abono-mensaje", err.message, true); });
+    }).catch(function (err) { pintar(); mensaje(desdeFormulario ? "deuda-mensaje" : "abono-mensaje", err.message, true); });
   }
   $("deuda-borrar").addEventListener("click", function () { borrarDeuda(deudaActual, true); });
   $("abono-borrar").addEventListener("click", function () { borrarDeuda(deudaAbierta, false); });
@@ -1951,11 +1995,26 @@
       var editar = el("button", "chip-opcion mini", "✏️ Editar"); editar.type = "button";
       editar.addEventListener("click", function () {
         abrirEditor({
-          titulo: "Editar abono", ayuda: "Si ya lo habías anotado en tus movimientos, ese movimiento no cambia: corrígelo desde el detalle del movimiento.",
+          titulo: "Editar abono",
+          ayuda: a.movimiento_id && datos.movimientos.some(function (m) { return m.id === a.movimiento_id; }) ? "El movimiento que se anotó con este abono también se corrige." : "Este abono no tiene un movimiento ligado: si lo habías anotado en tus movimientos, corrígelo desde su detalle.",
           campos: [{ clave: "monto", etiqueta: "Valor del abono", tipo: "plata", valor: num(a.monto) }, { clave: "fecha", etiqueta: "Fecha", tipo: "fecha", valor: a.fecha }, { clave: "nota", etiqueta: "Nota (opcional)", tipo: "texto", valor: a.nota, max: 200 }],
-          guardar: function (v) { return fuente.actualizar("abonos", a.id, { monto: v.monto, fecha: v.fecha || a.fecha, nota: v.nota || null }).then(function (n) { Object.assign(a, n); }); },
-          borrar: function () { return fuente.borrar("abonos", a.id).then(function () { datos.abonos = datos.abonos.filter(function (y) { return y.id !== a.id; }); }); },
-          textoBorrar: "🗑 Borrar este abono", confirmar: "¿Borrar este abono de " + pesos.format(num(a.monto)) + "? El movimiento que anotaste no se borra.", avisoBorrado: "Abono borrado"
+          guardar: function (v) {
+            return fuente.actualizar("abonos", a.id, { monto: v.monto, fecha: v.fecha || a.fecha, nota: v.nota || null }).then(function (n) {
+              Object.assign(a, n);
+              var mov = a.movimiento_id && datos.movimientos.find(function (x) { return x.id === a.movimiento_id; });
+              if (!mov) return null;
+              return fuente.actualizar("movimientos", mov.id, { monto: num(a.monto), fecha: mediodia(a.fecha) }).then(function (m) { Object.assign(mov, m); ordenarMovimientos(); });
+            }).then(function () { programarAvisos(); });
+          },
+          borrar: function () {
+            var mov = a.movimiento_id && datos.movimientos.find(function (x) { return x.id === a.movimiento_id; });
+            var tambien = mov && confirm("¿Borrar también el movimiento de " + pesos.format(num(mov.monto)) + " que se anotó con este abono?\nAceptar: se borra y tu saldo vuelve a como estaba.\nCancelar: se queda en tus movimientos.");
+            return fuente.borrar("abonos", a.id).then(function () {
+              datos.abonos = datos.abonos.filter(function (y) { return y.id !== a.id; });
+              return tambien ? borrarMovimientos([mov.id]) : null;
+            }).then(function () { programarAvisos(); });
+          },
+          textoBorrar: "🗑 Borrar este abono", confirmar: "¿Borrar este abono de " + pesos.format(num(a.monto)) + "?", avisoBorrado: "Abono borrado"
         });
       });
       li.append(el("span", "mov-icono chico", "💵"), txt, editar);
@@ -1965,6 +2024,7 @@
   function abrirAbonos(d) {
     deudaAbierta = d;
     $("abono-monto").value = ""; $("abono-nota").value = ""; $("abono-anotar").checked = true;
+    llenarCuentas("abono-cuenta", "abono-cuenta-bloque", d.cuenta_id);
     mensaje("abono-mensaje", "");
     pintarAbonos();
     abrirCapa("pantalla-abonos");
@@ -1980,17 +2040,19 @@
     if (!x) return;
     if (!(monto > 0)) return mensaje("abono-mensaje", "Escribe cuánto abonas. Por ejemplo 100 mil.", true);
     if (monto > x.falta + 0.5) return mensaje("abono-mensaje", "Es más de lo que falta (" + pesos.format(x.falta) + ").", true);
-    var boton = $("abono-guardar"), anotar = $("abono-anotar").checked, debo = d.tipo === "debo";
+    var boton = $("abono-guardar"), anotar = $("abono-anotar").checked, debo = d.tipo === "debo", cuentaId = cuentaElegida("abono-cuenta", d);
     boton.disabled = true;
     fuente.crear("abonos", { deuda_id: d.id, monto: monto, fecha: A.claveDia(new Date()), nota: $("abono-nota").value.trim() || null }).then(function (a) {
       datos.abonos.push(a);
       if (!anotar) return;
-      return anotarMovimientoDeuda(debo ? "gasto" : "ingreso", monto, (debo ? "Abono a la deuda con " : "Abono de ") + d.persona, new Date().toISOString());
+      return anotarMovimientoDeuda(debo ? "gasto" : "ingreso", monto, (debo ? "Abono a la deuda con " : "Abono de ") + d.persona, new Date().toISOString(), cuentaId).then(function (m) {
+        return fuente.actualizar("abonos", a.id, { movimiento_id: m.id }).then(function (n) { Object.assign(a, n); });
+      });
     }).then(function () {
       var quedan = Math.max(0, x.falta - monto);
       toast(quedan <= 0 ? "🎉 ¡Deuda pagada completa!" : "✓ Abono guardado. Falta " + pesos.format(quedan));
       $("abono-monto").value = ""; $("abono-nota").value = "";
-      pintar();
+      pintar(); programarAvisos();
     }).catch(function (err) { mensaje("abono-mensaje", "No se pudo guardar: " + err.message, true); })
       .finally(function () { boton.disabled = false; });
   });
@@ -1999,7 +2061,7 @@
   function programarAvisos() {
     var N = enApp && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications;
     if (!N || !fuente || fuente.demo) return Promise.resolve();
-    var avisos = conductor() ? A.avisosDocumentos(datos.documentos).slice(0, 60) : [];
+    var avisos = (conductor() ? A.avisosDocumentos(datos.documentos) : []).concat(A.avisosDeudas(resumenDeDeudas().lista)).slice(0, 60);
     return N.getPending().then(function (p) {
       var viejos = (p && p.notifications || []).map(function (n) { return { id: n.id }; });
       return viejos.length ? N.cancel({ notifications: viejos }) : null;
@@ -3641,13 +3703,13 @@
   }
   function abrirCodigo(email) {
     codigoDe = { email: email, tipo: "signup" };
-    $("codigo-texto").textContent = "Te enviamos un código a " + email + ". Escríbelo aquí para terminar de crear tu cuenta. Revisa también Spam.";
+    $("codigo-texto").textContent = "Te enviamos un correo a " + email + ". Si trae un código de números, escríbelo aquí. Si trae un botón o enlace, tócalo desde este mismo celular. Revisa también Spam.";
     $("codigo-valor").value = ""; mensaje("codigo-mensaje", "");
     verAuth("form-codigo"); $("codigo-valor").focus(); pintarEnfriamiento();
   }
   function abrirRecuperar(email) {
     codigoDe = { email: email, tipo: "recovery" };
-    $("recuperar-texto").textContent = "Si " + email + " tiene cuenta, te enviamos un código. Escríbelo aquí y elige tu contraseña nueva. Revisa también Spam.";
+    $("recuperar-texto").textContent = "Si " + email + " tiene cuenta, te enviamos un correo. Si trae un código de números, escríbelo aquí y elige tu contraseña nueva; si trae un enlace, tócalo desde este mismo celular. Revisa también Spam.";
     ["recuperar-codigo", "recuperar-clave", "recuperar-clave-2"].forEach(function (id) { $(id).value = ""; });
     mensaje("recuperar-mensaje", "");
     verAuth("form-recuperar"); $("recuperar-codigo").focus(); pintarEnfriamiento();

@@ -389,6 +389,38 @@
     return out.sort(function (a, b) { return a.cuando - b.cuando; });
   }
 
+  // Avisos en el celular para las deudas con fecha de pago: 3 días antes, ese día y, si ya pasó, uno diario durante 3 días.
+  // lista: lo que devuelve resumenDeudas().lista. Los ids van aparte de los de los documentos.
+  function pesosTxt(n) { return "$ " + String(Math.round(Math.abs(Number(n) || 0))).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  function avisosDeudas(lista, ahora) {
+    ahora = ahora || new Date();
+    var out = [];
+    (lista || []).forEach(function (x) {
+      if (!(x.falta > 0) || !x.deuda.vence) return;
+      var d = x.deuda, v = parteFecha(d.vence), debo = d.tipo === "debo", base = 900000000 + (Number(d.id) || 0) * 100, quien = d.persona;
+      if (v < inicioDia(ahora)) {
+        var puestos = 0;
+        for (var k = 0; k < 4 && puestos < 3; k++) {
+          var dia = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + k, 9, 0, 0);
+          if (dia <= ahora) continue;
+          puestos++;
+          out.push({ id: base + 50 + k, deudaId: d.id, cuando: dia,
+            titulo: debo ? "Se pasó la fecha de pago con " + quien : quien + " no te ha pagado",
+            texto: (debo ? "Todavía debes " : "Todavía te debe ") + pesosTxt(x.falta) + "." });
+        }
+        return;
+      }
+      [3, 0].forEach(function (n) {
+        var cuando = new Date(v.getFullYear(), v.getMonth(), v.getDate() - n, n === 0 ? 8 : 9, 0, 0);
+        if (cuando <= ahora) return;
+        out.push({ id: base + n, deudaId: d.id, cuando: cuando,
+          titulo: n === 0 ? (debo ? "Hoy vence tu deuda con " + quien : "Hoy " + quien + " te debe pagar") : (debo ? "En 3 días vence tu deuda con " + quien : "En 3 días " + quien + " te debe pagar"),
+          texto: (debo ? "Faltan " : "Te debe todavía ") + pesosTxt(x.falta) + ". Entra a NOVA para registrar el abono." });
+      });
+    });
+    return out.sort(function (p, q) { return p.cuando - q.cuando; });
+  }
+
   // ---------- Exportar ----------
   function csv(filas, columnas) {
     function celda(v) {
@@ -432,7 +464,7 @@
     avisoPorDefecto: avisoPorDefecto, presetDe: presetDe,
     esGanancia: esGanancia, esGastoTrabajo: esGastoTrabajo, esFijo: esFijo, rangoJornada: rangoJornada, resumenTrabajo: resumenTrabajo,
     estadoDocumento: estadoDocumento, sumarMeses: sumarMeses, proximoVencimiento: proximoVencimiento, avisosDocumentos: avisosDocumentos,
-    resumenDeudas: resumenDeudas
+    resumenDeudas: resumenDeudas, avisosDeudas: avisosDeudas
   };
   if (typeof module === "object" && module.exports) module.exports = api;
   else raiz.NovaAnalisis = api;

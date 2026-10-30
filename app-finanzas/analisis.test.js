@@ -201,3 +201,24 @@ test("resumenDeudas: sin deudas", () => {
   const r = A.resumenDeudas([], [], HOY);
   assert.equal(r.debo, 0); assert.equal(r.meDeben, 0); assert.equal(r.lista.length, 0);
 });
+
+test("avisosDeudas: 3 días antes y el mismo día; las vencidas avisan unos días; las pagadas no", () => {
+  const deudas = [
+    { id: 1, tipo: "debo", persona: "Banco", monto: 1000000, vence: "2026-11-05" },
+    { id: 2, tipo: "me_deben", persona: "Carlos", monto: 300000, vence: "2026-10-20" },
+    { id: 3, tipo: "debo", persona: "Mamá", monto: 200000, vence: "2026-11-02" },
+    { id: 4, tipo: "debo", persona: "Sin fecha", monto: 50000 }
+  ];
+  const abonos = [{ deuda_id: 3, monto: 200000 }];
+  const r = A.resumenDeudas(deudas, abonos, HOY);
+  const av = A.avisosDeudas(r.lista, HOY);
+  const de = (id) => av.filter((a) => a.deudaId === id);
+  assert.equal(de(1).length, 2);                         // 3 días antes (2 nov) y el día (5 nov)
+  assert.ok(/Banco/.test(de(1)[0].titulo) && /1\.000\.000/.test(de(1)[0].texto));
+  assert.equal(de(2).length, 3);                         // vencida: tres días seguidos desde mañana
+  assert.ok(/no te ha pagado/.test(de(2)[0].titulo));
+  assert.equal(de(3).length, 0);                         // ya pagada
+  assert.equal(de(4).length, 0);                         // sin fecha de pago
+  assert.equal(new Set(av.map((a) => a.id)).size, av.length);   // ids distintos
+  assert.ok(av.every((a) => a.id >= 900000000 && a.cuando > HOY));
+});

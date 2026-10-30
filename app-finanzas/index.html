@@ -821,6 +821,7 @@
     <input id="deuda-persona" maxlength="60" required placeholder="Banco, mamá, Juan…">
     <label for="deuda-concepto">¿Para qué fue? (opcional)</label>
     <input id="deuda-concepto" maxlength="100" placeholder="Préstamo para la moto">
+    <div id="deuda-cuenta-bloque" hidden><label for="deuda-cuenta">¿Con qué cuenta?</label><select id="deuda-cuenta"></select></div>
     <label for="deuda-fecha">Fecha del préstamo</label>
     <input id="deuda-fecha" type="date" required>
     <label for="deuda-vence">¿Para cuándo hay que pagar? (opcional)</label>
@@ -842,6 +843,7 @@
     <label for="abono-monto" class="centro" id="abono-et">Registrar un abono</label>
     <input id="abono-monto" class="monto-entrada" inputmode="numeric" placeholder="$ 0">
     <button type="button" class="chip-opcion" id="abono-todo">Es todo lo que falta</button>
+    <div id="abono-cuenta-bloque" hidden><label for="abono-cuenta">¿Con qué cuenta?</label><select id="abono-cuenta"></select></div>
     <label for="abono-nota">Nota (opcional)</label>
     <input id="abono-nota" maxlength="200" placeholder="Pago de la quincena">
     <label class="menu-fila"><span class="menu-icono">🧾</span><span><strong>Anotarlo en mis movimientos</strong><small id="abono-anotar-nota"></small></span><input type="checkbox" id="abono-anotar" class="interruptor" checked></label>
