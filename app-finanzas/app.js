@@ -2160,8 +2160,8 @@
     c.hidden = false;
     document.body.classList.add("con-capa");
     history.pushState({ capa: id }, "");
-    var foco = c.querySelector("input:not([type=checkbox]):not([type=date]), textarea, button");
-    if (c.classList.contains("capa") && foco && id !== "pantalla-registro") setTimeout(function () { foco.focus({ preventScroll: true }); }, 30);
+    var foco = c.querySelector("input:not([type=checkbox]):not([type=date]), textarea"); // no se enfoca ningún botón: así la flecha de volver no sale con un aro
+    if (c.classList.contains("capa") && foco && id !== "pantalla-registro" && id !== "pantalla-detalle" && id !== "pantalla-abonos") setTimeout(function () { foco.focus({ preventScroll: true }); }, 30);
   }
   function ocultarCapa() {
     var id = pilaCapas.pop();
@@ -2280,7 +2280,7 @@
     });
   }
   function pintarFechaTasas(t) {
-    var cuando = t.guardado ? new Date(t.guardado) : null;
+    var cuando = t && t.guardado ? new Date(t.guardado) : null;
     $("tasas-fecha").textContent = t
       ? "Tasas de ExchangeRate-API" + (t.fecha ? " del " + t.fecha.slice(5, 16) : "") + (cuando ? " · revisadas hoy a las " + hora.format(cuando) : "") + " — la app las vuelve a revisar sola cada 30 minutos y, sin internet, usa las últimas guardadas."
       : "No pude descargar las tasas. Sin internet no hay tasas guardadas todavía.";

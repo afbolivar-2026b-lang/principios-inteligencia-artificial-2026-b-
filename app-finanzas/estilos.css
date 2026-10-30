@@ -621,3 +621,5 @@ button.inf-ico { width: 44px; height: 44px; padding: 6px; border-radius: 12px; b
 .mov-icono .emoji { max-width: 100%; text-align: center; overflow: hidden; }
 .mov-icono svg { max-width: 62%; max-height: 62%; }
 .det-cabecera .mov-texto strong { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+.sub-cabecera { gap: 10px; }
+.sub-cabecera .icono-btn:focus:not(:focus-visible) { outline: none; }
