@@ -290,3 +290,11 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - **Foto del recibo** en el detalle (bucket privado `recibos`, `fin_movimientos.foto_ruta`).
 - **Gastos compartidos** (Planes): grupos con nombres de personas, quién pagó y entre quiénes, saldos y "quién le paga a quién" (`fin_grupos`, `fin_gastos_grupo`).
 - Todas las migraciones son aditivas: `supabase/migrations/nova_metas_fecha.sql`, `nova_fotos_recibos.sql`, `nova_gastos_compartidos.sql`.
+
+## Novedades: consejos, calendario, logros, calculadoras y recordatorios
+
+- **Consejos de NOVA** (Análisis): promedio por día, día y hora de más gasto, mayor gasto, gastos hormiga, comparación con el periodo anterior, tasa de ahorro, cuánto te alcanza el saldo, lo que más repites, lo que más subió, días sin gastar, gastos fijos detectados y dónde se va tu plata (`consejos.js`).
+- **Calendario de gastos**, **Logros** y **Calculadoras** (crédito, ahorro y regla 50/30/20) como gráficos de Análisis; se pueden ocultar o reordenar con «Personalizar».
+- Inicio: saludo y tarjeta «Tu semana» con botón para compartir; aviso de gasto fuera de lo normal al guardar.
+- Detalle: «Repetir este gasto». Grupos: compartir las cuentas por WhatsApp u otras apps.
+- Apariencia: color (verde, azul, morado, naranja) y letra grande. Recordatorios opcionales (noche y víspera de pagos programados, app Android).

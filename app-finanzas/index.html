@@ -136,6 +136,7 @@
   <main>
     <!-- INICIO -->
     <section class="vista" data-vista="inicio">
+      <p id="saludo" class="saludo"></p>
       <div class="periodo-nav">
         <button type="button" class="icono-btn" data-periodo-inicio="-1" aria-label="Periodo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
         <strong id="inicio-periodo"></strong>
@@ -181,6 +182,13 @@
         <span class="etiqueta">🔥 Tu racha</span>
         <strong id="racha-valor"></strong>
         <span id="racha-nota" class="nota"></span>
+      </article>
+
+      <article id="tarjeta-semana" class="tarjeta seguro" hidden>
+        <span class="etiqueta">🗓 Tu semana</span>
+        <strong id="semana-valor"></strong>
+        <span id="semana-nota" class="nota"></span>
+        <button type="button" id="semana-compartir" class="mini">📤 Compartir resumen</button>
       </article>
 
       <div id="alertas-docs" class="alertas-docs"></div>
@@ -516,7 +524,24 @@
           <button type="button" role="radio" data-tema="oscuro">Oscuro</button>
           <button type="button" role="radio" data-tema="claro">Claro</button>
         </div>
+        <span class="etiqueta">Color de NOVA</span>
+        <div class="segmentado" role="radiogroup" aria-label="Color">
+          <button type="button" role="radio" data-acento="verde">Verde</button>
+          <button type="button" role="radio" data-acento="azul">Azul</button>
+          <button type="button" role="radio" data-acento="morado">Morado</button>
+          <button type="button" role="radio" data-acento="naranja">Naranja</button>
+        </div>
+        <span class="etiqueta">Tamaño de letra</span>
+        <div class="segmentado dos" role="radiogroup" aria-label="Tamaño de letra">
+          <button type="button" role="radio" data-letra="normal">Normal</button>
+          <button type="button" role="radio" data-letra="grande">Grande</button>
+        </div>
       </article>
+      <h2 class="grupo-ajustes">Recordatorios (app Android)</h2>
+      <div class="menu">
+        <label class="menu-fila"><span class="menu-icono">🌙</span><span><strong>Anotar mis gastos de hoy</strong><small>Un aviso cada noche a las 8 p. m.</small></span><input type="checkbox" id="rec-noche" class="interruptor"></label>
+        <label class="menu-fila"><span class="menu-icono">🔔</span><span><strong>Antes de un pago programado</strong><small>Un aviso el día anterior</small></span><input type="checkbox" id="rec-programados" class="interruptor"></label>
+      </div>
       <a id="perfil-apk" class="boton-apk" href="descargas/NOVA.apk" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
         <span><strong>Descargar la app para Android</strong><small>Ábrela y toca Instalar. Si Android pregunta, permite instalar desde esta fuente.</small></span>
@@ -897,6 +922,7 @@
 </section>
 <section id="pantalla-grupo" class="capa" hidden>
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1 id="grupo-titulo">Grupo</h1>
+    <button type="button" id="grupo-compartir" class="icono-btn" aria-label="Compartir las cuentas del grupo"><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v14"/></svg></button>
     <button type="button" id="grupo-editar" class="icono-btn" aria-label="Editar el grupo"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></button></div>
   <article id="grupo-balance" class="tarjeta"></article>
   <form id="form-gasto-grupo" class="formulario" autocomplete="off">
@@ -1038,6 +1064,7 @@
 <script src="parser.js"></script>
 <script src="periodos.js"></script>
 <script src="analisis.js"></script>
+<script src="consejos.js"></script>
 <script src="monedas.js"></script>
 <script src="recibo.js"></script>
 <script src="informes.js"></script>
