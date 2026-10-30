@@ -29,6 +29,7 @@
     compras: '<path d="M6 8h12l-1 12H7zM9 8a3 3 0 0 1 6 0"/>',
     educacion: '<path d="M3 8l9-4 9 4-9 4zM7 10v5c3 2 7 2 10 0v-5"/>',
     ingreso: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14.5h2"/>',
+    banco: '<path d="M3 9l9-5 9 5H3zM6 11v6M10 11v6M14 11v6M18 11v6M4 20h16"/>',
     otro: '<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>'
   };
   var OJO_ABIERTO = '<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -70,8 +71,11 @@
   function pintarIcono(span, c) {
     c = c || { icono: "otro" };
     span.replaceChildren();
-    if (Object.prototype.hasOwnProperty.call(ICONOS, c.icono || "otro")) {
-      span.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONOS[c.icono || "otro"] + "</svg>";
+    var nombreIcono = c.icono || "otro";
+    // Si el ícono es una palabra sin dibujo (por ejemplo "banco") no se escribe la palabra dentro del círculo: se usa el ícono genérico.
+    if (!Object.prototype.hasOwnProperty.call(ICONOS, nombreIcono) && /^[a-záéíóúñ_ -]{3,}$/i.test(nombreIcono)) nombreIcono = "otro";
+    if (Object.prototype.hasOwnProperty.call(ICONOS, nombreIcono)) {
+      span.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONOS[nombreIcono] + "</svg>";
     } else {
       span.append(el("span", "emoji", c.icono));
     }
