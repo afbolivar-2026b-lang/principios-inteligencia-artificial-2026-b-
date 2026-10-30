@@ -588,8 +588,10 @@ button.inf-ico { width: 44px; height: 44px; padding: 6px; border-radius: 12px; b
 .det-presupuesto .barra-presupuesto { height: 8px; border-radius: 99px; background: var(--barra-vacia); overflow: hidden; margin: 8px 0; }
 .det-presupuesto .barra-presupuesto span { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
 .det-presupuesto .barra-presupuesto.pasado span { background: var(--danger); }
-.det-mapa { width: 100%; height: 260px; border: 0; border-radius: 14px; background: #1a2a22; overflow: hidden; z-index: 0; }
-.det-mapa.sin-mapa { display: grid; place-items: center; text-align: center; padding: 16px; color: var(--muted); height: 120px; }
+.det-mapa { position: relative; width: 100%; height: 280px; border-radius: 14px; background: #1a2a22; overflow: hidden; z-index: 0; }
+.mapa-capa { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.mapa-capa[hidden] { display: none; }
+.mapa-capa.sin-mapa { display: grid; place-items: center; text-align: center; padding: 16px; color: var(--muted); }
 .mapa-oscuro { filter: var(--mapa-filtro); }
 .det-mapa-modos { display: flex; gap: 8px; margin-top: 10px; }
 .det-mapa-modos button { flex: 1; padding: 8px 10px; border-radius: 999px; font-size: .85rem; }
@@ -601,3 +603,7 @@ button.inf-ico { width: 44px; height: 44px; padding: 6px; border-radius: 12px; b
 .det-direccion { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; font-size: .9rem; }
 .det-direccion a { white-space: nowrap; font-weight: 700; }
 .det-otros .titulo-det { color: var(--muted); font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
+
+/* Sin internet */
+.banner-red { position: sticky; top: 0; z-index: 30; margin: 0 0 8px; padding: 8px 12px; border-radius: 12px; font-size: .82rem; font-weight: 600; background: var(--accent-soft); color: var(--ink); border: 1px solid var(--accent); text-align: center; }
+.banner-red.sin { background: rgba(255, 193, 7, .16); border-color: #d9a400; }

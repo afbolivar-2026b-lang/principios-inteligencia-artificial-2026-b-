@@ -233,3 +233,13 @@ Al tocar un movimiento se abre su **detalle**: nombre, tipo y valor; categoría,
 quitan con la ✕ o se agregan escribiéndolas o tocando una sugerencia; cómo va el presupuesto del periodo; y, si el pago tiene
 ubicación, el **mapa satelital** (Esri, con nombres de calles; también hay mapa de calles de OpenStreetMap) con un pin en el lugar exacto, la dirección (Nominatim), «Abrir en Mapas» y los otros pagos hechos en el mismo lugar.
 El lápiz de arriba abre la edición y el ojo oculta los valores. Si el pago no tiene ubicación, un botón activa «Guardar ubicación».
+
+## Sin internet
+
+NOVA guarda una copia de tus datos en el celular (IndexedDB) cada vez que cargan o cambian. Sin conexión puedes ver todo, anotar
+gastos e ingresos, abonar deudas, cambiar ajustes y sacar informes PDF y Excel: los cambios quedan en una cola
+(`sincronizacion.js`) y se envían solos, en orden, cuando vuelve el internet (arriba sale un aviso con cuántos faltan).
+Los ids temporales se cambian por los reales al enviar, y un error real de la base no frena los demás cambios.
+Los mapas ya vistos y los del lugar de cada pago nuevo (se bajan al guardarlo) se guardan con el service worker (`sw.js`).
+Necesitan internet: entrar por primera vez, crear cuenta, entrar con Google, la IA y los mapas de lugares que nunca se abrieron.
+En el detalle de un pago, el mapa tiene tres vistas: Google (satélite con calles, necesita internet), Satélite (Esri) y Calles.

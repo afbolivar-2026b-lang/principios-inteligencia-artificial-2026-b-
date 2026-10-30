@@ -128,7 +128,7 @@
   // Las dos fuentes (Supabase y demostración) ofrecen las mismas operaciones sobre las mismas tablas.
   var TABLAS = ["cuentas", "categorias", "movimientos", "metas", "frecuentes", "programados", "limites", "conversaciones", "documentos", "deudas", "abonos"];
 
-  function fuenteSupabase(cliente, usuario) {
+  function fuenteSupabaseBase(cliente, usuario) {
     function q(promesa) {
       return promesa.then(function (r) { if (r.error) throw new Error(r.error.message); return r.data; });
     }
@@ -177,6 +177,84 @@
       salir: function () { return cliente.auth.signOut(); }
     };
   }
+
+
+  // ---------- Sin internet ----------
+  // Copia de los datos en el celular (IndexedDB) y cola de cambios que se envían solos al volver la conexión.
+  var almacenLocal = (function () {
+    var abierta = null;
+    function db() {
+      if (!abierta) abierta = new Promise(function (ok, mal) {
+        if (!window.indexedDB) return mal(new Error("sin IndexedDB"));
+        var r = indexedDB.open("nova", 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore("kv"); };
+        r.onsuccess = function () { ok(r.result); };
+        r.onerror = function () { mal(r.error); };
+      });
+      return abierta;
+    }
+    function tx(modo, fn) {
+      return db().then(function (d) {
+        return new Promise(function (ok, mal) {
+          var t = d.transaction("kv", modo), req = fn(t.objectStore("kv"));
+          t.oncomplete = function () { ok(req && req.result); };
+          t.onerror = t.onabort = function () { mal(t.error); };
+        });
+      });
+    }
+    function respaldo() { // si el navegador no deja usar IndexedDB: localStorage
+      return {
+        get: function (k) { return Promise.resolve(leerLocal("kv:" + k, null)); },
+        set: function (k, v) { guardarLocal("kv:" + k, v); return Promise.resolve(); },
+        del: function (k) { try { localStorage.removeItem("kv:" + k); } catch (e) { /* nada */ } return Promise.resolve(); }
+      };
+    }
+    var r = respaldo();
+    return {
+      get: function (k) { return tx("readonly", function (s) { return s.get(k); }).then(function (v) { return v === undefined ? null : v; }, function () { return r.get(k); }); },
+      set: function (k, v) { return tx("readwrite", function (s) { return s.put(v, k); }).catch(function () { return r.set(k, v); }); },
+      del: function (k) { return tx("readwrite", function (s) { return s.delete(k); }).catch(function () { return r.del(k); }); }
+    };
+  })();
+  function enLinea() { return navigator.onLine !== false; }
+  // Cuando un cambio hecho sin internet llega al servidor, su id temporal pasa a ser el real: se corrige en pantalla.
+  function remapearDatos(mapa, filas, tabla) {
+    Object.keys(mapa).forEach(function (temp) {
+      var desde = Number(temp), hacia = mapa[temp];
+      var fila = (datos[tabla] || []).find(function (x) { return x.id === desde; });
+      if (fila && filas && filas[temp]) Object.assign(fila, filas[temp]);
+      Object.keys(datos).forEach(function (t) {
+        if (!Array.isArray(datos[t])) return;
+        datos[t].forEach(function (f) { Object.keys(f).forEach(function (k) { if (k !== "id" && /_id$/.test(k) && f[k] === desde) f[k] = hacia; }); });
+      });
+      if (detalleId === desde) detalleId = hacia;
+    });
+    if (fuente) pintar();
+  }
+  function pintarAvisoRed(c) {
+    var b = $("banner-red"), n = c ? c.pendientes : (fuente && fuente.pendientes ? fuente.pendientes() : 0);
+    if (!fuente || fuente.demo) { b.hidden = true; return; }
+    var sin = !enLinea();
+    b.hidden = !(sin || n > 0);
+    if (b.hidden) return;
+    b.className = "banner-red" + (sin ? " sin" : "");
+    b.textContent = sin
+      ? "📴 Sin internet: todo sigue funcionando y tus cambios se guardan en el celular" + (n ? " (" + n + " por enviar)" : "") + "."
+      : "🔄 Enviando " + n + (n === 1 ? " cambio" : " cambios") + " guardados sin internet…";
+  }
+  function fuenteSupabase(cliente, usuario) {
+    // Se recuerda quién es para poder abrir la app sin internet (los datos se guardan por usuario).
+    guardarLocal("nova-identidad", { id: usuario.id, email: usuario.email, user_metadata: usuario.user_metadata || {}, created_at: usuario.created_at || null });
+    return NovaSync.envolver(fuenteSupabaseBase(cliente, usuario), {
+      almacen: almacenLocal, usuarioId: usuario.id, enLinea: enLinea,
+      antes: function () { return cliente.auth.getSession(); },     // renueva la sesión antes de enviar lo pendiente
+      alMapear: remapearDatos, alCambiar: pintarAvisoRed,
+      alFallar: function () { toast("Un cambio guardado sin internet no se pudo enviar y se descartó."); }
+    });
+  }
+  window.addEventListener("online", function () { pintarAvisoRed(); if (fuente && fuente.sincronizar) fuente.sincronizar().then(function () { pintarAvisoRed(); }); });
+  window.addEventListener("offline", function () { pintarAvisoRed(); });
+  setInterval(function () { if (fuente && fuente.pendientes && fuente.pendientes() > 0 && enLinea()) fuente.sincronizar().catch(function () { /* se reintenta */ }); }, 20000);
 
   function fuenteDemo() {
     var sig = 1000;
@@ -2288,7 +2366,7 @@
         if (pr && pr.futuro) return { m: null, c: c, programado: pr.p };
         if (pr) fila.programado_id = pr.p.id;
         return ubicacionActual().then(function (lugar) {
-          if (lugar) { fila.lat = lugar.lat; fila.lng = lugar.lng; }
+          if (lugar) { fila.lat = lugar.lat; fila.lng = lugar.lng; precargarMapa(lugar.lat, lugar.lng); }
           return fuente.crear("movimientos", fila);
         }).then(function (m) { datos.movimientos.push(m); return { m: m, c: c, programado: pr && pr.p }; });
       });
@@ -2314,6 +2392,21 @@
     }).catch(function (err) { mensaje("reg-mensaje", err.message, true); });
   });
 
+
+
+  // Al guardar un pago con ubicación (con internet) se baja el mapa de ese lugar, para verlo después sin conexión.
+  function precargarMapa(lat, lng) {
+    if (!enLinea() || (navigator.connection && navigator.connection.saveData) || lat == null || lng == null) return;
+    var z = 18, n = Math.pow(2, z), rad = Math.PI / 180;
+    var x = Math.floor(((lng + 180) / 360) * n), y = Math.floor(((1 - Math.log(Math.tan(lat * rad) + 1 / Math.cos(lat * rad)) / Math.PI) / 2) * n);
+    var esri = "https://server.arcgisonline.com/ArcGIS/rest/services/", urls = [];
+    for (var dx = -1; dx <= 1; dx++) for (var dy = -1; dy <= 1; dy++) urls.push(esri + "World_Imagery/MapServer/tile/" + z + "/" + (y + dy) + "/" + (x + dx));
+    for (var ex = 0; ex <= 1; ex++) for (var ey = 0; ey <= 1; ey++) {
+      urls.push(esri + "Reference/World_Transportation/MapServer/tile/" + z + "/" + (y + ey) + "/" + (x + ex));
+      urls.push(esri + "Reference/World_Boundaries_and_Places/MapServer/tile/" + z + "/" + (y + ey) + "/" + (x + ex));
+    }
+    urls.forEach(function (u, i) { setTimeout(function () { var im = new Image(); im.src = u; }, i * 120); });
+  }
 
   // ---------- Detalle de un movimiento ----------
   var detalleId = null;
@@ -2355,37 +2448,57 @@
     }
     return leafletListo;
   }
-  function pintarMapaDetalle(caja, m, cerca, bSat, bMapa) {
-    cargarLeaflet().then(function () {
-      if (!caja.isConnected) return;
-      if (mapaDetalle) { mapaDetalle.remove(); mapaDetalle = null; }
-      var L = window.L, lat = Number(m.lat), lng = Number(m.lng);
-      var map = L.map(caja, { center: [lat, lng], zoom: 18, maxZoom: 20, zoomControl: true, scrollWheelZoom: false });
-      map.attributionControl.setPrefix(false);
-      var esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
-      var satelite = L.layerGroup([
-        L.tileLayer(esri + "World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19, attribution: "Imágenes © Esri, Maxar, Earthstar Geographics" }),
-        L.tileLayer(esri + "Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19 }),
-        L.tileLayer(esri + "Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19 })
-      ]);
-      var calles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, maxNativeZoom: 19, className: "mapa-oscuro", attribution: "© OpenStreetMap" });
-      var modo = leerLocal("nova-mapa", "sat");
-      function fijar(nuevo) {
-        modo = nuevo; guardarLocal("nova-mapa", nuevo);
-        if (nuevo === "sat") { map.removeLayer(calles); satelite.addTo(map); } else { map.removeLayer(satelite); calles.addTo(map); }
-        bSat.setAttribute("aria-pressed", String(nuevo === "sat")); bMapa.setAttribute("aria-pressed", String(nuevo !== "sat"));
-      }
-      bSat.onclick = function () { fijar("sat"); }; bMapa.onclick = function () { fijar("mapa"); };
-      fijar(modo);
-      // Otros pagos del mismo lugar: puntos verdes; este pago: el pin rojo, justo donde se gastó.
-      cerca.forEach(function (o) { L.circleMarker([Number(o.lat), Number(o.lng)], { radius: 6, color: "#fff", weight: 2, fillColor: "#2ee06f", fillOpacity: 1 }).addTo(map); });
-      L.marker([lat, lng], { icon: L.divIcon({ className: "", html: '<span class="pin-gasto"></span>', iconSize: [30, 30], iconAnchor: [15, 36] }), keyboard: false }).addTo(map);
-      mapaDetalle = map;
-      // la pantalla se abre después de armar el mapa: se recalcula el tamaño para que quede centrado
-      [120, 450].forEach(function (t) { setTimeout(function () { if (mapaDetalle === map) { map.invalidateSize(); map.setView([lat, lng], 18); } }, t); });
-    }).catch(function () {
-      caja.classList.add("sin-mapa"); caja.textContent = "No se pudo cargar el mapa. Revisa tu conexión.";
-    });
+  function pintarMapaDetalle(c, m, cerca, botones) {
+    var lat = Number(m.lat), lng = Number(m.lng);
+    var modo = leerLocal("nova-mapa", "google");
+    if (modo === "google" && navigator.onLine === false) modo = "sat"; // Google necesita internet; el satélite guardado en el celular sigue funcionando
+    var mapa = null;
+    function marcar() {
+      Object.keys(botones).forEach(function (k) { botones[k].setAttribute("aria-pressed", String(k === modo)); });
+    }
+    function mostrarGoogle() {
+      if (!c.google.src) c.google.src = "https://maps.google.com/maps?q=" + lat + "," + lng + "&t=h&z=18&hl=es&output=embed"; // t=h: satélite con calles y nombres
+      c.google.hidden = false; c.leaflet.hidden = true;
+    }
+    function elegir(nuevo) {
+      modo = nuevo; guardarLocal("nova-mapa", nuevo); marcar();
+      if (nuevo === "google") { mostrarGoogle(); return; }
+      c.google.hidden = true; c.leaflet.hidden = false;
+      armarLeaflet();
+    }
+    botones.google.onclick = function () { elegir("google"); };
+    botones.sat.onclick = function () { elegir("sat"); };
+    botones.mapa.onclick = function () { elegir("mapa"); };
+    marcar();
+    if (modo === "google") mostrarGoogle(); else armarLeaflet();
+
+    function armarLeaflet() {
+      cargarLeaflet().then(function () {
+        if (!c.caja.isConnected) return;
+        var L = window.L;
+        if (!mapa) {
+          if (mapaDetalle) { mapaDetalle.remove(); mapaDetalle = null; }
+          mapa = L.map(c.leaflet, { center: [lat, lng], zoom: 18, maxZoom: 20, zoomControl: true, scrollWheelZoom: false });
+          mapa.attributionControl.setPrefix(false);
+          var esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+          mapa._satelite = L.layerGroup([
+            L.tileLayer(esri + "World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19, attribution: "Imágenes © Esri, Maxar, Earthstar Geographics" }),
+            L.tileLayer(esri + "Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19 }),
+            L.tileLayer(esri + "Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, maxNativeZoom: 19 })
+          ]);
+          mapa._calles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, maxNativeZoom: 19, className: "mapa-oscuro", attribution: "© OpenStreetMap" });
+          // Otros pagos del mismo lugar: puntos verdes; este pago: el pin rojo, justo donde se gastó.
+          cerca.forEach(function (o) { L.circleMarker([Number(o.lat), Number(o.lng)], { radius: 6, color: "#fff", weight: 2, fillColor: "#2ee06f", fillOpacity: 1 }).addTo(mapa); });
+          L.marker([lat, lng], { icon: L.divIcon({ className: "", html: '<span class="pin-gasto"></span>', iconSize: [30, 30], iconAnchor: [15, 36] }), keyboard: false }).addTo(mapa);
+          mapaDetalle = mapa;
+        }
+        if (modo === "mapa") { mapa.removeLayer(mapa._satelite); mapa._calles.addTo(mapa); } else { mapa.removeLayer(mapa._calles); mapa._satelite.addTo(mapa); }
+        // la pantalla se abre después de armar el mapa: se recalcula el tamaño para que quede centrado
+        [120, 450].forEach(function (t) { setTimeout(function () { if (mapaDetalle === mapa) { mapa.invalidateSize(); mapa.setView([lat, lng], 18); } }, t); });
+      }).catch(function () {
+        c.leaflet.classList.add("sin-mapa"); c.leaflet.textContent = "No se pudo cargar el mapa. Revisa tu conexión.";
+      });
+    }
   }
   function filaDetalle(titulo, valor) {
     var f = el("div", "det-fila"), v = el("span");
@@ -2463,16 +2576,19 @@
     // Ubicación: mapa, dirección y otros pagos en el mismo lugar
     if (tieneUbicacion(m)) {
       var lat = Number(m.lat), lng = Number(m.lng), d = 0.004, mapaCaja = el("article", "tarjeta");
-      var marco = el("div", "det-mapa"); marco.setAttribute("role", "img"); marco.setAttribute("aria-label", "Mapa satelital del lugar del pago");
-      var modos = el("div", "det-mapa-modos"), bSat = el("button", null, "🛰 Satélite"), bMapa = el("button", null, "🗺 Mapa");
-      bSat.type = "button"; bMapa.type = "button";
-      modos.append(bSat, bMapa);
+      var marco = el("div", "det-mapa"); marco.setAttribute("aria-label", "Mapa satelital del lugar del pago");
+      var contL = el("div", "mapa-capa"), marcoG = el("iframe", "mapa-capa mapa-google");
+      marcoG.title = "Mapa de Google del lugar del pago"; marcoG.hidden = true; marcoG.referrerPolicy = "no-referrer-when-downgrade"; marcoG.setAttribute("allowfullscreen", "");
+      marco.append(contL, marcoG);
+      var modos = el("div", "det-mapa-modos"), bG = el("button", null, "Google"), bSat = el("button", null, "🛰 Satélite"), bMapa = el("button", null, "🗺 Calles");
+      [bG, bSat, bMapa].forEach(function (b) { b.type = "button"; });
+      modos.append(bG, bSat, bMapa);
       var dir = el("div", "det-direccion"), dirTxt = el("span", null, "Buscando la dirección…");
       var abrir = el("a", null, "Abrir en Mapas"); abrir.href = "https://www.google.com/maps/search/?api=1&query=" + lat + "," + lng; abrir.target = "_blank"; abrir.rel = "noopener";
       dir.append(dirTxt, abrir);
       mapaCaja.append(marco, modos, dir); cont.append(mapaCaja);
       var idAhora = detalleId;
-      pintarMapaDetalle(marco, m, pagosCerca(m), bSat, bMapa);
+      pintarMapaDetalle({ caja: marco, leaflet: contL, google: marcoG }, m, pagosCerca(m), { google: bG, sat: bSat, mapa: bMapa });
       direccionDe(lat, lng).then(function (t) { if (detalleId === idAhora) dirTxt.textContent = "📍 " + t; })
         .catch(function () { if (detalleId === idAhora) dirTxt.textContent = "📍 " + lat.toFixed(5) + ", " + lng.toFixed(5); });
       var cerca = pagosCerca(m);
@@ -2515,9 +2631,10 @@
   // Se usa con sesión iniciada. Si todavía no hay clave, se acabó la cuota gratis del día
   // o algo falla, la app sigue con su propio intérprete y su propio lector de recibos.
   var iaActiva = true;
-  function iaDisponible() { return iaActiva && !!cliente && !!fuente && !fuente.demo; }
+  function iaDisponible() { return iaActiva && enLinea() && !!cliente && !!fuente && !fuente.demo; }
   function hoyLocal() { return A.claveDia(new Date()); }
   function invocarIA(cuerpo) {
+    if (!enLinea()) return Promise.reject(new Error("Sin internet: la IA necesita conexión. Todo lo demás de NOVA sigue funcionando sin internet."));
     // Si la IA no contesta en 50 segundos, se avisa en vez de dejar "Pensando…" para siempre.
     var tiempo = new Promise(function (_, mal) { setTimeout(function () { mal(new Error("La IA tardó demasiado. Revisa tu conexión e intenta otra vez.")); }, 50000); });
     var llamada = cliente.functions.invoke("nova-ia", { body: cuerpo }).then(function (res) {
@@ -2549,6 +2666,7 @@
       : "La IA no pudo responder. Intenta otra vez en un momento." + (detalle ? " (" + detalle + ")" : "");
   }
   function preguntarEnFlujo(cuerpo, alTexto) {
+    if (!enLinea()) return Promise.reject(new Error("Sin internet: la IA necesita conexión. Todo lo demás de NOVA sigue funcionando sin internet."));
     return cliente.auth.getSession().then(function (s) {
       var token = s.data && s.data.session && s.data.session.access_token;
       if (!token) throw new Error("Vuelve a iniciar sesión para usar la IA.");
@@ -2846,7 +2964,7 @@
       var c = res[0], lugar = res[1];
       var fila = { cuenta_id: datos.cuentas[0].id, categoria_id: c.id, tipo: r.tipo, descripcion: r.descripcion,
                    monto: r.monto, fecha: r.fecha, etiquetas: r.etiquetas, estado: "pagado" };
-      if (lugar) { fila.lat = lugar.lat; fila.lng = lugar.lng; }
+      if (lugar) { fila.lat = lugar.lat; fila.lng = lugar.lng; precargarMapa(lugar.lat, lugar.lng); }
       return fuente.crear("movimientos", fila);
     }).then(function (m) {
       datos.movimientos.push(m);
@@ -3492,12 +3610,24 @@
   $("btn-demo").addEventListener("click", function () { entrar(fuenteDemo()); });
 
   $("btn-salir").addEventListener("click", function () {
+    var n = fuente.pendientes ? fuente.pendientes() : 0;
+    if (n > 0 && !confirm("Tienes " + n + (n === 1 ? " cambio" : " cambios") + " guardados sin internet que todavía no se envían. Si cierras sesión ahora se pierden. ¿Cerrar sesión de todos modos?")) return;
+    var vieja = fuente;
     fuente.salir().finally(function () {
+      try { localStorage.removeItem("kv:nova-identidad"); localStorage.removeItem("nova-identidad"); } catch (e) { /* nada */ }
+      if (vieja.limpiar) vieja.limpiar();
       fuente = null; datos = datosVacios();
       $("form-auth").reset(); mensaje("auth-mensaje", ""); mostrar("auth");
     });
   });
 
+  // ¿De verdad no hay conexión con el servidor? (el celular puede decir "con internet" y estar sin señal)
+  function sinConexionReal() {
+    if (!enLinea()) return Promise.resolve(true);
+    var control = new AbortController(), t = setTimeout(function () { control.abort(); }, 4000);
+    return fetch(cfg.supabaseUrl + "/auth/v1/health", { headers: { apikey: cfg.supabaseKey }, signal: control.signal })
+      .then(function () { return false; }, function () { return true; }).then(function (v) { clearTimeout(t); return v; });
+  }
   // Al abrir: si ya había sesión guardada, entrar directo.
   if (cliente) {
     cliente.auth.getSession().then(function (r) {
@@ -3508,6 +3638,14 @@
         return entrar(fuenteSupabase(cliente, s.user)).then(function () { toast("¡Tu correo quedó verificado! Bienvenido a NOVA."); });
       }
       if (s) return entrar(fuenteSupabase(cliente, s.user));
+      // Sin sesión disponible pero con una cuenta guardada en este celular: si no hay conexión, se entra con la copia local.
+      var guardada = leerLocal("nova-identidad", null);
+      if (guardada && guardada.id) {
+        return sinConexionReal().then(function (sin) {
+          if (sin) return entrar(fuenteSupabase(cliente, guardada));
+          mostrar("auth");
+        });
+      }
       mostrar("auth");
       if (errorEnlace) {
         history.replaceState(null, "", location.pathname);
@@ -3515,8 +3653,17 @@
           ? "El enlace del correo ya se usó o venció (a veces Gmail lo abre antes que tú). Si es de verificar tu cuenta, puede que ya esté verificada: escribe tu correo y contraseña y toca Entrar. Si no entra, pide un correo nuevo y abre solo el último."
           : "No se pudo completar el inicio de sesión: " + errorEnlace.replace(/\+/g, " "), true);
       }
-    }).catch(function () { mostrar("auth"); });
+    }).catch(function () {
+      var guardada = leerLocal("nova-identidad", null);
+      if (guardada && guardada.id) return entrar(fuenteSupabase(cliente, guardada));
+      mostrar("auth");
+    });
   } else {
     mostrar("auth");
+  }
+
+  // Service worker: guarda en el celular los mapas ya vistos, las fuentes y (en la web) la propia app, para que sigan sin internet.
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () { /* sin service worker la app funciona igual */ }); });
   }
 })();
