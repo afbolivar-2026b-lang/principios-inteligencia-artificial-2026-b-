@@ -754,3 +754,4 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 /* Buscar actualización dentro de la app instalada */
 .apk-app { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
 .boton-apk-boton { border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); border-radius: 14px; padding: 12px; font-weight: 800; cursor: pointer; }
+.boton-apk.hay-nueva { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft), 0 0 18px var(--glow); }

@@ -361,3 +361,5 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 - La app instalada revisa la versión publicada en **GitHub** (sale apenas termina de armarse la APK) y en la página; si hay una más nueva, muestra el aviso verde de arriba con el botón de descarga. Revisa al abrir, al volver a la app y cada 30 minutos.
 - En el **inicio de sesión** de la app aparece «Tienes la versión X» y el botón **Buscar actualización de NOVA** (también en Configuración). Si hay una nueva, sale el botón para descargarla.
 - Antes solo se miraba la versión de la página, que seguía vieja si no se volvía a publicar, y por eso no avisaba.
+
+- El botón **Descargar la app para Android** se ve siempre abajo del inicio de sesión (navegador y app) y en Configuración, y baja de una vez la última APK. Si hay una más nueva, cambia a **Descargar la versión nueva (X)** y sale el aviso verde de arriba.

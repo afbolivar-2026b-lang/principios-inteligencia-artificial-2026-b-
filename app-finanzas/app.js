@@ -4971,14 +4971,15 @@
     $("btn-apk").hidden = $("perfil-apk").hidden = !si;
     document.querySelectorAll(".respaldo, .ayuda-instalar").forEach(function (e) { e.hidden = !si; });
   }
-  mostrarApk(false);
-  if (!enApp) {
-    $("btn-apk").href = $("perfil-apk").href = "descargas/NOVA.apk";
+  // El botón se ve siempre en el inicio de sesión (y en Configuración): tocarlo baja de una vez la última APK.
+  // En el navegador baja desde esta página; dentro de la app instalada, desde GitHub (allí queda lista apenas se arma).
+  mostrarApk(true);
+  (function ponerEnlaceApk() {
+    var enlace = enApp && cfg.apkRespaldoUrl ? cfg.apkRespaldoUrl : "descargas/NOVA.apk";
+    $("btn-apk").href = $("perfil-apk").href = enlace;
     $("btn-apk").setAttribute("download", "NOVA.apk"); $("perfil-apk").setAttribute("download", "NOVA.apk");
-    fetch("descargas/NOVA.apk", { method: "HEAD" }).then(function (r) {
-      mostrarApk(r.ok && !/text\/html/.test(r.headers.get("content-type") || ""));
-    }).catch(function () { mostrarApk(false); });
-  }
+    if (enApp) { $("btn-apk").target = $("perfil-apk").target = "_blank"; }
+  })();
 
   // Dentro de la app instalada: si ya hay una APK más nueva, avisar con un botón para bajarla.
   // version-app.json lo escribe el flujo al armar la APK; la versión publicada se pide con el
@@ -5006,9 +5007,13 @@
         if (hayNueva) {
           aviso.href = mejor.apk; aviso.target = "_blank";
           $("aviso-version-texto").textContent = "Versión " + mejor.d.versionName + " (tienes la " + local.versionName + "). Toca para descargarla y, al abrir el archivo, toca Actualizar.";
-          $("apk-app-bajar").href = mejor.apk; $("apk-app-bajar").target = "_blank";
+          [$("btn-apk"), $("perfil-apk")].forEach(function (a) { a.href = mejor.apk; });
         }
-        aviso.hidden = !hayNueva; $("apk-app-bajar").hidden = !hayNueva;
+        [$("btn-apk"), $("perfil-apk")].forEach(function (a) {
+          a.querySelector("strong").textContent = hayNueva ? "Descargar la versión nueva (" + mejor.d.versionName + ")" : "Descargar la app para Android";
+          a.classList.toggle("hay-nueva", hayNueva);
+        });
+        aviso.hidden = !hayNueva;
         return { local: local, remota: mejor.d, hayNueva: hayNueva, enlace: mejor.apk };
       });
     }).catch(function () { return null; /* sin conexión o APK armada sin número de versión */ });
