@@ -750,3 +750,7 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 @media (max-width: 360px) { .cal-valor { font-size: .6rem; } .cal-resumen { grid-template-columns: 1fr; } }
 .cal-leyenda.ing i.n1 { background: var(--accent-soft); } .cal-leyenda.ing i.n2 { background: color-mix(in srgb, var(--accent) 38%, transparent); }
 .cal-leyenda.ing i.n3 { background: color-mix(in srgb, var(--accent) 65%, transparent); } .cal-leyenda.ing i.n4 { background: var(--accent); }
+
+/* Buscar actualización dentro de la app instalada */
+.apk-app { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.boton-apk-boton { border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); border-radius: 14px; padding: 12px; font-weight: 800; cursor: pointer; }

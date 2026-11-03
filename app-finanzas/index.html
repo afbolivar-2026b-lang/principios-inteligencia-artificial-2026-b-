@@ -102,6 +102,14 @@
     <button type="button" id="recuperar-volver" class="enlace">Volver</button>
   </form>
 
+  <div id="apk-app" class="apk-app" hidden>
+    <p class="nota centro" id="apk-app-version"></p>
+    <button type="button" id="apk-app-buscar" class="boton-apk-boton">🔄 Buscar actualización de NOVA</button>
+    <a id="apk-app-bajar" class="boton-apk" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      <span><strong>Descargar la versión nueva</strong><small>Al abrir el archivo, toca Actualizar</small></span>
+    </a>
+  </div>
   <button type="button" id="btn-demo" class="enlace">Ver la demostración sin cuenta</button>
   <p class="nota centro"><a href="privacidad.html">Política de privacidad</a></p>
   <p class="nota centro creditos">NOVA · Creada por <strong>OPITA-DIGITAL</strong> · © 2026. Todos los derechos reservados.</p>
@@ -521,6 +529,7 @@
         <input type="file" id="archivo-respaldo" accept=".json,application/json" hidden>
         <button type="button" id="btn-importar"><span class="menu-icono">📥</span><span><strong>Importar desde Excel o CSV</strong><small>Columnas: fecha, descripcion, monto (y tipo, categoria si quieres)</small></span></button>
         <input type="file" id="archivo-csv" accept=".csv,text/csv,text/plain" hidden>
+        <button type="button" id="btn-actualizar" hidden><span class="menu-icono">🔄</span><span><strong>Buscar actualización</strong><small id="actualizar-estado">Mira si hay una versión nueva de NOVA</small></span></button>
         <button type="button" id="btn-pruebas"><span class="menu-icono">🧪</span><span><strong>Probar las funciones nuevas</strong><small>Prueba con un toque la foto, la IA, el widget y las teclas rápidas en tu celular</small></span></button>
         <button type="button" id="btn-historial"><span class="menu-icono">🕘</span><span><strong>Historial de cambios</strong><small>Qué creaste, editaste o borraste y cuándo</small></span></button>
         <button type="button" id="btn-papelera"><span class="menu-icono">🗑️</span><span><strong>Papelera</strong><small id="papelera-estado">Recupera lo que borraste en los últimos 30 días</small></span></button>

@@ -355,3 +355,9 @@ registros comunes y programaciones, con los campos de plata con puntos automáti
 ## Probar las funciones nuevas en el celular
 
 - **Configuración → «Probar las funciones nuevas»**: ejecuta con un toque pruebas reales de foto (sube, descarga y borra una imagen de prueba), historial, IA que lee los productos de un recibo de prueba, datos del widget y notificación con botones (teclas rápidas), y muestra ✅ o ❌ con el motivo. Se puede copiar el resultado.
+
+## Avisos de actualización dentro de la app
+
+- La app instalada revisa la versión publicada en **GitHub** (sale apenas termina de armarse la APK) y en la página; si hay una más nueva, muestra el aviso verde de arriba con el botón de descarga. Revisa al abrir, al volver a la app y cada 30 minutos.
+- En el **inicio de sesión** de la app aparece «Tienes la versión X» y el botón **Buscar actualización de NOVA** (también en Configuración). Si hay una nueva, sale el botón para descargarla.
+- Antes solo se miraba la versión de la página, que seguía vieja si no se volvía a publicar, y por eso no avisaba.

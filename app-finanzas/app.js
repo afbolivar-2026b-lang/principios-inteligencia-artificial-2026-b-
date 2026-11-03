@@ -4983,26 +4983,59 @@
   // Dentro de la app instalada: si ya hay una APK más nueva, avisar con un botón para bajarla.
   // version-app.json lo escribe el flujo al armar la APK; la versión publicada se pide con el
   // HTTP del celular (CapacitorHttp), que no depende de los permisos entre sitios del navegador.
-  function buscarActualizacion() {
-    var http = window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp;
-    if (!http || !cfg.apkVersionUrl || !cfg.apkUrl) return;
-    fetch("version-app.json").then(function (r) { return r.json(); }).then(function (local) {
-      window.__novaVersion = local && local.versionName;
-      return http.get({ url: cfg.apkVersionUrl + "?t=" + Date.now(), responseType: "json" }).then(function (res) {
-        var remota = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
-        if (!(Number(remota.versionCode) > Number(local.versionCode))) return;
+  var versionLocal = null;
+  function leerVersionPublicada(http, url) {
+    return http.get({ url: url + (url.indexOf("?") < 0 ? "?" : "&") + "t=" + Date.now(), responseType: "json" }).then(function (res) {
+      var d = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+      return d && Number(d.versionCode) > 0 ? d : null;
+    }).catch(function () { return null; });
+  }
+  // Devuelve { local, remota, hayNueva, enlace } o null si no se pudo saber. Mira GitHub (sale apenas termina el armado) y la página.
+  function buscarActualizacion(manual) {
+    var http = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp;
+    if (!http || !cfg.apkUrl) return Promise.resolve(null);
+    return fetch("version-app.json").then(function (r) { return r.json(); }).then(function (local) {
+      versionLocal = local; window.__novaVersion = local && local.versionName;
+      pintarVersionLocal();
+      var fuentes = [{ url: cfg.apkVersionUrlGithub, apk: cfg.apkRespaldoUrl }, { url: cfg.apkVersionUrl, apk: cfg.apkUrl }].filter(function (f) { return f.url && f.apk; });
+      return Promise.all(fuentes.map(function (f) { return leerVersionPublicada(http, f.url).then(function (d) { return d ? { d: d, apk: f.apk } : null; }); })).then(function (lista) {
+        var mejor = lista.filter(Boolean).sort(function (a, b) { return Number(b.d.versionCode) - Number(a.d.versionCode); })[0];
+        if (!mejor) return { local: local, remota: null, hayNueva: false, error: true };
+        var hayNueva = Number(mejor.d.versionCode) > Number(local.versionCode);
         var aviso = $("aviso-version");
-        aviso.href = cfg.apkUrl;
-        aviso.target = "_blank";
-        $("aviso-version-texto").textContent = "Versión " + remota.versionName + " (tienes la " + local.versionName +
-          "). Toca para descargarla y, al abrir el archivo, toca Actualizar.";
-        aviso.hidden = false;
+        if (hayNueva) {
+          aviso.href = mejor.apk; aviso.target = "_blank";
+          $("aviso-version-texto").textContent = "Versión " + mejor.d.versionName + " (tienes la " + local.versionName + "). Toca para descargarla y, al abrir el archivo, toca Actualizar.";
+          $("apk-app-bajar").href = mejor.apk; $("apk-app-bajar").target = "_blank";
+        }
+        aviso.hidden = !hayNueva; $("apk-app-bajar").hidden = !hayNueva;
+        return { local: local, remota: mejor.d, hayNueva: hayNueva, enlace: mejor.apk };
       });
-    }).catch(function () { /* sin conexión o APK armada sin número de versión */ });
+    }).catch(function () { return null; /* sin conexión o APK armada sin número de versión */ });
+  }
+  function pintarVersionLocal() {
+    var v = versionLocal && versionLocal.versionName;
+    $("apk-app-version").textContent = v ? "Tienes la versión " + v + " de NOVA." : "";
+    $("actualizar-estado").textContent = v ? "Tienes la versión " + v + ". Toca para ver si hay una nueva." : "Mira si hay una versión nueva de NOVA";
+  }
+  function accionBuscarActualizacion(boton) {
+    boton.disabled = true; var texto = boton.textContent;
+    buscarActualizacion(true).then(function (r) {
+      if (!r) toast("No se pudo revisar", "Revisa tu conexión e intenta otra vez");
+      else if (r.error) toast("No se pudo revisar", "No pude leer la versión publicada");
+      else if (r.hayNueva) toast("¡Hay una versión nueva!", "Versión " + r.remota.versionName, null, { texto: "Descargar", fn: function () { window.open(r.enlace, "_blank"); } });
+      else toast("Ya tienes la última versión", "Versión " + r.local.versionName);
+    }).finally(function () { boton.disabled = false; });
+  }
+  if (enApp) {
+    $("apk-app").hidden = false; $("btn-actualizar").hidden = false;
+    $("apk-app-buscar").addEventListener("click", function () { accionBuscarActualizacion($("apk-app-buscar")); });
+    $("btn-actualizar").addEventListener("click", function () { accionBuscarActualizacion($("btn-actualizar")); });
   }
   if (enApp) {
     buscarActualizacion();
     document.addEventListener("visibilitychange", function () { if (!document.hidden) buscarActualizacion(); });
+    setInterval(function () { if (!document.hidden) buscarActualizacion(); }, 30 * 60 * 1000);   // y cada media hora si la app queda abierta
   }
 
   function mostrar(pantalla) {
@@ -5417,6 +5450,7 @@
     var f3 = fila("IA: leer los productos de un recibo de prueba");
     var f4 = fila("Widget: guardar los datos para el widget");
     var f5 = fila("Teclas rápidas: notificación con botones");
+    var f6 = fila("Actualizaciones: leer la versión publicada");
     // 1) Foto
     return imagenDePrueba(["PRUEBA NOVA", "foto de prueba"], 400, 200, 0.7).then(function (blob) {
       if (!fuente.fotos) throw new Error("no hay espacio de fotos");
@@ -5462,6 +5496,15 @@
         return N.schedule({ notifications: [{ id: 700000900, title: "🧪 Prueba de teclas rápidas", body: "Baja esta notificación y toca «Botón 1» o «Botón 2».", actionTypeId: "PRUEBA", schedule: { at: new Date(Date.now() + 5000), allowWhileIdle: true } }] });
       }).then(function () { f5(true, "en 5 segundos llega una notificación: bájala y toca un botón. Si NOVA se abre y dice «Botón tocado», funciona"); });
     }).catch(function (e) { f5(false, String((e && e.message) || e)); })
+    // 6) Actualizaciones
+    .then(function () {
+      if (!enApp) return f6(null, "solo se prueba en la app de Android");
+      return buscarActualizacion(true).then(function (r) {
+        if (!r) return f6(false, "no se pudo leer la versión instalada o no hay conexión");
+        if (r.error) return f6(false, "no pude leer la versión publicada (ni en GitHub ni en la página)");
+        f6(true, "instalada " + r.local.versionName + " · publicada " + r.remota.versionName + (r.hayNueva ? " → HAY una versión nueva (debe verse el aviso verde arriba)" : " → estás al día"));
+      });
+    }).catch(function (e) { f6(false, String((e && e.message) || e)); })
     .then(function () { $("pruebas-copiar").hidden = false; });
   }
   $("btn-pruebas").addEventListener("click", function () { $("lista-pruebas").replaceChildren(); $("pruebas-copiar").hidden = true; $("pruebas-widget").hidden = true; abrirCapa("pantalla-pruebas"); });
