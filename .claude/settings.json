@@ -11,10 +11,38 @@
         "source": "github",
         "repo": "obra/superpowers"
       }
+    },
+    "supabase-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "supabase/agent-skills"
+      }
+    },
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "omc": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/Yeachan-Heo/oh-my-claudecode.git"
+      }
+    },
+    "chrome-devtools-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "ChromeDevTools/chrome-devtools-mcp"
+      }
     }
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,
-    "superpowers@superpowers-dev": true
+    "superpowers@superpowers-dev": true,
+    "supabase@supabase-agent-skills": true,
+    "vercel@claude-plugins-official": true,
+    "oh-my-claudecode@omc": true,
+    "chrome-devtools-mcp@chrome-devtools-plugins": true
   }
 }
