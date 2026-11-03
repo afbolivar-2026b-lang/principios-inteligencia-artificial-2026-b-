@@ -203,4 +203,51 @@ curl -X POST "https://graph.facebook.com/${APIVERSION}/${WABAID}/message_templat
   }'
 echo
 
+echo "Creating ice cream offer template..."
+curl -X POST "https://graph.facebook.com/${APIVERSION}/${WABAID}/message_templates" \
+  -H "Authorization: Bearer ${APPTOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "ice_cream_offer",
+    "language": "es",
+    "category": "marketing",
+    "components": [
+      {
+        "type": "header",
+        "format": "text",
+        "text": "Helados artesanales en Jasper'\''s Market"
+      },
+      {
+        "type": "body",
+        "text": "¡Hola {{1}}! Refréscate con nuestros helados artesanales: vainilla, chocolate, fresa y mango. Esta semana tienes un 15% de descuento en cualquier sabor. Usa el código de abajo al pagar.",
+        "example": {
+          "body_text": [
+            [
+              "Ana"
+            ]
+          ]
+        }
+      },
+      {
+        "type": "footer",
+        "text": "Oferta válida hasta agotar existencias"
+      },
+      {
+        "type": "buttons",
+        "buttons": [
+          {
+            "type": "copy_code",
+            "example": "HELADO15"
+          },
+          {
+            "type": "url",
+            "text": "Ver sabores",
+            "url": "https://developers.facebook.com/documentation/business-messaging/whatsapp/templates/marketing-templates"
+          }
+        ]
+      }
+    ]
+  }'
+echo
+
 echo "Finished! Please check for errors if any"
