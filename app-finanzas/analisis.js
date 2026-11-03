@@ -516,7 +516,48 @@
     return { lista: lista, debo: t.debo, meDeben: t.me_deben, pendientes: t.pendientes, balance: t.me_deben - t.debo };
   }
 
+  // ---------- Calendario ----------
+  // Un mes día por día: cuánto se gastó y se ganó cada día, el día de más gasto y los días sin gastar.
+  // nivel (0 a 4) dice qué tan fuerte pintar cada día comparado con el día de más gasto del mes.
+  // Los movimientos pendientes no cuentan. Los días sin gastar se cuentan solo hasta hoy.
+  function calendarioMes(movs, anio, mes, hoy) {
+    var ultimo = new Date(anio, mes + 1, 0).getDate(), porClave = {};
+    var dias = [];
+    for (var d = 1; d <= ultimo; d++) {
+      var dia = { clave: claveDia(new Date(anio, mes, d)), dia: d, gastos: 0, ingresos: 0, cantidad: 0, movimientos: [], nivel: 0, nivelIngreso: 0 };
+      porClave[dia.clave] = dia; dias.push(dia);
+    }
+    movs.forEach(function (m) {
+      if (m.estado === "pendiente") return;
+      var dia = porClave[claveDia(m.fecha)];
+      if (!dia) return;
+      if (m.tipo === "ingreso") dia.ingresos += num(m.monto); else dia.gastos += num(m.monto);
+      dia.cantidad++; dia.movimientos.push(m);
+    });
+    var hoyClave = claveDia(hoy || new Date()), max = 0, maxIng = 0, top = null, totalG = 0, totalI = 0, conGasto = 0, sinGasto = 0, transcurridos = 0;
+    dias.forEach(function (x) {
+      x.movimientos.sort(function (a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+      x.futuro = x.clave > hoyClave; x.hoy = x.clave === hoyClave;
+      totalG += x.gastos; totalI += x.ingresos;
+      if (x.gastos > max) { max = x.gastos; top = x; }
+      if (x.ingresos > maxIng) maxIng = x.ingresos;
+      if (x.gastos > 0) conGasto++;
+      if (!x.futuro) { transcurridos++; if (x.gastos === 0) sinGasto++; }
+    });
+    dias.forEach(function (x) {
+      x.nivel = x.gastos > 0 ? Math.max(1, Math.ceil((x.gastos / max) * 4)) : 0;
+      x.nivelIngreso = x.ingresos > 0 ? Math.max(1, Math.ceil((x.ingresos / maxIng) * 4)) : 0;
+    });
+    return {
+      anio: anio, mes: mes, nombre: MESES[mes] + " " + anio, dias: dias,
+      hueco: (new Date(anio, mes, 1).getDay() + 6) % 7,   // días vacíos antes del 1 (la semana empieza el lunes)
+      gastos: totalG, ingresos: totalI, diaTop: top, diasConGasto: conGasto, diasSinGasto: sinGasto,
+      diasTranscurridos: transcurridos, promedioDiario: transcurridos ? totalG / transcurridos : 0
+    };
+  }
+
   var api = {
+    calendarioMes: calendarioMes,
     desplazar: desplazar, nombrePeriodo: nombrePeriodo, nombreCorto: nombreCorto, enRango: enRango, totales: totales,
     porCategoria: porCategoria, porEtiqueta: porEtiqueta, vistaRapida: vistaRapida, serie: serie, proyeccion: proyeccion,
     seguroParaGastar: seguroParaGastar, nombreDia: nombreDia, porDia: porDia, claveDia: claveDia, buscar: buscar,

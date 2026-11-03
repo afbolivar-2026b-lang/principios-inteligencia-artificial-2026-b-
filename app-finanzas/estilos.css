@@ -709,3 +709,44 @@ button.mini { padding: 6px 12px; border-radius: 999px; font-size: .8rem; }
 .sobre small { color: var(--muted); }
 
 .mapa-calor { height: 70vh; min-height: 360px; }
+
+/* ---------- Calendario día por día ---------- */
+.btn-calendario { color: var(--accent); flex: none; width: 40px; height: 40px; }
+.btn-calendario svg { width: 22px; height: 22px; }
+.sub-cabecera .btn-calendario { margin-left: auto; }
+.cal-resumen { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cal-dato { padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cal-dato > small:first-child { color: var(--muted); font-size: .8rem; font-weight: 600; }
+.cal-dato strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.cal-dato strong::first-letter { text-transform: uppercase; }
+.cal-dato .nota { font-size: .78rem; }
+.cal-grilla { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-sem { text-align: center; font-size: .75rem; font-weight: 700; color: var(--muted); padding-bottom: 2px; }
+.cal-dias { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-celda { aspect-ratio: 1 / 1.15; min-width: 0; padding: 4px 2px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-weight: 600; }
+.cal-num { font-size: .85rem; line-height: 1.1; }
+.cal-valor { font-size: .68rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; max-width: 100%; }
+.cal-celda.n0:not(.futuro) .cal-valor { color: var(--positivo); }
+/* Gastos: de un rojo suave a uno fuerte. Ingresos: tonos del color principal. */
+.cal-celda.n1 { background: rgba(229, 72, 61, .16); }
+.cal-celda.n2 { background: rgba(229, 72, 61, .34); }
+.cal-celda.n3 { background: rgba(229, 72, 61, .58); color: #fff; }
+.cal-celda.n4 { background: #d63b30; color: #fff; border-color: #d63b30; }
+.cal-celda.ing.n1 { background: var(--accent-soft); color: var(--ink); }
+.cal-celda.ing.n2 { background: color-mix(in srgb, var(--accent) 38%, transparent); color: var(--ink); }
+.cal-celda.ing.n3 { background: color-mix(in srgb, var(--accent) 65%, transparent); color: var(--accent-ink); }
+.cal-celda.ing.n4 { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.cal-celda.futuro { opacity: .45; }
+.cal-celda.hoy { box-shadow: inset 0 0 0 2px var(--accent); }
+.cal-celda.elegido { outline: 2px solid var(--ink); outline-offset: 1px; }
+.cal-vacio { aspect-ratio: 1 / 1.15; }
+.cal-leyenda { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: .75rem; color: var(--muted); }
+.cal-leyenda i { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface); }
+.cal-leyenda i.n1 { background: rgba(229, 72, 61, .16); } .cal-leyenda i.n2 { background: rgba(229, 72, 61, .34); }
+.cal-leyenda i.n3 { background: rgba(229, 72, 61, .58); } .cal-leyenda i.n4 { background: #d63b30; }
+.cal-detalle { display: flex; flex-direction: column; gap: 8px; scroll-margin-top: 12px; }
+.cal-dia-titulo::first-letter { text-transform: uppercase; }
+@media (max-width: 360px) { .cal-valor { font-size: .6rem; } .cal-resumen { grid-template-columns: 1fr; } }
+.cal-leyenda.ing i.n1 { background: var(--accent-soft); } .cal-leyenda.ing i.n2 { background: color-mix(in srgb, var(--accent) 38%, transparent); }
+.cal-leyenda.ing i.n3 { background: color-mix(in srgb, var(--accent) 65%, transparent); } .cal-leyenda.ing i.n4 { background: var(--accent); }

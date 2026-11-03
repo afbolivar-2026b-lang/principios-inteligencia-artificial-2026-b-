@@ -140,7 +140,7 @@
       <div class="periodo-nav">
         <button type="button" class="icono-btn" data-periodo-inicio="-1" aria-label="Periodo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
         <strong id="inicio-periodo"></strong>
-        <button type="button" class="icono-btn" data-periodo-inicio="1" aria-label="Periodo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+        <button type="button" class="icono-btn" data-periodo-inicio="1" aria-label="Periodo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button><button type="button" class="icono-btn btn-calendario" data-calendario="inicio" aria-label="Ver calendario día por día"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
       </div>
       <div class="inf-barra"><span>Descargar informe</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="inicio" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="inicio" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
 
@@ -294,7 +294,7 @@
 
     <!-- PLANES -->
     <section class="vista" data-vista="planes" hidden>
-      <h1 class="titulo-vista">Planes</h1>
+      <div class="seccion-cabecera"><h1 class="titulo-vista">Planes</h1><button type="button" class="icono-btn btn-calendario" data-calendario="planes" aria-label="Ver calendario día por día"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button></div>
       <div class="inf-barra"><span>Informe con tus límites y metas</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="planes" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="planes" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
       <div id="planes-vacio" class="tarjeta vacio-grande" hidden>
         <span class="vacio-icono">+</span>
@@ -344,7 +344,7 @@
       <div class="periodo-nav">
         <button type="button" class="icono-btn" data-periodo-analisis="-1" aria-label="Periodo anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
         <strong id="analisis-periodo"></strong>
-        <button type="button" class="icono-btn" data-periodo-analisis="1" aria-label="Periodo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+        <button type="button" class="icono-btn" data-periodo-analisis="1" aria-label="Periodo siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button><button type="button" class="icono-btn btn-calendario" data-calendario="analisis" aria-label="Ver calendario día por día"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
       </div>
       <div id="personalizar" class="tarjeta formulario" hidden>
         <h2 class="titulo-tarjeta">Personalizar análisis</h2>
@@ -368,7 +368,7 @@
 
     <!-- MI TRABAJO (modo conductor) -->
     <section class="vista" data-vista="trabajo" hidden>
-      <div class="sub-cabecera"><button type="button" class="icono-btn" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Mi trabajo</h1></div>
+      <div class="sub-cabecera"><button type="button" class="icono-btn" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Mi trabajo</h1><button type="button" class="icono-btn btn-calendario" data-calendario="trabajo" aria-label="Ver calendario día por día"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button></div>
       <div class="inf-barra"><span>Informe de mi trabajo</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="trabajo" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="trabajo" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
       <div id="trabajo-periodos" class="pestanas" role="group" aria-label="Periodo">
         <button type="button" data-cual="hoy">Hoy</button>
@@ -423,7 +423,7 @@
 
     <!-- BUSCAR -->
     <section class="vista" data-vista="buscar" hidden>
-      <h1 class="titulo-vista">Buscar</h1>
+      <div class="seccion-cabecera"><h1 class="titulo-vista">Buscar</h1><button type="button" class="icono-btn btn-calendario" data-calendario="buscar" aria-label="Ver calendario día por día"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button></div>
       <div class="inf-barra"><span>Descargar informe</span><span class="inf-iconos"><button type="button" class="inf-ico" data-informe="pdf" data-ctx="buscar" aria-label="Descargar informe en PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#e5483d"/><path d="M14 2v5h5" fill="#f2a29c"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg></button><button type="button" class="inf-ico" data-informe="excel" data-ctx="buscar" aria-label="Descargar informe en Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#1f9d55"/><path d="M14 2v5h5" fill="#8fd1ac"/><text x="12" y="17" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff" font-family="Arial,sans-serif">XLS</text></svg></button></span></div>
       <input id="buscar-texto" type="search" placeholder="Buscar por nombre, categoría, nota o etiqueta" autocomplete="off">
       <div class="fila-filtros">
@@ -993,6 +993,26 @@
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Mapa de calor de gastos</h1></div>
   <p class="nota">Cada círculo es un lugar donde pagaste: entre más grande y rojo, más gastaste ahí.</p>
   <div id="mapa-calor" class="det-mapa mapa-calor"></div>
+</section>
+<section id="pantalla-calendario" class="capa" hidden>
+  <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Calendario</h1></div>
+  <p id="cal-contexto" class="nota"></p>
+  <div class="periodo-nav">
+    <button type="button" class="icono-btn" data-cal-mes="-1" aria-label="Mes anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <strong id="cal-mes"></strong>
+    <button type="button" class="icono-btn" data-cal-mes="1" aria-label="Mes siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+  <div class="segmentado dos" role="radiogroup" aria-label="Qué ver" id="cal-tipo">
+    <button type="button" role="radio" data-cal-tipo="gasto">Gastos</button>
+    <button type="button" role="radio" data-cal-tipo="ingreso">Ingresos</button>
+  </div>
+  <div id="cal-resumen" class="cal-resumen"></div>
+  <div class="cal-grilla" role="grid" aria-label="Días del mes">
+    <span class="cal-sem">L</span><span class="cal-sem">M</span><span class="cal-sem">M</span><span class="cal-sem">J</span><span class="cal-sem">V</span><span class="cal-sem">S</span><span class="cal-sem">D</span>
+    <div id="cal-dias" class="cal-dias"></div>
+  </div>
+  <div class="cal-leyenda" aria-hidden="true"><span>Menos</span><i class="n0"></i><i class="n1"></i><i class="n2"></i><i class="n3"></i><i class="n4"></i><span>Más</span></div>
+  <div id="cal-detalle" class="cal-detalle"></div>
 </section>
 <section id="pantalla-pruebas" class="capa" hidden>
   <div class="sub-cabecera"><button type="button" class="icono-btn" data-cerrar aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h1>Probar las funciones</h1></div>

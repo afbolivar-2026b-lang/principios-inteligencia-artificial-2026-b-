@@ -269,3 +269,26 @@ test("gastos compartidos: saldos y quién le paga a quién", () => {
   const pagado = A.saldosGrupo(miembros, g.concat([{ monto: 45000, pagador: "Pedro", repartido: ["Yo"] }, { monto: 15000, pagador: "Ana", repartido: ["Yo"] }]));
   assert.deepStrictEqual(pagado.transferencias, []);
 });
+
+test("calendario del mes: gasto por día, día de más gasto y días sin gastar", () => {
+  // Hoy es 29 de octubre de 2026; el 1 de octubre de 2026 es jueves.
+  const movs = [m(3, 9, "gasto", 20000), m(3, 9, "gasto", 5000), m(10, 9, "gasto", 100000), m(10, 9, "ingreso", 500000),
+    m(12, 9, "gasto", 70000, { estado: "pendiente" }), m(30, 9, "gasto", 9000), m(2, 10, "gasto", 1000)];
+  const c = A.calendarioMes(movs, 2026, 9, HOY);
+  assert.strictEqual(c.nombre, "Octubre 2026");
+  assert.strictEqual(c.dias.length, 31);
+  assert.strictEqual(c.hueco, 3); // lunes, martes y miércoles vacíos
+  assert.strictEqual(c.dias[2].gastos, 25000);
+  assert.strictEqual(c.dias[2].cantidad, 2);
+  assert.strictEqual(c.dias[11].gastos, 0); // el pendiente no cuenta
+  assert.strictEqual(c.diaTop.dia, 10);
+  assert.strictEqual(c.dias[9].nivel, 4);
+  assert.strictEqual(c.dias[2].nivel, 1);
+  assert.strictEqual(c.dias[9].nivelIngreso, 4);
+  assert.strictEqual(c.gastos, 134000);
+  assert.strictEqual(c.ingresos, 500000);
+  assert.strictEqual(c.diasConGasto, 3);
+  assert.strictEqual(c.diasTranscurridos, 29);
+  assert.strictEqual(c.diasSinGasto, 27); // el 30 es futuro: no cuenta como día sin gastar
+  assert.ok(c.dias[28].hoy && c.dias[29].futuro);
+});

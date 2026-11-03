@@ -2764,7 +2764,9 @@
   // ---------- Exportar ----------
   // El aviso sale en la pantalla de exportar y también como mensaje flotante (los iconos PDF y Excel están en todas las pantallas).
   function avisoExp(texto, error) { mensaje("exportar-mensaje", texto, error); if (texto) toast(texto); }
-  function aBase64(bytes) {
+  // Ojo: se llama distinto a aBase64 (la de las fotos, más abajo). Con el mismo nombre, la de las fotos
+  // reemplazaba a esta y los PDF y Excel salían vacíos («The 'writeFile' input parameters aren't valid»).
+  function bytesABase64(bytes) {
     var s = "";
     for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
     return btoa(s);
@@ -2781,7 +2783,7 @@
         return;
       }
       avisoExp("Preparando " + nombre + "…");
-      var archivo = { path: nombre, data: binario ? aBase64(contenido) : contenido, directory: "CACHE" };
+      var archivo = { path: nombre, data: binario ? bytesABase64(contenido) : contenido, directory: "CACHE" };
       if (!binario) archivo.encoding = "utf8";
       P.Filesystem.writeFile(archivo)
         .then(function (r) { return P.Share.share({ title: nombre, text: "Informe de NOVA · OPITA-DIGITAL", url: r.uri, dialogTitle: "Guardar o enviar " + nombre }); })
@@ -2988,7 +2990,7 @@
   // ---------- Pintar todo ----------
   function pintar() {
     if (!fuente) return;
-    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA(); pintarConductor(); pintarDeudas(); pintarGrupos(); if (pilaCapas.indexOf("pantalla-detalle") >= 0) pintarDetalle(); if (deudaAbierta && pilaCapas.indexOf("pantalla-abonos") >= 0) pintarAbonos();
+    pintarInicio(); pintarPlanes(); pintarAnalisis(); pintarBuscar(); pintarAjustes(); pintarIA(); pintarConductor(); pintarDeudas(); pintarGrupos(); pintarCalendario(); if (pilaCapas.indexOf("pantalla-detalle") >= 0) pintarDetalle(); if (deudaAbierta && pilaCapas.indexOf("pantalla-abonos") >= 0) pintarAbonos();
   }
 
   function alerta(e) { mensaje("rapido-mensaje", "No se pudo guardar: " + (e && e.message ? e.message : e), true); }
@@ -3765,6 +3767,100 @@
         var t = el("div"); t.append(el("strong", null, d.texto), el("small", null, (d.detalle ? d.detalle + " · " : "") + fechaCorta.format(cuando) + " " + hora.format(cuando))); li.append(t); ul.append(li);
       });
     }).catch(function (err) { ul.replaceChildren(el("li", "vacio", "No se pudo cargar el historial (" + err.message + "). Revisa tu conexión.")); });
+  });
+
+  // ---------- Calendario día por día ----------
+  // Cada pantalla abre el calendario con sus propios movimientos: en Buscar, lo que encontraste; en Mi trabajo,
+  // solo lo del trabajo. Cada día se pinta según cuánto se gastó (o ganó) y al tocarlo salen sus movimientos.
+  var calVista = { ctx: "inicio", anio: 0, mes: 0, tipo: "gasto", dia: null };
+  var CAL_CONTEXTOS = {
+    inicio: "Todos tus movimientos.", analisis: "Todos tus movimientos.", planes: "Todos tus movimientos.",
+    buscar: "Solo lo que encontraste con tu búsqueda y filtros.", trabajo: "Solo lo de tu trabajo: ganancias de las apps, gastos del vehículo, papeles y cuotas."
+  };
+  function movimientosDelCalendario() {
+    if (calVista.ctx === "buscar") return resultadosBusqueda();
+    if (calVista.ctx === "trabajo") return datos.movimientos.filter(function (m) { var c = categoria(m.categoria_id); return A.esGanancia(c) || A.esGastoTrabajo(c) || A.esFijo(c); });
+    return datos.movimientos;
+  }
+  function abrirCalendario(ctx) {
+    var ref = new Date();
+    if (ctx === "inicio") ref = rangoInicio().desde;
+    else if (ctx === "analisis") ref = A.desplazar(cicloDeAnalisis(), new Date(), desfaseAnalisis).desde;
+    calVista.ctx = ctx; calVista.anio = ref.getFullYear(); calVista.mes = ref.getMonth(); calVista.dia = null;
+    if (ctx === "buscar") {   // abre en el mes del resultado más reciente
+      var r = resultadosBusqueda().filter(function (m) { return m.estado !== "pendiente"; });
+      if (r.length) { var f = new Date(r.reduce(function (a, m) { return new Date(m.fecha) > new Date(a.fecha) ? m : a; }).fecha); calVista.anio = f.getFullYear(); calVista.mes = f.getMonth(); }
+    }
+    calVista.tipo = ctx === "trabajo" && !leerLocal("nova-cal-tipo") ? "ingreso" : leerLocal("nova-cal-tipo") || "gasto";
+    abrirCapa("pantalla-calendario");
+    pintarCalendario();
+  }
+  function montoCorto(v) {
+    if (ocultos) return "••";
+    v = Math.round(v);
+    if (v >= 1000000) return (Math.round(v / 100000) / 10).toString().replace(".", ",") + "M";
+    if (v >= 1000) return Math.round(v / 1000) + "k";
+    return String(v);
+  }
+  function fechaDelDia(clave) {
+    var p = clave.split("-").map(Number), d = new Date(p[0], p[1] - 1, p[2]);
+    return new Intl.DateTimeFormat("es-CO", { weekday: "long", day: "numeric", month: "long" }).format(d);
+  }
+  function pintarCalendario() {
+    if (!pilaCapas || pilaCapas.indexOf("pantalla-calendario") < 0) return;
+    var c = A.calendarioMes(movimientosDelCalendario(), calVista.anio, calVista.mes, new Date()), esGasto = calVista.tipo === "gasto";
+    $("cal-contexto").textContent = CAL_CONTEXTOS[calVista.ctx] || "";
+    $("cal-mes").textContent = c.nombre;
+    document.querySelectorAll("#cal-tipo button").forEach(function (b) { b.setAttribute("aria-checked", String(b.dataset.calTipo === calVista.tipo)); });
+
+    var res = $("cal-resumen"); res.replaceChildren();
+    function dato(titulo, valor, nota) { var d = el("div", "tarjeta cal-dato"); d.append(el("small", null, titulo), el("strong", null, valor)); if (nota) d.append(el("small", "nota", nota)); res.append(d); }
+    if (esGasto) {
+      dato("Gastaste en el mes", dinero(c.gastos), c.diasConGasto + (c.diasConGasto === 1 ? " día con gastos" : " días con gastos"));
+      dato("Día que más gastaste", c.diaTop ? fechaDelDia(c.diaTop.clave) : "Ninguno", c.diaTop ? dinero(c.diaTop.gastos) : "Sin gastos este mes");
+      dato("Días sin gastar", String(c.diasSinGasto), c.diasTranscurridos ? "de " + c.diasTranscurridos + (c.diasTranscurridos === 1 ? " día" : " días") + " que van" : "El mes aún no empieza");
+      dato("Promedio por día", dinero(c.promedioDiario), "Contando los días que van");
+    } else {
+      var top = c.dias.reduce(function (a, x) { return x.ingresos > (a ? a.ingresos : 0) ? x : a; }, null);
+      var conIng = c.dias.filter(function (x) { return x.ingresos > 0; }).length;
+      dato("Ingresos del mes", dinero(c.ingresos), conIng + (conIng === 1 ? " día con ingresos" : " días con ingresos"));
+      dato("Día que más ganaste", top ? fechaDelDia(top.clave) : "Ninguno", top ? dinero(top.ingresos) : "Sin ingresos este mes");
+      dato("Balance del mes", (c.ingresos - c.gastos < 0 && !ocultos ? "−" : "") + dinero(Math.abs(c.ingresos - c.gastos)), "Ingresos menos gastos");
+    }
+
+    document.querySelector("#pantalla-calendario .cal-leyenda").classList.toggle("ing", !esGasto);
+    var grilla = $("cal-dias"); grilla.replaceChildren();
+    for (var i = 0; i < c.hueco; i++) grilla.append(el("span", "cal-vacio"));
+    c.dias.forEach(function (x) {
+      var valor = esGasto ? x.gastos : x.ingresos, nivel = esGasto ? x.nivel : x.nivelIngreso;
+      var b = el("button", "cal-celda n" + nivel + (esGasto ? "" : " ing") + (x.hoy ? " hoy" : "") + (x.futuro ? " futuro" : "") + (calVista.dia === x.clave ? " elegido" : ""));
+      b.type = "button";
+      b.append(el("span", "cal-num", String(x.dia)), el("span", "cal-valor", valor > 0 ? montoCorto(valor) : x.futuro ? "" : esGasto ? "✓" : ""));
+      b.setAttribute("aria-label", fechaDelDia(x.clave) + ": " + (valor > 0 ? (esGasto ? "gastaste " : "ganaste ") + dinero(valor) : x.futuro ? "todavía no llega" : esGasto ? "no gastaste" : "sin ingresos"));
+      if (calVista.dia === x.clave) b.setAttribute("aria-pressed", "true");
+      b.addEventListener("click", function () { calVista.dia = calVista.dia === x.clave ? null : x.clave; pintarCalendario(); if (calVista.dia) $("cal-detalle").scrollIntoView({ behavior: "smooth", block: "start" }); });
+      grilla.append(b);
+    });
+
+    var cont = $("cal-detalle"); cont.replaceChildren();
+    var elegido = calVista.dia && c.dias.find(function (x) { return x.clave === calVista.dia; });
+    if (!elegido) { cont.append(el("p", "nota", "Toca un día para ver qué gastaste o ganaste ese día. ✓ es un día sin gastos.")); return; }
+    var cab = el("div", "seccion-cabecera");
+    cab.append(el("h2", "cal-dia-titulo", fechaDelDia(elegido.clave)));
+    cont.append(cab);
+    var t = el("p", "nota", elegido.cantidad ? "Gastos " + dinero(elegido.gastos) + " · Ingresos " + dinero(elegido.ingresos) : elegido.futuro ? "Este día todavía no llega." : "Este día no anotaste gastos ni ingresos.");
+    cont.append(t);
+    if (elegido.movimientos.length) { var lista = el("div", "dias"); cont.append(lista); listaPorDia(lista, elegido.movimientos, ""); }
+  }
+  document.querySelectorAll("[data-calendario]").forEach(function (b) { b.addEventListener("click", function () { abrirCalendario(b.dataset.calendario); }); });
+  document.querySelectorAll("[data-cal-mes]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var d = new Date(calVista.anio, calVista.mes + Number(b.dataset.calMes), 1);
+      calVista.anio = d.getFullYear(); calVista.mes = d.getMonth(); calVista.dia = null; pintarCalendario();
+    });
+  });
+  document.querySelectorAll("#cal-tipo button").forEach(function (b) {
+    b.addEventListener("click", function () { calVista.tipo = b.dataset.calTipo; guardarLocal("nova-cal-tipo", calVista.tipo); pintarCalendario(); });
   });
 
   // ---------- Mapa de calor de gastos ----------
