@@ -5010,7 +5010,8 @@
           [$("btn-apk"), $("perfil-apk")].forEach(function (a) { a.href = mejor.apk; });
         }
         [$("btn-apk"), $("perfil-apk")].forEach(function (a) {
-          a.querySelector("strong").textContent = hayNueva ? "Descargar la versión nueva (" + mejor.d.versionName + ")" : "Descargar la app para Android";
+          a.querySelector("strong").textContent = a.id === "btn-apk" ? "APK Android" + (hayNueva ? " · versión " + mejor.d.versionName : "") : hayNueva ? "Descargar la versión nueva (" + mejor.d.versionName + ")" : "Descargar la app para Android";
+          if (a.id === "btn-apk") a.querySelector("small").textContent = hayNueva ? "Hay versión nueva: toca para descargarla" : "Descarga la versión más nueva de NOVA";
           a.classList.toggle("hay-nueva", hayNueva);
         });
         aviso.hidden = !hayNueva;
