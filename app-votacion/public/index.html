@@ -1,10 +1,18 @@
 <!doctype html>
-<html lang="es">
+<!--
+  Aplicación de campaña desarrollada por Opita Digital.
+  © Opita Digital — Todos los derechos reservados. Prohibida su copia o reventa.
+-->
+<html lang="es" data-tema="opita">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#F4EFE6">
   <title>Campaña</title>
+  <meta name="author" content="Opita Digital">
+  <meta name="copyright" content="© Opita Digital. Todos los derechos reservados.">
+  <meta name="generator" content="Opita Digital">
+  <script src="/tema.js"></script>
   <link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/public-sans.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/styles.css">
@@ -24,8 +32,16 @@
     <symbol id="i-salir" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-externo" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-descarga" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-compartir" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h1M20 14h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></symbol>
+    <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M4.5 19.5l1.1-3.6A8 8 0 1 1 8.4 18.6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8.6c.2-.5.6-.6 1-.5l.7 1.6c.1.3 0 .6-.2.8l-.4.4c.5 1.1 1.4 2 2.5 2.5l.4-.4c.2-.2.5-.3.8-.2l1.6.7c.1.4 0 .8-.5 1-1.6.8-6.7-3.2-5.9-5.9z" fill="currentColor"/></symbol>
+    <symbol id="i-imprimir" viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-enlace" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-papelera" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   </svg>
+
+  <!-- Marca de agua de Opita Digital -->
+  <div class="marca-agua" aria-hidden="true"></div>
 
   <div id="raiz"></div>
 
@@ -41,16 +57,19 @@
     </header>
     <main id="vista"></main>
     <footer class="pie">
-      <span data-nombre></span>
-      <span>Sus datos se tratan según la Ley 1581 de 2012.</span>
+      <div class="pie-fila">
+        <span data-nombre></span>
+        <span>Sus datos se tratan según la Ley 1581 de 2012.</span>
+      </div>
+      <div class="credito" data-credito></div>
     </footer>
   </template>
 
   <template id="tpl-registro">
     <div class="registro">
       <aside class="cartel">
-        <p class="sobretitulo">Registro ciudadano</p>
-        <h1 class="cartel-titulo">Tu barrio también <em>decide</em>.</h1>
+        <p class="sobretitulo">Registro ciudadano · <span data-nombre></span></p>
+        <h1 class="cartel-titulo" id="cartel-titulo"></h1>
         <p class="cartel-texto">Déjanos tus datos y entérate primero de las reuniones, propuestas
           y jornadas que pasan en tu comuna.</p>
         <div class="contador">
@@ -173,6 +192,7 @@
         </div>
         <p class="error" id="error-login" role="alert"></p>
         <button type="submit" class="boton boton-acento boton-bloque">Entrar</button>
+        <div class="credito" data-credito></div>
       </form>
     </div>
   </template>
@@ -186,10 +206,13 @@
           <a href="#/panel"><svg><use href="#i-inicio"/></svg>Inicio</a>
           <a href="#/panel/registros"><svg><use href="#i-personas"/></svg>Registros</a>
           <a href="#/panel/encuestas"><svg><use href="#i-encuesta"/></svg>Encuestas</a>
+          <a href="#/panel/compartir"><svg><use href="#i-compartir"/></svg>Compartir</a>
+          <a href="#/panel/ajustes"><svg><use href="#i-ajustes"/></svg>Ajustes</a>
         </nav>
         <div class="lateral-pie">
           <a href="#/" target="_blank" rel="noopener"><svg><use href="#i-externo"/></svg>Ver formulario</a>
           <button type="button" id="salir"><svg><use href="#i-salir"/></svg>Cerrar sesión</button>
+          <div class="credito credito-lateral" data-credito></div>
         </div>
       </aside>
       <main id="vista-panel" class="contenido"></main>
@@ -347,7 +370,122 @@
     </section>
   </template>
 
+  <template id="tpl-panel-compartir">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Invita a la gente</p>
+        <h1 class="titulo-pagina">Compartir el registro</h1>
+      </div>
+    </header>
+    <section class="rejilla-panel">
+      <article class="bloque col-7 bloque-afiche">
+        <header class="bloque-cab">
+          <h2>Anuncio listo para compartir</h2>
+          <div class="formatos" role="radiogroup" aria-label="Formato del anuncio">
+            <button type="button" class="formato activo" data-formato="post" role="radio" aria-checked="true">Post 4:5</button>
+            <button type="button" class="formato" data-formato="historia" role="radio" aria-checked="false">Historia 9:16</button>
+            <button type="button" class="formato" data-formato="cuadrado" role="radio" aria-checked="false">Cuadrado</button>
+          </div>
+        </header>
+        <div class="afiche-marco"><canvas id="afiche" aria-label="Vista previa del anuncio"></canvas></div>
+      </article>
+      <div class="col-5 pila">
+        <article class="bloque">
+          <header class="bloque-cab"><h2>Enlace del formulario</h2></header>
+          <div class="enlace-caja">
+            <svg class="icono"><use href="#i-enlace"/></svg>
+            <input id="enlace-publico" readonly aria-label="Enlace del formulario">
+            <button type="button" id="copiar-enlace" class="boton boton-mini">Copiar</button>
+          </div>
+          <p class="meta" id="aviso-enlace"></p>
+        </article>
+        <article class="bloque">
+          <header class="bloque-cab"><h2>Compartir</h2></header>
+          <div class="botones-compartir">
+            <a id="compartir-whatsapp" class="boton boton-whatsapp" target="_blank" rel="noopener">
+              <svg class="icono"><use href="#i-whatsapp"/></svg>Enviar por WhatsApp</a>
+            <button type="button" id="compartir-nativo" class="boton boton-borde" hidden>Compartir…</button>
+            <button type="button" id="descargar-afiche" class="boton boton-acento">
+              <svg class="icono"><use href="#i-descarga"/></svg>Descargar anuncio (PNG)</button>
+            <button type="button" id="descargar-qr" class="boton boton-borde">
+              <svg class="icono"><use href="#i-compartir"/></svg>Descargar solo el QR</button>
+            <button type="button" id="imprimir-afiche" class="boton boton-borde">
+              <svg class="icono"><use href="#i-imprimir"/></svg>Imprimir</button>
+          </div>
+        </article>
+        <article class="bloque">
+          <header class="bloque-cab"><h2>Texto para el mensaje</h2></header>
+          <textarea id="texto-mensaje" rows="4" aria-label="Texto del mensaje"></textarea>
+        </article>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-panel-ajustes">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Apariencia y datos</p>
+        <h1 class="titulo-pagina">Ajustes</h1>
+      </div>
+    </header>
+    <form id="form-ajustes" class="rejilla-panel" novalidate>
+      <article class="bloque col-12">
+        <header class="bloque-cab">
+          <h2>Diseño de la aplicación</h2>
+          <span class="bloque-sub">Se aplica en el formulario, el panel y el anuncio</span>
+        </header>
+        <div class="temas" role="radiogroup" aria-label="Diseño">
+          <label class="tema-opcion" data-muestra="opita">
+            <input type="radio" name="tema" value="opita">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Opita</strong><span>Verde y amarillo del Huila, con la cinta del sombrero.</span>
+          </label>
+          <label class="tema-opcion" data-muestra="oscuro">
+            <input type="radio" name="tema" value="oscuro">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Moderno oscuro</strong><span>Fondo oscuro con acentos verde neón.</span>
+          </label>
+          <label class="tema-opcion" data-muestra="limpio">
+            <input type="radio" name="tema" value="limpio">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Limpio</strong><span>Blanco, sobrio y profesional, acento azul.</span>
+          </label>
+          <label class="tema-opcion" data-muestra="popular">
+            <input type="radio" name="tema" value="popular">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Popular</strong><span>Rojo de afiche, letras grandes y fuertes.</span>
+          </label>
+        </div>
+      </article>
+      <article class="bloque col-6">
+        <header class="bloque-cab"><h2>Datos de la campaña</h2></header>
+        <div class="campo">
+          <label for="a-nombre">Nombre de la campaña</label>
+          <input id="a-nombre" maxlength="40" required>
+        </div>
+        <div class="campo">
+          <label for="a-eslogan">Eslogan</label>
+          <input id="a-eslogan" maxlength="80" required>
+          <p class="meta">La última palabra se resalta en el formulario y el anuncio.</p>
+        </div>
+        <div class="campo">
+          <label for="a-urlPublica">Enlace público (opcional)</label>
+          <input id="a-urlPublica" type="url" placeholder="https://www.sucampana.com" maxlength="200">
+          <p class="meta">Si publica la app en un dominio propio, póngalo aquí para que el QR apunte a él.</p>
+        </div>
+        <p class="error" id="error-ajustes" role="alert"></p>
+        <button type="submit" class="boton boton-acento">Guardar cambios</button>
+        <span class="meta guardado" id="guardado" hidden>Cambios guardados</span>
+      </article>
+      <article class="bloque col-6 bloque-autor">
+        <header class="bloque-cab"><h2>Desarrollado por</h2></header>
+        <div class="autor" id="autor"></div>
+      </article>
+    </form>
+  </template>
+
   <div id="tooltip" class="tooltip" role="status" hidden></div>
+  <script src="/vendor/qrcode.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

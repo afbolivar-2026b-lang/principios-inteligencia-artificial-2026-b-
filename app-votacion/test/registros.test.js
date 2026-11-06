@@ -170,9 +170,10 @@ test('sesión con cookie, estadísticas del panel y eliminación', async () => {
     await fetch(`${url}/api/sesion`, { method: 'DELETE', ...conSesion });
     assert.equal((await fetch(`${url}/api/panel`, conSesion)).status, 401);
 
-    // La configuración pública solo expone el nombre y el total
+    // La configuración pública no expone datos personales
     const cfg = await (await fetch(`${url}/api/config`)).json();
-    assert.deepEqual(Object.keys(cfg).sort(), ['nombre', 'totalRegistros']);
+    assert.deepEqual(Object.keys(cfg).sort(), ['eslogan', 'marca', 'nombre', 'tema', 'totalRegistros', 'urlPublica']);
+    assert.equal(cfg.marca.empresa, 'Opita Digital');
   } finally {
     otro.close();
   }
@@ -219,6 +220,33 @@ test('no agrega información repetida', async () => {
     // Sugerencias públicas de barrios: sin datos personales
     const barrios = await (await fetch(`${url}/api/barrios`)).json();
     assert.deepEqual(barrios, [{ nombre: 'Las Granjas', comuna: 'Comuna 2' }]);
+  } finally {
+    otro.close();
+  }
+});
+
+test('ajustes: diseño, nombre, eslogan y enlace público', async () => {
+  const otro = crearServidor({ claveAdmin: CLAVE, nombreCampana: 'Inicial' });
+  await new Promise((r) => otro.listen(0, r));
+  const url = `http://127.0.0.1:${otro.address().port}`;
+  const put = (body, headers = { Authorization: `Bearer ${CLAVE}` }) => fetch(`${url}/api/ajustes`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body),
+  });
+  try {
+    const cfg = await (await fetch(`${url}/api/config`)).json();
+    assert.equal(cfg.nombre, 'Inicial');
+    assert.equal(cfg.tema, 'opita');
+
+    assert.equal((await put({ tema: 'oscuro' }, {})).status, 401, 'sin sesión no se puede cambiar');
+    assert.equal((await put({ tema: 'rosado' })).status, 400);
+    assert.equal((await put({ urlPublica: 'javascript:alert(1)' })).status, 400);
+    assert.equal((await put({ nombre: '' })).status, 400);
+
+    const ok = await (await put({ tema: 'limpio', nombre: ' Neiva  Primero ', eslogan: 'Juntos sí podemos.', urlPublica: 'https://neivaprimero.co/registro/' })).json();
+    assert.deepEqual(ok, { nombre: 'Neiva Primero', eslogan: 'Juntos sí podemos.', tema: 'limpio', urlPublica: 'https://neivaprimero.co/registro' });
+    const despues = await (await fetch(`${url}/api/config`)).json();
+    assert.equal(despues.tema, 'limpio');
+    assert.equal((await put({ urlPublica: '' })).status, 200);
   } finally {
     otro.close();
   }

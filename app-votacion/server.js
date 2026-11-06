@@ -1,3 +1,7 @@
+/*!
+ * App de campaña — © Opita Digital. Todos los derechos reservados.
+ * Prohibida su copia, distribución o modificación sin autorización escrita.
+ */
 'use strict';
 
 // Servidor HTTP de la app de campaña. Sin dependencias externas.
@@ -8,6 +12,8 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { crearStore, ErrorValidacion } = require('./store');
 const { crearRegistros, MAX_FIRMA } = require('./registros');
+const { crearAjustes } = require('./ajustes');
+const MARCA = require('./marca');
 
 const PUBLICO = path.join(__dirname, 'public');
 const MAX_CUERPO = 16 * 1024;
@@ -17,6 +23,10 @@ const TIPOS = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
   '.woff2': 'font/woff2',
   '.txt': 'text/plain; charset=utf-8',
 };
@@ -118,11 +128,11 @@ function hashClave(v) {
   return crypto.createHash('sha256').update(String(v)).digest();
 }
 
-function crearServidor({ archivoDatos, archivoRegistros, claveAdmin, nombreCampana } = {}) {
+function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAdmin, nombreCampana } = {}) {
   const store = crearStore(archivoDatos);
   const registros = crearRegistros(archivoRegistros);
+  const ajustes = crearAjustes(archivoAjustes, { nombre: nombreCampana });
   const claveHash = claveAdmin ? hashClave(claveAdmin) : null;
-  const config = { nombre: nombreCampana || 'Mi Campaña' };
 
   // Sesiones del panel: token aleatorio -> vencimiento.
   const sesiones = new Map();
@@ -211,7 +221,13 @@ function crearServidor({ archivoDatos, archivoRegistros, claveAdmin, nombreCampa
 
       // ---- Configuración y sesión ----
       if (ruta === '/api/config' && req.method === 'GET') {
-        enviarJSON(res, 200, { ...config, totalRegistros: registros.total() }, extra);
+        enviarJSON(res, 200, { ...ajustes.obtener(), totalRegistros: registros.total(), marca: MARCA }, extra);
+        return;
+      }
+      if (ruta === '/api/ajustes' && req.method === 'PUT') {
+        exigirAdmin(req);
+        const cuerpo = await leerCuerpo(req);
+        enviarJSON(res, 200, ajustes.actualizar(cuerpo), extra);
         return;
       }
       if (ruta === '/api/sesion' && req.method === 'GET') {
@@ -350,7 +366,8 @@ if (require.main === module) {
     console.log(`ADMIN_PASSWORD no definida. Contraseña temporal del panel: ${claveAdmin}`);
   }
   const nombreCampana = process.env.NOMBRE_CAMPANA;
-  crearServidor({ archivoDatos, archivoRegistros, claveAdmin, nombreCampana }).listen(puerto, () => {
+  const archivoAjustes = process.env.AJUSTES_FILE || path.join(__dirname, 'data', 'ajustes.json');
+  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAdmin, nombreCampana }).listen(puerto, () => {
     console.log(`Formulario público: http://localhost:${puerto}/`);
     console.log(`Panel del equipo:   http://localhost:${puerto}/#/panel`);
   });

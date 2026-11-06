@@ -1,3 +1,7 @@
+/*!
+ * App de campaña — © Opita Digital. Todos los derechos reservados.
+ * Prohibida su copia, distribución o modificación sin autorización escrita.
+ */
 'use strict';
 
 // Cliente de la app de campaña. Todo el contenido del usuario se inserta con
@@ -8,7 +12,7 @@ const tooltip = document.getElementById('tooltip');
 const SVG = 'http://www.w3.org/2000/svg';
 const fmt = new Intl.NumberFormat('es-CO');
 let temporizador = null;
-let config = { nombre: 'Campaña', totalRegistros: 0 };
+let config = { nombre: 'Campaña', eslogan: 'Tu barrio también decide.', tema: 'opita', urlPublica: '', totalRegistros: 0, marca: { empresa: 'Opita Digital', logo: '/marca/opita-digital.svg' } };
 let sesionAdmin = false;
 let shellActual = null;
 const observadores = [];
@@ -72,6 +76,65 @@ function iniciales(nombre, apellido) {
 
 function ponerNombre(contenedor) {
   for (const n of contenedor.querySelectorAll('[data-nombre]')) n.textContent = config.nombre;
+  for (const n of contenedor.querySelectorAll('[data-credito]')) pintarCredito(n);
+}
+
+function aplicarTema(tema) {
+  document.documentElement.setAttribute('data-tema', tema || 'opita');
+  try { localStorage.setItem('tema', tema); } catch { /* sin almacenamiento */ }
+}
+
+// ---------- Firma de Opita Digital (créditos + marca de agua) ----------
+function enlacesContacto(m) {
+  const out = [];
+  if (m.whatsapp) out.push({ tipo: 'WhatsApp', texto: m.telefono || `+${m.whatsapp}`, href: `https://wa.me/${m.whatsapp}` });
+  else if (m.telefono) out.push({ tipo: 'Teléfono', texto: m.telefono, href: `tel:${m.telefono.replace(/\s/g, '')}` });
+  if (m.correo) out.push({ tipo: 'Correo', texto: m.correo, href: `mailto:${m.correo}` });
+  if (m.web) out.push({ tipo: 'Web', texto: m.web.replace(/^https?:\/\//, ''), href: m.web });
+  if (m.instagram) out.push({ tipo: 'Instagram', texto: `@${m.instagram}`, href: `https://instagram.com/${m.instagram}` });
+  if (m.facebook) out.push({ tipo: 'Facebook', texto: m.facebook, href: `https://facebook.com/${m.facebook}` });
+  return out;
+}
+
+function pintarCredito(nodo) {
+  const m = config.marca || {};
+  const firma = el(m.web ? 'a' : 'span', { className: 'credito-firma', ...(m.web ? { href: m.web, target: '_blank', rel: 'noopener' } : {}) },
+    el('img', { src: m.logo || '/marca/opita-digital.svg', alt: '' }),
+    el('span', {}, 'Desarrollado por ', el('strong', { textContent: m.empresa || 'Opita Digital' })));
+  const contactos = enlacesContacto(m).map((c) =>
+    el('a', { className: 'credito-contacto', href: c.href, target: '_blank', rel: 'noopener', textContent: c.texto, title: c.tipo }));
+  nodo.replaceChildren(firma, ...contactos);
+  nodo.dataset.firmado = '1';
+}
+
+// La marca de agua y los créditos se restauran si alguien los quita de la página.
+function protegerMarca() {
+  const revisar = () => {
+    let agua = document.querySelector('.marca-agua');
+    if (!agua) {
+      agua = el('div', { className: 'marca-agua', 'aria-hidden': 'true' });
+      document.body.prepend(agua);
+    }
+    const estilo = getComputedStyle(agua);
+    if (estilo.display === 'none' || estilo.visibility === 'hidden' || Number(estilo.opacity) < 0.02) {
+      agua.style.cssText = 'display:block;visibility:visible;opacity:.05';
+    }
+    for (const n of document.querySelectorAll('[data-credito]')) {
+      if (!n.querySelector('.credito-firma')) pintarCredito(n);
+    }
+  };
+  new MutationObserver(revisar).observe(document.body, { childList: true, subtree: true });
+  setInterval(revisar, 4000);
+}
+
+// Separa el eslogan para resaltar su última palabra.
+function partesEslogan(texto) {
+  const m = String(texto).trim().match(/^(.*?)(\S+?)([.!¡?¿…]*)$/u);
+  return m ? { inicio: m[1], resaltado: m[2], fin: m[3] } : { inicio: texto, resaltado: '', fin: '' };
+}
+
+function urlPublica() {
+  return config.urlPublica ? `${config.urlPublica}/` : `${location.origin}/`;
 }
 
 function mostrarTooltip(x, y, titulo, detalle) {
@@ -249,6 +312,9 @@ function vistaRegistro() {
   vista.replaceChildren(plantilla('tpl-registro'));
   window.scrollTo(0, 0);
   document.getElementById('contador').textContent = fmt.format(config.totalRegistros || 0);
+  const pe = partesEslogan(config.eslogan);
+  document.getElementById('cartel-titulo').replaceChildren(pe.inicio, el('em', { textContent: pe.resaltado }), pe.fin);
+  ponerNombre(vista);
   api('/api/config').then((c) => {
     config = c;
     const n = document.getElementById('contador');
@@ -847,6 +913,426 @@ async function vistaPanelEncuestas() {
   }));
 }
 
+
+// ==========================================================================
+// COMPARTIR: anuncio con QR
+// ==========================================================================
+const FORMATOS = { post: [1080, 1350], historia: [1080, 1920], cuadrado: [1080, 1080] };
+
+function colorTema(nombre) {
+  return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
+}
+const esTransparente = (c) => !c || c === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(c);
+
+function matrizQR(texto) {
+  const qr = qrcode(0, 'M');
+  qr.addData(texto);
+  qr.make();
+  return qr;
+}
+
+function dibujarQR(ctx, qr, x, y, tam, colorOscuro = '#111111') {
+  const n = qr.getModuleCount();
+  const celda = tam / n;
+  ctx.fillStyle = colorOscuro;
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (qr.isDark(r, c)) ctx.fillRect(Math.floor(x + c * celda), Math.floor(y + r * celda), Math.ceil(celda), Math.ceil(celda));
+    }
+  }
+}
+
+function rectRedondeado(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function partirLineas(ctx, texto, ancho) {
+  const palabras = texto.split(/\s+/);
+  const lineas = [];
+  let actual = '';
+  for (const p of palabras) {
+    const prueba = actual ? `${actual} ${p}` : p;
+    if (ctx.measureText(prueba).width > ancho && actual) { lineas.push(actual); actual = p; } else actual = prueba;
+  }
+  if (actual) lineas.push(actual);
+  return lineas;
+}
+
+function cargarImagen(src) {
+  return new Promise((ok) => {
+    const img = new Image();
+    img.onload = () => ok(img);
+    img.onerror = () => ok(null);
+    img.src = src;
+  });
+}
+
+function zigzag(ctx, y, ancho, alto, c1, c2) {
+  ctx.fillStyle = c2;
+  ctx.fillRect(0, y, ancho, alto);
+  ctx.fillStyle = c1;
+  const paso = alto * 2;
+  ctx.beginPath();
+  for (let x = -paso; x < ancho + paso; x += paso) {
+    ctx.moveTo(x, y + alto);
+    ctx.lineTo(x + paso / 2, y);
+    ctx.lineTo(x + paso, y + alto);
+  }
+  ctx.fill();
+}
+
+async function dibujarAfiche(canvas, formato, url) {
+  const [W, H] = FORMATOS[formato];
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  await Promise.all([
+    document.fonts.load('800 100px Bricolage'), document.fonts.load('500 20px "Plex Mono"'),
+    document.fonts.load('500 30px "Public Sans"'), document.fonts.load('700 30px "Public Sans"'),
+  ]).catch(() => {});
+  const tema = document.documentElement.getAttribute('data-tema');
+  const c = {
+    fondo: colorTema('--cartel'), texto: colorTema('--sobre-cartel'), resaltado: colorTema('--resaltado'),
+    sobreResaltado: colorTema('--sobre-resaltado'), boton: colorTema('--boton'), sobreBoton: colorTema('--sobre-boton'),
+    acento: colorTema('--acento'), cinta1: colorTema('--cinta-1'), cinta2: colorTema('--cinta-2'),
+  };
+  const display = tema === 'limpio' ? '"Public Sans"' : 'Bricolage';
+  const M = 84;
+
+  // Fondo y textura según el diseño
+  ctx.fillStyle = c.fondo;
+  ctx.fillRect(0, 0, W, H);
+  if (tema === 'oscuro') {
+    const g1 = ctx.createRadialGradient(W * 0.1, 0, 0, W * 0.1, 0, W * 0.9);
+    g1.addColorStop(0, 'rgba(61,245,166,.30)'); g1.addColorStop(1, 'rgba(61,245,166,0)');
+    ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
+    const g2 = ctx.createRadialGradient(W, H, 0, W, H, W * 0.9);
+    g2.addColorStop(0, 'rgba(124,92,255,.30)'); g2.addColorStop(1, 'rgba(124,92,255,0)');
+    ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+  } else if (tema === 'popular') {
+    ctx.save(); ctx.globalAlpha = 0.12; ctx.strokeStyle = c.texto; ctx.lineWidth = 2;
+    for (let x = -H; x < W; x += 18) { ctx.beginPath(); ctx.moveTo(x, H); ctx.lineTo(x + H, 0); ctx.stroke(); }
+    ctx.restore();
+  } else if (tema === 'limpio') {
+    ctx.fillStyle = c.acento; ctx.fillRect(0, 0, W, 14);
+  }
+  if (tema === 'opita') {
+    zigzag(ctx, 0, W, 26, c.cinta1, c.cinta2);
+    zigzag(ctx, H - 26, W, 26, c.cinta1, c.cinta2);
+  }
+
+  // Marca de agua de Opita Digital en todo el anuncio
+  ctx.save();
+  ctx.globalAlpha = tema === 'limpio' ? 0.045 : 0.07;
+  ctx.fillStyle = c.texto;
+  ctx.font = '700 26px "Public Sans"';
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(-0.42);
+  for (let yy = -H; yy < H; yy += 150) {
+    for (let xx = -W * 1.2; xx < W * 1.2; xx += 380) ctx.fillText('OPITA DIGITAL', xx + ((yy / 150) % 2 ? 190 : 0), yy);
+  }
+  ctx.restore();
+
+  // Sobretítulo
+  let y = M + (tema === 'opita' ? 40 : 20);
+  ctx.fillStyle = c.texto;
+  ctx.font = '500 26px "Plex Mono"';
+  ctx.globalAlpha = 0.85;
+  ctx.fillText(`REGISTRO CIUDADANO · ${config.nombre.toUpperCase()}`.slice(0, 52), M, y);
+  ctx.globalAlpha = 1;
+
+  // Eslogan grande con la última palabra resaltada
+  const alto = formato === 'cuadrado' ? 96 : formato === 'historia' ? 150 : 112;
+  ctx.font = `800 ${alto}px ${display}`;
+  const palabras = config.eslogan.trim().split(/\s+/);
+  const ultima = palabras.length - 1;
+  const lineas = partirLineas(ctx, config.eslogan.trim(), W - M * 2);
+  y += alto * 1.05 + 20;
+  let idx = 0;
+  for (const linea of lineas) {
+    let x = M;
+    for (const palabra of linea.split(' ')) {
+      const w = ctx.measureText(palabra).width;
+      if (idx === ultima) {
+        const pe = partesEslogan(palabra);
+        const wr = ctx.measureText(pe.resaltado).width;
+        if (!esTransparente(c.resaltado)) {
+          ctx.fillStyle = c.resaltado;
+          rectRedondeado(ctx, x - 12, y - alto * 0.8, wr + 24, alto * 0.98, 14);
+          ctx.fill();
+          ctx.fillStyle = c.sobreResaltado;
+        } else {
+          ctx.fillStyle = c.acento;
+          ctx.fillRect(x, y + alto * 0.08, wr, alto * 0.1);
+          ctx.fillStyle = c.acento;
+        }
+        ctx.fillText(pe.resaltado, x, y);
+        ctx.fillStyle = c.texto;
+        ctx.fillText(pe.fin, x + wr + 14, y);
+      } else {
+        ctx.fillStyle = c.texto;
+        ctx.fillText(palabra, x, y);
+      }
+      x += w + ctx.measureText(' ').width;
+      idx += 1;
+    }
+    y += alto * 0.98;
+  }
+
+  // Texto de invitación
+  y += 16;
+  ctx.font = `500 ${formato === 'cuadrado' ? 28 : 32}px "Public Sans"`;
+  ctx.fillStyle = c.texto;
+  ctx.globalAlpha = 0.92;
+  for (const l of partirLineas(ctx, 'Regístrate gratis en un minuto: escanea el código o entra al enlace.', W - M * 2)) {
+    ctx.fillText(l, M, y); y += formato === 'cuadrado' ? 40 : 46;
+  }
+  ctx.globalAlpha = 1;
+
+  // Tarjeta con el QR
+  const pie = (tema === 'opita' ? 26 : 0) + 96;
+  const espacio = H - y - pie;
+  const extra = 112;
+  const tamQR = Math.max(300, Math.min(formato === 'historia' ? 600 : 460, espacio - extra - 30));
+  const tarjetaW = tamQR + 56;
+  const tarjetaH = tamQR + extra;
+  const tx = formato === 'historia' ? (W - tarjetaW) / 2 : M;
+  const ty = y + Math.max(20, (espacio - tarjetaH) / 2);
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 16;
+  ctx.fillStyle = '#FFFFFF';
+  rectRedondeado(ctx, tx, ty, tarjetaW, tarjetaH, 28);
+  ctx.fill();
+  ctx.restore();
+  dibujarQR(ctx, matrizQR(url), tx + 28, ty + 28, tamQR, '#111111');
+  ctx.fillStyle = '#111111';
+  ctx.font = `700 ${Math.round(Math.min(30, (tarjetaW - 56) / 13))}px "Public Sans"`;
+  ctx.textAlign = 'center';
+  ctx.fillText('ESCANEA Y REGÍSTRATE', tx + tarjetaW / 2, ty + tamQR + 66);
+  ctx.font = '500 21px "Plex Mono"';
+  ctx.fillStyle = '#555555';
+  const corto = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  ctx.fillText(corto.length > 34 ? `${corto.slice(0, 33)}…` : corto, tx + tarjetaW / 2, ty + tamQR + 96);
+  ctx.textAlign = 'left';
+
+  // Botón dibujado al lado del QR (post y cuadrado)
+  if (formato !== 'historia') {
+    const bx = tx + tarjetaW + 48;
+    const bw = W - bx - M;
+    if (bw > 220) {
+      ctx.font = '800 64px ' + display;
+      ctx.fillStyle = c.texto;
+      let by = ty + 70;
+      for (const l of partirLineas(ctx, 'Súmate hoy', bw)) { ctx.fillText(l, bx, by); by += 68; }
+      ctx.font = '500 30px "Public Sans"';
+      ctx.globalAlpha = 0.9;
+      for (const l of partirLineas(ctx, 'Recibe primero las noticias y reuniones de tu barrio y tu comuna.', bw)) { by += 6; ctx.fillText(l, bx, by + 30); by += 38; }
+      ctx.globalAlpha = 1;
+      const botonY = ty + tarjetaH - 96;
+      ctx.fillStyle = c.boton;
+      rectRedondeado(ctx, bx, botonY, Math.min(bw, 330), 90, 18);
+      ctx.fill();
+      ctx.fillStyle = c.sobreBoton;
+      ctx.font = '700 34px "Public Sans"';
+      ctx.fillText('Regístrate →', bx + 34, botonY + 57);
+    }
+  }
+
+  // Pie con la firma de Opita Digital
+  const logo = await cargarImagen((config.marca && config.marca.logo) || '/marca/opita-digital.svg');
+  const py = H - (tema === 'opita' ? 26 : 0) - 40;
+  ctx.globalAlpha = 0.9;
+  if (logo) ctx.drawImage(logo, M, py - 34, 44, 44);
+  ctx.fillStyle = c.texto;
+  ctx.font = '500 24px "Public Sans"';
+  const textoCredito = `Desarrollado por ${(config.marca && config.marca.empresa) || 'Opita Digital'}`;
+  ctx.fillText(textoCredito, M + (logo ? 58 : 0), py - 4);
+  const contacto = enlacesContacto(config.marca || {}).slice(0, 2).map((x) => x.texto).join('  ·  ');
+  if (contacto) {
+    ctx.font = '500 20px "Plex Mono"';
+    ctx.textAlign = 'right';
+    ctx.fillText(contacto, W - M, py - 4);
+    ctx.textAlign = 'left';
+  }
+  ctx.globalAlpha = 1;
+}
+
+function descargarCanvas(canvas, nombre) {
+  const a = el('a', { href: canvas.toDataURL('image/png'), download: nombre });
+  document.body.append(a);
+  a.click();
+  a.remove();
+}
+
+function nombreArchivo(base) {
+  const slug = config.nombre.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `${base}-${slug || 'campana'}.png`;
+}
+
+async function vistaPanelCompartir() {
+  const vista = document.getElementById('vista-panel');
+  vista.replaceChildren(plantilla('tpl-panel-compartir'));
+  const url = urlPublica();
+  const canvas = document.getElementById('afiche');
+  let formato = 'post';
+
+  document.getElementById('enlace-publico').value = url;
+  if (/^https?:\/\/(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(url)) {
+    document.getElementById('aviso-enlace').textContent =
+      'Este enlace solo funciona en este computador. Cuando publique la app en internet, ponga el dominio en Ajustes y el QR se actualiza solo.';
+  }
+
+  const texto = document.getElementById('texto-mensaje');
+  texto.value = `¡Súmate a ${config.nombre}! ${config.eslogan} Regístrate en un minuto aquí: ${url}`;
+  const whatsapp = document.getElementById('compartir-whatsapp');
+  const actualizarWhatsapp = () => { whatsapp.href = `https://wa.me/?text=${encodeURIComponent(texto.value)}`; };
+  actualizarWhatsapp();
+  texto.addEventListener('input', actualizarWhatsapp);
+
+  const copiar = document.getElementById('copiar-enlace');
+  copiar.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(url); copiar.textContent = 'Copiado'; } catch { document.getElementById('enlace-publico').select(); }
+  });
+
+  for (const b of vista.querySelectorAll('.formato')) {
+    b.addEventListener('click', async () => {
+      formato = b.dataset.formato;
+      for (const o of vista.querySelectorAll('.formato')) {
+        o.classList.toggle('activo', o === b);
+        o.setAttribute('aria-checked', String(o === b));
+      }
+      await dibujarAfiche(canvas, formato, url);
+    });
+  }
+
+  document.getElementById('descargar-afiche').addEventListener('click', () => descargarCanvas(canvas, nombreArchivo(`anuncio-${formato}`)));
+
+  document.getElementById('descargar-qr').addEventListener('click', () => {
+    const qr = matrizQR(url);
+    const n = qr.getModuleCount();
+    const tam = 1000;
+    const borde = Math.round((tam / n) * 4);
+    const c = el('canvas');
+    c.width = tam + borde * 2;
+    c.height = tam + borde * 2 + 90;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, c.width, c.height);
+    dibujarQR(ctx, qr, borde, borde, tam);
+    ctx.fillStyle = '#555555';
+    ctx.font = '500 30px "Plex Mono"';
+    ctx.textAlign = 'center';
+    ctx.fillText(url.replace(/^https?:\/\//, '').replace(/\/$/, ''), c.width / 2, tam + borde + 50);
+    ctx.font = '500 20px "Public Sans"';
+    ctx.fillStyle = '#999999';
+    ctx.fillText(`Desarrollado por ${(config.marca && config.marca.empresa) || 'Opita Digital'}`, c.width / 2, tam + borde + 84);
+    descargarCanvas(c, nombreArchivo('qr'));
+  });
+
+  document.getElementById('imprimir-afiche').addEventListener('click', () => {
+    const img = el('img', { id: 'impresion', src: canvas.toDataURL('image/png'), alt: '' });
+    document.body.append(img);
+    document.body.classList.add('imprimiendo');
+    const limpiar = () => { document.body.classList.remove('imprimiendo'); img.remove(); window.removeEventListener('afterprint', limpiar); };
+    window.addEventListener('afterprint', limpiar);
+    img.onload = () => window.print();
+  });
+
+  const nativo = document.getElementById('compartir-nativo');
+  if (navigator.share) {
+    nativo.hidden = false;
+    nativo.addEventListener('click', async () => {
+      try {
+        const blob = await new Promise((ok) => canvas.toBlob(ok, 'image/png'));
+        const archivo = new File([blob], nombreArchivo('anuncio'), { type: 'image/png' });
+        const datos = { title: config.nombre, text: texto.value };
+        if (navigator.canShare && navigator.canShare({ files: [archivo] })) datos.files = [archivo];
+        else datos.url = url;
+        await navigator.share(datos);
+      } catch { /* el usuario canceló */ }
+    });
+  }
+
+  await dibujarAfiche(canvas, formato, url);
+}
+
+// ==========================================================================
+// AJUSTES
+// ==========================================================================
+function vistaPanelAjustes() {
+  const vista = document.getElementById('vista-panel');
+  vista.replaceChildren(plantilla('tpl-panel-ajustes'));
+  const form = document.getElementById('form-ajustes');
+  document.getElementById('a-nombre').value = config.nombre;
+  document.getElementById('a-eslogan').value = config.eslogan;
+  document.getElementById('a-urlPublica').value = config.urlPublica || '';
+  const guardado = document.getElementById('guardado');
+  const error = document.getElementById('error-ajustes');
+
+  for (const r of form.querySelectorAll('input[name="tema"]')) {
+    r.checked = r.value === config.tema;
+    r.addEventListener('change', async () => {
+      aplicarTema(r.value);
+      try {
+        config = { ...config, ...(await api('/api/ajustes', { method: 'PUT', body: JSON.stringify({ tema: r.value }) })) };
+        guardado.hidden = false;
+        setTimeout(() => { guardado.hidden = true; }, 2500);
+      } catch (e) {
+        if (e.estado === 401) { manejarErrorPanel(e, vista); return; }
+        error.textContent = e.message;
+      }
+    });
+  }
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    error.textContent = '';
+    for (const n of form.querySelectorAll('[aria-invalid="true"]')) n.removeAttribute('aria-invalid');
+    const boton = form.querySelector('button[type="submit"]');
+    boton.disabled = true;
+    try {
+      const nuevos = await api('/api/ajustes', {
+        method: 'PUT',
+        body: JSON.stringify({
+          nombre: document.getElementById('a-nombre').value,
+          eslogan: document.getElementById('a-eslogan').value,
+          urlPublica: document.getElementById('a-urlPublica').value,
+        }),
+      });
+      config = { ...config, ...nuevos };
+      document.getElementById('a-urlPublica').value = config.urlPublica;
+      ponerNombre(raiz);
+      guardado.hidden = false;
+      setTimeout(() => { guardado.hidden = true; }, 2500);
+    } catch (e) {
+      if (e.estado === 401) { manejarErrorPanel(e, vista); return; }
+      error.textContent = e.message;
+      if (e.campo) document.getElementById(`a-${e.campo}`)?.setAttribute('aria-invalid', 'true');
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  // Ficha de Opita Digital
+  const m = config.marca || {};
+  const contactos = enlacesContacto(m);
+  document.getElementById('autor').replaceChildren(
+    el('div', { className: 'autor-cab' },
+      el('img', { src: m.logo || '/marca/opita-digital.svg', alt: `Logo de ${m.empresa || 'Opita Digital'}` }),
+      el('div', {}, el('strong', { textContent: m.empresa || 'Opita Digital' }), el('span', { className: 'meta', textContent: m.lema || '' }))),
+    contactos.length
+      ? el('ul', {}, ...contactos.map((c) => el('li', {}, el('span', { textContent: c.tipo }),
+        el('a', { href: c.href, target: '_blank', rel: 'noopener', className: 'enlace', textContent: c.texto }))))
+      : el('p', { className: 'meta', textContent: 'Los datos de contacto de Opita Digital se configuran en el archivo marca.js.' }),
+    el('p', { className: 'meta', textContent: '© Opita Digital. Todos los derechos reservados. Esta aplicación lleva su firma y marca de agua.' }));
+}
+
 // ==========================================================================
 // ENRUTADOR
 // ==========================================================================
@@ -864,6 +1350,8 @@ async function enrutar() {
     marcarNav('.nav-panel', h);
     if (h === '#/panel/registros') vistaPanelRegistros();
     else if (h === '#/panel/encuestas') vistaPanelEncuestas();
+    else if (h === '#/panel/compartir') vistaPanelCompartir();
+    else if (h === '#/panel/ajustes') vistaPanelAjustes();
     else vistaPanelInicio();
     window.scrollTo(0, 0);
     return;
@@ -883,5 +1371,7 @@ window.addEventListener('scroll', ocultarTooltip, { passive: true });
 
 (async () => {
   try { config = await api('/api/config'); } catch { /* usa valores por defecto */ }
+  aplicarTema(config.tema);
   enrutar();
+  protegerMarca();
 })();

@@ -1,0 +1,11 @@
+© 2026 Opita Digital. Todos los derechos reservados.
+
+Este software (código, diseño, textos, gráficos y la marca "Opita Digital") es
+propiedad de Opita Digital. Queda prohibido copiarlo, distribuirlo, venderlo,
+modificarlo, quitar sus créditos o su marca de agua, o usarlo para otros
+clientes o campañas sin autorización escrita de Opita Digital.
+
+Componentes de terceros incluidos, con sus propias licencias libres:
+- Tipografías Bricolage Grotesque, Public Sans e IBM Plex Mono (SIL Open Font
+  License 1.1) — ver public/fonts/LICENCIAS.txt
+- qrcode-generator, © 2009 Kazuhiko Arase (licencia MIT) — public/vendor/qrcode.js

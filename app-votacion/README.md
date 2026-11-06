@@ -1,5 +1,7 @@
 # App de Campaña: registro, panel y encuestas
 
+**Desarrollado por Opita Digital** — © Todos los derechos reservados (ver `LICENCIA.txt`).
+
 Aplicativo web para armar la **base de datos de una campaña**, ver cómo va en un
 **panel con estadísticas** y hacer **encuestas** a la comunidad.
 Escrito en Node.js **sin dependencias externas**: las tipografías y las gráficas
@@ -21,7 +23,8 @@ npm test           # ejecuta las pruebas
 | Variable          | Por defecto            | Uso                                      |
 |-------------------|------------------------|------------------------------------------|
 | `ADMIN_PASSWORD`  | (aleatoria)            | Contraseña del panel. Si falta, se genera una temporal y se muestra en la consola |
-| `NOMBRE_CAMPANA`  | `Mi Campaña`           | Nombre que aparece en el logo y los títulos |
+| `NOMBRE_CAMPANA`  | `Mi Campaña`           | Nombre inicial de la campaña (después se cambia en Ajustes) |
+| `AJUSTES_FILE`    | `data/ajustes.json`    | Archivo de los ajustes (diseño, nombre, eslogan, enlace) |
 | `PORT`            | `3000`                 | Puerto del servidor                      |
 | `REGISTROS_FILE`  | `data/registros.json`  | Archivo de los registros                 |
 | `DATA_FILE`       | `data/encuestas.json`  | Archivo de las encuestas                 |
@@ -62,22 +65,43 @@ se bloquea 15 minutos tras 10 intentos fallidos.
 - **Encuestas**: crear encuestas, ver resultados en vivo, copiar el enlace y
   cerrar la votación.
 
+- **Compartir**: anuncio listo con código QR en 3 tamaños (post 4:5, historia
+  9:16 y cuadrado), enlace para copiar, botón de WhatsApp con el mensaje ya
+  escrito, descarga del anuncio o del QR solo (PNG) e impresión.
+- **Ajustes**: escoger el diseño (Opita, Moderno oscuro, Limpio o Popular) y
+  cambiar el nombre de la campaña, el eslogan y el enlace público del QR.
+
 ### Encuestas públicas (`/#/encuestas`)
 La gente vota una vez por navegador y ve los resultados al momento.
 
+## Marca de Opita Digital
+
+- Marca de agua "OPITA DIGITAL · © Todos los derechos reservados" en todas las
+  páginas y en cada anuncio con QR que se descarga.
+- Firma "Desarrollado por Opita Digital", con logo y contactos, en el pie del
+  formulario, en el acceso y en el menú del panel.
+- Si alguien borra la marca de agua o la firma desde el navegador, la app las
+  vuelve a poner.
+- Avisos de derechos en el código, en `LICENCIA.txt` y en los metadatos de la página.
+- Los datos de la empresa (WhatsApp, correo, web, redes) se editan en
+  `marca.js`, y el logo va en `public/marca/`.
+
 ## Diseño
 
-- Estilo de cartel de campaña: papel cálido, tinta oscura y un rojo de acento.
+- Cuatro diseños que se cambian desde el panel: **Opita** (verde y amarillo del
+  Huila, con la cinta del sombrero), **Moderno oscuro**, **Limpio** y **Popular**.
 - Tipografías incluidas: Bricolage Grotesque (títulos), Public Sans (texto) e
   IBM Plex Mono (etiquetas y cifras), todas con licencia OFL (`public/fonts/LICENCIAS.txt`).
-- Modo oscuro automático y diseño adaptado a celular.
+- Códigos QR generados dentro de la app con qrcode-generator (licencia MIT).
+- Diseño adaptado a celular.
 - Gráficas en SVG hechas a mano, sin librerías.
 
 ## API
 
 | Método | Ruta                          | Acceso   | Uso |
 |--------|-------------------------------|----------|-----|
-| GET    | `/api/config`                 | público  | Nombre de la campaña y total de registros |
+| GET    | `/api/config`                 | público  | Nombre, eslogan, diseño, enlace, total de registros y datos de Opita Digital |
+| PUT    | `/api/ajustes`                | equipo   | `{ tema, nombre, eslogan, urlPublica }` |
 | POST   | `/api/registros`              | público  | `{ nombre, apellido, cedula, edad, telefono, barrio, comuna, firma, autorizacion: true }` |
 | GET    | `/api/barrios`                | público  | Barrios ya registrados con su comuna (sin datos personales) |
 | GET    | `/api/encuestas`              | público  | Lista de encuestas |
@@ -101,6 +125,8 @@ app-votacion/
 ├── server.js        # servidor HTTP, sesiones y rutas de la API
 ├── registros.js     # registros de la campaña, estadísticas y CSV
 ├── store.js         # encuestas y votos
+├── ajustes.js       # diseño, nombre, eslogan y enlace público
+├── marca.js         # datos de Opita Digital (firma y marca de agua)
 ├── public/          # interfaz (HTML, CSS, JS, tipografías)
 └── test/            # pruebas con node:test
 ```
