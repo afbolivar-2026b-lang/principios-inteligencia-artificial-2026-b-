@@ -16,6 +16,8 @@ const AUREA_NUBE = {
   },
   /* Devuelve true si ya se puede seguir al ingreso interno; false si muestra su propia pantalla. */
   async conectar() {
+    // Modo solo local (pruebas o demostración sin internet): no toca la nube y solo ve los datos de este equipo.
+    if (store.get('aurea_nube_off') === '1') return true;
     try { await this.sdk(); } catch { this.activa = false; this.marcar('sin conexión'); setTimeout(() => toast('Sin conexión a la nube: se trabaja con los datos guardados en este equipo.', true), 400); return true; }
     if (!this.sb) this.sb = window.supabase.createClient(NUBE_CFG.url, NUBE_CFG.key, { auth: { persistSession: true, storageKey: 'aurea_nube_sesion', autoRefreshToken: true } });
     const { data: { session } } = await this.sb.auth.getSession();

@@ -43,9 +43,21 @@ Desde el probador se cotiza el conjunto con la foto del maniquí dentro de la co
 - Roles con menú filtrado, registro de auditoría y modo privado que oculta los valores.
 - Respaldo cifrado AES-256-GCM con contraseña.
 
-## Limitación actual
+## Nube del taller (Supabase) y publicación (Vercel)
 
-Los datos se guardan en el navegador del equipo donde se usa. Para que la secretaria y la dueña vean la misma información desde varios equipos o celulares hace falta conectarlo a una base de datos en la nube (por ejemplo Supabase); la estructura de datos ya está separada para ese paso.
+- Dirección: https://aurea-atelier-six.vercel.app (proyecto `aurea-atelier` en Vercel, carpeta raíz `aurea-atelier`; `docs/` no se publica).
+- Los datos se guardan en Supabase, en el proyecto existente, en tablas propias y separadas: `aurea_estado` (los datos del taller), `aurea_miembros` (cuentas activadas) y `aurea_config` (código de activación guardado cifrado). Todas tienen RLS: sin una cuenta activada no se puede leer ni escribir nada.
+- Al abrir la dirección se entra primero con la cuenta del taller (correo y contraseña). La primera vez se crea la cuenta, se confirma el correo y se escribe el código de activación del taller. Después se entra con el usuario interno (administradora, secretaria…).
+- Cada cambio se sube solo a la nube. Si dos equipos guardan al mismo tiempo, se avisa y se carga la versión más reciente. Al volver a la pestaña se traen los cambios de otros equipos.
+- Sin internet se sigue trabajando con los datos del equipo.
+
+## Dashboard: descargas
+
+- **Descargar Excel**: libro `.xlsx` con tres hojas.
+  - *Dashboard*: logo, indicadores con íconos, foto del conjunto más vendido, segmentadores de año, vendedor y mes, las 12 gráficas como gráficas reales de Excel y el resumen mensual con fórmulas.
+  - *Datos*: los números que alimentan las gráficas; si se cambia un número, la gráfica cambia.
+  - *Ventas*: el detalle con filtros.
+- **Descargar PDF**: A4 horizontal con los indicadores, la foto, las 12 gráficas y el resumen mensual.
 
 Capturas en `docs/capturas/`. Documentos para el cliente:
 

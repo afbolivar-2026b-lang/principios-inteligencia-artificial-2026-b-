@@ -205,7 +205,7 @@ Views.dashboard = (v) => {
     ['Frecuencia de compra', frec.toFixed(1).replace('.', ','), `compras por cliente · ${unicos(sel)} clientes`, 'clientes']
   ];
   v.innerHTML = `<div class="page-head"><div class="flex" style="gap:16px">${logoSVG(54)}<div><div class="eyebrow">Análisis comercial · ${Y}${Dash.meses.size ? ' · ' + [...Dash.meses].sort((a, b) => a - b).map(m => MESES[m]).join(', ') : ''}</div><h1>Dashboard de ventas</h1></div></div>
-      <div class="actions"><button class="btn" id="dash-meta">${icon('funciones')} Meta mensual</button><button class="btn" id="dash-csv">${icon('download')} Exportar Excel</button></div></div>
+      <div class="actions"><button class="btn" id="dash-meta">${icon('funciones')} Meta mensual</button><button class="btn" id="dash-xlsx">${icon('download')} Descargar Excel</button><button class="btn primary" id="dash-pdf">${icon('print')} Descargar PDF</button></div></div>
     ${DB.data.config.demo ? '<p class="muted" style="margin:-10px 0 14px;font-size:13px">Incluye un historial de ventas de ejemplo de dos años para la demostración, más las facturas registradas en el sistema.</p>' : ''}
     <div class="slicers card">
       <div><div class="eyebrow">Año</div><div class="seg">${years.map(y => `<button data-year="${y}" class="${y === Dash.year ? 'on' : ''}">${y}</button>`).join('')}</div></div>
@@ -256,7 +256,23 @@ Views.dashboard = (v) => {
   $$('[data-mes]', v).forEach(b => b.onclick = () => { const m = +b.dataset.mes; Dash.meses.has(m) ? Dash.meses.delete(m) : Dash.meses.add(m); render(); });
   $$('[data-vend]', v).forEach(b => b.onclick = () => { const n = b.dataset.vend; Dash.vendedores.has(n) ? Dash.vendedores.delete(n) : Dash.vendedores.add(n); render(); });
   const cl = $('#dash-clear', v); if (cl) cl.onclick = () => { Dash.meses.clear(); Dash.vendedores.clear(); render(); };
-  $('#dash-csv', v).onclick = () => exportCSV('ventas-' + Y, [{ k: 'fecha', label: 'Fecha' }, { k: 'vendedor', label: 'Vendedor' }, { k: 'canal', label: 'Canal' }, { k: 'metodo', label: 'Método de pago' }, { k: 'tipo', label: 'Tipo de cliente' }, { k: 'categoria', label: 'Categoría' }, { k: 'und', label: 'Unidades' }, { k: 'monto', label: 'Monto' }, { k: 'costo', label: 'Costo' }], sel);
+  // Datos del período filtrado para las descargas en Excel y PDF (los mismos de las gráficas).
+  const gcat = Object.entries(group(sel, 'categoria')).sort((a, b) => b[1] - a[1]), gven = Object.entries(group(sel, 'vendedor')).sort((a, b) => b[1] - a[1]);
+  Dash.snap = {
+    Y, PY, meses: L, generado: new Date().toLocaleString('es-CO'),
+    filtros: `Año ${Y} · Meses: ${Dash.meses.size ? [...Dash.meses].sort((a, b) => a - b).map(m => MESES[m]).join(', ') : 'todos'} · Vendedores: ${Dash.vendedores.size ? [...Dash.vendedores].join(', ') : 'todos'}`,
+    kpi: { monto, ventas: txs(sel), conv: env ? apr / env * 100 : 0, apr, env, crec, sat, encuestas: sats.length, reclamos, nReclamos: sel.filter(x => x.reclamo).length, cumpl, metaPeriodo, ciclo, frec, clientes: unicos(sel) },
+    und: cut(porMes(anio, a => sum(a, 'und'))), monto: cut(porMes(anio, a => sum(a, 'monto'))), costo: cut(porMes(anio, a => sum(a, 'costo'))),
+    compras: cut(porMes(anio, txs)), unicos: cut(porMes(anio, unicos)),
+    conv: L.map((_, i) => { const c = D.cot[`${Y}-${String(i + 1).padStart(2, '0')}`]; return c?.env ? +(c.apr / c.env * 100).toFixed(1) : 0; }),
+    crec: L.map((_, i) => { const a = sum(anio.filter(x => +x.fecha.slice(5, 7) - 1 === i), 'monto'), b = sum(prevAll.filter(x => +x.fecha.slice(5, 7) - 1 === i), 'monto') * (i === mesActual && hoy.getFullYear() === Dash.year ? frac : 1); return b ? Math.round((a - b) / b * 100) : 0; }),
+    meta: cut(porMes(anio, a => D.meta ? Math.round(sum(a, 'monto') / (D.meta * (Dash.vendedores.size ? Dash.vendedores.size / vendedores.length : 1)) * 100) : 0)),
+    metaMensual: D.meta, categoria: gcat, vendedor: gven,
+    canal: CANALES.map(c => [c, gc[c] || 0]).filter(x => x[1] > 0), metodo: METODOS.map(c => [c, gm[c] || 0]).filter(x => x[1] > 0), tipo: TIPOS.map(t => [t, gt[t] || 0]),
+    best, ventas: sel
+  };
+  $('#dash-xlsx', v).onclick = () => dashExcel(Dash.snap);
+  $('#dash-pdf', v).onclick = () => dashPDF(v, Dash.snap);
   $('#dash-meta', v).onclick = () => modal({
     title: 'Meta mensual de ventas', body: `<p class="muted">El cumplimiento se calcula contra este valor por mes (con IVA).</p><label class="field">Meta mensual<input id="mt-v" type="number" value="${D.meta}"></label>`,
     foot: `<button class="btn ghost" data-close>Cancelar</button><button class="btn primary" id="mt-ok">Guardar</button>`,
