@@ -25,6 +25,7 @@ npm test           # ejecuta las pruebas
 | `ADMIN_PASSWORD`  | (aleatoria)            | Contraseña del panel. Si falta, se genera una temporal y se muestra en la consola |
 | `NOMBRE_CAMPANA`  | `Mi Campaña`           | Nombre inicial de la campaña (después se cambia en Ajustes) |
 | `AJUSTES_FILE`    | `data/ajustes.json`    | Archivo de los ajustes (diseño, nombre, eslogan, enlace) |
+| `USUARIOS_FILE`   | `data/usuarios.json`   | Perfiles del equipo (contraseñas cifradas) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | (vacío) | Activan "Entrar con Google" |
 | `PORT`            | `3000`                 | Puerto del servidor                      |
 | `REGISTROS_FILE`  | `data/registros.json`  | Archivo de los registros                 |
@@ -206,8 +207,38 @@ servidor, todas las apps instaladas reciben el aviso.
 2. En *URI de redireccionamiento autorizados* agregue
    `https://SU-DOMINIO/auth/google/callback`.
 3. Inicie el servidor con `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
-4. En **Panel → Ajustes → Correos de Google del equipo**, escriba los correos que
-   pueden entrar. Cualquier otro correo es rechazado.
+4. Cree en **Panel → Usuarios** un perfil con el correo de Google de cada persona.
+   Solo entran los correos que tienen un perfil activo; cualquier otro es rechazado.
 
 En la app Android, "Entrar con Google" se abre en el navegador (Google no lo
 permite dentro de apps) y vuelve a la app con un enlace de un solo uso.
+
+## Usuarios, puestos y permisos
+
+En **Panel → Usuarios** el director crea los perfiles del equipo: nombre, correo,
+contraseña (o el botón *Generar*), **puesto** y **permisos**. Cada persona entra
+con su correo y su contraseña (o con Google) y solo ve lo que su perfil permite.
+
+| Permiso | Qué permite |
+|---|---|
+| Ver el tablero | Inicio con indicadores y gráficas |
+| Ver los registros | Lista de personas (datos personales) |
+| Eliminar registros | Borrar un registro |
+| Descargar | Excel, PDF y CSV |
+| Encuestas | Crear y cerrar encuestas |
+| Compartir | Anuncios, QR y enlace |
+| Ajustes | Diseño, nombre, eslogan y foto |
+| Usuarios | Crear, editar, desactivar y eliminar perfiles |
+
+Roles de plantilla: **Director/CEO** (todo), **Coordinador**, **Digitador**,
+**Comunicaciones** y **Observador**; si se cambia una casilla a mano, el rol pasa a
+*Personalizado*.
+
+- Las contraseñas se guardan cifradas con *scrypt* en `data/usuarios.json`.
+- Los cambios de permisos y las desactivaciones se aplican de inmediato, incluso
+  a sesiones abiertas.
+- Nadie se puede quitar a sí mismo el permiso de administrar usuarios, ni
+  desactivarse o eliminarse.
+- Cada persona puede cambiar su contraseña en **Mi cuenta**.
+- La **clave maestra** (`ADMIN_PASSWORD`) es la del dueño: entra dejando el correo
+  vacío y siempre tiene todos los permisos.

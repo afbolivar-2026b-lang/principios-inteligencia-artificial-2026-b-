@@ -19,7 +19,6 @@ function crearAjustes(archivo, iniciales = {}) {
     urlPublica: '',
     candidato: '',
     foto: '',
-    correosEquipo: [],
   };
   if (archivo && fs.existsSync(archivo)) {
     try {
@@ -67,14 +66,6 @@ function crearAjustes(archivo, iniciales = {}) {
       const c = String(datos.candidato || '').trim().replace(/\s+/g, ' ');
       if (c.length > 60) throw new ErrorValidacion('El nombre del candidato supera 60 caracteres', 400, 'candidato');
       nuevo.candidato = c;
-    }
-    if ('correosEquipo' in datos) {
-      const lista = Array.isArray(datos.correosEquipo) ? datos.correosEquipo : String(datos.correosEquipo || '').split(/[\s,;]+/);
-      const correos = [...new Set(lista.map((c) => String(c).trim().toLowerCase()).filter(Boolean))];
-      const malo = correos.find((c) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c) || c.length > 120);
-      if (malo) throw new ErrorValidacion(`El correo "${malo}" no es válido`, 400, 'correosEquipo');
-      if (correos.length > 30) throw new ErrorValidacion('Máximo 30 correos', 400, 'correosEquipo');
-      nuevo.correosEquipo = correos;
     }
     if ('foto' in datos) {
       const f = String(datos.foto || '');

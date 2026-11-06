@@ -1196,3 +1196,106 @@ textarea:focus { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3p
 .dona .s2 { fill: var(--serie-2); }
 .dona .s3 { fill: var(--serie-3); }
 .dona .s4 { fill: var(--serie-4); }
+
+/* ==========================================================================
+   ACCESO DEL EQUIPO (diseño con franja, logo y opciones)
+   ========================================================================== */
+.acceso { display: block; min-height: 100vh; padding: 0 0 40px; background: var(--papel); }
+.acceso-barra {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px clamp(16px, 4vw, 40px); background: var(--superficie); border-bottom: 1px solid var(--linea);
+}
+.pastilla-sesion {
+  display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 12px;
+  background: var(--cartel); color: var(--sobre-cartel); font: 650 15px var(--f-texto);
+}
+.acceso-tarjeta {
+  width: min(460px, calc(100% - 32px)); margin: 40px auto 0; overflow: hidden;
+  background: var(--superficie); border: 1px solid var(--linea); border-radius: 26px;
+  box-shadow: 0 30px 70px -40px rgba(14, 27, 44, .55);
+}
+.acceso-banda {
+  position: relative; text-align: center; padding: 34px 24px 26px;
+  background: radial-gradient(90% 80% at 50% 0, rgba(201, 164, 92, .22), transparent 70%), var(--cartel); color: var(--sobre-cartel);
+}
+.acceso-logo {
+  width: 112px; height: 112px; margin: 0 auto 18px; border-radius: 22px; overflow: hidden;
+  display: grid; place-items: center; background: var(--superficie);
+  box-shadow: 0 0 0 4px var(--oro, var(--mostaza)), 0 12px 30px -10px rgba(0, 0, 0, .5);
+  color: var(--marca); font: 500 40px/1 var(--f-display);
+}
+.acceso-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.acceso-logo svg { width: 64px; height: 64px; }
+.acceso-nombre { font: 500 26px/1.15 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: inherit; }
+.acceso-eslogan { margin: 8px 0 0; color: var(--oro, var(--mostaza)); font-size: 15px; letter-spacing: .02em; }
+.acceso-form { padding: 28px 26px 22px; }
+.acceso-form h2 { font: 500 34px/1.1 var(--f-display); letter-spacing: -0.01em; }
+.acceso-form > .meta { margin: 8px 0 22px; font-size: 15px; }
+.campo-icono { position: relative; }
+.campo-icono input { padding-right: 52px !important; }
+.campo-icono .icono-boton, .campo-icono .boton-generar { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
+.campo-icono .boton-generar { right: 12px; }
+.enlace-centro { display: block; margin: 16px auto 0; text-decoration: underline; text-underline-offset: 3px; }
+.ayuda-olvide { margin: 12px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--superficie-2); font-size: 14px; color: var(--tinta-2); }
+.separador-tambien { margin: 24px 0 16px; font: 600 12px var(--f-texto); letter-spacing: .16em; text-transform: uppercase; }
+.opcion-acceso {
+  display: grid; grid-template-columns: 52px 1fr 22px; gap: 14px; align-items: center;
+  padding: 14px 16px; margin-bottom: 12px; border: 1px solid var(--linea); border-radius: 16px;
+  text-decoration: none; color: var(--tinta); background: var(--superficie); transition: border-color .15s, transform .15s;
+}
+.opcion-acceso:hover { border-color: var(--tinta); transform: translateY(-1px); }
+.opcion-icono { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--superficie-2); }
+.opcion-icono svg { width: 26px; height: 26px; }
+.opcion-android { background: #E3F5E9; color: #1E8E4A; }
+.opcion-texto strong { display: block; font: 650 17px/1.2 var(--f-texto); }
+.opcion-texto small { display: block; color: var(--tenue); font-size: 14px; margin-top: 3px; }
+.opcion-flecha { width: 20px; height: 20px; color: var(--tinta-2); }
+.acceso-form .credito { margin-top: 18px; }
+.nav-publica a.nav-equipo { display: inline-flex; align-items: center; gap: 8px; }
+[data-tema="elegante"] .nav-publica a.nav-equipo {
+  background: #C9A45C; color: #0E1B2C; font: 650 14px var(--f-texto); letter-spacing: 0; text-transform: none;
+  padding: 9px 14px; border-radius: 10px;
+}
+[data-tema="elegante"] .nav-publica a.nav-equipo:hover { background: #D6B572; }
+.nav-equipo .icono { width: 16px; height: 16px; }
+
+/* Usuario actual en el menú lateral */
+.yo { display: grid !important; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; padding: 10px !important; margin-bottom: 6px; border: 1px solid var(--lateral-borde) !important; }
+.yo .avatar { width: 34px; height: 34px; font-size: 12px; background: rgba(201, 164, 92, .18); color: var(--oro, var(--lateral-texto)); border-color: transparent; }
+.yo-texto { min-width: 0; }
+.yo-texto strong { display: block; color: var(--lateral-texto); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yo-texto small { display: block; color: var(--lateral-tenue); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+
+/* ==========================================================================
+   USUARIOS
+   ========================================================================== */
+.permisos { margin: 4px 0 16px; }
+.permisos legend { margin-bottom: 10px; }
+.permiso-opcion {
+  display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start;
+  padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 14px;
+}
+.permiso-opcion:hover { background: var(--superficie-2); }
+.permiso-opcion input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--tinta); }
+.permiso-opcion.sensible span::after { content: "Datos sensibles"; margin-left: 8px; font: 600 10px var(--f-texto); letter-spacing: .06em; text-transform: uppercase; color: var(--acento); }
+.interruptor { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 14px; cursor: pointer; }
+.interruptor input { width: 18px; height: 18px; accent-color: var(--verde); }
+.tarjeta-usuario { display: grid; grid-template-columns: 48px 1fr auto; gap: 6px 14px; align-items: start; }
+.tarjeta-usuario .avatar { width: 48px; height: 48px; font-size: 16px; grid-row: 1 / 3; }
+.tu-nombre { font: 600 18px/1.2 var(--f-display); }
+.tu-puesto { color: var(--tinta-2); font-size: 14px; margin-top: 2px; }
+.tu-correo { font: 500 13px var(--f-texto); color: var(--tenue); margin-top: 2px; word-break: break-all; }
+.tu-estado { justify-self: end; }
+.tu-permisos { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip { font: 600 11px/1 var(--f-texto); padding: 6px 9px; border-radius: 999px; background: var(--superficie-2); color: var(--tinta-2); }
+.chip.rol { background: var(--cartel); color: var(--sobre-cartel); }
+.tu-pie { grid-column: 2 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--linea); }
+.tu-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+.tarjeta-usuario.inactivo { opacity: .65; }
+.lista-permisos { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.lista-permisos li { display: flex; gap: 10px; align-items: center; font-size: 15px; }
+.lista-permisos li::before { content: "✓"; color: var(--verde); font-weight: 700; }
+.lista-permisos li.no { color: var(--tenue); text-decoration: line-through; }
+.lista-permisos li.no::before { content: "–"; color: var(--tenue); }
+.sin-permiso { max-width: 520px; margin: 80px auto; text-align: center; }
+[data-tema="elegante"] .acceso, [data-tema] .acceso { background: var(--papel); }

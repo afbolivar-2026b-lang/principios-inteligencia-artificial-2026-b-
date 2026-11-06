@@ -39,6 +39,10 @@
     <symbol id="i-ubicacion" viewBox="0 0 24 24"><path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
     <symbol id="i-casa" viewBox="0 0 24 24"><path d="M3.5 11.5L12 4l8.5 7.5M6 10v10h12V10M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-voto" viewBox="0 0 24 24"><path d="M4 13h16v7H4zM8 13V5h8v8M10 9l1.6 1.6L14.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-usuario" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c.7-4.3 4-7 8-7s7.3 2.7 8 7z" fill="currentColor"/></symbol>
+    <symbol id="i-candado" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor"/></symbol>
+    <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-equipo" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19.5c.6-3.6 3.3-5.6 6.5-5.6s5.9 2 6.5 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17.5 4.8l1.4 1.4 2.6-2.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-android" viewBox="0 0 24 24"><path d="M6 10h12v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM6 9a6 6 0 0 1 12 0zM8 4.5 6.8 3M16 4.5 17.2 3M3.5 11v5M20.5 11v5M9.5 19v2.5M14.5 19v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="7" r=".9" fill="currentColor"/><circle cx="14.5" cy="7" r=".9" fill="currentColor"/></symbol>
     <symbol id="i-google" viewBox="0 0 24 24"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z" fill="#4285F4"/><path d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z" fill="#34A853"/><path d="M6.4 14c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2z" fill="#FBBC05"/><path d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.4L6.4 10C7.2 7.7 9.4 6 12 6z" fill="#EA4335"/></symbol>
     <symbol id="i-excel" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v6h6M8.5 12.5l4 5M12.5 12.5l-4 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -63,7 +67,7 @@
       <nav class="nav-publica" aria-label="Principal">
         <a href="#/">Regístrate</a>
         <a href="#/encuestas">Encuestas</a>
-        <a href="#/panel" class="nav-equipo">Equipo</a>
+        <a href="#/panel" class="nav-equipo"><svg class="icono"><use href="#i-usuario"/></svg>Iniciar sesión</a>
       </nav>
     </header>
     <main id="vista"></main>
@@ -201,20 +205,49 @@
   <!-- ============ ACCESO DEL EQUIPO ============ -->
   <template id="tpl-login">
     <div class="acceso">
-      <form id="form-login" class="acceso-caja">
+      <header class="acceso-barra">
         <a href="#/" class="logo"><svg><use href="#marca"/></svg><span data-nombre></span></a>
-        <h1>Panel del equipo</h1>
-        <p class="meta">Acceso solo para coordinación de campaña.</p>
-        <div class="campo">
-          <label for="clave">Contraseña</label>
-          <input id="clave" type="password" autocomplete="current-password" required>
+        <span class="pastilla-sesion"><svg class="icono"><use href="#i-usuario"/></svg>Iniciar sesión</span>
+      </header>
+      <div class="acceso-tarjeta">
+        <div class="acceso-banda">
+          <div class="acceso-logo" id="acceso-logo"></div>
+          <h1 class="acceso-nombre" data-nombre></h1>
+          <p class="acceso-eslogan" id="acceso-eslogan"></p>
         </div>
-        <p class="error" id="error-login" role="alert"></p>
-        <button type="submit" class="boton boton-acento boton-bloque">Entrar</button>
-        <div class="separador" id="separador-google" hidden><span>o</span></div>
-        <a href="/auth/google" id="entrar-google" class="boton boton-google boton-bloque" hidden><svg class="icono"><use href="#i-google"/></svg>Entrar con Google</a>
-        <div class="credito" data-credito></div>
-      </form>
+        <form id="form-login" class="acceso-form" novalidate>
+          <h2>Iniciar sesión</h2>
+          <p class="meta">Acceso para el equipo de campaña.</p>
+          <div class="campo">
+            <label for="correo-login">Correo</label>
+            <input id="correo-login" type="email" autocomplete="username" placeholder="nombre@correo.com">
+          </div>
+          <div class="campo">
+            <label for="clave">Contraseña</label>
+            <div class="campo-icono">
+              <input id="clave" type="password" autocomplete="current-password" required placeholder="Su contraseña">
+              <button type="button" id="ver-clave" class="icono-boton" aria-label="Mostrar contraseña"><svg><use href="#i-candado"/></svg></button>
+            </div>
+          </div>
+          <p class="error" id="error-login" role="alert"></p>
+          <button type="submit" class="boton boton-acento boton-bloque boton-grande">Entrar</button>
+          <button type="button" id="olvide" class="enlace enlace-centro">Olvidé mi contraseña</button>
+          <p class="ayuda-olvide" id="ayuda-olvide" hidden>Pídale al director de la campaña que le asigne una contraseña nueva en <b>Panel → Usuarios</b>. Si usted es el director, entre dejando el correo vacío y use la clave maestra.</p>
+
+          <div class="separador separador-tambien" id="separador-tambien" hidden><span>O también</span></div>
+          <a href="/auth/google" id="entrar-google" class="opcion-acceso" hidden>
+            <span class="opcion-icono"><svg><use href="#i-google"/></svg></span>
+            <span class="opcion-texto"><strong>Entrar con Google</strong><small>Con el correo de su perfil</small></span>
+            <svg class="opcion-flecha"><use href="#i-flecha"/></svg>
+          </a>
+          <a href="/descargas/campana.apk" id="bajar-apk-login" class="opcion-acceso" download="campana.apk" hidden>
+            <span class="opcion-icono opcion-android"><svg><use href="#i-android"/></svg></span>
+            <span class="opcion-texto"><strong>APK Android</strong><small id="apk-login-texto">Descargar campana.apk (última versión)</small></span>
+            <svg class="opcion-flecha"><use href="#i-descarga"/></svg>
+          </a>
+          <div class="credito" data-credito></div>
+        </form>
+      </div>
     </div>
   </template>
 
@@ -224,13 +257,18 @@
       <aside class="lateral">
         <a href="#/panel" class="logo logo-claro"><svg><use href="#marca"/></svg><span data-nombre></span></a>
         <nav class="nav-panel" aria-label="Panel">
-          <a href="#/panel"><svg><use href="#i-inicio"/></svg>Inicio</a>
-          <a href="#/panel/registros"><svg><use href="#i-personas"/></svg>Registros</a>
-          <a href="#/panel/encuestas"><svg><use href="#i-encuesta"/></svg>Encuestas</a>
-          <a href="#/panel/compartir"><svg><use href="#i-compartir"/></svg>Compartir</a>
-          <a href="#/panel/ajustes"><svg><use href="#i-ajustes"/></svg>Ajustes</a>
+          <a href="#/panel" data-permiso="tablero"><svg><use href="#i-inicio"/></svg>Inicio</a>
+          <a href="#/panel/registros" data-permiso="registros"><svg><use href="#i-personas"/></svg>Registros</a>
+          <a href="#/panel/encuestas" data-permiso="encuestas"><svg><use href="#i-encuesta"/></svg>Encuestas</a>
+          <a href="#/panel/compartir" data-permiso="compartir"><svg><use href="#i-compartir"/></svg>Compartir</a>
+          <a href="#/panel/usuarios" data-permiso="usuarios"><svg><use href="#i-equipo"/></svg>Usuarios</a>
+          <a href="#/panel/ajustes" data-permiso="ajustes"><svg><use href="#i-ajustes"/></svg>Ajustes</a>
         </nav>
         <div class="lateral-pie">
+          <a href="#/panel/cuenta" class="yo" id="yo">
+            <span class="avatar" id="yo-iniciales"></span>
+            <span class="yo-texto"><strong id="yo-nombre"></strong><small id="yo-puesto"></small></span>
+          </a>
           <a href="#/" target="_blank" rel="noopener"><svg><use href="#i-externo"/></svg>Ver formulario</a>
           <button type="button" id="salir"><svg><use href="#i-salir"/></svg>Cerrar sesión</button>
           <div class="credito credito-lateral" data-credito></div>
@@ -251,8 +289,8 @@
         </div>
       </div>
       <div class="tablero-acciones">
-        <a id="bajar-excel" class="boton boton-borde" download><svg class="icono"><use href="#i-excel"/></svg>Excel</a>
-        <a id="bajar-pdf" class="boton boton-borde" download><svg class="icono"><use href="#i-pdf"/></svg>PDF</a>
+        <a id="bajar-excel" class="boton boton-borde" download data-requiere="exportar"><svg class="icono"><use href="#i-excel"/></svg>Excel</a>
+        <a id="bajar-pdf" class="boton boton-borde" download data-requiere="exportar"><svg class="icono"><use href="#i-pdf"/></svg>PDF</a>
         <a href="#/panel/compartir" class="boton boton-acento"><svg class="icono"><use href="#i-compartir"/></svg>Compartir registro</a>
       </div>
     </header>
@@ -367,7 +405,7 @@
         <header class="bloque-cab"><h2>Últimos registros</h2><a href="#/panel/registros" class="enlace">Ver todos</a></header>
         <ul id="l-recientes" class="recientes"></ul>
       </article>
-      <article class="bloque col-4 bloque-qr">
+      <article class="bloque col-4 bloque-qr" data-requiere="compartir">
         <header class="bloque-cab"><h2>Comparte el registro</h2><a href="#/panel/compartir" class="enlace">Más opciones</a></header>
         <div class="qr-rapido">
           <canvas id="qr-tablero" width="320" height="320" aria-label="Código QR del formulario"></canvas>
@@ -393,11 +431,11 @@
         <h1 class="titulo-pagina">Registros</h1>
       </div>
       <div class="tablero-acciones">
-        <a href="/api/tablero.xlsx?periodo=todo" id="exportar-xlsx" class="boton boton-acento" download>
+        <a href="/api/tablero.xlsx?periodo=todo" id="exportar-xlsx" class="boton boton-acento" download data-requiere="exportar">
           <svg class="icono"><use href="#i-excel"/></svg>Excel con tablero</a>
-        <a href="/api/reporte.pdf?periodo=todo" id="exportar-pdf" class="boton boton-borde" download>
+        <a href="/api/reporte.pdf?periodo=todo" id="exportar-pdf" class="boton boton-borde" download data-requiere="exportar">
           <svg class="icono"><use href="#i-pdf"/></svg>PDF</a>
-        <button type="button" id="exportar" class="boton boton-borde">
+        <button type="button" id="exportar" class="boton boton-borde" data-requiere="exportar">
           <svg class="icono"><use href="#i-descarga"/></svg>CSV</button>
       </div>
     </header>
@@ -570,11 +608,7 @@
           <input id="a-urlPublica" type="url" placeholder="https://www.sucampana.com" maxlength="200">
           <p class="meta">Si publica la app en un dominio propio, póngalo aquí para que el QR apunte a él.</p>
         </div>
-        <div class="campo">
-          <label for="a-correosEquipo">Correos de Google del equipo</label>
-          <textarea id="a-correosEquipo" rows="3" placeholder="coordinacion@gmail.com, otra@campana.co"></textarea>
-          <p class="meta" id="nota-google">Estas cuentas pueden entrar al panel con el botón "Entrar con Google". Sepárelas con comas.</p>
-        </div>
+        <p class="meta" id="nota-google">"Entrar con Google" funciona para los correos que tengan un perfil en <a href="#/panel/usuarios" class="enlace">Usuarios</a>.</p>
         <p class="error" id="error-ajustes" role="alert"></p>
         <button type="submit" class="boton boton-acento">Guardar cambios</button>
         <span class="meta guardado" id="guardado" hidden>Cambios guardados</span>
@@ -584,6 +618,73 @@
         <div class="autor" id="autor"></div>
       </article>
     </form>
+  </template>
+
+  <template id="tpl-panel-usuarios">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Equipo de campaña</p>
+        <h1 class="titulo-pagina">Usuarios y permisos</h1>
+      </div>
+      <button type="button" id="nuevo-usuario" class="boton boton-acento"><svg class="icono"><use href="#i-equipo"/></svg>Nuevo perfil</button>
+    </header>
+    <section class="rejilla-panel">
+      <article class="bloque col-5" id="bloque-form-usuario">
+        <header class="bloque-cab"><h2 id="titulo-form-usuario">Nuevo perfil</h2><button type="button" id="cancelar-usuario" class="enlace" hidden>Cancelar</button></header>
+        <form id="form-usuario" novalidate>
+          <div class="campo"><label for="u-nombre">Nombre completo</label><input id="u-nombre" maxlength="60" autocomplete="off"></div>
+          <div class="campo"><label for="u-correo">Correo</label><input id="u-correo" type="email" maxlength="120" autocomplete="off" placeholder="nombre@correo.com"></div>
+          <div class="campo">
+            <label for="u-clave" id="etiqueta-clave">Contraseña</label>
+            <div class="campo-icono">
+              <input id="u-clave" type="text" maxlength="128" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+              <button type="button" id="generar-clave" class="enlace boton-generar">Generar</button>
+            </div>
+          </div>
+          <div class="campo"><label for="u-puesto">Puesto</label><input id="u-puesto" maxlength="60" placeholder="Ej.: Coordinadora Comuna 4"></div>
+          <div class="campo">
+            <label for="u-rol">Rol</label>
+            <select id="u-rol"></select>
+          </div>
+          <fieldset class="permisos">
+            <legend class="etiqueta">Permisos</legend>
+            <div id="u-permisos"></div>
+          </fieldset>
+          <label class="interruptor"><input type="checkbox" id="u-activo" checked><span>Perfil activo (puede entrar)</span></label>
+          <p class="error" id="error-usuario" role="alert"></p>
+          <button type="submit" class="boton boton-acento" id="guardar-usuario">Crear perfil</button>
+          <p class="meta">Comparta la contraseña con la persona por un medio seguro. Ella la puede cambiar en "Mi cuenta".</p>
+        </form>
+      </article>
+      <div class="col-7 pila" id="lista-usuarios"></div>
+    </section>
+  </template>
+
+  <template id="tpl-panel-cuenta">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Mi cuenta</p>
+        <h1 class="titulo-pagina" id="cuenta-nombre"></h1>
+        <p class="meta" id="cuenta-detalle"></p>
+      </div>
+    </header>
+    <section class="rejilla-panel">
+      <article class="bloque col-6">
+        <header class="bloque-cab"><h2>Mis permisos</h2></header>
+        <ul class="lista-permisos" id="cuenta-permisos"></ul>
+      </article>
+      <article class="bloque col-6">
+        <header class="bloque-cab"><h2>Cambiar mi contraseña</h2></header>
+        <form id="form-mi-clave" novalidate>
+          <div class="campo"><label for="c-actual">Contraseña actual</label><input id="c-actual" type="password" autocomplete="current-password"></div>
+          <div class="campo"><label for="c-nueva">Contraseña nueva</label><input id="c-nueva" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"></div>
+          <p class="error" id="error-mi-clave" role="alert"></p>
+          <button type="submit" class="boton boton-acento">Cambiar contraseña</button>
+          <span class="meta guardado" id="clave-cambiada" hidden>Contraseña cambiada</span>
+        </form>
+        <p class="meta" id="cuenta-maestra" hidden>Usted entró con la clave maestra. Esa clave se cambia en el servidor (variable ADMIN_PASSWORD).</p>
+      </article>
+    </section>
   </template>
 
   <div id="tooltip" class="tooltip" role="status" hidden></div>

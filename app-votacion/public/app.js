@@ -21,6 +21,24 @@ function fondoOscuro(nodo) {
   return Boolean(nodo && nodo.closest && nodo.closest('.lateral')) && tema !== 'limpio';
 }
 let sesionAdmin = false;
+let usuarioActual = null; // { nombre, puesto, correo, permisos, maestro }
+const puede = (permiso) => Boolean(usuarioActual && usuarioActual.permisos.includes(permiso));
+
+// Permiso que necesita cada sección del panel
+const PERMISO_RUTA = {
+  '#/panel': 'tablero', '#/panel/registros': 'registros', '#/panel/encuestas': 'encuestas',
+  '#/panel/compartir': 'compartir', '#/panel/usuarios': 'usuarios', '#/panel/ajustes': 'ajustes', '#/panel/cuenta': null,
+};
+const ORDEN_RUTAS = ['#/panel', '#/panel/registros', '#/panel/encuestas', '#/panel/compartir', '#/panel/usuarios', '#/panel/ajustes'];
+
+// Oculta enlaces y botones que el perfil no puede usar
+function aplicarPermisos(contenedor) {
+  for (const n of contenedor.querySelectorAll('[data-requiere]')) n.hidden = !puede(n.dataset.requiere);
+  for (const a of contenedor.querySelectorAll('a[href^="#/panel"]')) {
+    const ruta = a.getAttribute('href');
+    if (ruta in PERMISO_RUTA && PERMISO_RUTA[ruta] && !puede(PERMISO_RUTA[ruta])) a.hidden = true;
+  }
+}
 let shellActual = null;
 const observadores = [];
 
@@ -77,8 +95,10 @@ function hace(fecha) {
   return d === 1 ? 'ayer' : `hace ${d} días`;
 }
 
-function iniciales(nombre, apellido) {
-  return `${(nombre || '?')[0]}${(apellido || '')[0] || ''}`.toUpperCase();
+// Iniciales con letras solamente: "Director (clave maestra)" -> "DC"
+function iniciales(...partes) {
+  const letras = partes.join(' ').split(/\s+/).map((p) => (p.match(/\p{L}/u) || [''])[0]).filter(Boolean);
+  return (letras.slice(0, 2).join('') || '?').toUpperCase();
 }
 
 function ponerNombre(contenedor) {
@@ -623,17 +643,45 @@ async function vistaEncuesta(id) {
 function vistaLogin() {
   raiz.replaceChildren(plantilla('tpl-login'));
   shellActual = 'login';
+  usuarioActual = null;
   ponerNombre(raiz);
+
+  // Franja de la campaña: foto del candidato o la marca
+  const logo = document.getElementById('acceso-logo');
+  if (config.foto) logo.replaceChildren(el('img', { src: config.foto, alt: '' }));
+  else logo.replaceChildren(svg('svg', { 'aria-hidden': 'true' }, svg('use', { href: '#marca' })));
+  document.getElementById('acceso-eslogan').textContent = config.candidato || config.eslogan;
+
+  const correo = document.getElementById('correo-login');
   const clave = document.getElementById('clave');
-  clave.focus();
+  correo.focus();
+  document.getElementById('ver-clave').addEventListener('click', () => {
+    clave.type = clave.type === 'password' ? 'text' : 'password';
+  });
+  document.getElementById('olvide').addEventListener('click', () => {
+    const a = document.getElementById('ayuda-olvide');
+    a.hidden = !a.hidden;
+  });
+
+  // "O también": Google y la APK
+  const tambien = document.getElementById('separador-tambien');
   if (config.google) {
-    document.getElementById('separador-google').hidden = false;
+    tambien.hidden = false;
     const g = document.getElementById('entrar-google');
     g.hidden = false;
     if (/OpitaCampanaApp/.test(navigator.userAgent)) g.href = '/auth/google?app=1';
   }
+  if (!/OpitaCampanaApp/.test(navigator.userAgent)) {
+    api('/api/app/version').then((v) => {
+      if (!v.disponible) return;
+      tambien.hidden = false;
+      document.getElementById('bajar-apk-login').hidden = false;
+      document.getElementById('apk-login-texto').textContent = `Descargar campana.apk (versión ${v.versionName})`;
+    }).catch(() => {});
+  }
+
   const motivos = {
-    'correo-no-autorizado': 'Esa cuenta de Google no está autorizada. Pida que la agreguen en Ajustes.',
+    'correo-no-autorizado': 'Esa cuenta de Google no tiene un perfil activo. Pídale al director que la agregue en Usuarios.',
     'google-no-configurado': 'El inicio con Google todavía no está configurado en el servidor.',
     estado: 'El inicio de sesión expiró. Intente de nuevo.',
     'enlace-vencido': 'El enlace de acceso venció. Intente de nuevo.',
@@ -644,14 +692,17 @@ function vistaLogin() {
     document.getElementById('error-login').textContent = motivos[acceso] || 'No se pudo entrar.';
     history.replaceState(null, '', `/${location.hash}`);
   }
+
   document.getElementById('form-login').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const error = document.getElementById('error-login');
     const boton = ev.target.querySelector('button[type="submit"]');
     error.textContent = '';
+    if (!clave.value) { error.textContent = 'Escriba su contraseña.'; clave.focus(); return; }
     boton.disabled = true;
     try {
-      await api('/api/sesion', { method: 'POST', body: JSON.stringify({ clave: clave.value }) });
+      const r = await api('/api/sesion', { method: 'POST', body: JSON.stringify({ correo: correo.value.trim(), clave: clave.value }) });
+      usuarioActual = r.usuario;
       sesionAdmin = true;
       enrutar();
     } catch (e) {
@@ -667,9 +718,14 @@ function montarPanel() {
   raiz.replaceChildren(plantilla('tpl-panel'));
   ponerNombre(raiz);
   shellActual = 'panel';
+  aplicarPermisos(raiz);
+  document.getElementById('yo-iniciales').textContent = iniciales(...usuarioActual.nombre.split(' '));
+  document.getElementById('yo-nombre').textContent = usuarioActual.nombre;
+  document.getElementById('yo-puesto').textContent = usuarioActual.puesto || 'Mi cuenta';
   document.getElementById('salir').addEventListener('click', async () => {
     await api('/api/sesion', { method: 'DELETE' }).catch(() => {});
     sesionAdmin = false;
+    usuarioActual = null;
     location.hash = '#/panel';
     enrutar();
   });
@@ -679,6 +735,7 @@ function montarPanel() {
 function manejarErrorPanel(e, contenedor) {
   if (e.estado === 401) {
     sesionAdmin = false;
+    usuarioActual = null;
     vistaLogin();
     return;
   }
@@ -1055,7 +1112,7 @@ async function vistaPanelRegistros() {
         el('td', { textContent: r.comuna }),
         el('td', {}, el('img', { src: r.firma, alt: `Firma de ${r.nombre} ${r.apellido}`, loading: 'lazy' })),
         el('td', { className: 'mono', textContent: new Date(r.fecha).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) }),
-        el('td', {}, borrar));
+        el('td', {}, puede('eliminar') ? borrar : ''));
     }));
   }
 
@@ -1560,9 +1617,6 @@ function vistaPanelAjustes() {
   document.getElementById('a-eslogan').value = config.eslogan;
   document.getElementById('a-urlPublica').value = config.urlPublica || '';
   document.getElementById('a-candidato').value = config.candidato || '';
-  api('/api/ajustes').then((a) => {
-    document.getElementById('a-correosEquipo').value = (a.correosEquipo || []).join(', ');
-  }).catch(() => {});
   if (!config.google) {
     document.getElementById('nota-google').textContent =
       'Para activar "Entrar con Google", el servidor necesita GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET (ver README).';
@@ -1632,7 +1686,6 @@ function vistaPanelAjustes() {
           eslogan: document.getElementById('a-eslogan').value,
           urlPublica: document.getElementById('a-urlPublica').value,
           candidato: document.getElementById('a-candidato').value,
-          correosEquipo: document.getElementById('a-correosEquipo').value,
         }),
       });
       config = { ...config, ...nuevos };
@@ -1663,6 +1716,194 @@ function vistaPanelAjustes() {
     el('p', { className: 'meta', textContent: '© Opita Digital. Todos los derechos reservados. Esta aplicación lleva su firma y marca de agua.' }));
 }
 
+
+// ==========================================================================
+// USUARIOS Y PERMISOS
+// ==========================================================================
+const PERMISOS_SENSIBLES = ['registros', 'eliminar', 'exportar', 'usuarios'];
+
+function generarClave() {
+  const letras = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const v = crypto.getRandomValues(new Uint32Array(12));
+  return Array.from(v, (n) => letras[n % letras.length]).join('');
+}
+
+async function vistaPanelUsuarios() {
+  const vista = document.getElementById('vista-panel');
+  vista.replaceChildren(plantilla('tpl-panel-usuarios'));
+  let datos;
+  try {
+    datos = await api('/api/usuarios');
+  } catch (e) {
+    manejarErrorPanel(e, vista);
+    return;
+  }
+  const form = document.getElementById('form-usuario');
+  const rol = document.getElementById('u-rol');
+  const cajaPermisos = document.getElementById('u-permisos');
+  const error = document.getElementById('error-usuario');
+  let editando = null;
+
+  rol.append(...Object.entries(datos.roles).map(([id, r]) => el('option', { value: id, textContent: r.nombre })));
+  cajaPermisos.replaceChildren(...datos.permisos.map((p) => el('label', { className: `permiso-opcion${PERMISOS_SENSIBLES.includes(p.id) ? ' sensible' : ''}` },
+    el('input', { type: 'checkbox', value: p.id }), el('span', { textContent: p.nombre }))));
+  const casillas = () => [...cajaPermisos.querySelectorAll('input')];
+  const marcarRol = () => {
+    if (rol.value === 'personalizado') return;
+    const lista = datos.roles[rol.value].permisos;
+    casillas().forEach((c) => { c.checked = lista.includes(c.value); });
+  };
+  rol.addEventListener('change', marcarRol);
+  // Si cambia una casilla a mano, el rol pasa a "Personalizado"
+  cajaPermisos.addEventListener('change', () => {
+    const marcados = casillas().filter((c) => c.checked).map((c) => c.value);
+    const coincide = Object.entries(datos.roles).find(([id, r]) => id !== 'personalizado' &&
+      r.permisos.length === marcados.length && r.permisos.every((p) => marcados.includes(p)));
+    rol.value = coincide ? coincide[0] : 'personalizado';
+  });
+  document.getElementById('generar-clave').addEventListener('click', () => {
+    document.getElementById('u-clave').value = generarClave();
+  });
+
+  function limpiarForm() {
+    editando = null;
+    form.reset();
+    rol.value = 'coordinador';
+    marcarRol();
+    document.getElementById('u-activo').checked = true;
+    document.getElementById('titulo-form-usuario').textContent = 'Nuevo perfil';
+    document.getElementById('guardar-usuario').textContent = 'Crear perfil';
+    document.getElementById('etiqueta-clave').textContent = 'Contraseña';
+    document.getElementById('u-clave').placeholder = 'Mínimo 8 caracteres';
+    document.getElementById('cancelar-usuario').hidden = true;
+    error.textContent = '';
+    for (const n of form.querySelectorAll('[aria-invalid="true"]')) n.removeAttribute('aria-invalid');
+  }
+  function editar(u) {
+    limpiarForm();
+    editando = u;
+    document.getElementById('u-nombre').value = u.nombre;
+    document.getElementById('u-correo').value = u.correo;
+    document.getElementById('u-puesto').value = u.puesto || '';
+    rol.value = u.rol;
+    casillas().forEach((c) => { c.checked = u.permisos.includes(c.value); });
+    document.getElementById('u-activo').checked = u.activo;
+    document.getElementById('titulo-form-usuario').textContent = `Editar: ${u.nombre}`;
+    document.getElementById('guardar-usuario').textContent = 'Guardar cambios';
+    document.getElementById('etiqueta-clave').textContent = 'Nueva contraseña (opcional)';
+    document.getElementById('u-clave').placeholder = 'Déjela vacía para no cambiarla';
+    document.getElementById('cancelar-usuario').hidden = false;
+    document.getElementById('bloque-form-usuario').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  document.getElementById('cancelar-usuario').addEventListener('click', limpiarForm);
+  document.getElementById('nuevo-usuario').addEventListener('click', () => {
+    limpiarForm();
+    document.getElementById('u-nombre').focus();
+  });
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    error.textContent = '';
+    for (const n of form.querySelectorAll('[aria-invalid="true"]')) n.removeAttribute('aria-invalid');
+    const cuerpo = {
+      nombre: document.getElementById('u-nombre').value,
+      correo: document.getElementById('u-correo').value,
+      puesto: document.getElementById('u-puesto').value,
+      rol: rol.value,
+      permisos: casillas().filter((c) => c.checked).map((c) => c.value),
+      activo: document.getElementById('u-activo').checked,
+    };
+    const clave = document.getElementById('u-clave').value;
+    if (clave || !editando) cuerpo.clave = clave;
+    const boton = document.getElementById('guardar-usuario');
+    boton.disabled = true;
+    try {
+      await api(editando ? `/api/usuarios/${editando.id}` : '/api/usuarios', {
+        method: editando ? 'PUT' : 'POST', body: JSON.stringify(cuerpo),
+      });
+      vistaPanelUsuarios();
+    } catch (e) {
+      if (e.estado === 401) { manejarErrorPanel(e, vista); return; }
+      error.textContent = e.message;
+      if (e.campo) document.getElementById(`u-${e.campo}`)?.setAttribute('aria-invalid', 'true');
+      boton.disabled = false;
+    }
+  });
+
+  const lista = document.getElementById('lista-usuarios');
+  const nombrePermiso = Object.fromEntries(datos.permisos.map((p) => [p.id, p.nombre.replace(/\s*\(.*\)/, '')]));
+  const tarjetaMaestra = el('article', { className: 'bloque tarjeta-usuario' },
+    el('span', { className: 'avatar', textContent: 'DM' }),
+    el('div', {}, el('div', { className: 'tu-nombre', textContent: 'Director (clave maestra)' }),
+      el('div', { className: 'tu-puesto', textContent: 'Dueño de la cuenta · todos los permisos' }),
+      el('div', { className: 'tu-correo', textContent: 'Entra dejando el correo vacío y con la clave ADMIN_PASSWORD' })),
+    el('span', { className: 'etiqueta-estado abierta tu-estado', textContent: 'Siempre activo' }));
+  lista.replaceChildren(tarjetaMaestra, ...datos.usuarios.map((u) => {
+    const editarB = el('button', { type: 'button', className: 'boton boton-borde boton-mini', textContent: 'Editar' });
+    editarB.addEventListener('click', () => editar(u));
+    const esYo = usuarioActual && usuarioActual.id === u.id;
+    const acciones = el('div', { className: 'tu-acciones' }, editarB);
+    if (!esYo) {
+      const activar = el('button', { type: 'button', className: 'boton boton-borde boton-mini', textContent: u.activo ? 'Desactivar' : 'Activar' });
+      activar.addEventListener('click', async () => {
+        try { await api(`/api/usuarios/${u.id}`, { method: 'PUT', body: JSON.stringify({ activo: !u.activo }) }); vistaPanelUsuarios(); } catch (e) { alert(e.message); }
+      });
+      const borrar = el('button', { type: 'button', className: 'boton boton-peligro boton-mini', textContent: 'Eliminar' });
+      borrar.addEventListener('click', async () => {
+        if (!confirm(`¿Eliminar el perfil de ${u.nombre}? Ya no podrá entrar al panel.`)) return;
+        try { await api(`/api/usuarios/${u.id}`, { method: 'DELETE' }); vistaPanelUsuarios(); } catch (e) { alert(e.message); }
+      });
+      acciones.append(activar, borrar);
+    }
+    return el('article', { className: `bloque tarjeta-usuario${u.activo ? '' : ' inactivo'}` },
+      el('span', { className: 'avatar', textContent: iniciales(...u.nombre.split(' ')) }),
+      el('div', {},
+        el('div', { className: 'tu-nombre', textContent: `${u.nombre}${esYo ? ' (usted)' : ''}` }),
+        el('div', { className: 'tu-puesto', textContent: u.puesto || 'Sin puesto' }),
+        el('div', { className: 'tu-correo', textContent: u.correo })),
+      el('span', { className: `etiqueta-estado ${u.activo ? 'abierta' : 'cerrada'} tu-estado`, textContent: u.activo ? 'Activo' : 'Inactivo' }),
+      el('div', { className: 'tu-permisos' },
+        el('span', { className: 'chip rol', textContent: datos.roles[u.rol] ? datos.roles[u.rol].nombre : u.rol }),
+        ...u.permisos.map((p) => el('span', { className: 'chip', textContent: nombrePermiso[p] || p }))),
+      el('div', { className: 'tu-pie' },
+        el('span', { className: 'meta', textContent: u.ultimoAcceso ? `Último acceso ${hace(u.ultimoAcceso)}` : 'Todavía no ha entrado' }),
+        acciones));
+  }));
+  limpiarForm();
+}
+
+function vistaPanelCuenta() {
+  const vista = document.getElementById('vista-panel');
+  vista.replaceChildren(plantilla('tpl-panel-cuenta'));
+  const u = usuarioActual;
+  document.getElementById('cuenta-nombre').textContent = u.nombre;
+  document.getElementById('cuenta-detalle').textContent = [u.puesto, u.correo].filter(Boolean).join(' · ');
+  const nombres = {
+    tablero: 'Ver el tablero (Inicio)', registros: 'Ver los registros', eliminar: 'Eliminar registros', exportar: 'Descargar Excel, PDF y CSV',
+    encuestas: 'Crear y cerrar encuestas', compartir: 'Compartir anuncios y QR', ajustes: 'Cambiar ajustes y diseño', usuarios: 'Administrar usuarios',
+  };
+  document.getElementById('cuenta-permisos').replaceChildren(...Object.entries(nombres).map(([id, n]) =>
+    el('li', { className: u.permisos.includes(id) ? '' : 'no', textContent: n })));
+  if (u.maestro) {
+    document.getElementById('form-mi-clave').hidden = true;
+    document.getElementById('cuenta-maestra').hidden = false;
+    return;
+  }
+  document.getElementById('form-mi-clave').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const error = document.getElementById('error-mi-clave');
+    error.textContent = '';
+    try {
+      await api('/api/mi-clave', { method: 'PUT', body: JSON.stringify({ actual: document.getElementById('c-actual').value, nueva: document.getElementById('c-nueva').value }) });
+      ev.target.reset();
+      document.getElementById('clave-cambiada').hidden = false;
+    } catch (e) {
+      if (e.estado === 401) { manejarErrorPanel(e, vista); return; }
+      error.textContent = e.message;
+    }
+  });
+}
+
 // ==========================================================================
 // ENRUTADOR
 // ==========================================================================
@@ -1672,17 +1913,30 @@ async function enrutar() {
 
   if (h.startsWith('#/panel')) {
     document.title = `Panel · ${config.nombre}`;
-    if (!sesionAdmin) {
-      try { sesionAdmin = (await api('/api/sesion')).admin; } catch { sesionAdmin = false; }
+    if (!usuarioActual) {
+      try {
+        const r = await api('/api/sesion');
+        usuarioActual = r.usuario;
+        sesionAdmin = r.admin;
+      } catch { sesionAdmin = false; usuarioActual = null; }
     }
-    if (!sesionAdmin) { vistaLogin(); return; }
+    if (!usuarioActual) { vistaLogin(); return; }
+    // Si el perfil no tiene permiso para esta sección, va a la primera permitida
+    const ruta = h in PERMISO_RUTA ? h : '#/panel';
+    if (PERMISO_RUTA[ruta] && !puede(PERMISO_RUTA[ruta])) {
+      const otra = ORDEN_RUTAS.find((r) => puede(PERMISO_RUTA[r])) || '#/panel/cuenta';
+      if (location.hash !== otra) { location.hash = otra; return; }
+    }
     montarPanel();
-    marcarNav('.nav-panel', h);
-    if (h === '#/panel/registros') vistaPanelRegistros();
-    else if (h === '#/panel/encuestas') vistaPanelEncuestas();
-    else if (h === '#/panel/compartir') vistaPanelCompartir();
-    else if (h === '#/panel/ajustes') vistaPanelAjustes();
-    else vistaPanelInicio();
+    marcarNav('.nav-panel', ruta);
+    const vistas = {
+      '#/panel/registros': vistaPanelRegistros, '#/panel/encuestas': vistaPanelEncuestas,
+      '#/panel/compartir': vistaPanelCompartir, '#/panel/ajustes': vistaPanelAjustes,
+      '#/panel/usuarios': vistaPanelUsuarios, '#/panel/cuenta': vistaPanelCuenta,
+    };
+    Promise.resolve((vistas[ruta] || vistaPanelInicio)()).then(() => {
+      aplicarPermisos(document.getElementById('vista-panel'));
+    });
     window.scrollTo(0, 0);
     return;
   }

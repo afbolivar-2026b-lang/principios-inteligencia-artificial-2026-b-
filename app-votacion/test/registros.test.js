@@ -257,7 +257,7 @@ test('ajustes: diseño, nombre, eslogan y enlace público', async () => {
     assert.equal((await put({ nombre: '' })).status, 400);
 
     const ok = await (await put({ tema: 'limpio', nombre: ' Neiva  Primero ', eslogan: 'Juntos sí podemos.', urlPublica: 'https://neivaprimero.co/registro/' })).json();
-    assert.deepEqual(ok, { nombre: 'Neiva Primero', eslogan: 'Juntos sí podemos.', tema: 'limpio', urlPublica: 'https://neivaprimero.co/registro', candidato: '', foto: '', correosEquipo: [] });
+    assert.deepEqual(ok, { nombre: 'Neiva Primero', eslogan: 'Juntos sí podemos.', tema: 'limpio', urlPublica: 'https://neivaprimero.co/registro', candidato: '', foto: '' });
 
     // Foto del candidato: solo imágenes reales
     const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -342,12 +342,14 @@ test('entrar con Google: solo correos autorizados, web y app Android', async () 
     assert.equal(cfg.google, true);
     assert.equal(cfg.correosEquipo, undefined, 'los correos del equipo no son públicos');
 
-    await fetch(`${url}/api/ajustes`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${CLAVE}` },
-      body: JSON.stringify({ correosEquipo: 'Equipo@Gmail.com, otro@campana.co' }),
-    });
-    const aj = await (await fetch(`${url}/api/ajustes`, { headers: { Authorization: `Bearer ${CLAVE}` } })).json();
-    assert.deepEqual(aj.correosEquipo, ['equipo@gmail.com', 'otro@campana.co']);
+    // Entra con Google quien tenga un perfil activo con ese correo
+    for (const [correo, rol] of [['Equipo@Gmail.com', 'coordinador'], ['otro@campana.co', 'digitador']]) {
+      const r = await fetch(`${url}/api/usuarios`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${CLAVE}` },
+        body: JSON.stringify({ nombre: 'Persona', correo, clave: 'unaclave123', rol }),
+      });
+      assert.equal(r.status, 201);
+    }
     assert.equal((await fetch(`${url}/api/ajustes`)).status, 401);
 
     // 1. Ir a Google
@@ -404,5 +406,86 @@ test('entrar con Google: solo correos autorizados, web y app Android', async () 
   } finally {
     otro.close();
     falsoGoogle.close();
+  }
+});
+
+test('perfiles: correo y contraseña, puesto, roles y permisos', async () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const path = require('node:path');
+  const archivoUsuarios = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'usuarios-')), 'usuarios.json');
+  const otro = crearServidor({ claveAdmin: CLAVE, archivoUsuarios });
+  await new Promise((r) => otro.listen(0, r));
+  const url = `http://127.0.0.1:${otro.address().port}`;
+  const json = { 'Content-Type': 'application/json' };
+  const MAESTRA = { ...json, Authorization: `Bearer ${CLAVE}` };
+  const entrar = async (correo, clave) => {
+    const r = await fetch(`${url}/api/sesion`, { method: 'POST', headers: json, body: JSON.stringify({ correo, clave }) });
+    const cookie = (r.headers.getSetCookie().find((c) => c.startsWith('sesion=')) || '').split(';')[0];
+    return { estado: r.status, datos: await r.json(), h: { ...json, Cookie: cookie } };
+  };
+  try {
+    // El director (clave maestra) crea perfiles
+    const sinPermiso = await fetch(`${url}/api/usuarios`);
+    assert.equal(sinPermiso.status, 401);
+    const crear = (body) => fetch(`${url}/api/usuarios`, { method: 'POST', headers: MAESTRA, body: JSON.stringify(body) });
+    const r1 = await crear({ nombre: 'Laura Perdomo', correo: 'Laura@Campana.co', clave: 'clave-segura-1', puesto: 'Coordinadora Comuna 4', rol: 'coordinador' });
+    assert.equal(r1.status, 201);
+    const laura = await r1.json();
+    assert.equal(laura.correo, 'laura@campana.co');
+    assert.equal(laura.claveHash, undefined, 'la contraseña nunca se devuelve');
+    assert.deepEqual(laura.permisos, ['tablero', 'registros', 'exportar', 'encuestas', 'compartir']);
+    assert.equal((await crear({ nombre: 'Otra', correo: 'laura@campana.co', clave: 'clave-segura-2' })).status, 409, 'correo repetido');
+    assert.equal((await crear({ nombre: 'Corta', correo: 'c@c.co', clave: '123' })).status, 400, 'contraseña corta');
+    assert.equal((await crear({ nombre: 'Mal', correo: 'm@c.co', clave: 'clave-segura-3', rol: 'personalizado', permisos: ['volar'] })).status, 400);
+    const r2 = await crear({ nombre: 'Jefe Equipo', correo: 'jefe@campana.co', clave: 'clave-jefe-99', rol: 'personalizado', permisos: ['tablero', 'usuarios'] });
+    const jefe = await r2.json();
+
+    // En el archivo solo queda la huella de la contraseña
+    const guardado = fs.readFileSync(archivoUsuarios, 'utf8');
+    assert.ok(!guardado.includes('clave-segura-1'));
+    assert.match(guardado, /scrypt\$/);
+
+    // Laura entra con su correo y solo hace lo que su rol permite
+    assert.equal((await entrar('laura@campana.co', 'mala-clave')).estado, 401);
+    const l = await entrar('LAURA@campana.co', 'clave-segura-1');
+    assert.equal(l.estado, 200);
+    assert.equal(l.datos.usuario.puesto, 'Coordinadora Comuna 4');
+    const sesion = await (await fetch(`${url}/api/sesion`, { headers: l.h })).json();
+    assert.equal(sesion.usuario.nombre, 'Laura Perdomo');
+    assert.equal((await fetch(`${url}/api/panel`, { headers: l.h })).status, 200);
+    assert.equal((await fetch(`${url}/api/registros`, { headers: l.h })).status, 200);
+    const prohibido = await fetch(`${url}/api/ajustes`, { method: 'PUT', headers: l.h, body: JSON.stringify({ tema: 'oscuro' }) });
+    assert.equal(prohibido.status, 403);
+    assert.match((await prohibido.json()).error, /no tiene permiso para cambiar ajustes/);
+    assert.equal((await fetch(`${url}/api/usuarios`, { headers: l.h })).status, 403);
+    assert.equal((await fetch(`${url}/api/registros/00000000-0000-4000-8000-000000000000`, { method: 'DELETE', headers: l.h })).status, 403);
+
+    // Cambio de permisos: se aplica de inmediato a la sesión abierta
+    await fetch(`${url}/api/usuarios/${laura.id}`, { method: 'PUT', headers: MAESTRA, body: JSON.stringify({ rol: 'observador' }) });
+    assert.equal((await fetch(`${url}/api/registros`, { headers: l.h })).status, 403);
+
+    // Laura cambia su propia contraseña
+    assert.equal((await fetch(`${url}/api/mi-clave`, { method: 'PUT', headers: l.h, body: JSON.stringify({ actual: 'no-es', nueva: 'nueva-clave-1' }) })).status, 400);
+    assert.equal((await fetch(`${url}/api/mi-clave`, { method: 'PUT', headers: l.h, body: JSON.stringify({ actual: 'clave-segura-1', nueva: 'nueva-clave-1' }) })).status, 200);
+    assert.equal((await entrar('laura@campana.co', 'nueva-clave-1')).estado, 200);
+
+    // Desactivar el perfil cierra su sesión
+    await fetch(`${url}/api/usuarios/${laura.id}`, { method: 'PUT', headers: MAESTRA, body: JSON.stringify({ activo: false }) });
+    assert.equal((await fetch(`${url}/api/panel`, { headers: l.h })).status, 401);
+    assert.equal((await entrar('laura@campana.co', 'nueva-clave-1')).estado, 401);
+
+    // Un administrador de usuarios no se puede dejar por fuera a sí mismo
+    const j = await entrar('jefe@campana.co', 'clave-jefe-99');
+    const quitarse = await fetch(`${url}/api/usuarios/${jefe.id}`, { method: 'PUT', headers: j.h, body: JSON.stringify({ rol: 'personalizado', permisos: ['tablero'] }) });
+    assert.equal(quitarse.status, 400);
+    assert.equal((await fetch(`${url}/api/usuarios/${jefe.id}`, { method: 'DELETE', headers: j.h })).status, 400);
+    assert.equal((await fetch(`${url}/api/usuarios/${laura.id}`, { method: 'DELETE', headers: j.h })).status, 200);
+    const lista = await (await fetch(`${url}/api/usuarios`, { headers: MAESTRA })).json();
+    assert.deepEqual(lista.usuarios.map((u) => u.correo), ['jefe@campana.co']);
+    assert.ok(lista.permisos.length === 8 && lista.roles.director);
+    assert.ok(lista.usuarios[0].ultimoAcceso, 'se registra el último acceso');
+  } finally {
+    otro.close();
   }
 });

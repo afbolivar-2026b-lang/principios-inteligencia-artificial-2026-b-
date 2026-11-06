@@ -14,6 +14,7 @@ const { crearStore, ErrorValidacion } = require('./store');
 const { crearRegistros, MAX_FIRMA } = require('./registros');
 const { crearAjustes } = require('./ajustes');
 const { crearGoogle } = require('./google');
+const { crearUsuarios, PERMISOS, ROLES, IDS_PERMISOS } = require('./usuarios');
 const MARCA = require('./marca');
 const { crearExcelTablero } = require('./exportar/excel');
 const { crearReportePDF } = require('./exportar/pdf');
@@ -143,22 +144,28 @@ function leerVersionApp() {
   }
 }
 
-function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAdmin, nombreCampana, google: opcionesGoogle } = {}) {
+function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, claveAdmin, nombreCampana, google: opcionesGoogle } = {}) {
   const google = crearGoogle(opcionesGoogle);
-  const canjes = new Map(); // token de un solo uso (app Android) -> vencimiento
+  const usuarios = crearUsuarios(archivoUsuarios);
+  const canjes = new Map(); // token de un solo uso (app Android) -> { vence, usuarioId }
   const store = crearStore(archivoDatos);
   const registros = crearRegistros(archivoRegistros);
   const ajustes = crearAjustes(archivoAjustes, { nombre: nombreCampana });
   const claveHash = claveAdmin ? hashClave(claveAdmin) : null;
 
-  // Sesiones del panel: token aleatorio -> vencimiento.
+  // Sesiones del panel: token aleatorio -> { vence, usuarioId } (usuarioId null = clave maestra)
   const sesiones = new Map();
 
-  function crearSesion() {
+  function crearSesion(usuarioId = null) {
     const token = crypto.randomBytes(32).toString('base64url');
-    sesiones.set(token, Date.now() + DURACION_SESION);
+    sesiones.set(token, { vence: Date.now() + DURACION_SESION, usuarioId });
+    if (usuarioId) usuarios.registrarAcceso(usuarioId);
     return `sesion=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${DURACION_SESION / 1000}`;
   }
+
+  const MAESTRO = Object.freeze({
+    id: null, maestro: true, nombre: 'Director (clave maestra)', puesto: 'Dueño de la cuenta', correo: '', permisos: IDS_PERMISOS,
+  });
 
   function urlBase(req) {
     const publica = ajustes.obtener().urlPublica;
@@ -190,14 +197,15 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
       if (!google.configurado || !cookies.oauth_estado || estado !== cookies.oauth_estado) { fallo('estado'); return true; }
       try {
         const { correo } = await google.canjear(url.searchParams.get('code') || '', `${urlBase(req)}/auth/google/callback`);
-        if (!ajustes.obtener().correosEquipo.includes(correo)) { fallo('correo-no-autorizado'); return true; }
+        const perfil = usuarios.porCorreo(correo);
+        if (!perfil) { fallo('correo-no-autorizado'); return true; }
         const borrarEstado = 'oauth_estado=; Path=/auth; HttpOnly; SameSite=Lax; Max-Age=0';
         if (estado.endsWith('.app')) {
           const t = crypto.randomBytes(32).toString('base64url');
-          canjes.set(t, Date.now() + 2 * 60 * 1000);
+          canjes.set(t, { vence: Date.now() + 2 * 60 * 1000, usuarioId: perfil.id });
           redirigir(res, `opitacampana://sesion?t=${t}`, [borrarEstado]);
         } else {
-          redirigir(res, '/#/panel', [crearSesion(), borrarEstado]);
+          redirigir(res, '/#/panel', [crearSesion(perfil.id), borrarEstado]);
         }
       } catch {
         fallo('google');
@@ -206,10 +214,10 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
     }
     if (ruta === '/auth/canje') {
       const t = url.searchParams.get('t') || '';
-      const vence = canjes.get(t);
+      const canje = canjes.get(t);
       canjes.delete(t);
-      if (!vence || vence < Date.now()) { fallo('enlace-vencido'); return true; }
-      redirigir(res, '/#/panel', [crearSesion()]);
+      if (!canje || canje.vence < Date.now() || !usuarios.activo(canje.usuarioId)) { fallo('enlace-vencido'); return true; }
+      redirigir(res, '/#/panel', [crearSesion(canje.usuarioId)]);
       return true;
     }
     return false;
@@ -236,34 +244,44 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
       crypto.timingSafeEqual(claveHash, hashClave(valor)));
   }
 
-  function sesionValida(req) {
+  // ¿Quién hace la petición? Devuelve el perfil (con sus permisos actuales) o null.
+  function identidad(req) {
     const token = leerCookies(req).sesion;
-    if (!token) return false;
-    const vence = sesiones.get(token);
-    if (!vence) return false;
-    if (vence < Date.now()) {
-      sesiones.delete(token);
-      return false;
+    const s = token && sesiones.get(token);
+    if (s) {
+      if (s.vence < Date.now()) { sesiones.delete(token); return null; }
+      if (!s.usuarioId) return MAESTRO;
+      const u = usuarios.activo(s.usuarioId);
+      if (!u) { sesiones.delete(token); return null; } // perfil desactivado o eliminado
+      return { ...u, maestro: false };
     }
-    return true;
-  }
-
-  function esAdmin(req) {
-    if (sesionValida(req)) return true;
     const m = (req.headers.authorization || '').match(/^Bearer (.+)$/);
-    return Boolean(m && claveCorrecta(m[1]));
+    return m && claveCorrecta(m[1]) ? MAESTRO : null;
   }
 
-  function exigirAdmin(req) {
+  const NOMBRE_PERMISO = Object.fromEntries(PERMISOS.map((p) => [p.id, p.nombre.toLowerCase()]));
+
+  /** Exige sesión y, si se indica, un permiso. Devuelve el perfil. */
+  function exigirPermiso(req, permiso) {
     const ip = req.socket.remoteAddress || '';
-    if (sesionValida(req)) return;
-    verificarBloqueo(ip);
-    if (!esAdmin(req)) {
+    // Con la clave en la cabecera, una IP bloqueada no puede seguir probando claves
+    if (req.headers.authorization) verificarBloqueo(ip);
+    const quien = identidad(req);
+    if (!quien) {
+      verificarBloqueo(ip);
       registrarFallo(ip);
-      throw new ErrorValidacion('Inicie sesión como administrador', 401);
+      throw new ErrorValidacion('Inicie sesión en el panel', 401);
     }
-    fallos.delete(ip);
+    if (permiso && !quien.permisos.includes(permiso)) {
+      throw new ErrorValidacion(`Su perfil no tiene permiso para ${NOMBRE_PERMISO[permiso] || permiso}`, 403);
+    }
+    return quien;
   }
+
+  const datosSesion = (q) => (q ? {
+    admin: true,
+    usuario: { id: q.id, nombre: q.nombre, puesto: q.puesto, correo: q.correo, permisos: q.permisos, maestro: Boolean(q.maestro) },
+  } : { admin: false, usuario: null });
 
   return http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -306,7 +324,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
         return;
       }
       if (ruta === '/api/ajustes' && req.method === 'GET') {
-        exigirAdmin(req);
+        exigirPermiso(req, 'ajustes');
         enviarJSON(res, 200, ajustes.obtener(), extra);
         return;
       }
@@ -315,31 +333,34 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
         return;
       }
       if (ruta === '/api/ajustes' && req.method === 'PUT') {
-        exigirAdmin(req);
+        exigirPermiso(req, 'ajustes');
         const cuerpo = await leerCuerpo(req, 700 * 1024); // admite la foto del candidato
         enviarJSON(res, 200, ajustes.actualizar(cuerpo), extra);
         return;
       }
       if (ruta === '/api/sesion' && req.method === 'GET') {
-        enviarJSON(res, 200, { admin: sesionValida(req) }, extra);
+        enviarJSON(res, 200, datosSesion(identidad(req)), extra);
         return;
       }
       if (ruta === '/api/sesion' && req.method === 'POST') {
         const ip = req.socket.remoteAddress || '';
         verificarBloqueo(ip);
-        const { clave } = await leerCuerpo(req);
-        if (!claveCorrecta(clave)) {
+        const { correo, clave } = await leerCuerpo(req);
+        let quien = null;
+        if (correo && String(correo).trim()) {
+          const u = usuarios.verificar(correo, clave);
+          if (u) quien = { ...u, maestro: false };
+        } else if (claveCorrecta(clave)) {
+          quien = MAESTRO;
+        }
+        if (!quien) {
           registrarFallo(ip);
-          throw new ErrorValidacion('Contraseña incorrecta', 401);
+          throw new ErrorValidacion(correo ? 'Correo o contraseña incorrectos' : 'Contraseña incorrecta', 401);
         }
         fallos.delete(ip);
-        const token = crypto.randomBytes(32).toString('base64url');
-        sesiones.set(token, Date.now() + DURACION_SESION);
-        const cookiesSalida = [
-          `sesion=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${DURACION_SESION / 1000}`,
-        ];
+        const cookiesSalida = [crearSesion(quien.id)];
         if (extra['Set-Cookie']) cookiesSalida.push(extra['Set-Cookie']);
-        enviarJSON(res, 200, { admin: true }, { 'Set-Cookie': cookiesSalida });
+        enviarJSON(res, 200, datosSesion(quien), { 'Set-Cookie': cookiesSalida });
         return;
       }
       if (ruta === '/api/sesion' && req.method === 'DELETE') {
@@ -350,9 +371,43 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
         return;
       }
 
+      // ---- Mi contraseña ----
+      if (ruta === '/api/mi-clave' && req.method === 'PUT') {
+        const quien = exigirPermiso(req);
+        if (quien.maestro) throw new ErrorValidacion('La clave maestra se cambia en el servidor (ADMIN_PASSWORD)', 400);
+        const { actual, nueva } = await leerCuerpo(req);
+        usuarios.cambiarClavePropia(quien.id, actual, nueva);
+        enviarJSON(res, 200, { ok: true }, extra);
+        return;
+      }
+
+      // ---- Usuarios y permisos ----
+      if (ruta === '/api/usuarios' && req.method === 'GET') {
+        exigirPermiso(req, 'usuarios');
+        enviarJSON(res, 200, { usuarios: usuarios.listar(), permisos: PERMISOS, roles: ROLES }, extra);
+        return;
+      }
+      if (ruta === '/api/usuarios' && req.method === 'POST') {
+        exigirPermiso(req, 'usuarios');
+        enviarJSON(res, 201, usuarios.crear(await leerCuerpo(req)), extra);
+        return;
+      }
+      const mu = ruta.match(/^\/api\/usuarios\/([0-9a-f-]{36})$/);
+      if (mu && req.method === 'PUT') {
+        const quien = exigirPermiso(req, 'usuarios');
+        enviarJSON(res, 200, usuarios.actualizar(mu[1], await leerCuerpo(req), quien.id), extra);
+        return;
+      }
+      if (mu && req.method === 'DELETE') {
+        const quien = exigirPermiso(req, 'usuarios');
+        usuarios.eliminar(mu[1], quien.id);
+        enviarJSON(res, 200, { ok: true }, extra);
+        return;
+      }
+
       // ---- Panel ----
       if (ruta === '/api/panel' && req.method === 'GET') {
-        exigirAdmin(req);
+        exigirPermiso(req, 'tablero');
         const encuestas = store.listar();
         const filtro = {
           periodo: url.searchParams.get('periodo') || '30',
@@ -373,7 +428,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
 
       // ---- Descargas: Excel del tablero y reporte PDF ----
       if ((ruta === '/api/tablero.xlsx' || ruta === '/api/reporte.pdf') && req.method === 'GET') {
-        exigirAdmin(req);
+        exigirPermiso(req, 'exportar');
         const filtro = {
           periodo: url.searchParams.get('periodo') || '30',
           comuna: url.searchParams.get('comuna') || '',
@@ -432,12 +487,12 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
         return;
       }
       if (ruta === '/api/registros' && req.method === 'GET') {
-        exigirAdmin(req);
+        exigirPermiso(req, 'registros');
         enviarJSON(res, 200, registros.listar(), extra);
         return;
       }
       if (ruta === '/api/registros.csv' && req.method === 'GET') {
-        exigirAdmin(req);
+        exigirPermiso(req, 'exportar');
         res.writeHead(200, {
           ...CABECERAS_SEGURIDAD,
           'Content-Type': 'text/csv; charset=utf-8',
@@ -449,7 +504,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
       }
       const mr = ruta.match(/^\/api\/registros\/([0-9a-f-]{36})$/);
       if (mr && req.method === 'DELETE') {
-        exigirAdmin(req);
+        exigirPermiso(req, 'eliminar');
         registros.eliminar(mr[1]);
         enviarJSON(res, 200, { ok: true }, extra);
         return;
@@ -461,7 +516,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
         return;
       }
       if (ruta === '/api/encuestas' && req.method === 'POST') {
-        exigirAdmin(req);
+        exigirPermiso(req, 'encuestas');
         const cuerpo = await leerCuerpo(req);
         enviarJSON(res, 201, store.crear(cuerpo), extra);
         return;
@@ -482,7 +537,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
           return;
         }
         if (accion === '/cerrar' && req.method === 'POST') {
-          exigirAdmin(req);
+          exigirPermiso(req, 'encuestas');
           enviarJSON(res, 200, store.cerrar(id), extra);
           return;
         }
@@ -512,8 +567,9 @@ if (require.main === module) {
   }
   const nombreCampana = process.env.NOMBRE_CAMPANA;
   const archivoAjustes = process.env.AJUSTES_FILE || path.join(__dirname, 'data', 'ajustes.json');
+  const archivoUsuarios = process.env.USUARIOS_FILE || path.join(__dirname, 'data', 'usuarios.json');
   const google = { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET };
-  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAdmin, nombreCampana, google }).listen(puerto, () => {
+  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, claveAdmin, nombreCampana, google }).listen(puerto, () => {
     console.log(`Formulario público: http://localhost:${puerto}/`);
     console.log(`Panel del equipo:   http://localhost:${puerto}/#/panel`);
   });
