@@ -82,18 +82,16 @@ function crearStore(archivo) {
     }
 
     const id = crypto.randomBytes(6).toString('base64url');
-    const claveAdmin = crypto.randomBytes(18).toString('base64url');
     encuestas[id] = {
       id,
       pregunta: p,
       opciones: ops.map((texto) => ({ texto, votos: 0 })),
       creada: new Date().toISOString(),
       cerrada: false,
-      claveAdminHash: hash(claveAdmin),
       votantes: {},
     };
     guardar();
-    return { encuesta: vistaPublica(encuestas[id]), claveAdmin };
+    return { encuesta: vistaPublica(encuestas[id]) };
   }
 
   function obtener(id, votante) {
@@ -123,14 +121,10 @@ function crearStore(archivo) {
     return vistaPublica(e, votante);
   }
 
-  function cerrar(id, claveAdmin) {
+  // Solo el servidor llama a cerrar() después de verificar la sesión de administrador.
+  function cerrar(id) {
     const e = Object.prototype.hasOwnProperty.call(encuestas, id) ? encuestas[id] : null;
     if (!e) throw new ErrorValidacion('Encuesta no encontrada', 404);
-    const esperado = Buffer.from(e.claveAdminHash, 'hex');
-    const recibido = Buffer.from(hash(claveAdmin || ''), 'hex');
-    if (!crypto.timingSafeEqual(esperado, recibido)) {
-      throw new ErrorValidacion('Clave de administración incorrecta', 403);
-    }
     e.cerrada = true;
     guardar();
     return vistaPublica(e);

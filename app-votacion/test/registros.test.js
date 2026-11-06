@@ -107,3 +107,71 @@ test('bloquea tras muchos intentos fallidos de contraseña', async () => {
   assert.equal(ultimo.status, 429);
   assert.equal((await admin('/api/registros')).status, 429);
 });
+
+test('el bloqueo por intentos también aplica al inicio de sesión', async () => {
+  const s = await fetch(`${base}/api/sesion`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clave: CLAVE }),
+  });
+  // La prueba anterior dejó esta IP bloqueada: ni la contraseña correcta entra.
+  assert.equal(s.status, 429);
+});
+
+test('sesión con cookie, estadísticas del panel y eliminación', async () => {
+  const otro = crearServidor({ claveAdmin: CLAVE });
+  await new Promise((r) => otro.listen(0, r));
+  const url = `http://127.0.0.1:${otro.address().port}`;
+  const post = (body) => fetch(`${url}/api/registros`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  try {
+    assert.equal((await post(persona({ cedula: '11111111', comuna: '5', barrio: 'Centro', edad: 20 }))).status, 201);
+    assert.equal((await post(persona({ cedula: '22222222', comuna: 'comuna 5', barrio: 'centro', edad: 40 }))).status, 201);
+    assert.equal((await post(persona({ cedula: '33333333', comuna: 'Comuna 2', barrio: 'Las Granjas', edad: 70 }))).status, 201);
+
+    // Inicio de sesión con contraseña -> cookie de sesión
+    const mala = await fetch(`${url}/api/sesion`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clave: 'x' }),
+    });
+    assert.equal(mala.status, 401);
+    const ok = await fetch(`${url}/api/sesion`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clave: CLAVE }),
+    });
+    assert.equal(ok.status, 200);
+    const cookie = ok.headers.getSetCookie().find((c) => c.startsWith('sesion=')).split(';')[0];
+    assert.match(ok.headers.getSetCookie().join(), /HttpOnly; SameSite=Strict/);
+    const conSesion = { headers: { Cookie: cookie } };
+
+    assert.equal((await fetch(`${url}/api/panel`)).status, 401);
+    const p = await (await fetch(`${url}/api/panel`, conSesion)).json();
+    assert.equal(p.total, 3);
+    assert.equal(p.hoy, 3);
+    assert.equal(p.semana, 3);
+    assert.equal(p.edadPromedio, 43);
+    assert.deepEqual(p.comunas, [{ nombre: 'Comuna 5', total: 2 }, { nombre: 'Comuna 2', total: 1 }]);
+    assert.equal(p.barrios[0].total, 2);
+    assert.equal(p.barrios[0].comuna, 'Comuna 5');
+    assert.equal(p.porDia.length, 30);
+    assert.equal(p.edades.find((e) => e.rango === '66+').total, 1);
+    assert.equal(p.recientes[0].cedula, undefined, 'el resumen no expone cédulas');
+    assert.equal(p.recientes[0].firma, undefined);
+
+    // Eliminar un registro (derecho de supresión)
+    const lista = await (await fetch(`${url}/api/registros`, conSesion)).json();
+    const sinSesion = await fetch(`${url}/api/registros/${lista[0].id}`, { method: 'DELETE' });
+    assert.equal(sinSesion.status, 401);
+    const borrado = await fetch(`${url}/api/registros/${lista[0].id}`, { method: 'DELETE', ...conSesion });
+    assert.equal(borrado.status, 200);
+    assert.equal((await (await fetch(`${url}/api/panel`, conSesion)).json()).total, 2);
+
+    // Cerrar sesión invalida la cookie
+    await fetch(`${url}/api/sesion`, { method: 'DELETE', ...conSesion });
+    assert.equal((await fetch(`${url}/api/panel`, conSesion)).status, 401);
+
+    // La configuración pública solo expone el nombre y el total
+    const cfg = await (await fetch(`${url}/api/config`)).json();
+    assert.deepEqual(Object.keys(cfg).sort(), ['nombre', 'totalRegistros']);
+  } finally {
+    otro.close();
+  }
+});

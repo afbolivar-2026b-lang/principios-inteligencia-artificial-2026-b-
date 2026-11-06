@@ -3,164 +3,349 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F4EFE6">
   <title>Campaña</title>
+  <link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/public-sans.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
 <body>
-  <header class="barra">
-    <a href="#/registro" class="marca">🗳️ Campaña</a>
-    <nav class="menu">
-      <a href="#/registro">Registro</a>
-      <a href="#/">Encuestas</a>
-      <a href="#/admin">Administrador</a>
-    </nav>
-  </header>
+  <!-- Marca: una papeleta con un trazo de aprobación -->
+  <svg class="oculto" aria-hidden="true">
+    <symbol id="marca" viewBox="0 0 32 32">
+      <rect x="3" y="3" width="26" height="26" rx="5" fill="currentColor"/>
+      <path d="M9.5 16.5l4.5 4.5 9-10" fill="none" class="marca-trazo" stroke-width="3.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-inicio" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-personas" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.4 3.4 0 0 1 0 6.4M18 14.8c1.9.7 3.1 2.4 3.5 5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-encuesta" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-salir" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-externo" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-descarga" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-papelera" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
 
-  <main id="app" class="contenedor" aria-live="polite"></main>
+  <div id="raiz"></div>
 
-  <template id="tpl-inicio">
-    <section class="tarjeta">
-      <h1>Crear una encuesta</h1>
-      <form id="form-crear" novalidate>
-        <label for="pregunta">Pregunta</label>
-        <input id="pregunta" name="pregunta" maxlength="200" required
-               placeholder="¿Qué tema estudiamos la próxima semana?">
+  <!-- ============ PARTE PÚBLICA ============ -->
+  <template id="tpl-publico">
+    <header class="cabecera">
+      <a href="#/" class="logo"><svg><use href="#marca"/></svg><span data-nombre></span></a>
+      <nav class="nav-publica" aria-label="Principal">
+        <a href="#/">Regístrate</a>
+        <a href="#/encuestas">Encuestas</a>
+        <a href="#/panel" class="nav-equipo">Equipo</a>
+      </nav>
+    </header>
+    <main id="vista"></main>
+    <footer class="pie">
+      <span data-nombre></span>
+      <span>Sus datos se tratan según la Ley 1581 de 2012.</span>
+    </footer>
+  </template>
+
+  <template id="tpl-registro">
+    <div class="registro">
+      <aside class="cartel">
+        <p class="sobretitulo">Registro ciudadano</p>
+        <h1 class="cartel-titulo">Tu barrio también <em>decide</em>.</h1>
+        <p class="cartel-texto">Déjanos tus datos y entérate primero de las reuniones, propuestas
+          y jornadas que pasan en tu comuna.</p>
+        <div class="contador">
+          <span class="contador-num" id="contador">—</span>
+          <span class="contador-txt">personas ya se sumaron</span>
+        </div>
+      </aside>
+
+      <form id="form-registro" class="formulario" novalidate>
         <fieldset>
-          <legend>Opciones (2 a 10)</legend>
-          <div id="lista-opciones"></div>
-          <button type="button" id="agregar-opcion" class="secundario">+ Agregar opción</button>
+          <legend><span class="paso">01</span> ¿Quién eres?</legend>
+          <div class="campos dos">
+            <div class="campo">
+              <label for="r-nombre">Nombre</label>
+              <input id="r-nombre" maxlength="60" autocomplete="given-name" required>
+            </div>
+            <div class="campo">
+              <label for="r-apellido">Apellido</label>
+              <input id="r-apellido" maxlength="60" autocomplete="family-name" required>
+            </div>
+            <div class="campo">
+              <label for="r-cedula">Cédula</label>
+              <input id="r-cedula" inputmode="numeric" maxlength="13" required placeholder="Sin puntos ni espacios">
+            </div>
+            <div class="campo">
+              <label for="r-edad">Edad</label>
+              <input id="r-edad" type="number" min="18" max="120" inputmode="numeric" required>
+            </div>
+            <div class="campo ancho-completo">
+              <label for="r-telefono">Teléfono o celular</label>
+              <input id="r-telefono" type="tel" maxlength="15" autocomplete="tel" required placeholder="300 000 0000">
+            </div>
+          </div>
         </fieldset>
-        <p class="error" id="error-crear" role="alert"></p>
-        <button type="submit">Crear encuesta</button>
-      </form>
-    </section>
 
-    <section>
-      <h2>Encuestas recientes</h2>
-      <ul id="lista-encuestas" class="lista"></ul>
+        <fieldset>
+          <legend><span class="paso">02</span> ¿Dónde vives?</legend>
+          <div class="campos dos">
+            <div class="campo">
+              <label for="r-barrio">Barrio</label>
+              <input id="r-barrio" maxlength="80" required>
+            </div>
+            <div class="campo">
+              <label for="r-comuna">Comuna</label>
+              <input id="r-comuna" maxlength="40" required placeholder="Ej.: 5">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="paso">03</span> Firma</legend>
+          <div class="firma-caja">
+            <canvas id="firma" width="640" height="200" aria-label="Espacio para firmar"></canvas>
+            <span class="firma-linea" aria-hidden="true"></span>
+            <span class="firma-guia" id="firma-guia">Firma aquí con el dedo o el mouse</span>
+            <button type="button" id="borrar-firma" class="enlace firma-borrar">Borrar</button>
+          </div>
+
+          <label class="consentimiento">
+            <input type="checkbox" id="r-autorizacion" required>
+            <span>Autorizo de manera libre, previa y expresa el tratamiento de mis datos personales
+              para fines de la campaña (Ley 1581 de 2012). Puedo consultarlos, corregirlos o
+              pedir que se eliminen cuando quiera.</span>
+          </label>
+        </fieldset>
+
+        <p class="error" id="error-registro" role="alert"></p>
+        <button type="submit" class="boton boton-acento boton-grande">Sumarme a la campaña</button>
+      </form>
+    </div>
+  </template>
+
+  <template id="tpl-registro-ok">
+    <section class="exito">
+      <svg class="exito-marca"><use href="#marca"/></svg>
+      <h1 id="gracias"></h1>
+      <p>Tus datos quedaron guardados. Pronto te contactaremos con novedades de tu comuna.</p>
+      <button type="button" id="otro-registro" class="boton">Registrar a otra persona</button>
+    </section>
+  </template>
+
+  <template id="tpl-encuestas-publicas">
+    <section class="pagina-angosta">
+      <p class="sobretitulo">Tu opinión cuenta</p>
+      <h1 class="titulo-pagina">Encuestas abiertas</h1>
+      <ul id="lista-encuestas" class="lista-encuestas"></ul>
     </section>
   </template>
 
   <template id="tpl-encuesta">
-    <section class="tarjeta">
-      <a href="#/" class="volver">← Volver</a>
-      <h1 id="titulo"></h1>
+    <section class="pagina-angosta">
+      <a href="#/encuestas" class="volver">← Todas las encuestas</a>
+      <p class="sobretitulo" id="estado-encuesta"></p>
+      <h1 class="titulo-pagina" id="titulo"></h1>
       <p class="meta" id="meta"></p>
-      <div id="aviso-admin" class="aviso" hidden></div>
       <form id="form-votar" hidden>
         <div id="opciones-voto" class="opciones"></div>
         <p class="error" id="error-votar" role="alert"></p>
-        <button type="submit">Votar</button>
+        <button type="submit" class="boton boton-acento">Enviar mi voto</button>
       </form>
-      <div id="resultados" class="resultados" hidden></div>
+      <div id="resultados" class="barras" hidden></div>
       <div class="acciones">
-        <button type="button" id="copiar" class="secundario">Copiar enlace</button>
-        <button type="button" id="cerrar" class="peligro" hidden>Cerrar votación</button>
+        <button type="button" id="copiar" class="boton boton-borde">Copiar enlace</button>
       </div>
     </section>
   </template>
 
-  <template id="tpl-registro">
-    <section class="tarjeta">
-      <h1>Registro de la campaña</h1>
-      <p class="meta">Los campos marcados con * son obligatorios.</p>
-      <form id="form-registro" novalidate>
-        <div class="rejilla">
-          <div>
-            <label for="r-nombre">Nombre *</label>
-            <input id="r-nombre" name="nombre" maxlength="60" autocomplete="given-name" required>
-          </div>
-          <div>
-            <label for="r-apellido">Apellido *</label>
-            <input id="r-apellido" name="apellido" maxlength="60" autocomplete="family-name" required>
-          </div>
-          <div>
-            <label for="r-cedula">Cédula *</label>
-            <input id="r-cedula" name="cedula" inputmode="numeric" maxlength="13" required
-                   placeholder="Solo números">
-          </div>
-          <div>
-            <label for="r-edad">Edad *</label>
-            <input id="r-edad" name="edad" type="number" min="18" max="120" inputmode="numeric" required>
-          </div>
-          <div>
-            <label for="r-telefono">Teléfono *</label>
-            <input id="r-telefono" name="telefono" type="tel" maxlength="15" autocomplete="tel" required
-                   placeholder="3001234567">
-          </div>
-          <div>
-            <label for="r-barrio">Barrio *</label>
-            <input id="r-barrio" name="barrio" maxlength="80" required>
-          </div>
-          <div>
-            <label for="r-comuna">Comuna *</label>
-            <input id="r-comuna" name="comuna" maxlength="40" required placeholder="Ej.: Comuna 5">
-          </div>
-        </div>
-
-        <label for="firma">Firma *</label>
-        <div class="firma-caja">
-          <canvas id="firma" width="600" height="200" aria-label="Espacio para firmar"></canvas>
-          <span class="firma-guia" id="firma-guia">Firme aquí con el dedo o el mouse</span>
-        </div>
-        <button type="button" id="borrar-firma" class="secundario pequeno">Borrar firma</button>
-
-        <label class="consentimiento">
-          <input type="checkbox" id="r-autorizacion" required>
-          <span>Autorizo de manera libre, previa y expresa el tratamiento de mis datos personales
-            para fines de la campaña, de acuerdo con la Ley 1581 de 2012. Sé que puedo
-            consultar, actualizar o pedir que se eliminen mis datos. *</span>
-        </label>
-
-        <p class="error" id="error-registro" role="alert"></p>
-        <button type="submit">Registrarme</button>
-      </form>
-    </section>
-  </template>
-
-  <template id="tpl-registro-ok">
-    <section class="tarjeta centrado">
-      <h1>¡Registro exitoso! ✅</h1>
-      <p id="gracias"></p>
-      <button type="button" id="otro-registro">Registrar otra persona</button>
-    </section>
-  </template>
-
-  <template id="tpl-admin">
-    <section class="tarjeta">
-      <h1>Base de datos de la campaña</h1>
-      <form id="form-login">
-        <label for="clave">Contraseña de administrador</label>
-        <div class="fila-opcion">
+  <!-- ============ ACCESO DEL EQUIPO ============ -->
+  <template id="tpl-login">
+    <div class="acceso">
+      <form id="form-login" class="acceso-caja">
+        <a href="#/" class="logo"><svg><use href="#marca"/></svg><span data-nombre></span></a>
+        <h1>Panel del equipo</h1>
+        <p class="meta">Acceso solo para coordinación de campaña.</p>
+        <div class="campo">
+          <label for="clave">Contraseña</label>
           <input id="clave" type="password" autocomplete="current-password" required>
-          <button type="submit">Entrar</button>
         </div>
         <p class="error" id="error-login" role="alert"></p>
+        <button type="submit" class="boton boton-acento boton-bloque">Entrar</button>
       </form>
-      <div id="panel" hidden>
-        <div class="acciones">
-          <input id="buscar" type="search" placeholder="Buscar por nombre, cédula, barrio o comuna">
+    </div>
+  </template>
+
+  <!-- ============ PANEL ============ -->
+  <template id="tpl-panel">
+    <div class="panel">
+      <aside class="lateral">
+        <a href="#/panel" class="logo logo-claro"><svg><use href="#marca"/></svg><span data-nombre></span></a>
+        <nav class="nav-panel" aria-label="Panel">
+          <a href="#/panel"><svg><use href="#i-inicio"/></svg>Inicio</a>
+          <a href="#/panel/registros"><svg><use href="#i-personas"/></svg>Registros</a>
+          <a href="#/panel/encuestas"><svg><use href="#i-encuesta"/></svg>Encuestas</a>
+        </nav>
+        <div class="lateral-pie">
+          <a href="#/" target="_blank" rel="noopener"><svg><use href="#i-externo"/></svg>Ver formulario</a>
+          <button type="button" id="salir"><svg><use href="#i-salir"/></svg>Cerrar sesión</button>
         </div>
-        <p class="meta" id="resumen"></p>
-        <div class="acciones">
-          <button type="button" id="exportar">Descargar Excel (CSV)</button>
-          <button type="button" id="salir" class="secundario">Salir</button>
-        </div>
-        <div class="tabla-scroll">
-          <table class="tabla">
-            <thead>
-              <tr>
-                <th>Nombre</th><th>Cédula</th><th>Edad</th><th>Teléfono</th>
-                <th>Barrio</th><th>Comuna</th><th>Firma</th><th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody id="filas"></tbody>
-          </table>
-        </div>
+      </aside>
+      <main id="vista-panel" class="contenido"></main>
+    </div>
+  </template>
+
+  <template id="tpl-panel-inicio">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo" id="fecha-hoy"></p>
+        <h1 class="titulo-pagina">Así va la campaña</h1>
       </div>
+      <a href="#/panel/registros" class="boton boton-borde">Ver todos los registros</a>
+    </header>
+
+    <section class="kpis" aria-label="Resumen">
+      <article class="kpi kpi-hero">
+        <h2>Personas registradas</h2>
+        <p class="kpi-num" id="k-total">0</p>
+        <p class="kpi-nota" id="k-total-nota"></p>
+      </article>
+      <article class="kpi">
+        <h2>Hoy</h2>
+        <p class="kpi-num" id="k-hoy">0</p>
+        <p class="kpi-nota">nuevos registros</p>
+      </article>
+      <article class="kpi">
+        <h2>Últimos 7 días</h2>
+        <p class="kpi-num" id="k-semana">0</p>
+        <p class="kpi-nota" id="k-semana-nota"></p>
+      </article>
+      <article class="kpi">
+        <h2>Edad promedio</h2>
+        <p class="kpi-num" id="k-edad">—</p>
+        <p class="kpi-nota">años</p>
+      </article>
+    </section>
+
+    <section class="rejilla-panel">
+      <article class="bloque col-8">
+        <header class="bloque-cab">
+          <h2>Registros por día</h2>
+          <span class="bloque-sub">Últimos 30 días</span>
+        </header>
+        <div id="g-dias" class="grafico"></div>
+      </article>
+
+      <article class="bloque col-4 bloque-territorio">
+        <header class="bloque-cab"><h2>Territorio</h2></header>
+        <dl class="cifras">
+          <div><dt>Comunas con presencia</dt><dd id="k-comunas">0</dd></div>
+          <div><dt>Barrios alcanzados</dt><dd id="k-barrios">0</dd></div>
+          <div><dt>Encuestas abiertas</dt><dd id="k-encuestas">0</dd></div>
+          <div><dt>Votos recibidos</dt><dd id="k-votos">0</dd></div>
+        </dl>
+      </article>
+
+      <article class="bloque col-6">
+        <header class="bloque-cab">
+          <h2>Por comuna</h2>
+          <span class="bloque-sub">Personas registradas</span>
+        </header>
+        <div id="g-comunas" class="barras"></div>
+      </article>
+
+      <article class="bloque col-6">
+        <header class="bloque-cab">
+          <h2>Por edad</h2>
+          <span class="bloque-sub">Rangos en años</span>
+        </header>
+        <div id="g-edades" class="grafico"></div>
+      </article>
+
+      <article class="bloque col-6">
+        <header class="bloque-cab">
+          <h2>Barrios más fuertes</h2>
+          <span class="bloque-sub">Top 8</span>
+        </header>
+        <ol id="l-barrios" class="ranking"></ol>
+      </article>
+
+      <article class="bloque col-6">
+        <header class="bloque-cab">
+          <h2>Últimos registros</h2>
+          <a href="#/panel/registros" class="enlace">Ver todos</a>
+        </header>
+        <ul id="l-recientes" class="recientes"></ul>
+      </article>
+
+      <article class="bloque col-12">
+        <header class="bloque-cab">
+          <h2>Encuestas</h2>
+          <a href="#/panel/encuestas" class="enlace">Administrar</a>
+        </header>
+        <div id="l-encuestas" class="mini-encuestas"></div>
+      </article>
     </section>
   </template>
 
+  <template id="tpl-panel-registros">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Base de datos</p>
+        <h1 class="titulo-pagina">Registros</h1>
+      </div>
+      <button type="button" id="exportar" class="boton boton-acento">
+        <svg class="icono"><use href="#i-descarga"/></svg>Descargar Excel
+      </button>
+    </header>
+    <div class="filtros">
+      <input id="buscar" type="search" placeholder="Buscar por nombre, cédula, teléfono o barrio" aria-label="Buscar">
+      <select id="filtro-comuna" aria-label="Filtrar por comuna">
+        <option value="">Todas las comunas</option>
+      </select>
+    </div>
+    <p class="meta" id="resumen"></p>
+    <div class="tabla-marco">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Nombre</th><th>Cédula</th><th class="num">Edad</th><th>Teléfono</th>
+            <th>Barrio</th><th>Comuna</th><th>Firma</th><th>Registro</th><th><span class="oculto-visual">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody id="filas"></tbody>
+      </table>
+    </div>
+  </template>
+
+  <template id="tpl-panel-encuestas">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Consultas a la comunidad</p>
+        <h1 class="titulo-pagina">Encuestas</h1>
+      </div>
+    </header>
+    <section class="rejilla-panel">
+      <article class="bloque col-5">
+        <header class="bloque-cab"><h2>Nueva encuesta</h2></header>
+        <form id="form-crear" novalidate>
+          <div class="campo">
+            <label for="pregunta">Pregunta</label>
+            <input id="pregunta" maxlength="200" required placeholder="¿Qué tema priorizamos en la comuna?">
+          </div>
+          <div class="campo">
+            <span class="etiqueta">Opciones <span class="meta">(2 a 10)</span></span>
+            <div id="lista-opciones"></div>
+            <button type="button" id="agregar-opcion" class="enlace">+ Agregar opción</button>
+          </div>
+          <p class="error" id="error-crear" role="alert"></p>
+          <button type="submit" class="boton boton-acento">Publicar encuesta</button>
+        </form>
+      </article>
+      <div class="col-7 pila" id="admin-encuestas"></div>
+    </section>
+  </template>
+
+  <div id="tooltip" class="tooltip" role="status" hidden></div>
   <script src="/app.js"></script>
 </body>
 </html>

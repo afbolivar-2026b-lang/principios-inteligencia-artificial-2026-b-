@@ -4,11 +4,13 @@ const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { crearServidor } = require('../server');
 
+const CLAVE = 'clave-de-prueba';
+const ADMIN = { Authorization: `Bearer ${CLAVE}` };
 let servidor;
 let base;
 
 before(async () => {
-  servidor = crearServidor(); // sin archivo: solo memoria
+  servidor = crearServidor({ claveAdmin: CLAVE }); // sin archivo: solo memoria
   await new Promise((r) => servidor.listen(0, r));
   base = `http://127.0.0.1:${servidor.address().port}`;
 });
@@ -33,19 +35,24 @@ function cliente() {
   };
 }
 
-test('crea, vota una sola vez y cierra una encuesta', async () => {
+test('solo el administrador crea encuestas; se vota una sola vez y se cierra', async () => {
   const ana = cliente();
   const beto = cliente();
 
+  const sinPermiso = await ana('/api/encuestas', {
+    method: 'POST', body: { pregunta: 'x', opciones: ['a', 'b'] },
+  });
+  assert.equal(sinPermiso.estado, 401);
+
   const creada = await ana('/api/encuestas', {
     method: 'POST',
+    headers: ADMIN,
     body: { pregunta: '  ¿Lenguaje favorito? ', opciones: ['Python', 'JavaScript', ''] },
   });
   assert.equal(creada.estado, 201);
-  const { encuesta, claveAdmin } = creada.datos;
+  const { encuesta } = creada.datos;
   assert.equal(encuesta.pregunta, '¿Lenguaje favorito?');
   assert.equal(encuesta.opciones.length, 2);
-  assert.ok(claveAdmin);
 
   assert.equal((await ana(`/api/encuestas/${encuesta.id}/votar`, { method: 'POST', body: { opcion: 0 } })).estado, 200);
   const doble = await ana(`/api/encuestas/${encuesta.id}/votar`, { method: 'POST', body: { opcion: 1 } });
@@ -58,12 +65,11 @@ test('crea, vota una sola vez y cierra una encuesta', async () => {
   const vista = await ana(`/api/encuestas/${encuesta.id}`);
   assert.equal(vista.datos.miVoto, 0);
   assert.deepEqual(vista.datos.opciones.map((o) => o.votos), [1, 1]);
-  assert.equal(vista.datos.claveAdminHash, undefined);
   assert.equal(vista.datos.votantes, undefined);
 
-  const malaClave = await beto(`/api/encuestas/${encuesta.id}/cerrar`, { method: 'POST', body: { claveAdmin: 'x' } });
-  assert.equal(malaClave.estado, 403);
-  const cierre = await ana(`/api/encuestas/${encuesta.id}/cerrar`, { method: 'POST', body: { claveAdmin } });
+  const sinSesion = await beto(`/api/encuestas/${encuesta.id}/cerrar`, { method: 'POST', body: {} });
+  assert.equal(sinSesion.estado, 401);
+  const cierre = await ana(`/api/encuestas/${encuesta.id}/cerrar`, { method: 'POST', body: {}, headers: ADMIN });
   assert.equal(cierre.datos.cerrada, true);
 
   const tarde = await cliente()(`/api/encuestas/${encuesta.id}/votar`, { method: 'POST', body: { opcion: 0 } });
@@ -81,10 +87,10 @@ test('valida las entradas', async () => {
     { pregunta: 'x', opciones: 'a,b' },
   ];
   for (const body of casos) {
-    assert.equal((await c('/api/encuestas', { method: 'POST', body })).estado, 400, JSON.stringify(body));
+    assert.equal((await c('/api/encuestas', { method: 'POST', body, headers: ADMIN })).estado, 400, JSON.stringify(body));
   }
 
-  const { datos } = await c('/api/encuestas', { method: 'POST', body: { pregunta: 'ok', opciones: ['a', 'b'] } });
+  const { datos } = await c('/api/encuestas', { method: 'POST', body: { pregunta: 'ok', opciones: ['a', 'b'] }, headers: ADMIN });
   for (const opcion of [-1, 2, 0.5, '0', null]) {
     const r = await c(`/api/encuestas/${datos.encuesta.id}/votar`, { method: 'POST', body: { opcion } });
     assert.equal(r.estado, 400);
@@ -102,12 +108,12 @@ test('rechaza orígenes externos, JSON malformado y rutas fuera de public', asyn
   });
   assert.equal(externo.estado, 403);
 
-  const res = await fetch(`${base}/api/encuestas`, {
+  const res = await fetch(`${base}/api/registros`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{malo',
   });
   assert.equal(res.status, 400);
 
-  const texto = await fetch(`${base}/api/encuestas`, { method: 'POST', body: 'hola' });
+  const texto = await fetch(`${base}/api/registros`, { method: "POST", body: "hola" });
   assert.equal(texto.status, 415);
 
   const salir = await fetch(`${base}/..%2fserver.js`);
