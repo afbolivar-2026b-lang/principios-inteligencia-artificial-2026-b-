@@ -5,6 +5,28 @@
  */
 'use strict';
 
+const fs = require('node:fs');
+const path = require('node:path');
+
+// Ícono de Opita Digital (JPEG) para el pie de página
+let ICONO = null;
+try { ICONO = fs.readFileSync(path.join(__dirname, '..', 'public', 'marca', 'opita-digital-icono.jpg')); } catch { ICONO = null; }
+
+// Ancho y alto de un JPEG (marcador SOF)
+function tamanoJPEG(buf) {
+  let i = 2;
+  while (i < buf.length) {
+    if (buf[i] !== 0xff) { i++; continue; }
+    const marca = buf[i + 1];
+    const largo = buf.readUInt16BE(i + 2);
+    if (marca >= 0xc0 && marca <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marca)) {
+      return { alto: buf.readUInt16BE(i + 5), ancho: buf.readUInt16BE(i + 7), canales: buf[i + 9] };
+    }
+    i += 2 + largo;
+  }
+  return null;
+}
+
 // ---------- Motor PDF ----------
 const ANCHOS = [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278,
   556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556, 1015,
@@ -59,6 +81,16 @@ class Documento {
     this.W = ancho;
     this.H = alto;
     this.paginas = [];
+    this.imagenes = [];
+  }
+
+  // Dibuja un JPEG (Buffer) en la página actual
+  imagen(jpeg, x, y, w, h) {
+    const t = tamanoJPEG(jpeg);
+    if (!t) return;
+    let k = this.imagenes.findIndex((im) => im.datos === jpeg);
+    if (k === -1) { this.imagenes.push({ datos: jpeg, ...t }); k = this.imagenes.length - 1; }
+    this.ops.push(`q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${(this.H - y - h).toFixed(2)} cm /Im${k + 1} Do Q`);
   }
 
   nuevaPagina() {
@@ -107,7 +139,10 @@ class Documento {
     };
     const idsFuentes = Object.entries(fuentes).map(([k, base]) =>
       [k, agregar(`<< /Type /Font /Subtype /Type1 /BaseFont /${base} /Encoding /WinAnsiEncoding >>`)]);
-    const recursos = `<< /Font << ${idsFuentes.map(([k, id]) => `/${k} ${id} 0 R`).join(' ')} >> >>`;
+    const idsImagenes = this.imagenes.map((im) => agregar(
+      `<< /Type /XObject /Subtype /Image /Width ${im.ancho} /Height ${im.alto} /ColorSpace /${im.canales === 1 ? 'DeviceGray' : 'DeviceRGB'} /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.datos.length} >>\nstream\n${im.datos.toString('latin1')}\nendstream`));
+    const xobj = idsImagenes.length ? ` /XObject << ${idsImagenes.map((id, i) => `/Im${i + 1} ${id} 0 R`).join(' ')} >>` : '';
+    const recursos = `<< /Font << ${idsFuentes.map(([k, id]) => `/${k} ${id} 0 R`).join(' ')} >>${xobj} >>`;
     const idPaginas = objetos.length + 1 + this.paginas.length * 2;
     const idsPagina = [];
     for (const ops of this.paginas) {
@@ -154,7 +189,9 @@ function marcaAgua(doc) {
 
 function pie(doc, n, total) {
   doc.linea(40, doc.H - 34, doc.W - 40, doc.H - 34, { color: C.linea });
-  doc.texto(40, doc.H - 22, 'Desarrollado por Opita Digital · © Todos los derechos reservados', { tam: 7, color: '#A7ABB3' });
+  let x = 40;
+  if (ICONO) { doc.imagen(ICONO, 40, doc.H - 30, 11, 11); x = 55; }
+  doc.texto(x, doc.H - 22, 'Desarrollado por Opita Digital · © Todos los derechos reservados', { tam: 7, color: '#A7ABB3' });
   doc.texto(doc.W - 40, doc.H - 22, `Página ${n} de ${total}`, { tam: 7, color: '#A7ABB3', alinear: 'der' });
 }
 

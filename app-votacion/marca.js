@@ -9,7 +9,10 @@
 module.exports = Object.freeze({
   empresa: 'Opita Digital',
   lema: 'Páginas web y aplicaciones',
-  logo: '/marca/opita-digital.svg',
+  logo: '/marca/opita-digital-icono.png',             // ícono sobre fondos claros
+  logoClaro: '/marca/opita-digital-icono-claro.png',   // ícono sobre fondos oscuros
+  logoCompleto: '/marca/opita-digital-logo.png',
+  logoCompletoClaro: '/marca/opita-digital-logo-claro.png',
   whatsapp: '',   // ej.: '573001234567' (con indicativo, sin espacios)
   telefono: '',   // ej.: '300 123 4567'
   correo: '',     // ej.: 'contacto@opitadigital.com'

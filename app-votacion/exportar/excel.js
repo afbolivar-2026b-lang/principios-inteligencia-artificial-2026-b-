@@ -8,7 +8,12 @@
  */
 'use strict';
 
+const fs = require('node:fs');
+const path = require('node:path');
 const { crearZip } = require('./zip');
+
+let LOGO = null;
+try { LOGO = fs.readFileSync(path.join(__dirname, '..', 'public', 'marca', 'opita-digital-logo.png')); } catch { LOGO = null; }
 
 const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
   // eslint-disable-next-line no-control-regex
@@ -186,9 +191,11 @@ function graficaXml({ tipo, titulo, cat, val, nombreSerie, color = '2A5C9E', dir
 </c:chartSpace>`;
 }
 
-function dibujoXml(posiciones) {
+function dibujoXml(posiciones, logo) {
+  // Logo de Opita Digital arriba a la derecha (ancho fijo en EMU)
+  const imagenLogo = logo ? `<xdr:oneCellAnchor><xdr:from><xdr:col>15</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>1</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="1600000" cy="${Math.round(1600000 * logo.alto / logo.ancho)}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="100" name="Logo Opita Digital" descr="Desarrollado por Opita Digital"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId${posiciones.length + 1}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>` : '';
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">${imagenLogo}
 ${posiciones.map(([c1, f1, c2, f2], i) => `<xdr:twoCellAnchor editAs="oneCell"><xdr:from><xdr:col>${c1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${f1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>${c2}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${f2}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="${i + 2}" name="Gráfica ${i + 1}"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr><xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId${i + 1}"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor>`).join('\n')}
 </xdr:wsDr>`;
 }
@@ -426,6 +433,7 @@ function crearExcelTablero(registros, opciones = {}) {
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
 <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
 <Default Extension="xml" ContentType="application/xml"/>
+<Default Extension="png" ContentType="image/png"/>
 <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
 <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
 <Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
@@ -459,9 +467,12 @@ ${graficas.map((_, i) => `<Override PartName="/xl/charts/chart${i + 1}.xml" Cont
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${NS_REL}/table" Target="../tables/table1.xml"/></Relationships>`);
   agregar('xl/tables/table1.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" id="1" name="TablaRegistros" displayName="TablaRegistros" ref="A1:L${ultima}" totalsRowShown="0"><autoFilter ref="A1:L${ultima}"/><tableColumns count="12">${columnas.map((c, i) => `<tableColumn id="${i + 1}" name="${esc(c)}"/>`).join('')}</tableColumns><tableStyleInfo name="TableStyleMedium2" showFirstColumn="0" showLastColumn="0" showRowStripes="1" showColumnStripes="0"/></table>`);
-  agregar('xl/drawings/drawing1.xml', dibujoXml(graficas.map((g) => g.pos)));
+  const logo = LOGO ? { ancho: LOGO.readUInt32BE(16), alto: LOGO.readUInt32BE(20) } : null;
+  agregar('xl/drawings/drawing1.xml', dibujoXml(graficas.map((g) => g.pos), logo));
   agregar('xl/drawings/_rels/drawing1.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${graficas.map((_, i) => `<Relationship Id="rId${i + 1}" Type="${NS_REL}/chart" Target="../charts/chart${i + 1}.xml"/>`).join('')}</Relationships>`);
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${graficas.map((_, i) => `<Relationship Id="rId${i + 1}" Type="${NS_REL}/chart" Target="../charts/chart${i + 1}.xml"/>`).join('')}${
+  logo ? `<Relationship Id="rId${graficas.length + 1}" Type="${NS_REL}/image" Target="../media/logo.png"/>` : ''}</Relationships>`);
+  if (LOGO) agregar('xl/media/logo.png', LOGO);
   graficas.forEach((g, i) => agregar(`xl/charts/chart${i + 1}.xml`, graficaXml(g)));
 
   return crearZip(archivos);

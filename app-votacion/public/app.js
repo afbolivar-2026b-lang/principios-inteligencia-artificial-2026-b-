@@ -12,7 +12,14 @@ const tooltip = document.getElementById('tooltip');
 const SVG = 'http://www.w3.org/2000/svg';
 const fmt = new Intl.NumberFormat('es-CO');
 let temporizador = null;
-let config = { nombre: 'Campaña', eslogan: 'Tu barrio también decide.', tema: 'elegante', urlPublica: '', totalRegistros: 0, marca: { empresa: 'Opita Digital', logo: '/marca/opita-digital.svg' } };
+let config = { nombre: 'Campaña', eslogan: 'Tu barrio también decide.', tema: 'elegante', urlPublica: '', totalRegistros: 0, marca: { empresa: 'Opita Digital', logo: '/marca/opita-digital-icono.png', logoClaro: '/marca/opita-digital-icono-claro.png' } };
+
+// ¿El fondo donde va el logo es oscuro? (menú lateral o diseño oscuro)
+function fondoOscuro(nodo) {
+  const tema = document.documentElement.getAttribute('data-tema');
+  if (tema === 'oscuro') return true;
+  return Boolean(nodo && nodo.closest && nodo.closest('.lateral')) && tema !== 'limpio';
+}
 let sesionAdmin = false;
 let shellActual = null;
 const observadores = [];
@@ -99,7 +106,7 @@ function enlacesContacto(m) {
 function pintarCredito(nodo) {
   const m = config.marca || {};
   const firma = el(m.web ? 'a' : 'span', { className: 'credito-firma', ...(m.web ? { href: m.web, target: '_blank', rel: 'noopener' } : {}) },
-    el('img', { src: m.logo || '/marca/opita-digital.svg', alt: '' }),
+    el('img', { src: (fondoOscuro(nodo) ? m.logoClaro : m.logo) || '/marca/opita-digital-icono.png', alt: '' }),
     el('span', {}, 'Desarrollado por ', el('strong', { textContent: m.empresa || 'Opita Digital' })));
   const contactos = enlacesContacto(m).map((c) =>
     el('a', { className: 'credito-contacto', href: c.href, target: '_blank', rel: 'noopener', textContent: c.texto, title: c.tipo }));
@@ -1379,7 +1386,8 @@ async function dibujarAfiche(canvas, formato, url) {
   }
 
   // Pie con la firma de Opita Digital
-  const logo = await cargarImagen((config.marca && config.marca.logo) || '/marca/opita-digital.svg');
+  const m = config.marca || {};
+  const logo = await cargarImagen((tema === 'limpio' ? m.logo : m.logoClaro) || '/marca/opita-digital-icono-claro.png');
   const py = H - (tema === 'opita' ? 26 : 0) - 40;
   ctx.globalAlpha = 0.6;
   if (logo) ctx.drawImage(logo, M, py - 26, 30, 30);
@@ -1593,8 +1601,8 @@ function vistaPanelAjustes() {
   const contactos = enlacesContacto(m);
   document.getElementById('autor').replaceChildren(
     el('div', { className: 'autor-cab' },
-      el('img', { src: m.logo || '/marca/opita-digital.svg', alt: `Logo de ${m.empresa || 'Opita Digital'}` }),
-      el('div', {}, el('strong', { textContent: m.empresa || 'Opita Digital' }), el('span', { className: 'meta', textContent: m.lema || '' }))),
+      el('img', { className: 'autor-logo', src: (fondoOscuro(null) ? m.logoCompletoClaro : m.logoCompleto) || m.logo, alt: m.empresa || 'Opita Digital' })),
+    el('p', { className: 'meta', textContent: m.lema || '' }),
     contactos.length
       ? el('ul', {}, ...contactos.map((c) => el('li', {}, el('span', { textContent: c.tipo }),
         el('a', { href: c.href, target: '_blank', rel: 'noopener', className: 'enlace', textContent: c.texto }))))

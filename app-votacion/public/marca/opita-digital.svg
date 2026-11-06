@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Opita Digital">
-  <!-- Logo provisional de Opita Digital: reemplazar por el logo oficial -->
-  <circle cx="32" cy="32" r="30" fill="#0F5132"/>
-  <path d="M8 36h48" stroke="#F2B705" stroke-width="7"/>
-  <path d="M8 36l4-3.5 4 3.5 4-3.5 4 3.5 4-3.5 4 3.5 4-3.5 4 3.5 4-3.5 4 3.5 4-3.5 4 3.5" fill="none" stroke="#0F5132" stroke-width="1.6"/>
-  <path d="M19 33c0-8 5.8-14 13-14s13 6 13 14" fill="none" stroke="#FFF8E7" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="32" cy="47" r="3.2" fill="#FFF8E7"/>
-</svg>
