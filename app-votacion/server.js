@@ -7,6 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { crearStore, ErrorValidacion } = require('./store');
+const { crearRegistros, MAX_FIRMA } = require('./registros');
 
 const PUBLICO = path.join(__dirname, 'public');
 const MAX_CUERPO = 16 * 1024;
@@ -48,7 +49,7 @@ function enviarJSON(res, estado, datos, extra = {}) {
   res.end(JSON.stringify(datos));
 }
 
-function leerCuerpo(req) {
+function leerCuerpo(req, max = MAX_CUERPO) {
   return new Promise((resolve, reject) => {
     const tipo = req.headers['content-type'] || '';
     if (!tipo.startsWith('application/json')) {
@@ -59,7 +60,7 @@ function leerCuerpo(req) {
     const partes = [];
     req.on('data', (c) => {
       tam += c.length;
-      if (tam > MAX_CUERPO) {
+      if (tam > max) {
         reject(new ErrorValidacion('Cuerpo demasiado grande', 413));
         req.destroy();
         return;
@@ -97,8 +98,37 @@ function servirEstatico(req, res, ruta) {
   });
 }
 
-function crearServidor({ archivoDatos } = {}) {
+function hashClave(v) {
+  return crypto.createHash('sha256').update(String(v)).digest();
+}
+
+function crearServidor({ archivoDatos, archivoRegistros, claveAdmin } = {}) {
   const store = crearStore(archivoDatos);
+  const registros = crearRegistros(archivoRegistros);
+  const claveHash = claveAdmin ? hashClave(claveAdmin) : null;
+
+  // Bloqueo simple contra fuerza bruta: 10 intentos fallidos por IP cada 15 min.
+  const fallos = new Map();
+  const VENTANA = 15 * 60 * 1000;
+
+  function exigirAdmin(req) {
+    const ip = req.socket.remoteAddress || '';
+    const ahora = Date.now();
+    const f = fallos.get(ip);
+    if (f && ahora - f.desde > VENTANA) fallos.delete(ip);
+    if ((fallos.get(ip)?.n || 0) >= 10) {
+      throw new ErrorValidacion('Demasiados intentos. Espere 15 minutos.', 429);
+    }
+    const m = (req.headers.authorization || '').match(/^Bearer (.+)$/);
+    const ok = claveHash && m && crypto.timingSafeEqual(claveHash, hashClave(m[1]));
+    if (!ok) {
+      const actual = fallos.get(ip) || { n: 0, desde: ahora };
+      actual.n += 1;
+      fallos.set(ip, actual);
+      throw new ErrorValidacion('Contraseña de administrador incorrecta', 401);
+    }
+    fallos.delete(ip);
+  }
 
   return http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -131,6 +161,28 @@ function crearServidor({ archivoDatos } = {}) {
         if (origen && origen !== `http://${req.headers.host}` && origen !== `https://${req.headers.host}`) {
           throw new ErrorValidacion('Origen no permitido', 403);
         }
+      }
+
+      if (ruta === '/api/registros' && req.method === 'POST') {
+        const cuerpo = await leerCuerpo(req, MAX_FIRMA + 4096);
+        enviarJSON(res, 201, registros.agregar(cuerpo), extra);
+        return;
+      }
+      if (ruta === '/api/registros' && req.method === 'GET') {
+        exigirAdmin(req);
+        enviarJSON(res, 200, registros.listar(), extra);
+        return;
+      }
+      if (ruta === '/api/registros.csv' && req.method === 'GET') {
+        exigirAdmin(req);
+        res.writeHead(200, {
+          ...CABECERAS_SEGURIDAD,
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': 'attachment; filename="registros-campana.csv"',
+          'Cache-Control': 'no-store',
+        });
+        res.end(registros.csv());
+        return;
       }
 
       if (ruta === '/api/encuestas' && req.method === 'GET') {
@@ -179,8 +231,17 @@ function crearServidor({ archivoDatos } = {}) {
 if (require.main === module) {
   const puerto = Number(process.env.PORT) || 3000;
   const archivoDatos = process.env.DATA_FILE || path.join(__dirname, 'data', 'encuestas.json');
-  crearServidor({ archivoDatos }).listen(puerto, () => {
-    console.log(`App de votación en http://localhost:${puerto}`);
+  const archivoRegistros =
+    process.env.REGISTROS_FILE || path.join(__dirname, 'data', 'registros.json');
+  let claveAdmin = process.env.ADMIN_PASSWORD;
+  if (!claveAdmin) {
+    claveAdmin = crypto.randomBytes(9).toString('base64url');
+    console.log(`ADMIN_PASSWORD no definida. Contraseña temporal del panel: ${claveAdmin}`);
+  }
+  crearServidor({ archivoDatos, archivoRegistros, claveAdmin }).listen(puerto, () => {
+    console.log(`App en http://localhost:${puerto}`);
+    console.log(`Registro: http://localhost:${puerto}/#/registro`);
+    console.log(`Panel:    http://localhost:${puerto}/#/admin`);
   });
 }
 

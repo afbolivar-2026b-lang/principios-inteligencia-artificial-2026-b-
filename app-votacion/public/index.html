@@ -3,12 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Votaciones</title>
+  <title>Campaña</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="barra">
-    <a href="#/" class="marca">🗳️ Votaciones</a>
+    <a href="#/registro" class="marca">🗳️ Campaña</a>
+    <nav class="menu">
+      <a href="#/registro">Registro</a>
+      <a href="#/">Encuestas</a>
+      <a href="#/admin">Administrador</a>
+    </nav>
   </header>
 
   <main id="app" class="contenedor" aria-live="polite"></main>
@@ -51,6 +56,107 @@
       <div class="acciones">
         <button type="button" id="copiar" class="secundario">Copiar enlace</button>
         <button type="button" id="cerrar" class="peligro" hidden>Cerrar votación</button>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-registro">
+    <section class="tarjeta">
+      <h1>Registro de la campaña</h1>
+      <p class="meta">Los campos marcados con * son obligatorios.</p>
+      <form id="form-registro" novalidate>
+        <div class="rejilla">
+          <div>
+            <label for="r-nombre">Nombre *</label>
+            <input id="r-nombre" name="nombre" maxlength="60" autocomplete="given-name" required>
+          </div>
+          <div>
+            <label for="r-apellido">Apellido *</label>
+            <input id="r-apellido" name="apellido" maxlength="60" autocomplete="family-name" required>
+          </div>
+          <div>
+            <label for="r-cedula">Cédula *</label>
+            <input id="r-cedula" name="cedula" inputmode="numeric" maxlength="13" required
+                   placeholder="Solo números">
+          </div>
+          <div>
+            <label for="r-edad">Edad *</label>
+            <input id="r-edad" name="edad" type="number" min="18" max="120" inputmode="numeric" required>
+          </div>
+          <div>
+            <label for="r-telefono">Teléfono *</label>
+            <input id="r-telefono" name="telefono" type="tel" maxlength="15" autocomplete="tel" required
+                   placeholder="3001234567">
+          </div>
+          <div>
+            <label for="r-barrio">Barrio *</label>
+            <input id="r-barrio" name="barrio" maxlength="80" required>
+          </div>
+          <div>
+            <label for="r-comuna">Comuna *</label>
+            <input id="r-comuna" name="comuna" maxlength="40" required placeholder="Ej.: Comuna 5">
+          </div>
+        </div>
+
+        <label for="firma">Firma *</label>
+        <div class="firma-caja">
+          <canvas id="firma" width="600" height="200" aria-label="Espacio para firmar"></canvas>
+          <span class="firma-guia" id="firma-guia">Firme aquí con el dedo o el mouse</span>
+        </div>
+        <button type="button" id="borrar-firma" class="secundario pequeno">Borrar firma</button>
+
+        <label class="consentimiento">
+          <input type="checkbox" id="r-autorizacion" required>
+          <span>Autorizo de manera libre, previa y expresa el tratamiento de mis datos personales
+            para fines de la campaña, de acuerdo con la Ley 1581 de 2012. Sé que puedo
+            consultar, actualizar o pedir que se eliminen mis datos. *</span>
+        </label>
+
+        <p class="error" id="error-registro" role="alert"></p>
+        <button type="submit">Registrarme</button>
+      </form>
+    </section>
+  </template>
+
+  <template id="tpl-registro-ok">
+    <section class="tarjeta centrado">
+      <h1>¡Registro exitoso! ✅</h1>
+      <p id="gracias"></p>
+      <button type="button" id="otro-registro">Registrar otra persona</button>
+    </section>
+  </template>
+
+  <template id="tpl-admin">
+    <section class="tarjeta">
+      <h1>Base de datos de la campaña</h1>
+      <form id="form-login">
+        <label for="clave">Contraseña de administrador</label>
+        <div class="fila-opcion">
+          <input id="clave" type="password" autocomplete="current-password" required>
+          <button type="submit">Entrar</button>
+        </div>
+        <p class="error" id="error-login" role="alert"></p>
+      </form>
+      <div id="panel" hidden>
+        <div class="acciones">
+          <input id="buscar" type="search" placeholder="Buscar por nombre, cédula, barrio o comuna">
+        </div>
+        <p class="meta" id="resumen"></p>
+        <div class="acciones">
+          <button type="button" id="exportar">Descargar Excel (CSV)</button>
+          <button type="button" id="salir" class="secundario">Salir</button>
+        </div>
+        <div class="tabla-scroll">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Nombre</th><th>Cédula</th><th>Edad</th><th>Teléfono</th>
+                <th>Barrio</th><th>Comuna</th><th>Firma</th><th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="filas"></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </template>

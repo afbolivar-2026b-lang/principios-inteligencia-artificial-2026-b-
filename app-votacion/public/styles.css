@@ -41,7 +41,11 @@ body {
   background: var(--superficie);
   border-bottom: 1px solid var(--borde);
   padding: 12px 16px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
 }
+.menu { display: flex; gap: 4px; flex-wrap: wrap; }
+.menu a { color: var(--tenue); text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+.menu a.activo { color: var(--primario); background: var(--barra); font-weight: 600; }
 .marca { font-weight: 700; color: var(--texto); text-decoration: none; font-size: 1.1rem; }
 
 .contenedor { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
@@ -60,7 +64,8 @@ h2 { font-size: 1.1rem; }
 label, legend { font-weight: 600; display: block; margin-bottom: 6px; }
 fieldset { border: 0; padding: 0; margin: 16px 0; }
 
-input[type="text"], input:not([type]) {
+input[type="text"], input:not([type]), input[type="number"], input[type="tel"],
+input[type="password"], input[type="search"] {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--borde);
@@ -122,3 +127,23 @@ button.icono { background: transparent; color: var(--tenue); border-color: var(-
   border: 1px dashed var(--primario); border-radius: 8px;
   padding: 12px; margin-bottom: 16px; font-size: .95rem; word-break: break-all;
 }
+
+.rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 16px; margin-bottom: 16px; }
+
+.firma-caja { position: relative; border: 2px dashed var(--borde); border-radius: 8px; background: #fff; overflow: hidden; }
+.firma-caja canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+.firma-guia { position: absolute; inset: 0; display: grid; place-items: center; color: #9aa0b4; pointer-events: none; }
+button.pequeno { padding: 6px 12px; margin-top: 8px; font-size: .9rem; }
+
+.consentimiento { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; margin: 16px 0 0; font-size: .92rem; color: var(--tenue); }
+.consentimiento input { margin-top: 4px; flex: none; width: 18px; height: 18px; }
+
+.centrado { text-align: center; }
+
+.tabla-scroll { overflow-x: auto; margin-top: 12px; }
+.tabla { border-collapse: collapse; width: 100%; font-size: .9rem; }
+.tabla th, .tabla td { text-align: left; padding: 8px; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+.tabla img { height: 36px; background: #fff; border-radius: 4px; display: block; }
+.acciones input { flex: 1; min-width: 200px; }
+.firma-guia[hidden] { display: none; }
+.contenedor.ancho { max-width: 1200px; }
