@@ -626,6 +626,24 @@ function vistaLogin() {
   ponerNombre(raiz);
   const clave = document.getElementById('clave');
   clave.focus();
+  if (config.google) {
+    document.getElementById('separador-google').hidden = false;
+    const g = document.getElementById('entrar-google');
+    g.hidden = false;
+    if (/OpitaCampanaApp/.test(navigator.userAgent)) g.href = '/auth/google?app=1';
+  }
+  const motivos = {
+    'correo-no-autorizado': 'Esa cuenta de Google no está autorizada. Pida que la agreguen en Ajustes.',
+    'google-no-configurado': 'El inicio con Google todavía no está configurado en el servidor.',
+    estado: 'El inicio de sesión expiró. Intente de nuevo.',
+    'enlace-vencido': 'El enlace de acceso venció. Intente de nuevo.',
+    google: 'Google no permitió el inicio de sesión. Intente de nuevo.',
+  };
+  const acceso = new URLSearchParams(location.search).get('acceso');
+  if (acceso) {
+    document.getElementById('error-login').textContent = motivos[acceso] || 'No se pudo entrar.';
+    history.replaceState(null, '', `/${location.hash}`);
+  }
   document.getElementById('form-login').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const error = document.getElementById('error-login');
@@ -687,6 +705,33 @@ async function vistaPanelInicio() {
   const fEdad = document.getElementById('f-edad');
   const limpiar = document.getElementById('f-limpiar');
   let opcionesCargadas = false;
+
+  // App Android: descarga, QR y aviso de versión nueva
+  api('/api/app/version').then((v) => {
+    const caja = document.getElementById('app-android');
+    if (!v.disponible || !caja) return;
+    const enlace = `${urlPublica().replace(/\/$/, '')}${v.apk}`;
+    const enApp = /OpitaCampanaApp\/(\d+)/.exec(navigator.userAgent);
+    const kb = v.bytes ? ` · ${Math.max(1, Math.round(v.bytes / 1024))} KB` : '';
+    document.getElementById('app-detalle').textContent = enApp
+      ? (Number(enApp[1]) < v.versionCode
+        ? `Hay una versión nueva (${v.versionName}). ${v.notas || ''}`
+        : `Ya está usando la app, versión ${v.versionName}. Le avisaremos cuando haya una nueva.`)
+      : `Versión ${v.versionName}${kb}. Formulario, encuestas y panel en el celular, con su propio ícono. Avisa con una notificación cuando hay una versión nueva.`;
+    const boton = document.getElementById('app-descargar');
+    boton.href = v.apk;
+    boton.setAttribute('download', 'campana.apk');
+    const lienzo = document.getElementById('app-qr');
+    const c = lienzo.getContext('2d');
+    c.fillStyle = '#FFFFFF';
+    c.fillRect(0, 0, 300, 300);
+    dibujarQR(c, matrizQR(enlace), 0, 0, 300);
+    document.getElementById('app-como').addEventListener('click', () => {
+      const pasos = document.getElementById('app-pasos');
+      pasos.hidden = !pasos.hidden;
+    });
+    caja.hidden = false;
+  }).catch(() => {});
 
   // Descargas con los filtros puestos
   function actualizarDescargas() {
@@ -1515,6 +1560,13 @@ function vistaPanelAjustes() {
   document.getElementById('a-eslogan').value = config.eslogan;
   document.getElementById('a-urlPublica').value = config.urlPublica || '';
   document.getElementById('a-candidato').value = config.candidato || '';
+  api('/api/ajustes').then((a) => {
+    document.getElementById('a-correosEquipo').value = (a.correosEquipo || []).join(', ');
+  }).catch(() => {});
+  if (!config.google) {
+    document.getElementById('nota-google').textContent =
+      'Para activar "Entrar con Google", el servidor necesita GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET (ver README).';
+  }
   const vistaFoto = document.getElementById('a-foto-vista');
   const quitarFoto = document.getElementById('a-foto-quitar');
   const pintarFoto = () => { pintarFotoCandidato(vistaFoto); quitarFoto.hidden = !config.foto; };
@@ -1580,6 +1632,7 @@ function vistaPanelAjustes() {
           eslogan: document.getElementById('a-eslogan').value,
           urlPublica: document.getElementById('a-urlPublica').value,
           candidato: document.getElementById('a-candidato').value,
+          correosEquipo: document.getElementById('a-correosEquipo').value,
         }),
       });
       config = { ...config, ...nuevos };

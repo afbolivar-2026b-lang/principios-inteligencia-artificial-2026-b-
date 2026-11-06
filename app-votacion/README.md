@@ -25,6 +25,7 @@ npm test           # ejecuta las pruebas
 | `ADMIN_PASSWORD`  | (aleatoria)            | Contraseña del panel. Si falta, se genera una temporal y se muestra en la consola |
 | `NOMBRE_CAMPANA`  | `Mi Campaña`           | Nombre inicial de la campaña (después se cambia en Ajustes) |
 | `AJUSTES_FILE`    | `data/ajustes.json`    | Archivo de los ajustes (diseño, nombre, eslogan, enlace) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | (vacío) | Activan "Entrar con Google" |
 | `PORT`            | `3000`                 | Puerto del servidor                      |
 | `REGISTROS_FILE`  | `data/registros.json`  | Archivo de los registros                 |
 | `DATA_FILE`       | `data/encuestas.json`  | Archivo de las encuestas                 |
@@ -169,3 +170,44 @@ se publica en internet:
 - Tenga una política de tratamiento de datos y atienda solicitudes de
   consulta, corrección o eliminación, como exige la Ley 1581 de 2012. El botón
   de eliminar del panel sirve para atender las solicitudes de supresión.
+
+## App Android (APK)
+
+En el **Inicio** del panel aparece la franja *Aplicación Android* con el botón
+**Descargar APK**, un código QR para bajarla al celular y los pasos para instalarla.
+
+- La APK abre la app de la campaña completa (registro, encuestas y panel),
+  descarga Excel, PDF y QR, y permite subir fotos.
+- La primera vez pide la dirección de la página (debe empezar por `https://`).
+- **Avisos de actualización:** cada 6 horas la app consulta `/api/app/version`; si
+  hay una versión nueva, muestra una notificación y, al abrirla, un aviso para
+  descargarla.
+
+Para publicar una versión nueva:
+
+```bash
+export ANDROID_HOME=/ruta/al/android-sdk   # build-tools 34 y platforms android-34
+android/construir.sh --version-code 2 --version-name 1.1 \
+  --nombre "Nombre de la campaña" --url https://www.sucampana.com \
+  --notas "Qué cambió en esta versión"
+```
+
+El script deja `public/descargas/campana.apk` y `version.json`; al subirlos al
+servidor, todas las apps instaladas reciben el aviso.
+
+> **Importante:** la firma de la app está en `android/firma/` (no se sube a
+> GitHub). Guarde una copia segura: sin ella no se pueden publicar
+> actualizaciones que se instalen encima de la app anterior.
+
+## Entrar con Google
+
+1. En [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   cree un **ID de cliente de OAuth** de tipo *Aplicación web*.
+2. En *URI de redireccionamiento autorizados* agregue
+   `https://SU-DOMINIO/auth/google/callback`.
+3. Inicie el servidor con `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
+4. En **Panel → Ajustes → Correos de Google del equipo**, escriba los correos que
+   pueden entrar. Cualquier otro correo es rechazado.
+
+En la app Android, "Entrar con Google" se abre en el navegador (Google no lo
+permite dentro de apps) y vuelve a la app con un enlace de un solo uso.

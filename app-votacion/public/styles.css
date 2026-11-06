@@ -1093,6 +1093,31 @@ textarea:focus { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3p
 .qr-rapido canvas { width: 132px; height: 132px; flex: none; border-radius: 10px; border: 1px solid var(--linea); background: #fff; padding: 6px; }
 .qr-acciones { margin-top: 0; }
 .qr-acciones .boton { flex: 1; }
+.app-android {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: center;
+  margin-bottom: 20px; padding: 28px 32px;
+  background: radial-gradient(80% 120% at 100% 0, rgba(201, 164, 92, .22), transparent 60%), var(--cartel);
+  color: var(--sobre-cartel); border-radius: var(--r-l);
+}
+.app-android .sobretitulo { color: var(--oro, var(--sobre-cartel)); opacity: 1; }
+.app-android h2 { font-size: clamp(24px, 2.6vw, 32px); font-weight: 450; color: inherit; }
+.app-android p { margin: 8px 0 0; max-width: 56ch; opacity: .82; }
+.app-android .acciones { margin-top: 18px; }
+.boton-borde-claro { background: transparent; color: inherit; border-color: rgba(244, 239, 230, .45); }
+.boton-borde-claro:hover { background: rgba(255, 255, 255, .08); }
+[data-tema="elegante"] .app-android .boton-acento { background: #C9A45C; border-color: #C9A45C; color: #0E1B2C; }
+.app-pasos { margin: 16px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14px; opacity: .9; }
+.app-android-qr { display: grid; justify-items: center; gap: 8px; font-size: 12px; opacity: .85; }
+.app-android-qr canvas { width: 132px; height: 132px; background: #fff; border-radius: 12px; padding: 8px; }
+.separador { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--tenue); font-size: 13px; }
+.separador::before, .separador::after { content: ""; flex: 1; height: 1px; background: var(--linea); }
+.boton-google { background: #fff; color: #1F1F1F; border-color: #DADCE0; }
+.boton-google:hover { background: #F7F8F8; }
+@media (max-width: 700px) {
+  .app-android { grid-template-columns: 1fr; padding: 22px 18px; }
+  .app-android-qr { justify-items: start; }
+}
 .encuesta-destacada h3 { font-size: 18px; line-height: 1.3; margin: 0 0 16px; }
 
 @media (max-width: 1180px) {

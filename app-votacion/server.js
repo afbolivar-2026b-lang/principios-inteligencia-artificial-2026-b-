@@ -13,6 +13,7 @@ const crypto = require('node:crypto');
 const { crearStore, ErrorValidacion } = require('./store');
 const { crearRegistros, MAX_FIRMA } = require('./registros');
 const { crearAjustes } = require('./ajustes');
+const { crearGoogle } = require('./google');
 const MARCA = require('./marca');
 const { crearExcelTablero } = require('./exportar/excel');
 const { crearReportePDF } = require('./exportar/pdf');
@@ -29,6 +30,8 @@ const TIPOS = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
+  '.apk': 'application/vnd.android.package-archive',
+  '.json': 'application/json; charset=utf-8',
   '.woff2': 'font/woff2',
   '.txt': 'text/plain; charset=utf-8',
 };
@@ -130,7 +133,19 @@ function hashClave(v) {
   return crypto.createHash('sha256').update(String(v)).digest();
 }
 
-function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAdmin, nombreCampana } = {}) {
+function leerVersionApp() {
+  try {
+    const v = JSON.parse(fs.readFileSync(path.join(PUBLICO, 'descargas', 'version.json'), 'utf8'));
+    const existe = fs.existsSync(path.join(PUBLICO, 'descargas', 'campana.apk'));
+    return { disponible: existe, ...v, apk: '/descargas/campana.apk' };
+  } catch {
+    return { disponible: false };
+  }
+}
+
+function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAdmin, nombreCampana, google: opcionesGoogle } = {}) {
+  const google = crearGoogle(opcionesGoogle);
+  const canjes = new Map(); // token de un solo uso (app Android) -> vencimiento
   const store = crearStore(archivoDatos);
   const registros = crearRegistros(archivoRegistros);
   const ajustes = crearAjustes(archivoAjustes, { nombre: nombreCampana });
@@ -138,6 +153,67 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
 
   // Sesiones del panel: token aleatorio -> vencimiento.
   const sesiones = new Map();
+
+  function crearSesion() {
+    const token = crypto.randomBytes(32).toString('base64url');
+    sesiones.set(token, Date.now() + DURACION_SESION);
+    return `sesion=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${DURACION_SESION / 1000}`;
+  }
+
+  function urlBase(req) {
+    const publica = ajustes.obtener().urlPublica;
+    if (publica) return new URL(publica).origin;
+    const proto = req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+    return `${proto}://${req.headers.host}`;
+  }
+
+  function redirigir(res, destino, cookies = []) {
+    res.writeHead(302, { ...CABECERAS_SEGURIDAD, Location: destino, 'Cache-Control': 'no-store', ...(cookies.length ? { 'Set-Cookie': cookies } : {}) });
+    res.end();
+  }
+
+  // Rutas de "Entrar con Google". Devuelve true si atendió la petición.
+  async function rutasGoogle(req, res, url, ruta, cookies) {
+    if (!ruta.startsWith('/auth/') || req.method !== 'GET') return false;
+    const fallo = (motivo) => redirigir(res, `/?acceso=${encodeURIComponent(motivo)}#/panel`,
+      ['oauth_estado=; Path=/auth; HttpOnly; SameSite=Lax; Max-Age=0']);
+
+    if (ruta === '/auth/google') {
+      if (!google.configurado) { fallo('google-no-configurado'); return true; }
+      const estado = `${crypto.randomBytes(24).toString('base64url')}${url.searchParams.get('app') ? '.app' : ''}`;
+      redirigir(res, google.urlAutorizacion(`${urlBase(req)}/auth/google/callback`, estado),
+        [`oauth_estado=${estado}; Path=/auth; HttpOnly; SameSite=Lax; Max-Age=600`]);
+      return true;
+    }
+    if (ruta === '/auth/google/callback') {
+      const estado = url.searchParams.get('state') || '';
+      if (!google.configurado || !cookies.oauth_estado || estado !== cookies.oauth_estado) { fallo('estado'); return true; }
+      try {
+        const { correo } = await google.canjear(url.searchParams.get('code') || '', `${urlBase(req)}/auth/google/callback`);
+        if (!ajustes.obtener().correosEquipo.includes(correo)) { fallo('correo-no-autorizado'); return true; }
+        const borrarEstado = 'oauth_estado=; Path=/auth; HttpOnly; SameSite=Lax; Max-Age=0';
+        if (estado.endsWith('.app')) {
+          const t = crypto.randomBytes(32).toString('base64url');
+          canjes.set(t, Date.now() + 2 * 60 * 1000);
+          redirigir(res, `opitacampana://sesion?t=${t}`, [borrarEstado]);
+        } else {
+          redirigir(res, '/#/panel', [crearSesion(), borrarEstado]);
+        }
+      } catch {
+        fallo('google');
+      }
+      return true;
+    }
+    if (ruta === '/auth/canje') {
+      const t = url.searchParams.get('t') || '';
+      const vence = canjes.get(t);
+      canjes.delete(t);
+      if (!vence || vence < Date.now()) { fallo('enlace-vencido'); return true; }
+      redirigir(res, '/#/panel', [crearSesion()]);
+      return true;
+    }
+    return false;
+  }
 
   // Bloqueo simple contra fuerza bruta: 10 intentos fallidos por IP cada 15 min.
   const fallos = new Map();
@@ -204,6 +280,8 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
     }
 
     try {
+      if (await rutasGoogle(req, res, url, ruta, cookies)) return;
+
       if (!ruta.startsWith('/api/')) {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           enviarJSON(res, 405, { error: 'Método no permitido' });
@@ -223,7 +301,17 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
 
       // ---- Configuración y sesión ----
       if (ruta === '/api/config' && req.method === 'GET') {
-        enviarJSON(res, 200, { ...ajustes.obtener(), totalRegistros: registros.total(), marca: MARCA }, extra);
+        const { correosEquipo, ...publicos } = ajustes.obtener();
+        enviarJSON(res, 200, { ...publicos, totalRegistros: registros.total(), marca: MARCA, google: google.configurado }, extra);
+        return;
+      }
+      if (ruta === '/api/ajustes' && req.method === 'GET') {
+        exigirAdmin(req);
+        enviarJSON(res, 200, ajustes.obtener(), extra);
+        return;
+      }
+      if (ruta === '/api/app/version' && req.method === 'GET') {
+        enviarJSON(res, 200, leerVersionApp(), extra);
         return;
       }
       if (ruta === '/api/ajustes' && req.method === 'PUT') {
@@ -424,7 +512,8 @@ if (require.main === module) {
   }
   const nombreCampana = process.env.NOMBRE_CAMPANA;
   const archivoAjustes = process.env.AJUSTES_FILE || path.join(__dirname, 'data', 'ajustes.json');
-  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAdmin, nombreCampana }).listen(puerto, () => {
+  const google = { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET };
+  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAdmin, nombreCampana, google }).listen(puerto, () => {
     console.log(`Formulario público: http://localhost:${puerto}/`);
     console.log(`Panel del equipo:   http://localhost:${puerto}/#/panel`);
   });

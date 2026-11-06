@@ -186,7 +186,7 @@ test('sesión con cookie, estadísticas del panel y eliminación', async () => {
 
     // La configuración pública no expone datos personales
     const cfg = await (await fetch(`${url}/api/config`)).json();
-    assert.deepEqual(Object.keys(cfg).sort(), ['candidato', 'eslogan', 'foto', 'marca', 'nombre', 'tema', 'totalRegistros', 'urlPublica']);
+    assert.deepEqual(Object.keys(cfg).sort(), ['candidato', 'eslogan', 'foto', 'google', 'marca', 'nombre', 'tema', 'totalRegistros', 'urlPublica']);
     assert.equal(cfg.marca.empresa, 'Opita Digital');
   } finally {
     otro.close();
@@ -257,7 +257,7 @@ test('ajustes: diseño, nombre, eslogan y enlace público', async () => {
     assert.equal((await put({ nombre: '' })).status, 400);
 
     const ok = await (await put({ tema: 'limpio', nombre: ' Neiva  Primero ', eslogan: 'Juntos sí podemos.', urlPublica: 'https://neivaprimero.co/registro/' })).json();
-    assert.deepEqual(ok, { nombre: 'Neiva Primero', eslogan: 'Juntos sí podemos.', tema: 'limpio', urlPublica: 'https://neivaprimero.co/registro', candidato: '', foto: '' });
+    assert.deepEqual(ok, { nombre: 'Neiva Primero', eslogan: 'Juntos sí podemos.', tema: 'limpio', urlPublica: 'https://neivaprimero.co/registro', candidato: '', foto: '', correosEquipo: [] });
 
     // Foto del candidato: solo imágenes reales
     const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -307,5 +307,102 @@ test('descargas: Excel con tablero y reporte PDF (solo el equipo)', async () => 
     assert.ok(pdf.toString('latin1').trimEnd().endsWith('%%EOF'));
   } finally {
     otro.close();
+  }
+});
+
+test('entrar con Google: solo correos autorizados, web y app Android', async () => {
+  const http = require('node:http');
+  // Google de mentira: responde un id_token con el correo que se le indique
+  let correoGoogle = 'equipo@gmail.com';
+  const falsoGoogle = http.createServer((req, res) => {
+    let cuerpo = '';
+    req.on('data', (c) => { cuerpo += c; });
+    req.on('end', () => {
+      const q = new URLSearchParams(cuerpo);
+      assert.equal(q.get('client_secret'), 'secreto');
+      const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+      const idToken = `${b64({ alg: 'RS256' })}.${b64({
+        iss: 'https://accounts.google.com', aud: 'cliente-123', email: correoGoogle, email_verified: true,
+        exp: Math.floor(Date.now() / 1000) + 300,
+      })}.firma`;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ id_token: idToken }));
+    });
+  });
+  await new Promise((r) => falsoGoogle.listen(0, r));
+  const otro = crearServidor({
+    claveAdmin: CLAVE,
+    google: { clientId: 'cliente-123', clientSecret: 'secreto', tokenUrl: `http://127.0.0.1:${falsoGoogle.address().port}/token` },
+  });
+  await new Promise((r) => otro.listen(0, r));
+  const url = `http://127.0.0.1:${otro.address().port}`;
+  const sinSeguir = { redirect: 'manual' };
+  try {
+    const cfg = await (await fetch(`${url}/api/config`)).json();
+    assert.equal(cfg.google, true);
+    assert.equal(cfg.correosEquipo, undefined, 'los correos del equipo no son públicos');
+
+    await fetch(`${url}/api/ajustes`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${CLAVE}` },
+      body: JSON.stringify({ correosEquipo: 'Equipo@Gmail.com, otro@campana.co' }),
+    });
+    const aj = await (await fetch(`${url}/api/ajustes`, { headers: { Authorization: `Bearer ${CLAVE}` } })).json();
+    assert.deepEqual(aj.correosEquipo, ['equipo@gmail.com', 'otro@campana.co']);
+    assert.equal((await fetch(`${url}/api/ajustes`)).status, 401);
+
+    // 1. Ir a Google
+    const ir = await fetch(`${url}/auth/google`, sinSeguir);
+    assert.equal(ir.status, 302);
+    const destino = new URL(ir.headers.get('location'));
+    assert.equal(destino.host, 'accounts.google.com');
+    assert.equal(destino.searchParams.get('client_id'), 'cliente-123');
+    const estado = destino.searchParams.get('state');
+    const cookieEstado = ir.headers.getSetCookie().find((c) => c.startsWith('oauth_estado=')).split(';')[0];
+
+    // Estado falso: rechazado
+    const malo = await fetch(`${url}/auth/google/callback?code=x&state=otro`, { ...sinSeguir, headers: { Cookie: cookieEstado } });
+    assert.match(malo.headers.get('location'), /acceso=estado/);
+
+    // 2. Volver de Google con un correo autorizado -> sesión del panel
+    const vuelta = await fetch(`${url}/auth/google/callback?code=abc&state=${estado}`, { ...sinSeguir, headers: { Cookie: cookieEstado } });
+    assert.equal(vuelta.headers.get('location'), '/#/panel');
+    const sesion = vuelta.headers.getSetCookie().find((c) => c.startsWith('sesion=')).split(';')[0];
+    assert.equal((await fetch(`${url}/api/panel`, { headers: { Cookie: sesion } })).status, 200);
+
+    // Correo no autorizado
+    correoGoogle = 'intruso@gmail.com';
+    const ir2 = await fetch(`${url}/auth/google`, sinSeguir);
+    const e2 = new URL(ir2.headers.get('location')).searchParams.get('state');
+    const c2 = ir2.headers.getSetCookie()[0].split(';')[0];
+    const no = await fetch(`${url}/auth/google/callback?code=abc&state=${e2}`, { ...sinSeguir, headers: { Cookie: c2 } });
+    assert.match(no.headers.get('location'), /acceso=correo-no-autorizado/);
+
+    // 3. Desde la app Android: vuelve a la app con un token de un solo uso
+    correoGoogle = 'otro@campana.co';
+    const ir3 = await fetch(`${url}/auth/google?app=1`, sinSeguir);
+    const e3 = new URL(ir3.headers.get('location')).searchParams.get('state');
+    assert.ok(e3.endsWith('.app'));
+    const c3 = ir3.headers.getSetCookie()[0].split(';')[0];
+    const app = await fetch(`${url}/auth/google/callback?code=abc&state=${e3}`, { ...sinSeguir, headers: { Cookie: c3 } });
+    const enlace = new URL(app.headers.get('location'));
+    assert.equal(enlace.protocol, 'opitacampana:');
+    const t = enlace.searchParams.get('t');
+    const canje = await fetch(`${url}/auth/canje?t=${t}`, sinSeguir);
+    assert.equal(canje.headers.get('location'), '/#/panel');
+    assert.ok(canje.headers.getSetCookie().some((c) => c.startsWith('sesion=')));
+    const repetido = await fetch(`${url}/auth/canje?t=${t}`, sinSeguir);
+    assert.match(repetido.headers.get('location'), /enlace-vencido/, 'el token sirve una sola vez');
+
+    // Versión de la app Android
+    const v = await (await fetch(`${url}/api/app/version`)).json();
+    assert.equal(typeof v.disponible, 'boolean');
+    if (v.disponible) {
+      assert.ok(v.versionCode >= 1);
+      const apk = await fetch(`${url}${v.apk}`);
+      assert.equal(apk.headers.get('content-type'), 'application/vnd.android.package-archive');
+    }
+  } finally {
+    otro.close();
+    falsoGoogle.close();
   }
 });
