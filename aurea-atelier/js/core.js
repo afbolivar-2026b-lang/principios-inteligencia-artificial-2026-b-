@@ -446,7 +446,7 @@ function renderLogin() {
       <label class="field">Contraseña<input id="lg-pass" type="password" autocomplete="current-password" required></label>
       <button class="btn primary" type="submit" style="justify-content:center;padding:12px">${icon('lock')} Ingresar</button>
       <div id="lg-err" class="muted" role="alert"></div>
-      <div class="hint">Demostración · Administradora: <b>admin</b> / <b>Aurea2026*</b> · Secretaria: <b>secretaria</b> / <b>Secre2026*</b><br>Cambie estas claves en <i>Usuarios y roles</i> antes de usar el sistema con datos reales.</div>
+      <div class="hint" ${window.AUREA_NUBE?.activa ? 'hidden' : ''}>Demostración · Administradora: <b>admin</b> / <b>Aurea2026*</b> · Secretaria: <b>secretaria</b> / <b>Secre2026*</b><br>Cambie estas claves en <i>Usuarios y roles</i> antes de usar el sistema con datos reales.</div>
     </form></section></div>`;
   $('#login-form').onsubmit = async (e) => {
     e.preventDefault();
@@ -485,6 +485,8 @@ async function boot() {
   const t = store.get('aurea_theme'); if (t) document.documentElement.dataset.theme = t;
   $('#app').innerHTML = `<div style="display:grid;place-items:center;height:100%">${logoSVG(72)}</div>`;
   await DB.init();
+  // Con la nube activa, primero se entra con la cuenta del taller y se traen los datos; esa pantalla vuelve a llamar a boot().
+  if (window.AUREA_NUBE && !(await AUREA_NUBE.conectar())) return;
   if (Auth.restore()) { const h = (location.hash || '').slice(1); State.route = Views[h] ? h : 'panel'; render(); }
   else renderLogin();
 }

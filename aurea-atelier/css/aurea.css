@@ -587,3 +587,10 @@ td.num, th.num { text-align: right; }
 .mq-vit .mq-hint, .mq-mini .mq-hint { display: none; }
 @media (max-width: 600px) { .mq-hint { display: none; } }
 .v3d-badge.mq-badge { right: auto; left: 18px; }
+/* Estado de la nube en la barra superior */
+.nube-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 5px 11px; margin-right: 6px; white-space: nowrap; }
+.nube-pill svg { width: 16px; height: 16px; }
+.nube-pill.guardado { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+.nube-pill.guardando { color: var(--gold-soft); }
+.nube-pill.error, .nube-pill.sin-conexión { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+@media (max-width: 600px) { .nube-pill span { display: none; } }

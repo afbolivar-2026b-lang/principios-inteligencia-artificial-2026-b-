@@ -2,11 +2,11 @@
 
 /* ---------------- Estado del conjunto ---------------- */
 const MQ_SLOT = { top: 'Arriba', bottom: 'Abajo', full: 'Enterizo', head: 'Cabeza', face: 'Rostro' };
-const MQ = { outfit: { top: 'p1', bottom: 'p5' }, cant: 1 };
-try { const s = JSON.parse(store.get('aurea_mq') || 'null'); if (s && s.outfit) { MQ.outfit = s.outfit; MQ.cant = s.cant || 1; } } catch { /* estado guardado dañado: se usa el conjunto inicial */ }
+const MQ = { outfit: { top: 'p1', bottom: 'p5' }, cant: 1, cuerpo: 'hombre' };
+try { const s = JSON.parse(store.get('aurea_mq') || 'null'); if (s && s.outfit) { MQ.outfit = s.outfit; MQ.cant = s.cant || 1; MQ.cuerpo = s.cuerpo === 'mujer' ? 'mujer' : 'hombre'; } } catch { /* estado guardado dañado: se usa el conjunto inicial */ }
 /* Las vitrinas abiertas escuchan los cambios para quedar iguales al probador. */
 const MQ_LISTEN = new Set();
-const mqSave = () => { store.set('aurea_mq', JSON.stringify({ outfit: MQ.outfit, cant: MQ.cant })); MQ_LISTEN.forEach(f => f()); };
+const mqSave = () => { store.set('aurea_mq', JSON.stringify({ outfit: MQ.outfit, cant: MQ.cant, cuerpo: MQ.cuerpo })); MQ_LISTEN.forEach(f => f()); };
 const MQ_SUGERIDOS = [
   ['Dotación industrial', { top: 'p1', bottom: 'p5', head: 'p7' }],
   ['Alta visibilidad', { top: 'p2', bottom: 'p6', head: 'p7', face: 'p8' }],
@@ -38,15 +38,19 @@ const mqPrecio = (outfit) => mqItems(outfit).reduce((s, p) => s + p.precioDetal,
 
 /* ---------------- Fotos del maniquí vestido ---------------- */
 // Una foto por conjunto (prendas en el orden arriba-abajo-gorra-tapabocas); "-b" es la misma vista de espaldas.
-const MQ_FOTOS = new Set(['p1-p5', 'p1-p6', 'p2-p5', 'p2-p6', 'p3-p5', 'p3-p6', 'p4-p5', 'p4-p6', 'p10-p5', 'p10-p6', 'p9',
-  'p1-p5-p7', 'p1-p6-p7', 'p2-p5-p7', 'p2-p6-p7', 'p9-p7', 'p1-p5-p8', 'p2-p6-p8', 'p10-p5-p8', 'p10-p6-p8', 'p1-p5-p7-p8', 'p2-p6-p7-p8']);
-const MQ_ESPALDA = new Set(['p1-p5', 'p1-p6', 'p2-p5', 'p2-p6', 'p3-p5', 'p3-p6', 'p4-p5', 'p4-p6', 'p10-p5', 'p10-p6', 'p9']);
+const MQ_BASES = ['p1-p5', 'p1-p6', 'p2-p5', 'p2-p6', 'p3-p5', 'p3-p6', 'p4-p5', 'p4-p6', 'p10-p5', 'p10-p6', 'p9'];
+/* Dos maniquíes, hombre y mujer, cada uno con sus fotos; todos los conjuntos tienen foto de espaldas. */
+const MQ_CUERPOS = {
+  hombre: { nombre: 'Hombre', dir: 'img/maniqui', fotos: new Set([...MQ_BASES, 'p1-p5-p7', 'p1-p6-p7', 'p2-p5-p7', 'p2-p6-p7', 'p9-p7', 'p1-p5-p8', 'p2-p6-p8', 'p10-p5-p8', 'p10-p6-p8', 'p1-p5-p7-p8', 'p2-p6-p7-p8']) },
+  mujer: { nombre: 'Mujer', dir: 'img/maniqui/mujer', fotos: new Set([...MQ_BASES, 'p1-p5-p7', 'p9-p7', 'p10-p5-p8', 'p2-p6-p7-p8']) }
+};
+const MQ_ESPALDA = new Set(MQ_BASES);
 const MQ_MUESTRA = { top: 'p3', bottom: 'p5' };
-const mqSrc = (k) => `img/maniqui/${k}.jpg`;
 /* Elige la foto que corresponde al conjunto; completa con una prenda de muestra si falta arriba o abajo. */
-function mqFoto(outfit) {
+function mqFoto(outfit, cuerpo = MQ.cuerpo) {
+  const C = MQ_CUERPOS[cuerpo] || MQ_CUERPOS.hombre, src = (k) => `${C.dir}/${k}.jpg`;
   const o = outfit || {}, muestra = [];
-  if (!['full', 'top', 'bottom', 'head', 'face'].some(s => o[s])) return { front: mqSrc('vacio'), back: null, muestra, faltan: [] };
+  if (!['full', 'top', 'bottom', 'head', 'face'].some(s => o[s])) return { front: src('vacio'), back: null, muestra, faltan: [] };
   let base;
   if (o.full) base = [o.full];
   else {
@@ -58,10 +62,10 @@ function mqFoto(outfit) {
     base = [top, bottom];
   }
   const key = base.join('-'), acc = [o.head, o.face].filter(Boolean);
-  if (!MQ_FOTOS.has(key)) return { front: null, back: null, muestra, faltan: [] };
+  if (!C.fotos.has(key)) return { front: null, back: null, muestra, faltan: [] };
   const opciones = [[...base, ...acc], ...acc.map(a => [...base, a]), base];
-  const elegida = opciones.find(c => MQ_FOTOS.has(c.join('-')));
-  return { front: mqSrc(elegida.join('-')), back: MQ_ESPALDA.has(key) ? mqSrc(key + '-b') : null, muestra, faltan: acc.filter(a => !elegida.includes(a)) };
+  const elegida = opciones.find(c => C.fotos.has(c.join('-')));
+  return { front: src(elegida.join('-')), back: MQ_ESPALDA.has(key) ? src(key + '-b') : null, muestra, faltan: acc.filter(a => !elegida.includes(a)) };
 }
 const MQ_VISTAS = { completo: [1, 50, 50], torso: [1.8, 50, 28], piernas: [1.6, 50, 86], cabeza: [2.6, 50, 3] };
 
@@ -90,7 +94,9 @@ function mqStage(box, { outfit = MQ.outfit, onChange } = {}) {
     next.src = src;
     return loaded;
   };
+  let cuerpoPintado = null;
   const paint = (vestir) => {
+    cuerpoPintado = MQ.cuerpo;
     const f = mqFoto(ctl.outfit);
     if (lado === 'espalda' && !f.back) lado = 'frente';
     box.classList.toggle('sin-foto', !f.front);
@@ -124,6 +130,9 @@ function mqStage(box, { outfit = MQ.outfit, onChange } = {}) {
   ctl.zoom = (f) => { z[0] = Math.max(1, Math.min(4, z[0] * f)); applyZoom(); };
   ctl.spin = () => turn();
   ctl.isAlive = () => box.isConnected;
+  // Al cambiar de maniquí (hombre o mujer) todas las vitrinas abiertas se actualizan.
+  const alCambiarCuerpo = () => { if (!ctl.isAlive()) return MQ_LISTEN.delete(alCambiarCuerpo); if (cuerpoPintado !== MQ.cuerpo) paint(true); };
+  MQ_LISTEN.add(alCambiarCuerpo);
   ctl.waitIdle = () => loaded;
   ctl.refresh = () => {};
   /* Foto del conjunto, siempre de frente y de cuerpo entero, para la cotización o para enviar. */
@@ -155,6 +164,7 @@ function mqStage(box, { outfit = MQ.outfit, onChange } = {}) {
 /* ---------------- Interfaz del probador ---------------- */
 function mqCtrlHTML() {
   return `<div class="mq-ctrl">
+    <div class="seg mq-cuerpo" aria-label="Maniquí">${Object.entries(MQ_CUERPOS).map(([k, c]) => `<button data-mqcu="${k}" class="${k === MQ.cuerpo ? 'on' : ''}">${c.nombre}</button>`).join('')}</div>
     <div class="seg mq-vistas">${[['completo', 'Completo'], ['torso', 'Torso'], ['piernas', 'Piernas'], ['cabeza', 'Cabeza']].map(([k, l]) => `<button data-mqv="${k}" class="${k === 'completo' ? 'on' : ''}">${l}</button>`).join('')}</div>
     <span class="mq-ctrl-r"><button class="btn sm" data-mqrot aria-label="Darle la vuelta al maniquí">${icon('rotr')} Girar</button>
     <button class="icon-btn" data-mqz="1.25" aria-label="Acercar" title="Acercar">${icon('plus')}</button><button class="icon-btn" data-mqz="0.8" aria-label="Alejar" title="Alejar">${icon('minus')}</button></span>
@@ -163,6 +173,7 @@ function mqCtrlHTML() {
 function mqWireCtrl(el, ctl) {
   $$('[data-mqv]', el).forEach(b => b.onclick = () => { ctl.view(b.dataset.mqv); $$('[data-mqv]', el).forEach(x => x.classList.toggle('on', x === b)); });
   $$('[data-mqrot]', el).forEach(b => b.onclick = () => ctl.spin());
+  $$('[data-mqcu]', el).forEach(b => b.onclick = () => { MQ.cuerpo = b.dataset.mqcu; mqSave(); $$('[data-mqcu]').forEach(x => x.classList.toggle('on', x.dataset.mqcu === MQ.cuerpo)); });
   $$('[data-mqz]', el).forEach(b => b.onclick = () => ctl.zoom(+b.dataset.mqz));
 }
 const mqTelaTxt = (p) => `${telaDe(p)} · ${p.color}`;
@@ -387,5 +398,5 @@ Views.panel = (v) => {
 };
 
 Object.assign(FUNCIONES, {
-  'Probador con maniquí': ['Maniquí con foto real de estudio que se viste al tocar una prenda', 'Tocar otra vez la prenda para quitársela', 'Camisas, chaquetas, pantalones, overoles, gorras y tapabocas puestos en el maniquí', 'Ropa con su tela, color, pliegues y costuras reales', 'Ver el conjunto de frente y de espaldas', 'Darle la vuelta al maniquí deslizando el dedo', 'Acercar al torso, las piernas o la cabeza', 'Prenda de muestra para completar la foto cuando falta una parte', 'Conjuntos sugeridos con un toque', 'Valor del conjunto al detal y por mayor', 'Cotizar el conjunto con la foto del maniquí', 'Agregar el conjunto al pedido o a la venta del salón', 'Descargar la foto del conjunto para enviar al cliente', 'Vitrina con maniquí en el panel, el catálogo y el salón de ventas', 'Probador de telas en el inventario', 'Botón «Ver en maniquí» en productos, ficha y visor 3D']
+  'Probador con maniquí': ['Maniquí con foto real de estudio que se viste al tocar una prenda', 'Maniquí de hombre y maniquí de mujer', 'Tocar otra vez la prenda para quitársela', 'Camisas, chaquetas, pantalones, overoles, gorras y tapabocas puestos en el maniquí', 'Ropa con su tela, color, pliegues y costuras reales', 'Ver el conjunto de frente y de espaldas', 'Darle la vuelta al maniquí deslizando el dedo', 'Acercar al torso, las piernas o la cabeza', 'Prenda de muestra para completar la foto cuando falta una parte', 'Conjuntos sugeridos con un toque', 'Valor del conjunto al detal y por mayor', 'Cotizar el conjunto con la foto del maniquí', 'Agregar el conjunto al pedido o a la venta del salón', 'Descargar la foto del conjunto para enviar al cliente', 'Vitrina con maniquí en el panel, el catálogo y el salón de ventas', 'Probador de telas en el inventario', 'Botón «Ver en maniquí» en productos, ficha y visor 3D']
 });

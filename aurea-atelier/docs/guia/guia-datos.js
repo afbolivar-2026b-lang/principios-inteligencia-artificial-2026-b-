@@ -116,6 +116,7 @@ module.exports = [
     pasos: ['Abra Probador con maniquí en el menú Comercial.', 'Toque una camisa, un pantalón, un overol, una gorra o un tapabocas: el maniquí aparece con ella puesta. Tóquela otra vez para quitársela.', 'Deslice la foto con el dedo o toque Girar para ver el conjunto de espaldas.', 'Use Torso, Piernas o Cabeza para acercarse y ver la tela y las costuras.', 'En el catálogo toque «Ponérsela» en cualquier prenda y mírela en la vitrina de arriba.', 'En Inventario y telas toque una tela para ver la prenda que se hace con ella.', 'Escriba cuántos conjuntos necesita y toque «Cotizar conjunto con foto».'],
     fx: {
       'Maniquí con foto real de estudio que se viste al tocar una prenda': 'Un maniquí de vitrina fotografiado en estudio; al tocar una prenda aparece con ella puesta.',
+      'Maniquí de hombre y maniquí de mujer': 'Con Hombre o Mujer se cambia el maniquí; cada uno tiene sus propias fotos con la misma ropa, de frente y de espaldas.',
       'Tocar otra vez la prenda para quitársela': 'La misma prenda sirve de interruptor: un toque la pone y el siguiente la quita.',
       'Camisas, chaquetas, pantalones, overoles, gorras y tapabocas puestos en el maniquí': 'Cada prenda del catálogo se ve puesta, sola o combinada con las demás.',
       'Ropa con su tela, color, pliegues y costuras reales': 'Las fotos muestran la tela con su textura, la caída, los pliegues, los bolsillos y los reflectivos como son.',
