@@ -226,7 +226,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
       }
       if (ruta === '/api/ajustes' && req.method === 'PUT') {
         exigirAdmin(req);
-        const cuerpo = await leerCuerpo(req);
+        const cuerpo = await leerCuerpo(req, 700 * 1024); // admite la foto del candidato
         enviarJSON(res, 200, ajustes.actualizar(cuerpo), extra);
         return;
       }
@@ -264,8 +264,13 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
       if (ruta === '/api/panel' && req.method === 'GET') {
         exigirAdmin(req);
         const encuestas = store.listar();
+        const filtro = {
+          periodo: url.searchParams.get('periodo') || '30',
+          comuna: url.searchParams.get('comuna') || '',
+          edad: url.searchParams.get('edad') || '',
+        };
         enviarJSON(res, 200, {
-          ...registros.estadisticas(),
+          ...registros.estadisticas(filtro),
           encuestas: {
             total: encuestas.length,
             activas: encuestas.filter((e) => !e.cerrada).length,

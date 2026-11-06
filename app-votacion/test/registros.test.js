@@ -154,6 +154,20 @@ test('sesión con cookie, estadísticas del panel y eliminación', async () => {
     assert.equal(p.barrios[0].total, 2);
     assert.equal(p.barrios[0].comuna, 'Comuna 5');
     assert.equal(p.porDia.length, 30);
+    assert.equal(p.porDia.at(-1).acumulado, 3);
+    assert.equal(p.porSemana.reduce((s, d) => s + d.total, 0), 3);
+    assert.equal(p.porHora.reduce((s, d) => s + d.total, 0), 3);
+    assert.deepEqual(p.opciones.comunas, ['Comuna 2', 'Comuna 5']);
+
+    // Filtros: comuna y rango de edad
+    const f1 = await (await fetch(`${url}/api/panel?comuna=${encodeURIComponent('Comuna 5')}`, conSesion)).json();
+    assert.equal(f1.total, 2);
+    assert.equal(f1.totalGeneral, 3);
+    const f2 = await (await fetch(`${url}/api/panel?edad=${encodeURIComponent('66+')}&periodo=7`, conSesion)).json();
+    assert.equal(f2.total, 1);
+    assert.equal(f2.porDia.length, 7);
+    const f3 = await (await fetch(`${url}/api/panel?periodo=todo`, conSesion)).json();
+    assert.equal(f3.porDia.length, 7, 'el periodo "todo" muestra al menos una semana');
     assert.equal(p.edades.find((e) => e.rango === '66+').total, 1);
     assert.equal(p.recientes[0].cedula, undefined, 'el resumen no expone cédulas');
     assert.equal(p.recientes[0].firma, undefined);
@@ -172,7 +186,7 @@ test('sesión con cookie, estadísticas del panel y eliminación', async () => {
 
     // La configuración pública no expone datos personales
     const cfg = await (await fetch(`${url}/api/config`)).json();
-    assert.deepEqual(Object.keys(cfg).sort(), ['eslogan', 'marca', 'nombre', 'tema', 'totalRegistros', 'urlPublica']);
+    assert.deepEqual(Object.keys(cfg).sort(), ['candidato', 'eslogan', 'foto', 'marca', 'nombre', 'tema', 'totalRegistros', 'urlPublica']);
     assert.equal(cfg.marca.empresa, 'Opita Digital');
   } finally {
     otro.close();
@@ -235,7 +249,7 @@ test('ajustes: diseño, nombre, eslogan y enlace público', async () => {
   try {
     const cfg = await (await fetch(`${url}/api/config`)).json();
     assert.equal(cfg.nombre, 'Inicial');
-    assert.equal(cfg.tema, 'opita');
+    assert.equal(cfg.tema, 'elegante');
 
     assert.equal((await put({ tema: 'oscuro' }, {})).status, 401, 'sin sesión no se puede cambiar');
     assert.equal((await put({ tema: 'rosado' })).status, 400);
@@ -243,7 +257,15 @@ test('ajustes: diseño, nombre, eslogan y enlace público', async () => {
     assert.equal((await put({ nombre: '' })).status, 400);
 
     const ok = await (await put({ tema: 'limpio', nombre: ' Neiva  Primero ', eslogan: 'Juntos sí podemos.', urlPublica: 'https://neivaprimero.co/registro/' })).json();
-    assert.deepEqual(ok, { nombre: 'Neiva Primero', eslogan: 'Juntos sí podemos.', tema: 'limpio', urlPublica: 'https://neivaprimero.co/registro' });
+    assert.deepEqual(ok, { nombre: 'Neiva Primero', eslogan: 'Juntos sí podemos.', tema: 'limpio', urlPublica: 'https://neivaprimero.co/registro', candidato: '', foto: '' });
+
+    // Foto del candidato: solo imágenes reales
+    const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    assert.equal((await put({ foto: 'data:image/svg+xml;base64,PHN2Zz4=' })).status, 400);
+    assert.equal((await put({ foto: 'data:image/jpeg;base64,PHN2Zz4=' })).status, 400);
+    const conFoto = await (await put({ foto: PNG, candidato: 'Ana Gómez' })).json();
+    assert.equal(conFoto.foto, PNG);
+    assert.equal(conFoto.candidato, 'Ana Gómez');
     const despues = await (await fetch(`${url}/api/config`)).json();
     assert.equal(despues.tema, 'limpio');
     assert.equal((await put({ urlPublica: '' })).status, 200);

@@ -12,7 +12,7 @@ const tooltip = document.getElementById('tooltip');
 const SVG = 'http://www.w3.org/2000/svg';
 const fmt = new Intl.NumberFormat('es-CO');
 let temporizador = null;
-let config = { nombre: 'Campaña', eslogan: 'Tu barrio también decide.', tema: 'opita', urlPublica: '', totalRegistros: 0, marca: { empresa: 'Opita Digital', logo: '/marca/opita-digital.svg' } };
+let config = { nombre: 'Campaña', eslogan: 'Tu barrio también decide.', tema: 'elegante', urlPublica: '', totalRegistros: 0, marca: { empresa: 'Opita Digital', logo: '/marca/opita-digital.svg' } };
 let sesionAdmin = false;
 let shellActual = null;
 const observadores = [];
@@ -80,7 +80,7 @@ function ponerNombre(contenedor) {
 }
 
 function aplicarTema(tema) {
-  document.documentElement.setAttribute('data-tema', tema || 'opita');
+  document.documentElement.setAttribute('data-tema', tema || 'elegante');
   try { localStorage.setItem('tema', tema); } catch { /* sin almacenamiento */ }
 }
 
@@ -660,63 +660,123 @@ function manejarErrorPanel(e, contenedor) {
   contenedor.replaceChildren(el('div', { className: 'grafico-vacio', textContent: e.message }));
 }
 
+let filtroPanel = { periodo: '30', comuna: '', edad: '' };
+
+function pintarFotoCandidato(nodo) {
+  if (config.foto) nodo.replaceChildren(el('img', { src: config.foto, alt: '' }));
+  else nodo.replaceChildren(iniciales(...(config.candidato || config.nombre).split(' ')));
+}
+
 async function vistaPanelInicio() {
   const vista = document.getElementById('vista-panel');
   vista.replaceChildren(plantilla('tpl-panel-inicio'));
+  ponerNombre(vista);
   const hoy = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   document.getElementById('fecha-hoy').textContent = hoy;
+  document.getElementById('cand-nombre').textContent = config.candidato || config.eslogan;
+  pintarFotoCandidato(document.getElementById('cand-foto'));
 
-  let d;
-  try {
-    d = await api('/api/panel');
-  } catch (e) {
-    manejarErrorPanel(e, vista);
-    return;
+  const fComuna = document.getElementById('f-comuna');
+  const fEdad = document.getElementById('f-edad');
+  const limpiar = document.getElementById('f-limpiar');
+  let opcionesCargadas = false;
+
+  function marcarFiltros() {
+    for (const b of vista.querySelectorAll('[data-periodo]')) {
+      const activo = b.dataset.periodo === filtroPanel.periodo;
+      b.classList.toggle('activo', activo);
+      b.setAttribute('aria-checked', String(activo));
+    }
+    fComuna.value = filtroPanel.comuna;
+    fEdad.value = filtroPanel.edad;
+    limpiar.hidden = !filtroPanel.comuna && !filtroPanel.edad && filtroPanel.periodo === '30';
   }
 
+  async function cargar() {
+    marcarFiltros();
+    const q = new URLSearchParams(filtroPanel);
+    let d;
+    try {
+      d = await api(`/api/panel?${q}`);
+    } catch (e) {
+      manejarErrorPanel(e, vista);
+      return;
+    }
+    if (!opcionesCargadas) {
+      fComuna.append(...d.opciones.comunas.map((c) => el('option', { value: c, textContent: c })));
+      fEdad.append(...d.opciones.edades.map((r) => el('option', { value: r, textContent: `${r} años` })));
+      opcionesCargadas = true;
+      marcarFiltros();
+    }
+    while (observadores.length) observadores.pop().disconnect();
+    pintarTablero(d);
+  }
+
+  for (const b of vista.querySelectorAll('[data-periodo]')) {
+    b.addEventListener('click', () => { filtroPanel.periodo = b.dataset.periodo; cargar(); });
+  }
+  fComuna.addEventListener('change', () => { filtroPanel.comuna = fComuna.value; cargar(); });
+  fEdad.addEventListener('change', () => { filtroPanel.edad = fEdad.value; cargar(); });
+  limpiar.addEventListener('click', () => { filtroPanel = { periodo: '30', comuna: '', edad: '' }; cargar(); });
+
+  await cargar();
+}
+
+function pintarTablero(d) {
   const txt = (id, v) => { document.getElementById(id).textContent = v; };
+  const filtrado = d.filtro.comuna || d.filtro.edad;
   txt('k-total', fmt.format(d.total));
-  txt('k-total-nota', d.total
-    ? `en ${plural(d.totalComunas, 'comuna', 'comunas')} y ${plural(d.totalBarrios, 'barrio', 'barrios')}`
-    : 'Comparte el formulario para empezar');
+  txt('k-total-nota', filtrado
+    ? `de ${fmt.format(d.totalGeneral)} en total`
+    : (d.total ? `${plural(d.enPeriodo, 'nueva', 'nuevas')} en el periodo` : 'Comparte el formulario para empezar'));
   txt('k-hoy', fmt.format(d.hoy));
   txt('k-semana', fmt.format(d.semana));
   txt('k-edad', d.edadPromedio ?? '—');
-
-  const nota = document.getElementById('k-semana-nota');
-  if (d.semanaAnterior > 0) {
-    const cambio = Math.round(((d.semana - d.semanaAnterior) / d.semanaAnterior) * 100);
-    const clase = cambio > 0 ? 'sube' : cambio < 0 ? 'baja' : 'igual';
-    const signo = cambio > 0 ? '▲ +' : cambio < 0 ? '▼ ' : '';
-    nota.replaceChildren(el('span', { className: `delta ${clase}`, textContent: `${signo}${cambio}%` }), 'vs. semana anterior');
-  } else {
-    nota.textContent = d.semana ? 'primera semana con datos' : 'sin registros esta semana';
-  }
-
   txt('k-comunas', fmt.format(d.totalComunas));
   txt('k-barrios', fmt.format(d.totalBarrios));
-  txt('k-encuestas', fmt.format(d.encuestas.activas));
   txt('k-votos', fmt.format(d.encuestas.votos));
+  txt('k-votos-nota', `${plural(d.encuestas.activas, 'encuesta abierta', 'encuestas abiertas')}`);
+  const notaCrec = document.getElementById('k-crecimiento-nota');
+  if (d.semanaAnterior > 0) {
+    const cambio = Math.round(((d.semana - d.semanaAnterior) / d.semanaAnterior) * 100);
+    txt('k-crecimiento', `${cambio > 0 ? '+' : ''}${cambio}%`);
+    const clase = cambio > 0 ? 'sube' : cambio < 0 ? 'baja' : 'igual';
+    notaCrec.replaceChildren(el('span', { className: `delta ${clase}`, textContent: cambio > 0 ? '▲ sube' : cambio < 0 ? '▼ baja' : '= igual' }), 'vs. semana anterior');
+  } else {
+    txt('k-crecimiento', '—');
+    notaCrec.textContent = d.semana ? 'primera semana con datos' : 'sin datos aún';
+  }
 
+  const etiquetaPeriodo = { 7: 'Últimos 7 días', 30: 'Últimos 30 días', 90: 'Últimos 90 días', todo: 'Desde el inicio' };
+  txt('sub-dias', etiquetaPeriodo[d.filtro.periodo] || '');
   const formatoDia = new Intl.DateTimeFormat('es-CO', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
-  graficoColumnas(document.getElementById('g-dias'), d.porDia.map((p) => {
+  const cada = Math.max(1, Math.ceil(d.porDia.length / 7));
+  const dias = d.porDia.map((p) => {
     const f = new Date(`${p.fecha}T12:00:00Z`);
-    return { etiqueta: formatoDia.format(f), etiquetaCorta: String(f.getUTCDate()), valor: p.total };
-  }), { cadaEtiqueta: 5 });
+    return { etiqueta: formatoDia.format(f), etiquetaCorta: String(f.getUTCDate()), valor: p.total, acumulado: p.acumulado };
+  });
+  graficoColumnas(document.getElementById('g-dias'), dias, { cadaEtiqueta: cada });
+  graficoArea(document.getElementById('g-acumulado'), dias.map((x) => ({ ...x, valor: x.acumulado })), { cadaEtiqueta: cada });
+  graficoColumnas(document.getElementById('g-semana'), d.porSemana.map((x) => ({ etiqueta: x.dia, etiquetaCorta: x.dia, valor: x.total })),
+    { mostrarValores: true });
+  graficoDona(document.getElementById('g-hora'), [
+    { etiqueta: 'Mañana', detalle: '6 a. m. – 12 m.', valor: d.porHora[1].total },
+    { etiqueta: 'Tarde', detalle: '12 m. – 6 p. m.', valor: d.porHora[2].total },
+    { etiqueta: 'Noche', detalle: '6 p. m. – 12 a. m.', valor: d.porHora[3].total },
+    { etiqueta: 'Madrugada', detalle: '12 a. m. – 6 a. m.', valor: d.porHora[0].total },
+  ]);
 
-  const comunas = d.comunas.length > 8
-    ? [...d.comunas.slice(0, 7), { nombre: 'Otras', total: d.comunas.slice(7).reduce((s, c) => s + c.total, 0) }]
+  const comunas = d.comunas.length > 7
+    ? [...d.comunas.slice(0, 6), { nombre: 'Otras', total: d.comunas.slice(6).reduce((s, c) => s + c.total, 0) }]
     : d.comunas;
-  barrasHorizontales(document.getElementById('g-comunas'),
-    comunas.map((c) => ({ etiqueta: c.nombre, valor: c.total })), { vacio: 'Aún no hay comunas registradas.' });
-
-  graficoColumnas(document.getElementById('g-edades'),
-    d.edades.map((e) => ({ etiqueta: `${e.rango} años`, etiquetaCorta: e.rango, valor: e.total })),
-    { alto: 300, unidad: ['persona', 'personas'], mostrarValores: true });
+  barrasHorizontales(document.getElementById('g-comunas'), comunas.map((c) => ({ etiqueta: c.nombre, valor: c.total })),
+    { vacio: 'Sin registros con estos filtros.' });
+  graficoColumnas(document.getElementById('g-edades'), d.edades.map((e) => ({ etiqueta: `${e.rango} años`, etiquetaCorta: e.rango, valor: e.total })),
+    { unidad: ['persona', 'personas'], mostrarValores: true });
 
   const ol = document.getElementById('l-barrios');
   if (!d.barrios.length) {
-    ol.replaceChildren(el('li', { className: 'vacio', textContent: 'Aún no hay barrios registrados.' }));
+    ol.replaceChildren(el('li', { className: 'vacio', textContent: 'Sin barrios con estos filtros.' }));
   } else {
     const max = d.barrios[0].total;
     ol.replaceChildren(...d.barrios.map((b) => {
@@ -739,21 +799,138 @@ async function vistaPanelInicio() {
       el('span', { className: 'rc-hora', textContent: hace(r.fecha) })))
     : [el('li', { className: 'vacio', textContent: 'Los registros nuevos aparecerán aquí.' })]));
 
-  const cont = document.getElementById('l-encuestas');
-  if (!d.encuestas.lista.length) {
+  const cont = document.getElementById('l-encuesta');
+  const destacada = d.encuestas.lista.find((e) => !e.cerrada) || d.encuestas.lista[0];
+  if (!destacada) {
     cont.replaceChildren(el('div', { className: 'grafico-vacio' },
       'No hay encuestas todavía. ', el('a', { href: '#/panel/encuestas', className: 'enlace', textContent: 'Crear la primera' })));
   } else {
-    cont.replaceChildren(...d.encuestas.lista.map((e) => {
-      const lider = e.opciones.reduce((a, b) => (b.votos > a.votos ? b : a));
-      return el('a', { href: `#/encuesta/${encodeURIComponent(e.id)}`, className: 'mini', target: '_blank', rel: 'noopener' },
-        el('span', { className: `etiqueta-estado ${e.cerrada ? 'cerrada' : 'abierta'}`, textContent: e.cerrada ? 'Cerrada' : 'Abierta' }),
-        el('h3', { textContent: e.pregunta }),
-        el('p', { className: 'mini-lider' }, e.totalVotos
-          ? el('span', {}, e.cerrada ? 'Ganó ' : 'Va ganando ', el('strong', { textContent: lider.texto }), ` · ${plural(e.totalVotos, 'voto', 'votos')}`)
-          : 'Sin votos todavía'));
-    }));
+    const barras = el('div', { className: 'barras' });
+    barrasHorizontales(barras, destacada.opciones.map((o) => ({ etiqueta: o.texto, valor: o.votos })),
+      { unidad: ['voto', 'votos'], porcentaje: true, marcarGanadora: destacada.cerrada });
+    cont.replaceChildren(
+      el('span', { className: `etiqueta-estado ${destacada.cerrada ? 'cerrada' : 'abierta'}`, textContent: destacada.cerrada ? 'Cerrada' : 'Abierta' }),
+      el('h3', { textContent: destacada.pregunta }),
+      barras,
+      el('p', { className: 'meta', textContent: plural(destacada.totalVotos, 'voto', 'votos') }));
   }
+}
+
+/** Línea con área de una sola serie, con guía al pasar el mouse. */
+function graficoArea(contenedor, datos, { alto = 220, unidad = ['persona', 'personas'], cadaEtiqueta = 1 } = {}) {
+  if (!datos.some((d) => d.valor > 0)) {
+    contenedor.replaceChildren(el('div', { className: 'grafico-vacio', textContent: 'Todavía no hay datos para mostrar.' }));
+    return;
+  }
+  alRedimensionar(contenedor, (ancho) => {
+    const m = { arriba: 14, der: 10, abajo: 26, izq: 38 };
+    const w = ancho - m.izq - m.der;
+    const h = alto - m.arriba - m.abajo;
+    const tope = topeBonito(Math.max(...datos.map((d) => d.valor)));
+    const x = (i) => m.izq + (datos.length === 1 ? w / 2 : (i / (datos.length - 1)) * w);
+    const y = (v) => m.arriba + h - (v / tope) * h;
+    const raizSvg = svg('svg', { viewBox: `0 0 ${ancho} ${alto}`, height: alto, role: 'img' });
+    const titulo = svg('title');
+    titulo.textContent = 'Crecimiento acumulado';
+    raizSvg.append(titulo);
+    for (const t of [0, tope / 2, tope]) {
+      const yy = Math.round(y(t)) + 0.5;
+      if (t > 0) raizSvg.append(svg('line', { class: 'rejilla', x1: m.izq, x2: ancho - m.der, y1: yy, y2: yy }));
+      const tx = svg('text', { class: 'eje', x: m.izq - 8, y: yy + 4, 'text-anchor': 'end' });
+      tx.textContent = fmt.format(t);
+      raizSvg.append(tx);
+    }
+    const puntos = datos.map((d, i) => `${x(i).toFixed(1)},${y(d.valor).toFixed(1)}`);
+    raizSvg.append(svg('path', { class: 'area', d: `M${x(0)},${y(0)}L${puntos.join('L')}L${x(datos.length - 1)},${y(0)}Z` }));
+    raizSvg.append(svg('path', { class: 'linea', d: `M${puntos.join('L')}` }));
+    raizSvg.append(svg('line', { class: 'base', x1: m.izq, x2: ancho - m.der, y1: y(0) + 0.5, y2: y(0) + 0.5 }));
+    datos.forEach((d, i) => {
+      if (i % cadaEtiqueta === 0 || i === datos.length - 1) {
+        const t = svg('text', { class: 'eje', x: x(i), y: alto - 6, 'text-anchor': 'middle' });
+        t.textContent = d.etiquetaCorta ?? d.etiqueta;
+        raizSvg.append(t);
+      }
+    });
+    // Etiqueta directa del último valor
+    const ult = datos.at(-1);
+    const v = svg('text', { class: 'valor', x: x(datos.length - 1) - 4, y: y(ult.valor) - 10, 'text-anchor': 'end' });
+    v.textContent = fmt.format(ult.valor);
+    raizSvg.append(v);
+
+    const guia = svg('line', { class: 'guia', y1: m.arriba, y2: y(0), visibility: 'hidden' });
+    const punto = svg('circle', { class: 'punto', r: 5, visibility: 'hidden' });
+    raizSvg.append(guia, punto);
+    const zona = svg('rect', { class: 'zona', x: m.izq, y: m.arriba, width: w, height: h });
+    const mover = (ev) => {
+      const caja = raizSvg.getBoundingClientRect();
+      const px = ((ev.clientX - caja.left) / caja.width) * ancho;
+      const i = Math.max(0, Math.min(datos.length - 1, Math.round(((px - m.izq) / w) * (datos.length - 1))));
+      const xx = x(i);
+      guia.setAttribute('x1', xx); guia.setAttribute('x2', xx); guia.setAttribute('visibility', 'visible');
+      punto.setAttribute('cx', xx); punto.setAttribute('cy', y(datos[i].valor)); punto.setAttribute('visibility', 'visible');
+      const escala = caja.width / ancho;
+      mostrarTooltip(caja.left + xx * escala, caja.top + y(datos[i].valor) * escala, datos[i].etiqueta, plural(datos[i].valor, unidad[0], unidad[1]));
+    };
+    zona.addEventListener('pointermove', mover);
+    zona.addEventListener('pointerdown', mover);
+    zona.addEventListener('pointerleave', () => {
+      guia.setAttribute('visibility', 'hidden'); punto.setAttribute('visibility', 'hidden'); ocultarTooltip();
+    });
+    raizSvg.append(zona);
+    contenedor.replaceChildren(raizSvg);
+  });
+}
+
+/** Dona de hasta 4 partes con leyenda y porcentajes directos. */
+function graficoDona(contenedor, datos, { unidad = ['registro', 'registros'] } = {}) {
+  const total = datos.reduce((s, d) => s + d.valor, 0);
+  if (!total) {
+    contenedor.replaceChildren(el('div', { className: 'grafico-vacio', textContent: 'Todavía no hay datos para mostrar.' }));
+    return;
+  }
+  const R = 80; const r = 52; const c = 90;
+  const raizSvg = svg('svg', { viewBox: '0 0 180 180', role: 'img' });
+  const titulo = svg('title');
+  titulo.textContent = 'Distribución por franja del día';
+  raizSvg.append(titulo);
+  let ang = -Math.PI / 2;
+  const segmentos = [];
+  datos.forEach((d, i) => {
+    if (!d.valor) { segmentos.push(null); return; }
+    const a = (d.valor / total) * Math.PI * 2;
+    const fin = ang + a;
+    const grande = a > Math.PI ? 1 : 0;
+    const p = (rad, ra) => `${(c + ra * Math.cos(rad)).toFixed(2)},${(c + ra * Math.sin(rad)).toFixed(2)}`;
+    const ruta = a >= Math.PI * 2 - 1e-6
+      ? `M${c},${c - R}A${R},${R} 0 1 1 ${c - 0.01},${c - R}L${c - 0.01},${c - r}A${r},${r} 0 1 0 ${c},${c - r}Z`
+      : `M${p(ang, R)}A${R},${R} 0 ${grande} 1 ${p(fin, R)}L${p(fin, r)}A${r},${r} 0 ${grande} 0 ${p(ang, r)}Z`;
+    const seg = svg('path', { class: `segmento s${i + 1}`, d: ruta });
+    const activar = () => {
+      contenedor.querySelector('.dona').classList.add('enfocado');
+      segmentos.forEach((sg) => sg && sg.classList.toggle('activa', sg === seg));
+      const caja = seg.getBoundingClientRect();
+      mostrarTooltip(caja.left + caja.width / 2, caja.top, `${d.etiqueta} · ${Math.round((d.valor / total) * 100)}%`, plural(d.valor, unidad[0], unidad[1]));
+    };
+    seg.addEventListener('pointerenter', activar);
+    seg.addEventListener('pointerdown', activar);
+    segmentos.push(seg);
+    raizSvg.append(seg);
+    ang = fin;
+  });
+  const n = svg('text', { class: 'centro-num', x: c, y: c + 6, 'text-anchor': 'middle' });
+  n.textContent = fmt.format(total);
+  const t = svg('text', { class: 'centro-txt', x: c, y: c + 24, 'text-anchor': 'middle' });
+  t.textContent = unidad[1];
+  raizSvg.append(n, t);
+  raizSvg.addEventListener('pointerleave', () => {
+    contenedor.querySelector('.dona').classList.remove('enfocado');
+    ocultarTooltip();
+  });
+  const leyenda = el('ul', { className: 'leyenda' }, ...datos.map((d, i) => el('li', {},
+    el('i', { className: `serie-${i + 1}` }),
+    el('span', {}, d.etiqueta, el('small', { textContent: d.detalle || '' })),
+    el('b', { textContent: `${Math.round((d.valor / total) * 100)}%` }))));
+  contenedor.replaceChildren(el('div', { className: 'dona' }, raizSvg, leyenda));
 }
 
 async function vistaPanelRegistros() {
@@ -994,6 +1171,7 @@ async function dibujarAfiche(canvas, formato, url) {
   const ctx = canvas.getContext('2d');
   await Promise.all([
     document.fonts.load('800 100px Bricolage'), document.fonts.load('500 20px "Plex Mono"'),
+    document.fonts.load('400 100px Fraunces'), document.fonts.load('italic 400 100px Fraunces'),
     document.fonts.load('500 30px "Public Sans"'), document.fonts.load('700 30px "Public Sans"'),
   ]).catch(() => {});
   const tema = document.documentElement.getAttribute('data-tema');
@@ -1002,7 +1180,8 @@ async function dibujarAfiche(canvas, formato, url) {
     sobreResaltado: colorTema('--sobre-resaltado'), boton: colorTema('--boton'), sobreBoton: colorTema('--sobre-boton'),
     acento: colorTema('--acento'), cinta1: colorTema('--cinta-1'), cinta2: colorTema('--cinta-2'),
   };
-  const display = tema === 'limpio' ? '"Public Sans"' : 'Bricolage';
+  const display = tema === 'limpio' ? '"Public Sans"' : tema === 'elegante' ? 'Fraunces' : 'Bricolage';
+  const pesoTitulo = tema === 'elegante' ? 400 : 800;
   const M = 84;
 
   // Fondo y textura según el diseño
@@ -1021,6 +1200,24 @@ async function dibujarAfiche(canvas, formato, url) {
     ctx.restore();
   } else if (tema === 'limpio') {
     ctx.fillStyle = c.acento; ctx.fillRect(0, 0, W, 14);
+  } else if (tema === 'elegante') {
+    const g = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, W);
+    g.addColorStop(0, 'rgba(201,164,92,.28)'); g.addColorStop(1, 'rgba(201,164,92,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // Montañas del Huila al pie
+    const base = H - 150;
+    ctx.fillStyle = 'rgba(201,164,92,.10)';
+    const cresta = [[0, 60], [90, 30], [170, 45], [260, 0], [330, 20], [420, -30], [490, -48], [560, -32], [630, 10], [740, -12], [840, 28], [940, -4], [1020, 30], [1080, 18]];
+    ctx.beginPath(); ctx.moveTo(0, H);
+    for (const [px, py] of cresta) ctx.lineTo(px, base + py);
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(201,164,92,.6)'; ctx.lineWidth = 2; ctx.beginPath();
+    cresta.forEach(([px, py], k) => (k ? ctx.lineTo(px, base + py) : ctx.moveTo(px, base + py))); ctx.stroke();
+    ctx.fillStyle = 'rgba(244,239,230,.85)'; ctx.beginPath();
+    ctx.moveTo(452, base - 40); ctx.lineTo(490, base - 48); ctx.lineTo(528, base - 38); ctx.lineTo(505, base - 30); ctx.lineTo(488, base - 38); ctx.lineTo(470, base - 28); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#13243A'; ctx.beginPath(); ctx.moveTo(0, H);
+    for (const [px, py] of [[0, 90], [140, 62], [260, 84], [400, 50], [540, 80], [680, 44], [820, 78], [960, 56], [1080, 82]]) ctx.lineTo(px, base + py);
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
   }
   if (tema === 'opita') {
     zigzag(ctx, 0, W, 26, c.cinta1, c.cinta2);
@@ -1029,7 +1226,7 @@ async function dibujarAfiche(canvas, formato, url) {
 
   // Marca de agua de Opita Digital en todo el anuncio
   ctx.save();
-  ctx.globalAlpha = tema === 'limpio' ? 0.045 : 0.07;
+  ctx.globalAlpha = tema === 'limpio' ? 0.025 : 0.035;
   ctx.fillStyle = c.texto;
   ctx.font = '700 26px "Public Sans"';
   ctx.translate(W / 2, H / 2);
@@ -1049,7 +1246,7 @@ async function dibujarAfiche(canvas, formato, url) {
 
   // Eslogan grande con la última palabra resaltada
   const alto = formato === 'cuadrado' ? 96 : formato === 'historia' ? 150 : 112;
-  ctx.font = `800 ${alto}px ${display}`;
+  ctx.font = `${pesoTitulo} ${alto}px ${display}`;
   const palabras = config.eslogan.trim().split(/\s+/);
   const ultima = palabras.length - 1;
   const lineas = partirLineas(ctx, config.eslogan.trim(), W - M * 2);
@@ -1062,6 +1259,18 @@ async function dibujarAfiche(canvas, formato, url) {
       if (idx === ultima) {
         const pe = partesEslogan(palabra);
         const wr = ctx.measureText(pe.resaltado).width;
+        if (tema === 'elegante') {
+          ctx.font = `italic 400 ${alto}px Fraunces`;
+          const wi = ctx.measureText(pe.resaltado).width;
+          ctx.fillStyle = '#C9A45C';
+          ctx.fillText(pe.resaltado, x, y);
+          ctx.font = `${pesoTitulo} ${alto}px ${display}`;
+          ctx.fillStyle = c.texto;
+          ctx.fillText(pe.fin, x + wi + 4, y);
+          x += wi + ctx.measureText(pe.fin).width + ctx.measureText(' ').width;
+          idx += 1;
+          continue;
+        }
         if (!esTransparente(c.resaltado)) {
           ctx.fillStyle = c.resaltado;
           rectRedondeado(ctx, x - 12, y - alto * 0.8, wr + 24, alto * 0.98, 14);
@@ -1126,7 +1335,7 @@ async function dibujarAfiche(canvas, formato, url) {
     const bx = tx + tarjetaW + 48;
     const bw = W - bx - M;
     if (bw > 220) {
-      ctx.font = '800 64px ' + display;
+      ctx.font = `${pesoTitulo} 64px ${display}`;
       ctx.fillStyle = c.texto;
       let by = ty + 70;
       for (const l of partirLineas(ctx, 'Súmate hoy', bw)) { ctx.fillText(l, bx, by); by += 68; }
@@ -1147,15 +1356,15 @@ async function dibujarAfiche(canvas, formato, url) {
   // Pie con la firma de Opita Digital
   const logo = await cargarImagen((config.marca && config.marca.logo) || '/marca/opita-digital.svg');
   const py = H - (tema === 'opita' ? 26 : 0) - 40;
-  ctx.globalAlpha = 0.9;
-  if (logo) ctx.drawImage(logo, M, py - 34, 44, 44);
+  ctx.globalAlpha = 0.6;
+  if (logo) ctx.drawImage(logo, M, py - 26, 30, 30);
   ctx.fillStyle = c.texto;
-  ctx.font = '500 24px "Public Sans"';
+  ctx.font = '500 19px "Public Sans"';
   const textoCredito = `Desarrollado por ${(config.marca && config.marca.empresa) || 'Opita Digital'}`;
-  ctx.fillText(textoCredito, M + (logo ? 58 : 0), py - 4);
+  ctx.fillText(textoCredito, M + (logo ? 40 : 0), py - 4);
   const contacto = enlacesContacto(config.marca || {}).slice(0, 2).map((x) => x.texto).join('  ·  ');
   if (contacto) {
-    ctx.font = '500 20px "Plex Mono"';
+    ctx.font = '500 17px "Public Sans"';
     ctx.textAlign = 'right';
     ctx.fillText(contacto, W - M, py - 4);
     ctx.textAlign = 'left';
@@ -1272,6 +1481,40 @@ function vistaPanelAjustes() {
   document.getElementById('a-nombre').value = config.nombre;
   document.getElementById('a-eslogan').value = config.eslogan;
   document.getElementById('a-urlPublica').value = config.urlPublica || '';
+  document.getElementById('a-candidato').value = config.candidato || '';
+  const vistaFoto = document.getElementById('a-foto-vista');
+  const quitarFoto = document.getElementById('a-foto-quitar');
+  const pintarFoto = () => { pintarFotoCandidato(vistaFoto); quitarFoto.hidden = !config.foto; };
+  pintarFoto();
+  async function guardarFoto(foto) {
+    try {
+      config = { ...config, ...(await api('/api/ajustes', { method: 'PUT', body: JSON.stringify({ foto }) })) };
+      pintarFoto();
+      guardado.hidden = false;
+      setTimeout(() => { guardado.hidden = true; }, 2500);
+    } catch (e) {
+      if (e.estado === 401) { manejarErrorPanel(e, vista); return; }
+      error.textContent = e.message;
+    }
+  }
+  document.getElementById('a-foto').addEventListener('change', async (ev) => {
+    const archivo = ev.target.files[0];
+    if (!archivo) return;
+    error.textContent = '';
+    try {
+      // Se recorta en cuadrado y se reduce a 480 px para que pese poco.
+      const img = await createImageBitmap(archivo);
+      const lado = Math.min(img.width, img.height);
+      const c = el('canvas');
+      c.width = 480; c.height = 480;
+      c.getContext('2d').drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, 480, 480);
+      await guardarFoto(c.toDataURL('image/jpeg', 0.86));
+    } catch {
+      error.textContent = 'No se pudo leer la imagen. Pruebe con un archivo JPG o PNG.';
+    }
+    ev.target.value = '';
+  });
+  quitarFoto.addEventListener('click', () => guardarFoto(''));
   const guardado = document.getElementById('guardado');
   const error = document.getElementById('error-ajustes');
 
@@ -1303,6 +1546,7 @@ function vistaPanelAjustes() {
           nombre: document.getElementById('a-nombre').value,
           eslogan: document.getElementById('a-eslogan').value,
           urlPublica: document.getElementById('a-urlPublica').value,
+          candidato: document.getElementById('a-candidato').value,
         }),
       });
       config = { ...config, ...nuevos };

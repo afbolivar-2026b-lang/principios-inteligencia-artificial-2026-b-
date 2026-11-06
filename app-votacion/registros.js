@@ -183,45 +183,95 @@ function crearRegistros(archivo) {
       .sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre, 'es', { numeric: true }));
   }
 
-  function estadisticas(ahora = new Date()) {
+  const horaBogota = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Bogota', hour: 'numeric', hourCycle: 'h23' });
+  const diaSemanaBogota = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Bogota', weekday: 'short' });
+  const SEMANA = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const RANGOS = [[18, 25], [26, 35], [36, 45], [46, 55], [56, 65], [66, 120]];
+  const etiquetaRango = ([a, b]) => (b === 120 ? `${a}+` : `${a}–${b}`);
+  const PERIODOS = { 7: 7, 30: 30, 90: 90 };
+
+  /**
+   * Estadísticas del panel.
+   * filtro.periodo: '7' | '30' | '90' | 'todo'  (por defecto 30 días)
+   * filtro.comuna:  nombre exacto de la comuna (opcional)
+   * filtro.edad:    rango, p. ej. '26–35' (opcional)
+   */
+  function estadisticas(filtro = {}, ahora = new Date()) {
     const hoy = dia(ahora);
+    const rango = RANGOS.find((r) => etiquetaRango(r) === filtro.edad);
+    const filtrados = registros.filter((r) =>
+      (!filtro.comuna || r.comuna === filtro.comuna) && (!rango || (r.edad >= rango[0] && r.edad <= rango[1])));
+
+    // Ventana de días del periodo
+    let dias = PERIODOS[filtro.periodo] || (filtro.periodo === 'todo' ? 0 : 30);
+    if (!dias) {
+      const primera = filtrados.reduce((m, r) => (r.fecha < m ? r.fecha : m), ahora.toISOString());
+      dias = Math.min(365, Math.max(7, Math.ceil((ahora - new Date(primera)) / 86400000) + 1));
+    }
+    const ventana = [];
+    for (let i = dias - 1; i >= 0; i--) ventana.push(dia(new Date(ahora.getTime() - i * 86400000)));
+    const inicio = ventana[0];
+
     const porDiaMapa = new Map();
-    for (const r of registros) {
+    for (const r of filtrados) {
       const d = dia(r.fecha);
       porDiaMapa.set(d, (porDiaMapa.get(d) || 0) + 1);
     }
-    const porDia = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = dia(new Date(ahora.getTime() - i * 86400000));
-      porDia.push({ fecha: d, total: porDiaMapa.get(d) || 0 });
+    const enPeriodo = filtrados.filter((r) => dia(r.fecha) >= inicio);
+    const antes = filtrados.length - enPeriodo.length;
+    let acum = antes;
+    const porDia = ventana.map((d) => {
+      const total = porDiaMapa.get(d) || 0;
+      acum += total;
+      return { fecha: d, total, acumulado: acum };
+    });
+
+    const ultimos = (n, desde = 0) => {
+      let t = 0;
+      for (let i = desde; i < desde + n; i++) t += porDiaMapa.get(dia(new Date(ahora.getTime() - i * 86400000))) || 0;
+      return t;
+    };
+
+    const porSemana = SEMANA.map(() => 0);
+    const porHora = [0, 0, 0, 0]; // madrugada, mañana, tarde, noche
+    for (const r of enPeriodo) {
+      const f = new Date(r.fecha);
+      porSemana[SEMANA.indexOf(diaSemanaBogota.format(f))] += 1;
+      porHora[Math.floor(Number(horaBogota.format(f)) / 6)] += 1;
     }
-    const suma = (arr) => arr.reduce((s, x) => s + x.total, 0);
 
-    const rangos = [[18, 25], [26, 35], [36, 45], [46, 55], [56, 65], [66, 120]];
-    const edades = rangos.map(([a, b]) => ({
-      rango: b === 120 ? `${a}+` : `${a}–${b}`,
-      total: registros.filter((r) => r.edad >= a && r.edad <= b).length,
-    }));
-
-    const comunas = agrupar(registros, 'comuna').map(({ nombre, total }) => ({ nombre, total }));
-    const barrios = agrupar(registros, 'barrio');
+    const comunas = agrupar(enPeriodo, 'comuna').map(({ nombre, total }) => ({ nombre, total }));
+    const barrios = agrupar(enPeriodo, 'barrio');
 
     return {
-      total: registros.length,
+      filtro: { periodo: filtro.periodo || '30', comuna: filtro.comuna || '', edad: rango ? filtro.edad : '' },
+      opciones: {
+        comunas: agrupar(registros, 'comuna').map((c) => c.nombre)
+          .sort((a, b) => a.localeCompare(b, 'es', { numeric: true })),
+        edades: RANGOS.map(etiquetaRango),
+      },
+      totalGeneral: registros.length,
+      total: filtrados.length,
+      enPeriodo: enPeriodo.length,
       hoy: porDiaMapa.get(hoy) || 0,
-      semana: suma(porDia.slice(-7)),
-      semanaAnterior: suma(porDia.slice(-14, -7)),
-      edadPromedio: registros.length
-        ? Math.round(registros.reduce((s, r) => s + r.edad, 0) / registros.length)
+      semana: ultimos(7),
+      semanaAnterior: ultimos(7, 7),
+      edadPromedio: enPeriodo.length
+        ? Math.round(enPeriodo.reduce((s, r) => s + r.edad, 0) / enPeriodo.length)
         : null,
       totalComunas: comunas.length,
       totalBarrios: barrios.length,
       porDia,
-      edades,
+      porSemana: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((d, i) => ({ dia: d, total: porSemana[i] })),
+      porHora: ['Madrugada', 'Mañana', 'Tarde', 'Noche'].map((franja, i) => ({ franja, total: porHora[i] })),
+      edades: RANGOS.map((r) => ({
+        rango: etiquetaRango(r),
+        total: enPeriodo.filter((x) => x.edad >= r[0] && x.edad <= r[1]).length,
+      })),
       comunas,
       barrios: barrios.slice(0, 8),
-      recientes: listar().slice(0, 6).map(({ nombre, apellido, barrio, comuna, fecha }) =>
-        ({ nombre, apellido, barrio, comuna, fecha })),
+      recientes: [...filtrados].sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 6)
+        .map(({ nombre, apellido, barrio, comuna, fecha }) => ({ nombre, apellido, barrio, comuna, fecha })),
     };
   }
 

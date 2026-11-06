@@ -9,14 +9,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { ErrorValidacion } = require('./store');
 
-const TEMAS = ['opita', 'oscuro', 'limpio', 'popular'];
+const TEMAS = ['elegante', 'opita', 'oscuro', 'limpio', 'popular'];
 
 function crearAjustes(archivo, iniciales = {}) {
   let ajustes = {
     nombre: iniciales.nombre || 'Mi Campaña',
     eslogan: 'Tu barrio también decide.',
-    tema: 'opita',
+    tema: 'elegante',
     urlPublica: '',
+    candidato: '',
+    foto: '',
   };
   if (archivo && fs.existsSync(archivo)) {
     try {
@@ -59,6 +61,23 @@ function crearAjustes(archivo, iniciales = {}) {
       } else {
         nuevo.urlPublica = '';
       }
+    }
+    if ('candidato' in datos) {
+      const c = String(datos.candidato || '').trim().replace(/\s+/g, ' ');
+      if (c.length > 60) throw new ErrorValidacion('El nombre del candidato supera 60 caracteres', 400, 'candidato');
+      nuevo.candidato = c;
+    }
+    if ('foto' in datos) {
+      const f = String(datos.foto || '');
+      if (f) {
+        const m = f.match(/^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+=*)$/);
+        if (!m) throw new ErrorValidacion('La foto debe ser JPG, PNG o WEBP', 400, 'foto');
+        if (f.length > 600 * 1024) throw new ErrorValidacion('La foto es demasiado grande', 400, 'foto');
+        const b = Buffer.from(m[2], 'base64').subarray(0, 12).toString('hex');
+        const firmas = { jpeg: /^ffd8ff/, png: /^89504e47/, webp: /^52494646.{8}57454250/ };
+        if (!firmas[m[1]].test(b)) throw new ErrorValidacion('La foto no es una imagen válida', 400, 'foto');
+      }
+      nuevo.foto = f;
     }
     ajustes = nuevo;
     guardar();
