@@ -35,8 +35,19 @@ Pide nombre, apellido, cédula, edad, teléfono, barrio, comuna y **firma**
 
 - Cédula de 6 a 10 dígitos (acepta puntos), edad de 18 a 120, teléfono de 7 a 10
   dígitos, nombre y apellido solo con letras.
-- No se puede registrar dos veces la misma cédula.
+
+**Sin información repetida:**
+- No se puede registrar dos veces la misma **cédula** (con o sin puntos) ni el
+  mismo **teléfono** (con o sin +57 o espacios). El formulario marca en rojo el campo repetido.
+- Al escribir el barrio aparecen los **barrios ya registrados**; al elegir uno,
+  la comuna se llena sola.
+- Si un barrio se escribe distinto ("las granjas", "LAS GRANJAS", "Lás Granjas"),
+  se guarda con la forma que ya existía, para que cuente como un solo barrio.
 - "5", "comuna 5" y "COMUNA 5" se guardan igual: "Comuna 5".
+- Los nombres escritos todo en minúsculas o mayúsculas se corrigen
+  ("carlos RAMÍREZ" → "Carlos Ramírez").
+- En el panel no se puede abrir una encuesta con la misma pregunta de otra que
+  sigue abierta, ni repetir opciones.
 
 ### Panel del equipo (`/#/panel`)
 Protegido con contraseña. La sesión dura 8 horas, usa una cookie `HttpOnly` y
@@ -68,6 +79,7 @@ La gente vota una vez por navegador y ve los resultados al momento.
 |--------|-------------------------------|----------|-----|
 | GET    | `/api/config`                 | público  | Nombre de la campaña y total de registros |
 | POST   | `/api/registros`              | público  | `{ nombre, apellido, cedula, edad, telefono, barrio, comuna, firma, autorizacion: true }` |
+| GET    | `/api/barrios`                | público  | Barrios ya registrados con su comuna (sin datos personales) |
 | GET    | `/api/encuestas`              | público  | Lista de encuestas |
 | GET    | `/api/encuestas/:id`          | público  | Una encuesta con sus resultados |
 | POST   | `/api/encuestas/:id/votar`    | público  | `{ "opcion": 0 }` |

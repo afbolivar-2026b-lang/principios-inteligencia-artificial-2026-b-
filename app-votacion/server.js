@@ -261,6 +261,10 @@ function crearServidor({ archivoDatos, archivoRegistros, claveAdmin, nombreCampa
       }
 
       // ---- Registros de la campaña ----
+      if (ruta === '/api/barrios' && req.method === 'GET') {
+        enviarJSON(res, 200, registros.barrios(), extra);
+        return;
+      }
       if (ruta === '/api/registros' && req.method === 'POST') {
         const cuerpo = await leerCuerpo(req, MAX_FIRMA + 4096);
         enviarJSON(res, 201, registros.agregar(cuerpo), extra);
@@ -326,7 +330,7 @@ function crearServidor({ archivoDatos, archivoRegistros, claveAdmin, nombreCampa
       throw new ErrorValidacion('Ruta no encontrada', 404);
     } catch (err) {
       if (err instanceof ErrorValidacion) {
-        enviarJSON(res, err.estado, { error: err.message }, extra);
+        enviarJSON(res, err.estado, { error: err.message, ...(err.campo ? { campo: err.campo } : {}) }, extra);
       } else {
         console.error(err);
         enviarJSON(res, 500, { error: 'Error interno' }, extra);

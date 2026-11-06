@@ -6,7 +6,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { ErrorValidacion } = require('./store');
+const { ErrorValidacion, claveTexto } = require('./store');
 
 const MAX_FIRMA = 150 * 1024; // tamaño máximo de la imagen de la firma (data URL)
 const PREFIJO_FIRMA = 'data:image/png;base64,';
@@ -30,13 +30,37 @@ function crearRegistros(archivo) {
     fs.renameSync(tmp, archivo);
   }
 
-  function texto(valor, campo, { min = 1, max = 60, patron, mensaje } = {}) {
-    if (typeof valor !== 'string') throw new ErrorValidacion(`${campo} es obligatorio`);
+  function texto(valor, campo, { min = 1, max = 60, patron, mensaje, clave } = {}) {
+    const error = (m) => new ErrorValidacion(m, 400, clave);
+    if (typeof valor !== 'string') throw error(`${campo} es obligatorio`);
     const t = valor.trim().replace(/\s+/g, ' ');
-    if (t.length < min) throw new ErrorValidacion(`${campo} es obligatorio`);
-    if (t.length > max) throw new ErrorValidacion(`${campo} supera ${max} caracteres`);
-    if (patron && !patron.test(t)) throw new ErrorValidacion(mensaje || `${campo} no es válido`);
+    if (t.length < min) throw error(`${campo} es obligatorio`);
+    if (t.length > max) throw error(`${campo} supera ${max} caracteres`);
+    if (patron && !patron.test(t)) throw error(mensaje || `${campo} no es válido`);
     return t;
+  }
+
+  // "carlos DE la ossa" -> "Carlos de la Ossa"
+  const MENORES = new Set(['de', 'del', 'la', 'las', 'los', 'y', 'e']);
+  // Solo se corrige si viene todo en minúsculas o todo en mayúsculas.
+  function capitalizar(t) {
+    const conLetras = /\p{L}/u.test(t);
+    if (!conLetras || (t !== t.toLocaleLowerCase('es') && t !== t.toLocaleUpperCase('es'))) return t;
+    return t.toLocaleLowerCase('es').split(' ').map((p, i) =>
+      (i > 0 && MENORES.has(p)) ? p : p.replace(/(^|[-'])(\p{L})/gu, (m, s, l) => s + l.toLocaleUpperCase('es')))
+      .join(' ');
+  }
+
+  // Si ya existe un barrio o comuna escrito igual (sin importar mayúsculas ni
+  // tildes), se reutiliza esa misma forma para no crear duplicados.
+  function formaExistente(campo, valor) {
+    const k = claveTexto(valor);
+    const conteo = new Map();
+    for (const r of registros) {
+      if (claveTexto(r[campo]) === k) conteo.set(r[campo], (conteo.get(r[campo]) || 0) + 1);
+    }
+    if (!conteo.size) return capitalizar(valor);
+    return [...conteo.entries()].sort((a, b) => b[1] - a[1])[0][0];
   }
 
   const LETRAS = /^[\p{L}][\p{L} .'-]*$/u;
@@ -50,27 +74,28 @@ function crearRegistros(archivo) {
   function agregar(datos) {
     if (!datos || typeof datos !== 'object') throw new ErrorValidacion('Datos inválidos');
 
-    const nombre = texto(datos.nombre, 'El nombre', {
-      patron: LETRAS, mensaje: 'El nombre solo puede tener letras',
-    });
-    const apellido = texto(datos.apellido, 'El apellido', {
-      patron: LETRAS, mensaje: 'El apellido solo puede tener letras',
-    });
+    const nombre = capitalizar(texto(datos.nombre, 'El nombre', {
+      patron: LETRAS, mensaje: 'El nombre solo puede tener letras', clave: 'nombre',
+    }));
+    const apellido = capitalizar(texto(datos.apellido, 'El apellido', {
+      patron: LETRAS, mensaje: 'El apellido solo puede tener letras', clave: 'apellido',
+    }));
     const cedula = texto(String(datos.cedula ?? '').replace(/[.\s]/g, ''), 'La cédula', {
-      patron: /^\d{6,10}$/, mensaje: 'La cédula debe tener entre 6 y 10 dígitos',
+      patron: /^\d{6,10}$/, mensaje: 'La cédula debe tener entre 6 y 10 dígitos', clave: 'cedula',
     });
     const edad = Number(datos.edad);
     if (!Number.isInteger(edad) || edad < 18 || edad > 120) {
-      throw new ErrorValidacion('La edad debe ser un número entre 18 y 120');
+      throw new ErrorValidacion('La edad debe ser un número entre 18 y 120', 400, 'edad');
     }
-    const telefono = texto(String(datos.telefono ?? '').replace(/[\s()-]/g, ''), 'El teléfono', {
-      patron: /^(\+57)?\d{7,10}$/, mensaje: 'El teléfono debe tener entre 7 y 10 dígitos',
-    });
-    const barrio = texto(datos.barrio, 'El barrio', { max: 80 });
-    const comuna = normalizarComuna(texto(datos.comuna, 'La comuna', { max: 40 }));
+    const telefono = texto(String(datos.telefono ?? '').replace(/[\s().-]/g, ''), 'El teléfono', {
+      patron: /^(\+57)?\d{7,10}$/, mensaje: 'El teléfono debe tener entre 7 y 10 dígitos', clave: 'telefono',
+    }).replace(/^\+57/, '');
+    const barrio = formaExistente('barrio', texto(datos.barrio, 'El barrio', { max: 80, clave: 'barrio' }));
+    const comuna = formaExistente('comuna',
+      normalizarComuna(texto(datos.comuna, 'La comuna', { max: 40, clave: 'comuna' })));
 
     if (typeof datos.firma !== 'string' || !datos.firma.startsWith(PREFIJO_FIRMA)) {
-      throw new ErrorValidacion('La firma es obligatoria');
+      throw new ErrorValidacion('La firma es obligatoria', 400, 'firma');
     }
     if (datos.firma.length > MAX_FIRMA) throw new ErrorValidacion('La firma es demasiado grande');
     const base64 = datos.firma.slice(PREFIJO_FIRMA.length);
@@ -81,11 +106,15 @@ function crearRegistros(archivo) {
     }
 
     if (datos.autorizacion !== true) {
-      throw new ErrorValidacion('Debe autorizar el tratamiento de datos personales');
+      throw new ErrorValidacion('Debe autorizar el tratamiento de datos personales', 400, 'autorizacion');
     }
 
+    // Evitar personas repetidas.
     if (registros.some((r) => r.cedula === cedula)) {
-      throw new ErrorValidacion('Esta cédula ya está registrada', 409);
+      throw new ErrorValidacion('Esta cédula ya está registrada. No hace falta registrarse otra vez.', 409, 'cedula');
+    }
+    if (registros.some((r) => r.telefono === telefono)) {
+      throw new ErrorValidacion('Este teléfono ya está registrado con otra persona.', 409, 'telefono');
     }
 
     const registro = {
@@ -141,7 +170,7 @@ function crearRegistros(archivo) {
   function agrupar(lista, clave) {
     const grupos = new Map();
     for (const r of lista) {
-      const k = r[clave].toLocaleLowerCase('es');
+      const k = claveTexto(r[clave]);
       const g = grupos.get(k) || { total: 0, formas: new Map(), comunas: new Map() };
       g.total += 1;
       g.formas.set(r[clave], (g.formas.get(r[clave]) || 0) + 1);
@@ -196,7 +225,13 @@ function crearRegistros(archivo) {
     };
   }
 
-  return { agregar, listar, csv, eliminar, estadisticas, total: () => registros.length };
+  // Barrios ya registrados (sin datos personales) para sugerirlos en el formulario.
+  function barrios() {
+    return agrupar(registros, 'barrio').map(({ nombre, comuna }) => ({ nombre, comuna }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  }
+
+  return { agregar, listar, csv, eliminar, estadisticas, barrios, total: () => registros.length };
 }
 
 module.exports = { crearRegistros, MAX_FIRMA };

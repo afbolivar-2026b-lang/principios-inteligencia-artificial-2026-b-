@@ -24,6 +24,7 @@ async function api(ruta, opciones = {}) {
   if (!res.ok) {
     const err = new Error(datos.error || 'Error de conexión');
     err.estado = res.status;
+    err.campo = datos.campo || null;
     throw err;
   }
   return datos;
@@ -254,6 +255,99 @@ function vistaRegistro() {
     if (n) n.textContent = fmt.format(c.totalRegistros);
   }).catch(() => {});
 
+  // ---- Campos con error (por ejemplo, cédula o teléfono repetidos) ----
+  function limpiarErrores() {
+    for (const n of vista.querySelectorAll('[aria-invalid="true"]')) n.removeAttribute('aria-invalid');
+    for (const n of vista.querySelectorAll('.ayuda-error')) n.remove();
+    document.getElementById('r-firma').classList.remove('invalida');
+  }
+  function marcarCampo(campo, mensaje) {
+    const nodo = document.getElementById(`r-${campo}`);
+    if (!nodo) return;
+    if (campo === 'firma') {
+      nodo.classList.add('invalida');
+      nodo.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return;
+    }
+    nodo.setAttribute('aria-invalid', 'true');
+    if (mensaje && nodo.closest('.campo')) {
+      const ayuda = el('p', { className: 'ayuda-error', id: `ayuda-${campo}`, textContent: mensaje });
+      nodo.closest('.campo').append(ayuda);
+      nodo.setAttribute('aria-describedby', ayuda.id);
+    }
+    nodo.focus();
+  }
+  document.getElementById('form-registro').addEventListener('input', (ev) => {
+    if (ev.target.getAttribute('aria-invalid') === 'true') {
+      ev.target.removeAttribute('aria-invalid');
+      ev.target.closest('.campo')?.querySelector('.ayuda-error')?.remove();
+    }
+  });
+
+  // ---- Sugerencias de barrio: reutilizar el nombre ya registrado ----
+  const inputBarrio = document.getElementById('r-barrio');
+  const inputComuna = document.getElementById('r-comuna');
+  const lista = document.getElementById('sugerencias-barrio');
+  let barriosConocidos = [];
+  let opciones = [];
+  let activa = -1;
+  api('/api/barrios').then((b) => { barriosConocidos = b; }).catch(() => {});
+  const clave = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+  function cerrarSugerencias() {
+    lista.hidden = true;
+    inputBarrio.setAttribute('aria-expanded', 'false');
+    activa = -1;
+  }
+  function elegirBarrio(b) {
+    inputBarrio.value = b.nombre;
+    inputComuna.value = b.comuna;
+    inputComuna.removeAttribute('aria-invalid');
+    cerrarSugerencias();
+    inputComuna.focus();
+  }
+  function resaltar(texto, q) {
+    const i = clave(texto).indexOf(q);
+    if (i < 0 || !q) return [texto];
+    return [texto.slice(0, i), el('mark', { textContent: texto.slice(i, i + q.length) }), texto.slice(i + q.length)];
+  }
+  function mostrarSugerencias() {
+    const q = clave(inputBarrio.value);
+    opciones = q ? barriosConocidos.filter((b) => clave(b.nombre).includes(q))
+      .sort((a, b) => clave(a.nombre).indexOf(q) - clave(b.nombre).indexOf(q)).slice(0, 6) : [];
+    if (!opciones.length || (opciones.length === 1 && clave(opciones[0].nombre) === q && inputComuna.value)) {
+      cerrarSugerencias();
+      return;
+    }
+    activa = -1;
+    lista.replaceChildren(
+      el('li', { className: 'sugerencias-titulo', textContent: 'Barrios ya registrados', 'aria-hidden': 'true' }),
+      ...opciones.map((b, i) => {
+        const li = el('li', { role: 'option', id: `sug-${i}` }, el('span', {}, ...resaltar(b.nombre, q)), el('small', { textContent: b.comuna }));
+        li.addEventListener('pointerdown', (ev) => { ev.preventDefault(); elegirBarrio(b); });
+        return li;
+      }));
+    lista.hidden = false;
+    inputBarrio.setAttribute('aria-expanded', 'true');
+  }
+  function moverActiva(paso) {
+    const items = lista.querySelectorAll('[role="option"]');
+    if (!items.length) return;
+    activa = (activa + paso + items.length) % items.length;
+    items.forEach((li, i) => li.setAttribute('aria-selected', String(i === activa)));
+    inputBarrio.setAttribute('aria-activedescendant', items[activa].id);
+  }
+  inputBarrio.addEventListener('input', mostrarSugerencias);
+  inputBarrio.addEventListener('focus', mostrarSugerencias);
+  inputBarrio.addEventListener('blur', () => setTimeout(cerrarSugerencias, 120));
+  inputBarrio.addEventListener('keydown', (ev) => {
+    if (lista.hidden) return;
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); moverActiva(1); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); moverActiva(-1); }
+    else if (ev.key === 'Enter' && activa >= 0) { ev.preventDefault(); elegirBarrio(opciones[activa]); }
+    else if (ev.key === 'Escape') cerrarSugerencias();
+  });
+
   const canvas = document.getElementById('firma');
   const guia = document.getElementById('firma-guia');
   const ctx = canvas.getContext('2d');
@@ -268,6 +362,7 @@ function vistaRegistro() {
     guia.hidden = false;
   }
   limpiar();
+  canvas.addEventListener('pointerdown', () => document.getElementById('r-firma').classList.remove('invalida'));
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.strokeStyle = '#1A1713';
@@ -309,16 +404,17 @@ function vistaRegistro() {
     const error = document.getElementById('error-registro');
     const boton = ev.target.querySelector('button[type="submit"]');
     error.textContent = '';
+    limpiarErrores();
     const valor = (id) => document.getElementById(id).value;
-    const vacio = ['r-nombre', 'r-apellido', 'r-cedula', 'r-edad', 'r-telefono', 'r-barrio', 'r-comuna']
-      .find((id) => !valor(id).trim());
+    const vacio = ['nombre', 'apellido', 'cedula', 'edad', 'telefono', 'barrio', 'comuna']
+      .find((c) => !valor(`r-${c}`).trim());
     if (vacio) {
-      const etiqueta = document.querySelector(`label[for="${vacio}"]`).textContent;
+      const etiqueta = document.querySelector(`label[for="r-${vacio}"]`).textContent;
       error.textContent = `Falta llenar: ${etiqueta}.`;
-      document.getElementById(vacio).focus();
+      marcarCampo(vacio);
       return;
     }
-    if (!firmado) { error.textContent = 'Falta la firma.'; return; }
+    if (!firmado) { error.textContent = 'Falta la firma.'; marcarCampo('firma'); return; }
     if (!document.getElementById('r-autorizacion').checked) {
       error.textContent = 'Debes autorizar el tratamiento de datos para registrarte.';
       return;
@@ -346,7 +442,12 @@ function vistaRegistro() {
       document.getElementById('gracias').textContent = `Gracias, ${r.nombre}. Ya eres parte.`;
       document.getElementById('otro-registro').addEventListener('click', vistaRegistro);
     } catch (e) {
-      error.textContent = e.message;
+      if (e.campo && e.campo !== 'autorizacion') {
+        marcarCampo(e.campo, e.message);
+        error.textContent = 'Revisa el campo marcado en rojo.';
+      } else {
+        error.textContent = e.message;
+      }
       boton.disabled = false;
     }
   });

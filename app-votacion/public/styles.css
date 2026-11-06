@@ -200,6 +200,27 @@ select {
 input::placeholder { color: var(--tenue); opacity: .75; }
 input:hover, select:hover { border-color: var(--tenue); }
 input:focus, select:focus { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3px var(--acento-suave); }
+input[aria-invalid="true"]:not([type="checkbox"]):not([type="radio"]), .firma-caja.invalida { border-color: var(--acento); box-shadow: 0 0 0 3px var(--acento-suave); }
+.ayuda-error { font-size: 13px; font-weight: 600; color: var(--acento); margin: 0; }
+
+/* ---------- Sugerencias de barrio ---------- */
+.autocompletar { position: relative; }
+.sugerencias {
+  position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% - 12px);
+  list-style: none; margin: 0; padding: 6px;
+  background: var(--superficie); border: 1.5px solid var(--linea-fuerte); border-radius: var(--r-m);
+  box-shadow: 4px 4px 0 var(--linea-fuerte);
+  max-height: 260px; overflow-y: auto;
+}
+.sugerencias li {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 10px 10px; border-radius: var(--r-s); cursor: pointer; font-weight: 550;
+}
+.sugerencias li small { font: 500 11px/1 var(--f-mono); color: var(--tenue); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+.sugerencias li:hover, .sugerencias li[aria-selected="true"] { background: var(--superficie-2); }
+.sugerencias mark { background: none; color: var(--acento); font-weight: 750; }
+.sugerencias-titulo { font: 500 10px/1 var(--f-mono) !important; color: var(--tenue); text-transform: uppercase; letter-spacing: .1em; padding: 8px 10px 6px !important; cursor: default !important; }
+.sugerencias-titulo:hover { background: none !important; }
 
 /* ==========================================================================
    PARTE PÚBLICA

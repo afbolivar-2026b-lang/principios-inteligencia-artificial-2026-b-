@@ -13,10 +13,18 @@ const LIMITES = {
   opcionesMax: 10,
 };
 
+// Clave para comparar textos sin importar mayúsculas, tildes, espacios ni signos.
+function claveTexto(t) {
+  return String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9ñ]+/g, ' ').trim();
+}
+
 class ErrorValidacion extends Error {
-  constructor(mensaje, estado = 400) {
+  // campo: nombre del dato con problema, para que el formulario lo resalte.
+  constructor(mensaje, estado = 400, campo = null) {
     super(mensaje);
     this.estado = estado;
+    this.campo = campo;
   }
 }
 
@@ -77,8 +85,11 @@ function crearStore(archivo) {
         `Debe haber entre ${LIMITES.opcionesMin} y ${LIMITES.opcionesMax} opciones`
       );
     }
-    if (new Set(ops.map((o) => o.toLowerCase())).size !== ops.length) {
-      throw new ErrorValidacion('Las opciones no pueden repetirse');
+    if (new Set(ops.map(claveTexto)).size !== ops.length) {
+      throw new ErrorValidacion('Las opciones no pueden repetirse', 400, 'opciones');
+    }
+    if (Object.values(encuestas).some((e) => !e.cerrada && claveTexto(e.pregunta) === claveTexto(p))) {
+      throw new ErrorValidacion('Ya hay una encuesta abierta con esa misma pregunta', 409, 'pregunta');
     }
 
     const id = crypto.randomBytes(6).toString('base64url');
@@ -133,4 +144,4 @@ function crearStore(archivo) {
   return { crear, obtener, listar, votar, cerrar };
 }
 
-module.exports = { crearStore, ErrorValidacion, LIMITES };
+module.exports = { crearStore, ErrorValidacion, LIMITES, claveTexto };

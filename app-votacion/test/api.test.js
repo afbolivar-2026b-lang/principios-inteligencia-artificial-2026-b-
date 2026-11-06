@@ -124,3 +124,18 @@ test('rechaza orígenes externos, JSON malformado y rutas fuera de public', asyn
   assert.match(inicio.headers.get('content-security-policy'), /default-src 'self'/);
   assert.match(inicio.headers.get('set-cookie'), /HttpOnly/);
 });
+
+test('no permite dos encuestas abiertas con la misma pregunta', async () => {
+  const c = cliente();
+  const body = { pregunta: '¿Hacemos la reunión el sábado?', opciones: ['Sí', 'No'] };
+  assert.equal((await c('/api/encuestas', { method: 'POST', body, headers: ADMIN })).estado, 201);
+  const repetida = await c('/api/encuestas', {
+    method: 'POST', headers: ADMIN, body: { ...body, pregunta: '¿hacemos la reunion el SABADO?' },
+  });
+  assert.equal(repetida.estado, 409);
+  assert.equal(repetida.datos.campo, 'pregunta');
+  const opciones = await c('/api/encuestas', {
+    method: 'POST', headers: ADMIN, body: { pregunta: 'Otra', opciones: ['Sí', 'si'] },
+  });
+  assert.equal(opciones.estado, 400);
+});

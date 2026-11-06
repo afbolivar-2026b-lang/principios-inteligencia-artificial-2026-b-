@@ -89,9 +89,11 @@
         <fieldset>
           <legend><span class="paso">02</span> ¿Dónde vives?</legend>
           <div class="campos dos">
-            <div class="campo">
+            <div class="campo autocompletar">
               <label for="r-barrio">Barrio</label>
-              <input id="r-barrio" maxlength="80" required>
+              <input id="r-barrio" maxlength="80" required autocomplete="off"
+                     role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugerencias-barrio">
+              <ul id="sugerencias-barrio" class="sugerencias" role="listbox" hidden></ul>
             </div>
             <div class="campo">
               <label for="r-comuna">Comuna</label>
@@ -102,7 +104,7 @@
 
         <fieldset>
           <legend><span class="paso">03</span> Firma</legend>
-          <div class="firma-caja">
+          <div class="firma-caja" id="r-firma">
             <canvas id="firma" width="640" height="200" aria-label="Espacio para firmar"></canvas>
             <span class="firma-linea" aria-hidden="true"></span>
             <span class="firma-guia" id="firma-guia">Firma aquí con el dedo o el mouse</span>

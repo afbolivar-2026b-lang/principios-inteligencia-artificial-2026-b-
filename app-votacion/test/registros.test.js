@@ -18,13 +18,15 @@ before(async () => {
 });
 after(() => servidor.close());
 
+let telefonos = 3001000000;
 function persona(extra = {}) {
+  telefonos += 1;
   return {
     nombre: 'María José',
     apellido: 'Gómez Peña',
     cedula: '1.075.234.567',
     edad: 34,
-    telefono: '300 123 4567',
+    telefono: String(telefonos),
     barrio: 'Las Granjas',
     comuna: 'Comuna 2',
     firma: FIRMA,
@@ -61,14 +63,14 @@ test('registra una persona y la muestra solo al administrador', async () => {
   const lista = await (await admin('/api/registros')).json();
   assert.equal(lista.length, 1);
   assert.equal(lista[0].cedula, '1075234567');
-  assert.equal(lista[0].telefono, '3001234567');
+  assert.match(lista[0].telefono, /^300\d{7}$/);
   assert.equal(lista[0].firma, FIRMA);
 
   const csv = await admin('/api/registros.csv');
   assert.equal(csv.status, 200);
   assert.match(csv.headers.get('content-disposition'), /attachment/);
   const texto = await csv.text();
-  assert.match(texto, /"María José","Gómez Peña","1075234567","34","3001234567","Las Granjas","Comuna 2","Sí"/);
+  assert.match(texto, /"María José","Gómez Peña","1075234567","34","300\d{7}","Las Granjas","Comuna 2","Sí"/);
 });
 
 test('valida cada campo', async () => {
@@ -98,7 +100,7 @@ test('evita inyección de fórmulas en el CSV', async () => {
   const r = await registrar(persona({ cedula: '99999999', barrio: '=HYPERLINK("http://x")' }));
   assert.equal(r.estado, 201);
   const texto = await (await admin('/api/registros.csv')).text();
-  assert.match(texto, /"'=HYPERLINK\(""http:\/\/x""\)"/);
+  assert.match(texto, /"'=hyperlink\(""http:\/\/x""\)"/i);
 });
 
 test('bloquea tras muchos intentos fallidos de contraseña', async () => {
@@ -171,6 +173,52 @@ test('sesión con cookie, estadísticas del panel y eliminación', async () => {
     // La configuración pública solo expone el nombre y el total
     const cfg = await (await fetch(`${url}/api/config`)).json();
     assert.deepEqual(Object.keys(cfg).sort(), ['nombre', 'totalRegistros']);
+  } finally {
+    otro.close();
+  }
+});
+
+test('no agrega información repetida', async () => {
+  const otro = crearServidor({ claveAdmin: CLAVE });
+  await new Promise((r) => otro.listen(0, r));
+  const url = `http://127.0.0.1:${otro.address().port}`;
+  const post = async (body) => {
+    const res = await fetch(`${url}/api/registros`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    return { estado: res.status, datos: await res.json() };
+  };
+  try {
+    const base = { ...persona(), cedula: '44444444', telefono: '3105550000', nombre: 'carlos andrés', apellido: 'DE LA OSSA', barrio: 'las granjas', comuna: 'comuna 2' };
+    assert.equal((await post(base)).estado, 201);
+
+    // Misma cédula (con puntos) -> rechazada, indicando el campo
+    const c = await post({ ...base, cedula: '44.444.444', telefono: '3105550001' });
+    assert.equal(c.estado, 409);
+    assert.equal(c.datos.campo, 'cedula');
+
+    // Mismo teléfono (con +57 y espacios) -> rechazado
+    const t = await post({ ...base, cedula: '55555555', telefono: '+57 310 555 0000' });
+    assert.equal(t.estado, 409);
+    assert.equal(t.datos.campo, 'telefono');
+
+    // Barrio escrito distinto se une con el existente
+    assert.equal((await post({ ...base, cedula: '66666666', telefono: '3105550002', barrio: 'LAS GRANJAS', comuna: '2' })).estado, 201);
+    assert.equal((await post({ ...base, cedula: '77777777', telefono: '3105550003', barrio: 'Lás  Granjas', comuna: 'Comuna 2' })).estado, 201);
+
+    // Los errores de validación también indican el campo
+    assert.equal((await post({ ...base, cedula: '88888888', telefono: '3105550004', edad: 10 })).datos.campo, 'edad');
+
+    const lista = await (await fetch(`${url}/api/registros`, { headers: { Authorization: `Bearer ${CLAVE}` } })).json();
+    assert.equal(lista.length, 3);
+    assert.deepEqual([...new Set(lista.map((r) => r.barrio))], ['Las Granjas']);
+    assert.deepEqual([...new Set(lista.map((r) => r.comuna))], ['Comuna 2']);
+    assert.equal(lista.at(-1).nombre, 'Carlos Andrés');
+    assert.equal(lista.at(-1).apellido, 'De la Ossa');
+
+    // Sugerencias públicas de barrios: sin datos personales
+    const barrios = await (await fetch(`${url}/api/barrios`)).json();
+    assert.deepEqual(barrios, [{ nombre: 'Las Granjas', comuna: 'Comuna 2' }]);
   } finally {
     otro.close();
   }
