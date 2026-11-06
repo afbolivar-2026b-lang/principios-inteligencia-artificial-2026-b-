@@ -273,3 +273,39 @@ test('ajustes: diseño, nombre, eslogan y enlace público', async () => {
     otro.close();
   }
 });
+
+test('descargas: Excel con tablero y reporte PDF (solo el equipo)', async () => {
+  const otro = crearServidor({ claveAdmin: CLAVE, nombreCampana: 'Campaña Ñ' });
+  await new Promise((r) => otro.listen(0, r));
+  const url = `http://127.0.0.1:${otro.address().port}`;
+  const ADMIN = { headers: { Authorization: `Bearer ${CLAVE}` } };
+  try {
+    await fetch(`${url}/api/registros`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(persona({ cedula: '12121212', nombre: 'Óscar', comuna: '3' })),
+    });
+    assert.equal((await fetch(`${url}/api/tablero.xlsx`)).status, 401);
+    assert.equal((await fetch(`${url}/api/reporte.pdf`)).status, 401);
+
+    const x = await fetch(`${url}/api/tablero.xlsx?comuna=${encodeURIComponent('Comuna 3')}`, ADMIN);
+    assert.equal(x.status, 200);
+    assert.match(x.headers.get('content-type'), /spreadsheetml/);
+    assert.match(x.headers.get('content-disposition'), /tablero-campana-n-.*\.xlsx/);
+    const zip = Buffer.from(await x.arrayBuffer());
+    assert.equal(zip.subarray(0, 4).toString('hex'), '504b0304', 'es un archivo ZIP/XLSX');
+    const nombres = zip.toString('latin1');
+    for (const parte of ['xl/workbook.xml', 'xl/worksheets/sheet1.xml', 'xl/charts/chart8.xml', 'xl/tables/table1.xml']) {
+      assert.ok(nombres.includes(parte), `contiene ${parte}`);
+    }
+
+    const p = await fetch(`${url}/api/reporte.pdf?periodo=todo`, ADMIN);
+    assert.equal(p.status, 200);
+    assert.equal(p.headers.get('content-type'), 'application/pdf');
+    const pdf = Buffer.from(await p.arrayBuffer());
+    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+    assert.ok(pdf.toString('latin1').includes('/Author (Opita Digital)'));
+    assert.ok(pdf.toString('latin1').trimEnd().endsWith('%%EOF'));
+  } finally {
+    otro.close();
+  }
+});

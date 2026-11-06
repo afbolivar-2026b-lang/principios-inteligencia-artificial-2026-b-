@@ -1088,6 +1088,11 @@ textarea:focus { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3p
 .grafico .guia { stroke: var(--tinta); stroke-width: 1; opacity: .35; }
 .grafico .punto { fill: var(--dato); stroke: var(--superficie); stroke-width: 2; }
 
+.bloque-qr { display: flex; flex-direction: column; gap: 14px; }
+.qr-rapido { display: flex; align-items: center; gap: 16px; }
+.qr-rapido canvas { width: 132px; height: 132px; flex: none; border-radius: 10px; border: 1px solid var(--linea); background: #fff; padding: 6px; }
+.qr-acciones { margin-top: 0; }
+.qr-acciones .boton { flex: 1; }
 .encuesta-destacada h3 { font-size: 18px; line-height: 1.3; margin: 0 0 16px; }
 
 @media (max-width: 1180px) {

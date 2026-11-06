@@ -39,6 +39,8 @@
     <symbol id="i-ubicacion" viewBox="0 0 24 24"><path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
     <symbol id="i-casa" viewBox="0 0 24 24"><path d="M3.5 11.5L12 4l8.5 7.5M6 10v10h12V10M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-voto" viewBox="0 0 24 24"><path d="M4 13h16v7H4zM8 13V5h8v8M10 9l1.6 1.6L14.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-excel" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v6h6M8.5 12.5l4 5M12.5 12.5l-4 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pdf" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v6h6M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-compartir" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h1M20 14h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></symbol>
     <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
     <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M4.5 19.5l1.1-3.6A8 8 0 1 1 8.4 18.6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8.6c.2-.5.6-.6 1-.5l.7 1.6c.1.3 0 .6-.2.8l-.4.4c.5 1.1 1.4 2 2.5 2.5l.4-.4c.2-.2.5-.3.8-.2l1.6.7c.1.4 0 .8-.5 1-1.6.8-6.7-3.2-5.9-5.9z" fill="currentColor"/></symbol>
@@ -245,8 +247,9 @@
         </div>
       </div>
       <div class="tablero-acciones">
+        <a id="bajar-excel" class="boton boton-borde" download><svg class="icono"><use href="#i-excel"/></svg>Excel</a>
+        <a id="bajar-pdf" class="boton boton-borde" download><svg class="icono"><use href="#i-pdf"/></svg>PDF</a>
         <a href="#/panel/compartir" class="boton boton-acento"><svg class="icono"><use href="#i-compartir"/></svg>Compartir registro</a>
-        <a href="#/panel/registros" class="boton boton-borde">Ver registros</a>
       </div>
     </header>
 
@@ -330,13 +333,29 @@
         <ol id="l-barrios" class="ranking"></ol>
       </article>
 
-      <article class="bloque col-6 encuesta-destacada">
+      <article class="bloque col-4 encuesta-destacada">
         <header class="bloque-cab"><h2>Encuesta destacada</h2><a href="#/panel/encuestas" class="enlace">Ver encuestas</a></header>
         <div id="l-encuesta"></div>
       </article>
-      <article class="bloque col-6">
+      <article class="bloque col-4">
         <header class="bloque-cab"><h2>Últimos registros</h2><a href="#/panel/registros" class="enlace">Ver todos</a></header>
         <ul id="l-recientes" class="recientes"></ul>
+      </article>
+      <article class="bloque col-4 bloque-qr">
+        <header class="bloque-cab"><h2>Comparte el registro</h2><a href="#/panel/compartir" class="enlace">Más opciones</a></header>
+        <div class="qr-rapido">
+          <canvas id="qr-tablero" width="320" height="320" aria-label="Código QR del formulario"></canvas>
+          <p class="meta">Que la gente lo escanee con la cámara del celular.</p>
+        </div>
+        <div class="enlace-caja">
+          <svg class="icono"><use href="#i-enlace"/></svg>
+          <input id="enlace-tablero" readonly aria-label="Enlace del formulario">
+          <button type="button" id="copiar-tablero" class="boton boton-mini">Copiar</button>
+        </div>
+        <div class="acciones qr-acciones">
+          <a id="whatsapp-tablero" class="boton boton-whatsapp boton-mini" target="_blank" rel="noopener"><svg class="icono"><use href="#i-whatsapp"/></svg>WhatsApp</a>
+          <button type="button" id="bajar-qr-tablero" class="boton boton-borde boton-mini"><svg class="icono"><use href="#i-descarga"/></svg>Descargar QR</button>
+        </div>
       </article>
     </section>
   </template>
@@ -347,9 +366,14 @@
         <p class="sobretitulo">Base de datos</p>
         <h1 class="titulo-pagina">Registros</h1>
       </div>
-      <button type="button" id="exportar" class="boton boton-acento">
-        <svg class="icono"><use href="#i-descarga"/></svg>Descargar Excel
-      </button>
+      <div class="tablero-acciones">
+        <a href="/api/tablero.xlsx?periodo=todo" id="exportar-xlsx" class="boton boton-acento" download>
+          <svg class="icono"><use href="#i-excel"/></svg>Excel con tablero</a>
+        <a href="/api/reporte.pdf?periodo=todo" id="exportar-pdf" class="boton boton-borde" download>
+          <svg class="icono"><use href="#i-pdf"/></svg>PDF</a>
+        <button type="button" id="exportar" class="boton boton-borde">
+          <svg class="icono"><use href="#i-descarga"/></svg>CSV</button>
+      </div>
     </header>
     <div class="filtros">
       <input id="buscar" type="search" placeholder="Buscar por nombre, cédula, teléfono o barrio" aria-label="Buscar">

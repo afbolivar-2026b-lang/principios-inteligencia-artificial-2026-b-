@@ -56,12 +56,14 @@ Pide nombre, apellido, cédula, edad, teléfono, barrio, comuna y **firma**
 Protegido con contraseña. La sesión dura 8 horas, usa una cookie `HttpOnly` y
 se bloquea 15 minutos tras 10 intentos fallidos.
 
-- **Inicio**: personas registradas, registros de hoy, últimos 7 días comparados
-  con la semana anterior, edad promedio, registros por día de los últimos 30 días
-  (con detalle al pasar el mouse), registros por comuna, por rango de edad,
-  barrios más fuertes, últimos registros y estado de las encuestas.
+- **Inicio (tablero)**: foto del candidato; filtros por periodo, comuna y edad;
+  8 indicadores (registrados, hoy, 7 días, crecimiento, edad promedio, comunas,
+  barrios, votos) y gráficas de registros por día, crecimiento acumulado, día de
+  la semana, hora del registro, comunas, edades, barrios, encuesta destacada y
+  últimos registros. Botones **Excel** y **PDF** que descargan con los filtros
+  puestos, y recuadro para compartir el registro con QR, enlace o WhatsApp.
 - **Registros**: tabla con buscador, filtro por comuna, firma de cada persona,
-  botón para eliminar un registro y descarga a Excel (CSV con tildes y ñ).
+  botón para eliminar un registro y descargas en Excel, PDF y CSV.
 - **Encuestas**: crear encuestas, ver resultados en vivo, copiar el enlace y
   cerrar la votación.
 
@@ -73,6 +75,16 @@ se bloquea 15 minutos tras 10 intentos fallidos.
 
 ### Encuestas públicas (`/#/encuestas`)
 La gente vota una vez por navegador y ve los resultados al momento.
+
+## Descargas
+
+- **Excel con tablero** (`.xlsx`): hoja *Tablero* con filtros desplegables
+  (comuna y rango de edad), 8 indicadores y 8 gráficas de Excel; hoja *Datos* con
+  las fórmulas (CONTAR.SI.CONJUNTO, PROMEDIO.SI.CONJUNTO…) que alimentan las
+  gráficas; y hoja *Registros* como tabla de Excel con filtros. Al cambiar un
+  filtro o agregar filas, Excel recalcula todo.
+- **Reporte PDF**: resumen con indicadores y gráficas, y listado de personas.
+- **CSV** para otros programas.
 
 ## Marca de Opita Digital
 
@@ -88,7 +100,8 @@ La gente vota una vez por navegador y ve los resultados al momento.
 
 ## Diseño
 
-- Cuatro diseños que se cambian desde el panel: **Opita** (verde y amarillo del
+- Cinco diseños que se cambian desde el panel: **Elegante** (azul medianoche,
+  dorado y montañas del Huila; el predeterminado), **Opita** (verde y amarillo del
   Huila, con la cinta del sombrero), **Moderno oscuro**, **Limpio** y **Popular**.
 - Tipografías incluidas: Bricolage Grotesque (títulos), Public Sans (texto) e
   IBM Plex Mono (etiquetas y cifras), todas con licencia OFL (`public/fonts/LICENCIAS.txt`).
@@ -112,6 +125,9 @@ La gente vota una vez por navegador y ve los resultados al momento.
 | GET    | `/api/registros`              | equipo   | Todos los registros |
 | GET    | `/api/registros.csv`          | equipo   | Descarga para Excel |
 | DELETE | `/api/registros/:id`          | equipo   | Eliminar un registro |
+| GET    | `/api/tablero.xlsx`           | equipo   | Excel con tablero (`?periodo=&comuna=&edad=`) |
+| GET    | `/api/reporte.pdf`            | equipo   | Reporte PDF (`?periodo=&comuna=&edad=`) |
+| GET    | `/api/panel`                  | equipo   | Estadísticas con filtros (`?periodo=7|30|90|todo&comuna=&edad=`) |
 | POST   | `/api/encuestas`              | equipo   | `{ "pregunta": "...", "opciones": ["A", "B"] }` |
 | POST   | `/api/encuestas/:id/cerrar`   | equipo   | Cerrar la votación |
 
@@ -127,6 +143,7 @@ app-votacion/
 ├── store.js         # encuestas y votos
 ├── ajustes.js       # diseño, nombre, eslogan y enlace público
 ├── marca.js         # datos de Opita Digital (firma y marca de agua)
+├── exportar/        # Excel (.xlsx con gráficas) y PDF, sin librerías
 ├── public/          # interfaz (HTML, CSS, JS, tipografías)
 └── test/            # pruebas con node:test
 ```

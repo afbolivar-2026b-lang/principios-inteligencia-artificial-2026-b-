@@ -14,6 +14,8 @@ const { crearStore, ErrorValidacion } = require('./store');
 const { crearRegistros, MAX_FIRMA } = require('./registros');
 const { crearAjustes } = require('./ajustes');
 const MARCA = require('./marca');
+const { crearExcelTablero } = require('./exportar/excel');
+const { crearReportePDF } = require('./exportar/pdf');
 
 const PUBLICO = path.join(__dirname, 'public');
 const MAX_CUERPO = 16 * 1024;
@@ -278,6 +280,56 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, claveAd
             lista: encuestas.slice(0, 4),
           },
         }, extra);
+        return;
+      }
+
+      // ---- Descargas: Excel del tablero y reporte PDF ----
+      if ((ruta === '/api/tablero.xlsx' || ruta === '/api/reporte.pdf') && req.method === 'GET') {
+        exigirAdmin(req);
+        const filtro = {
+          periodo: url.searchParams.get('periodo') || '30',
+          comuna: url.searchParams.get('comuna') || '',
+          edad: url.searchParams.get('edad') || '',
+        };
+        const aj = ajustes.obtener();
+        const encuestas = store.listar();
+        const encuesta = encuestas.find((e) => !e.cerrada) || encuestas[0] || null;
+        const votos = encuestas.reduce((t, e) => t + e.totalVotos, 0);
+        const fecha = new Date().toISOString().slice(0, 10);
+        const slug = aj.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'campana';
+        let cuerpo; let tipo; let nombre;
+        if (ruta === '/api/tablero.xlsx') {
+          cuerpo = crearExcelTablero(registros.listar(), {
+            nombre: aj.nombre, comuna: filtro.comuna, edad: filtro.edad, encuesta, votos,
+          });
+          tipo = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          nombre = `tablero-${slug}-${fecha}.xlsx`;
+        } else {
+          const periodos = { 7: 'últimos 7 días', 30: 'últimos 30 días', 90: 'últimos 90 días', todo: 'desde el inicio' };
+          const partes = [periodos[filtro.periodo] || 'últimos 30 días'];
+          if (filtro.comuna) partes.push(filtro.comuna);
+          if (filtro.edad) partes.push(`${filtro.edad} años`);
+          cuerpo = crearReportePDF({
+            nombre: aj.nombre,
+            candidato: aj.candidato,
+            filtroTexto: `Filtros: ${partes.join(' · ')}`,
+            stats: registros.estadisticas(filtro),
+            lista: registros.listaFiltrada(filtro),
+            votos,
+            generado: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota', dateStyle: 'long', timeStyle: 'short' }),
+          });
+          tipo = 'application/pdf';
+          nombre = `reporte-${slug}-${fecha}.pdf`;
+        }
+        res.writeHead(200, {
+          ...CABECERAS_SEGURIDAD,
+          'Content-Type': tipo,
+          'Content-Disposition': `attachment; filename="${nombre}"`,
+          'Content-Length': cuerpo.length,
+          'Cache-Control': 'no-store',
+        });
+        res.end(cuerpo);
         return;
       }
 

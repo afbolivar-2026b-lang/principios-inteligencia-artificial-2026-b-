@@ -681,7 +681,32 @@ async function vistaPanelInicio() {
   const limpiar = document.getElementById('f-limpiar');
   let opcionesCargadas = false;
 
+  // Descargas con los filtros puestos
+  function actualizarDescargas() {
+    const q = new URLSearchParams(filtroPanel).toString();
+    document.getElementById('bajar-excel').href = `/api/tablero.xlsx?${q}`;
+    document.getElementById('bajar-pdf').href = `/api/reporte.pdf?${q}`;
+  }
+
+  // Compartir el registro con QR, enlace o WhatsApp sin salir del tablero
+  const url = urlPublica();
+  const qrCanvas = document.getElementById('qr-tablero');
+  const qr = matrizQR(url);
+  const ctxQR = qrCanvas.getContext('2d');
+  ctxQR.fillStyle = '#FFFFFF';
+  ctxQR.fillRect(0, 0, 320, 320);
+  dibujarQR(ctxQR, qr, 10, 10, 300);
+  document.getElementById('enlace-tablero').value = url;
+  document.getElementById('whatsapp-tablero').href =
+    `https://wa.me/?text=${encodeURIComponent(`¡Súmate a ${config.nombre}! Regístrate aquí: ${url}`)}`;
+  const copiarT = document.getElementById('copiar-tablero');
+  copiarT.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(url); copiarT.textContent = 'Copiado'; } catch { document.getElementById('enlace-tablero').select(); }
+  });
+  document.getElementById('bajar-qr-tablero').addEventListener('click', () => descargarCanvas(qrCanvas, nombreArchivo('qr')));
+
   function marcarFiltros() {
+    actualizarDescargas();
     for (const b of vista.querySelectorAll('[data-periodo]')) {
       const activo = b.dataset.periodo === filtroPanel.periodo;
       b.classList.toggle('activo', activo);
@@ -1226,7 +1251,7 @@ async function dibujarAfiche(canvas, formato, url) {
 
   // Marca de agua de Opita Digital en todo el anuncio
   ctx.save();
-  ctx.globalAlpha = tema === 'limpio' ? 0.025 : 0.035;
+  ctx.globalAlpha = tema === 'limpio' ? 0.02 : 0.025;
   ctx.fillStyle = c.texto;
   ctx.font = '700 26px "Public Sans"';
   ctx.translate(W / 2, H / 2);
@@ -1344,10 +1369,10 @@ async function dibujarAfiche(canvas, formato, url) {
       for (const l of partirLineas(ctx, 'Recibe primero las noticias y reuniones de tu barrio y tu comuna.', bw)) { by += 6; ctx.fillText(l, bx, by + 30); by += 38; }
       ctx.globalAlpha = 1;
       const botonY = ty + tarjetaH - 96;
-      ctx.fillStyle = c.boton;
+      ctx.fillStyle = tema === 'elegante' ? '#C9A45C' : c.boton;
       rectRedondeado(ctx, bx, botonY, Math.min(bw, 330), 90, 18);
       ctx.fill();
-      ctx.fillStyle = c.sobreBoton;
+      ctx.fillStyle = tema === 'elegante' ? '#0E1B2C' : c.sobreBoton;
       ctx.font = '700 34px "Public Sans"';
       ctx.fillText('Regístrate →', bx + 34, botonY + 57);
     }

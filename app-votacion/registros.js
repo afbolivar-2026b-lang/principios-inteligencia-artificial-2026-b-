@@ -196,13 +196,11 @@ function crearRegistros(archivo) {
    * filtro.comuna:  nombre exacto de la comuna (opcional)
    * filtro.edad:    rango, p. ej. '26–35' (opcional)
    */
-  function estadisticas(filtro = {}, ahora = new Date()) {
-    const hoy = dia(ahora);
+  // Aplica los filtros del tablero: comuna, rango de edad y periodo.
+  function aplicarFiltro(filtro = {}, ahora = new Date()) {
     const rango = RANGOS.find((r) => etiquetaRango(r) === filtro.edad);
     const filtrados = registros.filter((r) =>
       (!filtro.comuna || r.comuna === filtro.comuna) && (!rango || (r.edad >= rango[0] && r.edad <= rango[1])));
-
-    // Ventana de días del periodo
     let dias = PERIODOS[filtro.periodo] || (filtro.periodo === 'todo' ? 0 : 30);
     if (!dias) {
       const primera = filtrados.reduce((m, r) => (r.fecha < m ? r.fecha : m), ahora.toISOString());
@@ -210,7 +208,19 @@ function crearRegistros(archivo) {
     }
     const ventana = [];
     for (let i = dias - 1; i >= 0; i--) ventana.push(dia(new Date(ahora.getTime() - i * 86400000)));
-    const inicio = ventana[0];
+    const inicio = filtro.periodo === 'todo' ? '0000-00-00' : ventana[0];
+    return { rango, filtrados, ventana, inicio };
+  }
+
+  // Personas del periodo y filtros, de la más reciente a la más antigua.
+  function listaFiltrada(filtro = {}, ahora = new Date()) {
+    const { filtrados, inicio } = aplicarFiltro(filtro, ahora);
+    return filtrados.filter((r) => dia(r.fecha) >= inicio).sort((a, b) => b.fecha.localeCompare(a.fecha));
+  }
+
+  function estadisticas(filtro = {}, ahora = new Date()) {
+    const hoy = dia(ahora);
+    const { rango, filtrados, ventana, inicio } = aplicarFiltro(filtro, ahora);
 
     const porDiaMapa = new Map();
     for (const r of filtrados) {
@@ -281,7 +291,7 @@ function crearRegistros(archivo) {
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }
 
-  return { agregar, listar, csv, eliminar, estadisticas, barrios, total: () => registros.length };
+  return { agregar, listar, listaFiltrada, csv, eliminar, estadisticas, barrios, total: () => registros.length };
 }
 
 module.exports = { crearRegistros, MAX_FIRMA };
