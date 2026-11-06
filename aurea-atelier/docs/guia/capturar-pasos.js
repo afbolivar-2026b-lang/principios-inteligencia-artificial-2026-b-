@@ -73,6 +73,19 @@ const W = ms => new Promise(r => setTimeout(r, ms));
     await hl('#v3d-cot'); await shot();
     await p.evaluate(() => { window.AUREA_V3D = null; });
   });
+  // 5b · Probador con maniquí
+  await chapter(async () => {
+    // Espera a que cargue la foto del maniquí vestido.
+    const quieto = async () => { await p.evaluate(() => mqStage.last.waitIdle()); await W(1100); };
+    await p.evaluate(() => { MQ.outfit = { top: 'p1', bottom: 'p5', head: 'p7' }; MQ.cant = 1; });
+    await go('maniqui'); await quieto(); await hl('[data-go="maniqui"]'); await shot();
+    await p.click('[data-mqp="p2"]'); await quieto(); await hl('[data-mqp="p2"]'); await shot();
+    await p.click('[data-mqrot]'); await W(900); await quieto(); await hl('[data-mqrot]'); await shot();
+    await p.click('[data-mqrot]'); await W(900); await p.click('[data-mqv="torso"]'); await W(800); await hl('[data-mqv="torso"]'); await shot();
+    await p.click('[data-mqv="completo"]'); await go('catalogo'); await quieto(); await p.click('[data-mqput="p6"]'); await quieto(); await p.evaluate(() => document.querySelector('.content').scrollTo(0, 0)); await hl('#mq-cat'); await shot();
+    await p.evaluate(() => { invTab = 'telas'; }); await go('inventario'); await p.click('[data-mqtel="t6"]'); await quieto(); await hl('[data-mqtel="t6"]'); await shot();
+    await go('maniqui'); await quieto(); await p.fill('#mq-cant', '12'); await p.dispatchEvent('#mq-cant', 'change'); await W(300); await hl('#mq-cot'); await shot();
+  });
   // 6 · Cotizaciones
   await chapter(async () => {
     await go('cotizaciones'); await p.click('#new-q'); await p.selectOption('#de-cli', 'c3'); await hl('#de-cli'); await shot();

@@ -264,5 +264,23 @@
   "Mejor vendedor del período",
   "Meta mensual editable",
   "Exportar las ventas filtradas a Excel"
+ ],
+ "Probador con maniquí": [
+  "Maniquí con foto real de estudio que se viste al tocar una prenda",
+  "Tocar otra vez la prenda para quitársela",
+  "Camisas, chaquetas, pantalones, overoles, gorras y tapabocas puestos en el maniquí",
+  "Ropa con su tela, color, pliegues y costuras reales",
+  "Ver el conjunto de frente y de espaldas",
+  "Darle la vuelta al maniquí deslizando el dedo",
+  "Acercar al torso, las piernas o la cabeza",
+  "Prenda de muestra para completar la foto cuando falta una parte",
+  "Conjuntos sugeridos con un toque",
+  "Valor del conjunto al detal y por mayor",
+  "Cotizar el conjunto con la foto del maniquí",
+  "Agregar el conjunto al pedido o a la venta del salón",
+  "Descargar la foto del conjunto para enviar al cliente",
+  "Vitrina con maniquí en el panel, el catálogo y el salón de ventas",
+  "Probador de telas en el inventario",
+  "Botón «Ver en maniquí» en productos, ficha y visor 3D"
  ]
 }

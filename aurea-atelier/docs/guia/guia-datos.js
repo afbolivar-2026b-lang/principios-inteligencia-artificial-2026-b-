@@ -111,6 +111,29 @@ module.exports = [
     }
   },
   {
+    grupo: 'Probador con maniquí', titulo: 'Probador con maniquí', imgs: [['61-maniqui-probador', 'El probador: el maniquí y las prendas para tocar'], ['62-maniqui-reflectivo', 'Camisa con reflectivo, gorra y tapabocas puestos'], ['63-maniqui-espalda', 'El mismo conjunto de espaldas'], ['64-maniqui-catalogo', 'La vitrina del catálogo'], ['65-maniqui-inventario', 'Una tela de la bodega puesta en el maniquí'], ['66-maniqui-salon', 'El salón de ventas muestra lo que lleva el cliente'], ['67-maniqui-cotizacion', 'La cotización con la foto del conjunto']],
+    intro: 'El maniquí aparece con la prenda que se toca puesta, en foto real de estudio: la tela, el color, los pliegues y las costuras se ven como en la vitrina. El cliente ve cómo le queda la dotación completa antes de pedirla, y la cotización sale con la foto del conjunto puesto.',
+    pasos: ['Abra Probador con maniquí en el menú Comercial.', 'Toque una camisa, un pantalón, un overol, una gorra o un tapabocas: el maniquí aparece con ella puesta. Tóquela otra vez para quitársela.', 'Deslice la foto con el dedo o toque Girar para ver el conjunto de espaldas.', 'Use Torso, Piernas o Cabeza para acercarse y ver la tela y las costuras.', 'En el catálogo toque «Ponérsela» en cualquier prenda y mírela en la vitrina de arriba.', 'En Inventario y telas toque una tela para ver la prenda que se hace con ella.', 'Escriba cuántos conjuntos necesita y toque «Cotizar conjunto con foto».'],
+    fx: {
+      'Maniquí con foto real de estudio que se viste al tocar una prenda': 'Un maniquí de vitrina fotografiado en estudio; al tocar una prenda aparece con ella puesta.',
+      'Tocar otra vez la prenda para quitársela': 'La misma prenda sirve de interruptor: un toque la pone y el siguiente la quita.',
+      'Camisas, chaquetas, pantalones, overoles, gorras y tapabocas puestos en el maniquí': 'Cada prenda del catálogo se ve puesta, sola o combinada con las demás.',
+      'Ropa con su tela, color, pliegues y costuras reales': 'Las fotos muestran la tela con su textura, la caída, los pliegues, los bolsillos y los reflectivos como son.',
+      'Ver el conjunto de frente y de espaldas': 'Cada conjunto tiene su foto de espaldas para ver la parte de atrás de la prenda.',
+      'Darle la vuelta al maniquí deslizando el dedo': 'Deslizar la foto hacia un lado, o tocar Girar, voltea el maniquí con un giro suave.',
+      'Acercar al torso, las piernas o la cabeza': 'Las vistas Completo, Torso, Piernas y Cabeza acercan la foto; con + y − se acerca más y arrastrando se recorre.',
+      'Prenda de muestra para completar la foto cuando falta una parte': 'Si solo se elige la camisa o el pantalón, la foto lo completa con una prenda de muestra marcada como tal.',
+      'Conjuntos sugeridos con un toque': 'Dotación industrial, alta visibilidad, ejecutivo, clima cálido, overol completo y salud y alimentos ya armados.',
+      'Valor del conjunto al detal y por mayor': 'Suma el precio de lo que tiene puesto el maniquí y aplica el precio por mayor según la cantidad de conjuntos.',
+      'Cotizar el conjunto con la foto del maniquí': 'Crea la cotización con las prendas puestas y agrega la foto del maniquí dentro del documento.',
+      'Agregar el conjunto al pedido o a la venta del salón': 'Lleva todas las prendas del maniquí al pedido del catálogo o a la venta actual del salón.',
+      'Descargar la foto del conjunto para enviar al cliente': 'Guarda la foto del maniquí vestido para mandarla por WhatsApp.',
+      'Vitrina con maniquí en el panel, el catálogo y el salón de ventas': 'El panel muestra lo más vendido, el catálogo lo que se va tocando y el salón lo que lleva el cliente.',
+      'Probador de telas en el inventario': 'En Inventario y telas se toca una tela y aparece puesta la prenda que se confecciona con ella.',
+      'Botón «Ver en maniquí» en productos, ficha y visor 3D': 'Desde la ficha, el visor 3D, la elección de talla, productos y cada tela del inventario se abre el maniquí con esa prenda puesta.'
+    }
+  },
+  {
     grupo: 'Cotizaciones', titulo: 'Cotizaciones', imgs: [['05-cotizaciones', 'Lista de cotizaciones'], ['40-cotizacion-editor', 'Armando una cotización']],
     intro: 'Las cotizaciones para empresas, colegios y mayoristas se arman en segundos. Cada una lleva su número, su vigencia y su estado, y con un clic se convierte en factura o en órdenes para el taller.',
     pasos: ['Toque Nueva cotización y elija el cliente.', 'Agregue las líneas: prenda, talla, cantidad. El precio se pone solo y se puede cambiar.', 'Escriba las notas de bordado, colores o tiempos de entrega.', 'Guarde: el documento con logo aparece listo para enviar por WhatsApp.', 'Cuando el cliente apruebe, toque Facturar o Producir.'],
