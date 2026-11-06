@@ -1,0 +1,21 @@
+{
+  "name": "Opita Digital · Páginas web y aplicaciones",
+  "short_name": "Opita Digital",
+  "description": "Páginas web, sistemas y apps para negocios de Neiva y el Huila. Incluye Mi oficina.",
+  "lang": "es-CO",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F4EFE7",
+  "theme_color": "#F4EFE7",
+  "icons": [
+    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Mi oficina", "url": "./#/oficina/panel", "icons": [{ "src": "icono-192.png", "sizes": "192x192" }] },
+    { "name": "Nuevo cliente", "url": "./#/oficina/nuevo-cliente", "icons": [{ "src": "icono-192.png", "sizes": "192x192" }] },
+    { "name": "Publicar con IA", "url": "./#/oficina/publicar-ia", "icons": [{ "src": "icono-192.png", "sizes": "192x192" }] }
+  ]
+}
