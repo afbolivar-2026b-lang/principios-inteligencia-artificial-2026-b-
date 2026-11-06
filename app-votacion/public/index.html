@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Votaciones</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="barra">
+    <a href="#/" class="marca">🗳️ Votaciones</a>
+  </header>
+
+  <main id="app" class="contenedor" aria-live="polite"></main>
+
+  <template id="tpl-inicio">
+    <section class="tarjeta">
+      <h1>Crear una encuesta</h1>
+      <form id="form-crear" novalidate>
+        <label for="pregunta">Pregunta</label>
+        <input id="pregunta" name="pregunta" maxlength="200" required
+               placeholder="¿Qué tema estudiamos la próxima semana?">
+        <fieldset>
+          <legend>Opciones (2 a 10)</legend>
+          <div id="lista-opciones"></div>
+          <button type="button" id="agregar-opcion" class="secundario">+ Agregar opción</button>
+        </fieldset>
+        <p class="error" id="error-crear" role="alert"></p>
+        <button type="submit">Crear encuesta</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Encuestas recientes</h2>
+      <ul id="lista-encuestas" class="lista"></ul>
+    </section>
+  </template>
+
+  <template id="tpl-encuesta">
+    <section class="tarjeta">
+      <a href="#/" class="volver">← Volver</a>
+      <h1 id="titulo"></h1>
+      <p class="meta" id="meta"></p>
+      <div id="aviso-admin" class="aviso" hidden></div>
+      <form id="form-votar" hidden>
+        <div id="opciones-voto" class="opciones"></div>
+        <p class="error" id="error-votar" role="alert"></p>
+        <button type="submit">Votar</button>
+      </form>
+      <div id="resultados" class="resultados" hidden></div>
+      <div class="acciones">
+        <button type="button" id="copiar" class="secundario">Copiar enlace</button>
+        <button type="button" id="cerrar" class="peligro" hidden>Cerrar votación</button>
+      </div>
+    </section>
+  </template>
+
+  <script src="/app.js"></script>
+</body>
+</html>
