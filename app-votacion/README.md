@@ -180,9 +180,14 @@ En el **Inicio** del panel aparece la franja *Aplicación Android* con el botón
 - La APK abre la app de la campaña completa (registro, encuestas y panel),
   descarga Excel, PDF y QR, y permite subir fotos.
 - La primera vez pide la dirección de la página (debe empezar por `https://`).
-- **Avisos de actualización:** cada 6 horas la app consulta `/api/app/version`; si
-  hay una versión nueva, muestra una notificación y, al abrirla, un aviso para
-  descargarla.
+- **Se actualiza sola:** cada 6 horas la app consulta `/api/app/version`. Si hay
+  una versión nueva, avisa con una notificación; al tocarla (o "Actualizar ahora"
+  dentro de la app) descarga la APK y abre el instalador de Android: la persona
+  solo toca **Instalar**. La primera vez Android pide permitir que la app instale
+  sus actualizaciones.
+- En la pantalla de correo y contraseña aparece la opción **APK Android**: en el
+  navegador descarga la app; dentro de la app muestra si está al día o el botón
+  para actualizar.
 
 Para publicar una versión nueva:
 

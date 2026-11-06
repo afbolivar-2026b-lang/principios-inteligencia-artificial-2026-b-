@@ -24,6 +24,7 @@ import java.net.URL;
 /** Revisa si hay una versión nueva de la app y avisa con una notificación. */
 final class Actualizaciones {
     static final String CANAL = "actualizaciones";
+    static final String ACCION_ACTUALIZAR = "co.opitadigital.campana.ACTUALIZAR";
     private static final int JOB_ID = 2026;
 
     /** Información de la última versión publicada en el servidor. */
@@ -87,12 +88,14 @@ final class Actualizaciones {
     static void avisarSiHayNueva(Context c, Version v) {
         if (v == null || v.codigo <= versionInstalada(c) || v.codigo <= Config.versionAvisada(c)) return;
         crearCanal(c);
-        Intent abrir = new Intent(Intent.ACTION_VIEW, Uri.parse(v.apk));
+        // Al tocar la notificación, la app descarga e instala la versión nueva
+        Intent abrir = new Intent(c, MainActivity.class).setAction(ACCION_ACTUALIZAR)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pi = PendingIntent.getActivity(c, 0, abrir,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b = Build.VERSION.SDK_INT >= 26
                 ? new Notification.Builder(c, CANAL) : new Notification.Builder(c);
-        String texto = v.notas == null || v.notas.isEmpty() ? "Toque para descargar e instalar." : v.notas;
+        String texto = (v.notas == null || v.notas.isEmpty() ? "" : v.notas + " ") + "Toque para actualizar.";
         b.setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setContentTitle("Nueva versión " + v.nombre + " disponible")
                 .setContentText(texto)

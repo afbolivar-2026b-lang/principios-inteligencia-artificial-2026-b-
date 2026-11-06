@@ -154,6 +154,15 @@ function protegerMarca() {
   setInterval(revisar, 4000);
 }
 
+// Versión de la app Android que está abriendo la página (null si es un navegador)
+function versionApp() {
+  try {
+    if (window.AppCampana && typeof window.AppCampana.version === 'function') return Number(window.AppCampana.version());
+  } catch { /* no es la app */ }
+  const m = /OpitaCampanaApp\/(\d+)/.exec(navigator.userAgent);
+  return m ? Number(m[1]) : null;
+}
+
 // Separa el eslogan para resaltar su última palabra.
 function partesEslogan(texto) {
   const m = String(texto).trim().match(/^(.*?)(\S+?)([.!¡?¿…]*)$/u);
@@ -671,14 +680,26 @@ function vistaLogin() {
     g.hidden = false;
     if (/OpitaCampanaApp/.test(navigator.userAgent)) g.href = '/auth/google?app=1';
   }
-  if (!/OpitaCampanaApp/.test(navigator.userAgent)) {
-    api('/api/app/version').then((v) => {
-      if (!v.disponible) return;
-      tambien.hidden = false;
-      document.getElementById('bajar-apk-login').hidden = false;
-      document.getElementById('apk-login-texto').textContent = `Descargar campana.apk (versión ${v.versionName})`;
-    }).catch(() => {});
-  }
+  // APK Android: en el navegador se descarga; dentro de la app se actualiza sola
+  api('/api/app/version').then((v) => {
+    if (!v.disponible) return;
+    tambien.hidden = false;
+    const tarjeta = document.getElementById('bajar-apk-login');
+    const texto = document.getElementById('apk-login-texto');
+    tarjeta.hidden = false;
+    const instalada = versionApp();
+    if (instalada === null) {
+      texto.textContent = `Descargar campana.apk (versión ${v.versionName})`;
+    } else if (instalada < v.versionCode) {
+      texto.textContent = `Actualizar a la versión ${v.versionName}`;
+      tarjeta.classList.add('hay-actualizacion');
+      tarjeta.addEventListener('click', (ev) => { ev.preventDefault(); window.AppCampana.actualizar(); });
+    } else {
+      texto.textContent = `Versión ${v.versionName} instalada · está al día`;
+      tarjeta.removeAttribute('href');
+      tarjeta.classList.add('al-dia');
+    }
+  }).catch(() => {});
 
   const motivos = {
     'correo-no-autorizado': 'Esa cuenta de Google no tiene un perfil activo. Pídale al director que la agregue en Usuarios.',
@@ -768,16 +789,21 @@ async function vistaPanelInicio() {
     const caja = document.getElementById('app-android');
     if (!v.disponible || !caja) return;
     const enlace = `${urlPublica().replace(/\/$/, '')}${v.apk}`;
-    const enApp = /OpitaCampanaApp\/(\d+)/.exec(navigator.userAgent);
+    const instalada = versionApp();
     const kb = v.bytes ? ` · ${Math.max(1, Math.round(v.bytes / 1024))} KB` : '';
-    document.getElementById('app-detalle').textContent = enApp
-      ? (Number(enApp[1]) < v.versionCode
-        ? `Hay una versión nueva (${v.versionName}). ${v.notas || ''}`
-        : `Ya está usando la app, versión ${v.versionName}. Le avisaremos cuando haya una nueva.`)
-      : `Versión ${v.versionName}${kb}. Formulario, encuestas y panel en el celular, con su propio ícono. Avisa con una notificación cuando hay una versión nueva.`;
     const boton = document.getElementById('app-descargar');
     boton.href = v.apk;
     boton.setAttribute('download', 'campana.apk');
+    if (instalada === null) {
+      document.getElementById('app-detalle').textContent = `Versión ${v.versionName}${kb}. Formulario, encuestas y panel en el celular, con su propio ícono. Se actualiza sola cuando hay una versión nueva.`;
+    } else if (instalada < v.versionCode) {
+      document.getElementById('app-detalle').textContent = `Hay una versión nueva (${v.versionName}). ${v.notas || ''}`;
+      boton.lastChild.textContent = 'Actualizar ahora';
+      boton.addEventListener('click', (ev) => { ev.preventDefault(); window.AppCampana.actualizar(); });
+    } else {
+      document.getElementById('app-detalle').textContent = `Ya tiene la versión ${v.versionName}, la más reciente. Cuando salga una nueva, la app se actualiza sola.`;
+      boton.hidden = true;
+    }
     const lienzo = document.getElementById('app-qr');
     const c = lienzo.getContext('2d');
     c.fillStyle = '#FFFFFF';

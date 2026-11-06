@@ -1299,3 +1299,9 @@ textarea:focus { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3p
 .lista-permisos li.no::before { content: "–"; color: var(--tenue); }
 .sin-permiso { max-width: 520px; margin: 80px auto; text-align: center; }
 [data-tema="elegante"] .acceso, [data-tema] .acceso { background: var(--papel); }
+
+.opcion-acceso.hay-actualizacion { border-color: var(--oro, var(--acento)); box-shadow: 0 0 0 3px var(--acento-suave); }
+.opcion-acceso.hay-actualizacion small { color: var(--acento); font-weight: 600; }
+.opcion-acceso.al-dia { cursor: default; }
+.opcion-acceso.al-dia:hover { transform: none; border-color: var(--linea); }
+.opcion-acceso.al-dia .opcion-flecha { display: none; }
