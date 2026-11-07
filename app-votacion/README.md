@@ -278,3 +278,18 @@ Para que los correos lleguen:
 También se puede configurar con variables de entorno (útil en el servidor):
 `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` (`ssl` o `starttls`), `SMTP_USER`,
 `SMTP_PASS`, `SMTP_FROM` y `SMTP_NAME`.
+
+## Publicar en internet (Render) manteniendo los datos privados
+
+1. **Ponga el repositorio en privado** (GitHub → Settings → Danger Zone → Change visibility). Los datos de las personas nunca están en el repositorio (`data/` está ignorado), pero el código es suyo y debe estar privado.
+2. En [render.com](https://render.com): *New → Blueprint* y elija este repositorio. Usa el archivo `render.yaml` de la raíz.
+3. Cuando lo pida, escriba `ADMIN_PASSWORD` (una clave larga, solo suya) y `NOMBRE_CAMPANA`.
+4. Render da un link `https://…onrender.com`. Pegue ese link en **Ajustes → Enlace público** para que el QR y la APK lo usen.
+
+Qué lo mantiene privado:
+
+- Los registros, usuarios y la contraseña del correo viven en un **disco persistente** de Render (`/var/data`), fuera del repositorio.
+- `TRUST_PROXY=1` activa cookies `Secure` (solo HTTPS) y toma la IP real de cada visita para el bloqueo por intentos fallidos.
+- Todo el panel y las descargas exigen sesión y permiso en el servidor; solo el formulario de registro es público.
+- El plan debe tener disco persistente (el gratuito no lo trae y borraría los datos al reiniciar).
+- Haga una **copia de seguridad** periódica con el botón de Excel/CSV.

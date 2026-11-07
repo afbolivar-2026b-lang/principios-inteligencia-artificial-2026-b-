@@ -144,6 +144,18 @@ function leerVersionApp() {
   }
 }
 
+// Detrás de un servidor intermedio (Render, Railway...) la IP real y el HTTPS
+// llegan en cabeceras. Solo se confía en ellas si TRUST_PROXY=1.
+const CONFIAR_PROXY = process.env.TRUST_PROXY === '1';
+const SEGURA = CONFIAR_PROXY ? '; Secure' : '';
+function ipDe(req) {
+  if (CONFIAR_PROXY) {
+    const f = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+    if (f) return f;
+  }
+  return req.socket.remoteAddress || '';
+}
+
 function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, archivoCorreo, claveAdmin, nombreCampana, enviadorCorreo } = {}) {
   const usuarios = crearUsuarios(archivoUsuarios);
   const correo = crearCorreo(archivoCorreo, enviadorCorreo ? { enviador: enviadorCorreo, esperas: [10, 10] } : {});
@@ -173,7 +185,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
     const token = crypto.randomBytes(32).toString('base64url');
     sesiones.set(token, { vence: Date.now() + DURACION_SESION, usuarioId });
     if (usuarioId) usuarios.registrarAcceso(usuarioId);
-    return `sesion=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${DURACION_SESION / 1000}`;
+    return `sesion=${token}; Path=/; HttpOnly; SameSite=Strict${SEGURA}; Max-Age=${DURACION_SESION / 1000}`;
   }
 
   const MAESTRO = Object.freeze({
@@ -221,7 +233,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
 
   /** Exige sesión y, si se indica, un permiso. Devuelve el perfil. */
   function exigirPermiso(req, permiso) {
-    const ip = req.socket.remoteAddress || '';
+    const ip = ipDe(req);
     // Con la clave en la cabecera, una IP bloqueada no puede seguir probando claves
     if (req.headers.authorization) verificarBloqueo(ip);
     const quien = identidad(req);
@@ -252,7 +264,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
     if (!votante) {
       votante = crypto.randomBytes(24).toString('base64url');
       extra['Set-Cookie'] =
-        `votante=${votante}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`;
+        `votante=${votante}; Path=/; HttpOnly; SameSite=Strict${SEGURA}; Max-Age=31536000`;
     }
 
     try {
@@ -299,7 +311,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
         return;
       }
       if (ruta === '/api/sesion' && req.method === 'POST') {
-        const ip = req.socket.remoteAddress || '';
+        const ip = ipDe(req);
         verificarBloqueo(ip);
         const { correo: correoLogin, clave } = await leerCuerpo(req);
         let quien = null;
@@ -332,7 +344,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
         return;
       }
       if (ruta === '/api/sesion/codigo' && req.method === 'POST') {
-        const ip = req.socket.remoteAddress || '';
+        const ip = ipDe(req);
         verificarBloqueo(ip);
         const { pendiente, codigo } = await leerCuerpo(req);
         const p = pendientes.get(pendiente);
@@ -361,14 +373,14 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
       if (ruta === '/api/sesion' && req.method === 'DELETE') {
         sesiones.delete(cookies.sesion);
         enviarJSON(res, 200, { admin: false }, {
-          'Set-Cookie': 'sesion=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0',
+          'Set-Cookie': `sesion=; Path=/; HttpOnly; SameSite=Strict${SEGURA}; Max-Age=0`,
         });
         return;
       }
 
       // ---- Olvidé mi contraseña: avisa al director (la respuesta es igual exista o no el correo) ----
       if (ruta === '/api/olvide' && req.method === 'POST') {
-        const ip = req.socket.remoteAddress || '';
+        const ip = ipDe(req);
         const p = pedidosClave.get(ip);
         if (p && Date.now() - p.desde > VENTANA) pedidosClave.delete(ip);
         const actual = pedidosClave.get(ip) || { n: 0, desde: Date.now() };
@@ -391,7 +403,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
         return;
       }
       if (ruta === '/api/olvide/confirmar' && req.method === 'POST') {
-        const ip = req.socket.remoteAddress || '';
+        const ip = ipDe(req);
         verificarBloqueo(ip);
         const { correo: c, codigo, nueva } = await leerCuerpo(req);
         try {
