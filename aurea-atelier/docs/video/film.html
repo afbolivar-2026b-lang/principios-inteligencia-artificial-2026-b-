@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, initial-scale=1">
+<title>Aurea Atelier · Película de marca</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500&display=swap">
+<style>
+/* Escenas de la película de marca. Cada escena se abre con #nombre y dura lo que indica el grabador. */
+:root { --ink: #0c0a08; --gold: #c9a45c; --gold-2: #f1dca6; --ivory: #efe7d8; --muted: #a39782; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; background: var(--ink); color: var(--ivory); font-family: "Jost", system-ui, sans-serif; }
+.scene { position: absolute; inset: 0; display: none; }
+.scene.on { display: block; }
+.grain { position: absolute; inset: 0; pointer-events: none; opacity: .06; background-image: repeating-radial-gradient(circle at 17% 32%, #fff 0 1px, transparent 1px 3px); mix-blend-mode: overlay; }
+.vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(70% 70% at 50% 50%, transparent 55%, rgba(0,0,0,.75)); }
+.bars::before, .bars::after { content: ""; position: absolute; left: 0; right: 0; height: 52px; background: #000; z-index: 5; }
+.bars::before { top: 0; } .bars::after { bottom: 0; }
+
+/* Intro */
+#intro { display: none; place-items: center; background: radial-gradient(50% 60% at 50% 45%, #1f1a12, var(--ink) 70%); }
+#intro.on { display: grid; }
+.mark { width: 210px; height: 210px; }
+.mark .draw { stroke-dasharray: 260; stroke-dashoffset: 260; animation: draw 2.6s cubic-bezier(.6,0,.2,1) forwards; }
+.mark .d2 { animation-delay: .5s; } .mark .d3 { animation-delay: 1.1s; stroke-dasharray: 30; stroke-dashoffset: 30; }
+.mark .fadein { opacity: 0; animation: fade 1s ease 2s forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fade { to { opacity: 1; } }
+.brand { text-align: center; margin-top: 26px; }
+.brand h1 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 78px; letter-spacing: .9em; margin: 0 0 0 .9em; opacity: 0; animation: track 2.4s ease 2.3s forwards; }
+.brand p { letter-spacing: .6em; text-transform: uppercase; font-size: 13px; color: var(--muted); opacity: 0; animation: fade 1.4s ease 3.6s forwards; margin: 14px 0 0; }
+@keyframes track { from { letter-spacing: 1.4em; opacity: 0; filter: blur(6px); } to { letter-spacing: .32em; opacity: 1; filter: blur(0); } }
+
+/* Frase */
+#frase { display: none; place-items: center; background: var(--ink); }
+#frase.on { display: grid; }
+#frase .lines { font-family: "Cormorant Garamond", serif; font-size: 84px; line-height: 1.05; font-weight: 500; }
+#frase .lines span { display: block; opacity: 0; transform: translateY(24px); animation: up 1.2s cubic-bezier(.2,.7,.2,1) forwards; }
+#frase .lines span:nth-child(2) { animation-delay: .9s; color: var(--gold); font-style: italic; }
+#frase .lines span:nth-child(3) { animation-delay: 1.8s; }
+@keyframes up { to { opacity: 1; transform: none; } }
+.stitch { position: absolute; left: 50%; bottom: 150px; width: 0; border-top: 1px dashed var(--gold); transform: translateX(-50%); animation: grow 2s ease 2.6s forwards; }
+@keyframes grow { to { width: 260px; } }
+
+/* Galería de prendas */
+#prendas { background: var(--ink); }
+.slide { position: absolute; inset: 0; opacity: 0; }
+.slide img { position: absolute; top: 50%; width: 760px; height: 760px; object-fit: cover; transform: translateY(-50%); }
+.slide .cap { position: absolute; left: 90px; top: 50%; transform: translateY(-50%); max-width: 420px; }
+.slide .cap .eye { letter-spacing: .4em; text-transform: uppercase; font-size: 12px; color: var(--muted); }
+.slide .cap h2 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 58px; line-height: 1.02; margin: 14px 0 18px; }
+.slide .cap .rule { height: 1px; width: 120px; background: linear-gradient(90deg, var(--gold), transparent); margin-bottom: 18px; }
+.slide .cap p { color: #cfc4b0; font-size: 17px; line-height: 1.6; margin: 0; }
+.slide .cap .price { font-family: "Cormorant Garamond", serif; color: var(--gold-2); font-size: 34px; margin-top: 16px; }
+.slide.r img { right: -40px; } .slide.l img { left: -40px; } .slide.l .cap { left: auto; right: 90px; text-align: right; } .slide.l .cap .rule { margin-left: auto; background: linear-gradient(-90deg, var(--gold), transparent); }
+.slide img { mask-image: radial-gradient(60% 60% at 50% 50%, #000 60%, transparent 100%); -webkit-mask-image: radial-gradient(60% 60% at 50% 50%, #000 60%, transparent 100%); }
+
+/* Tarjeta de capítulo */
+#capitulo { display: none; place-items: center; text-align: center; background: radial-gradient(55% 60% at 50% 50%, #1b1610, var(--ink)); }
+#capitulo.on { display: grid; }
+#capitulo .n { font-family: "Cormorant Garamond", serif; color: var(--gold); font-size: 22px; letter-spacing: .5em; opacity: 0; animation: fade 1s ease .2s forwards; }
+#capitulo h2 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 92px; margin: 14px 0 10px; opacity: 0; animation: up 1.2s cubic-bezier(.2,.7,.2,1) .4s forwards; }
+#capitulo p { color: var(--muted); font-size: 18px; letter-spacing: .08em; opacity: 0; animation: fade 1.2s ease 1.1s forwards; }
+
+/* Final */
+#final { display: none; place-items: center; text-align: center; background: radial-gradient(50% 60% at 50% 45%, #1f1a12, var(--ink) 70%); }
+#final.on { display: grid; }
+#final .mark { width: 150px; height: 150px; opacity: 0; animation: fade 1.4s ease forwards; }
+#final h2 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 54px; letter-spacing: .34em; margin: 22px 0 6px .34em; opacity: 0; animation: fade 1.4s ease .6s forwards; }
+#final p { color: var(--muted); letter-spacing: .3em; text-transform: uppercase; font-size: 12px; opacity: 0; animation: fade 1.4s ease 1.2s forwards; }
+#final .tag { font-family: "Cormorant Garamond", serif; font-style: italic; color: var(--gold-2); font-size: 30px; letter-spacing: 0; text-transform: none; margin-top: 28px; animation-delay: 2s; }
+</style>
+</head>
+<body class="bars">
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dca6"/><stop offset=".55" stop-color="#c9a45c"/><stop offset="1" stop-color="#8f6a2b"/></linearGradient></defs></svg>
+
+<section class="scene" id="intro"><div style="display:grid;justify-items:center">
+  <svg class="mark" viewBox="0 0 64 64" fill="none">
+    <circle class="draw" cx="32" cy="32" r="30" stroke="url(#g)" stroke-width="1"/>
+    <circle class="fadein" cx="32" cy="32" r="26.5" stroke="url(#g)" stroke-width=".5" stroke-dasharray="1.6 2.4"/>
+    <path class="draw d2" d="M32 12 L18 50" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+    <path class="draw d2" d="M32 12 L46 50" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+    <path class="draw d3" d="M22.5 37 H41.5" stroke="url(#g)" stroke-width="1.3" stroke-linecap="round"/>
+    <circle class="fadein" cx="32" cy="12" r="2.6" fill="url(#g)"/>
+    <g class="fadein" fill="url(#g)"><circle cx="30.6" cy="27.4" r=".9"/><circle cx="33.4" cy="27.4" r=".9"/><circle cx="30.6" cy="30.2" r=".9"/><circle cx="33.4" cy="30.2" r=".9"/></g>
+  </svg>
+  <div class="brand"><h1>AUREA</h1><p>Atelier · Confección</p></div></div>
+  <div class="grain"></div><div class="vignette"></div></section>
+
+<section class="scene" id="frase"><div class="lines"><span>Cada puntada,</span><span>cada peso,</span><span>en su lugar.</span></div><div class="stitch"></div><div class="grain"></div><div class="vignette"></div></section>
+
+<section class="scene" id="prendas"></section>
+
+<section class="scene" id="capitulo"><div><div class="n" id="cap-n"></div><h2 id="cap-t"></h2><p id="cap-p"></p></div><div class="grain"></div><div class="vignette"></div></section>
+
+<section class="scene" id="final"><div style="display:grid;justify-items:center">
+  <svg class="mark" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" stroke="url(#g)" stroke-width="1"/><circle cx="32" cy="32" r="26.5" stroke="url(#g)" stroke-width=".5" stroke-dasharray="1.6 2.4"/><path d="M32 12 L18 50M32 12 L46 50" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/><path d="M22.5 37 H41.5" stroke="url(#g)" stroke-width="1.3" stroke-dasharray="2.4 2" stroke-linecap="round"/><circle cx="32" cy="12" r="2.6" fill="url(#g)"/><g fill="url(#g)"><circle cx="30.6" cy="27.4" r=".9"/><circle cx="33.4" cy="27.4" r=".9"/><circle cx="30.6" cy="30.2" r=".9"/><circle cx="33.4" cy="30.2" r=".9"/></g></svg>
+  <h2>AUREA</h2><p>Atelier · Confección · Dotación</p><p class="tag">Vestimos su empresa con elegancia.</p></div>
+  <div class="grain"></div><div class="vignette"></div></section>
+
+<script>
+const PRENDAS = [
+  ['p3', 'Camisa de salir', 'Oxford slim', 'Algodón peinado de doble tono, cuello firme y botones nacarados.', '$ 98.000'],
+  ['p2', 'Dotación industrial', 'Camisa reflectiva', 'Drill de alta visibilidad con cinta reflectiva de dos pulgadas.', '$ 74.000'],
+  ['p4', 'Colección Resort', 'Guayabera de lino', 'Lino importado con alforzas verticales, fresca y de caída natural.', '$ 135.000'],
+  ['p9', 'Seguridad', 'Overol enterizo', 'Azul rey con reflectivo en pecho, brazos y piernas.', '$ 145.000'],
+  ['p7', 'Marca propia', 'Gorra bordada', 'Twill de algodón con bordado dorado del logo de su empresa.', '$ 25.000']
+];
+function prendas(ms) {
+  const box = document.getElementById('prendas');
+  box.innerHTML = PRENDAS.map(([id, eye, t, d, pr], i) => `<div class="slide ${i % 2 ? 'l' : 'r'}"><img src="../../img/productos/${id}.jpg" alt=""><div class="cap"><div class="eye">${eye}</div><h2>${t}</h2><div class="rule"></div><p>${d}</p><div class="price">${pr}</div></div></div>`).join('') + '<div class="grain"></div><div class="vignette"></div>';
+  const each = ms / PRENDAS.length;
+  [...box.querySelectorAll('.slide')].forEach((s, i) => {
+    const img = s.querySelector('img'), cap = s.querySelector('.cap');
+    s.animate([{ opacity: 0 }, { opacity: 1, offset: .18 }, { opacity: 1, offset: .82 }, { opacity: 0 }], { duration: each + 400, delay: i * each, fill: 'forwards', easing: 'ease-in-out' });
+    img.animate([{ transform: 'translateY(-50%) scale(1.12) translateX(' + (i % 2 ? '-' : '') + '20px)' }, { transform: 'translateY(-50%) scale(1.0) translateX(0)' }], { duration: each + 400, delay: i * each, fill: 'both', easing: 'ease-out' });
+    cap.animate([{ opacity: 0, transform: 'translateY(-50%) translateX(' + (i % 2 ? '' : '-') + '30px)' }, { opacity: 1, transform: 'translateY(-50%)', offset: .3 }, { opacity: 1, transform: 'translateY(-50%)', offset: .8 }, { opacity: 0, transform: 'translateY(-50%)' }], { duration: each, delay: i * each + 250, fill: 'both', easing: 'ease-out' });
+  });
+}
+window.play = (name, opts = {}) => {
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('on'));
+  const s = document.getElementById(name); s.classList.add('on');
+  if (name === 'prendas') prendas(opts.ms || 12000);
+  if (name === 'capitulo') { document.getElementById('cap-n').textContent = opts.n || ''; document.getElementById('cap-t').textContent = opts.t || ''; document.getElementById('cap-p').textContent = opts.p || ''; }
+};
+</script>
+</body>
+</html>

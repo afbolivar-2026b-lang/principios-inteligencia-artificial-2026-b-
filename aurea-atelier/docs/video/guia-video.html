@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Aurea Atelier · Guía en video</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@300;400;500;600&display=swap">
+<style>
+/* Video de presentación renderizado cuadro a cuadro: renderAt(t) dibuja el instante t sin depender del reloj. */
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0c0a08; color: #efe7d8; font-family: "Jost", system-ui, sans-serif; }
+#bg { position: absolute; inset: 0; background: radial-gradient(1100px 700px at 75% 45%, rgba(201,164,92,.13), transparent 65%), radial-gradient(800px 600px at 10% 90%, rgba(122,46,58,.12), transparent 60%), repeating-linear-gradient(45deg, rgba(201,164,92,.035) 0 1px, transparent 1px 16px), #0c0a08; }
+#top { position: absolute; left: 80px; right: 80px; top: 44px; display: flex; justify-content: space-between; align-items: center; }
+#top .brand { display: flex; align-items: center; gap: 14px; font-family: "Cormorant Garamond", serif; font-size: 26px; letter-spacing: .3em; }
+#top .brand small { font-family: "Jost"; font-size: 12px; letter-spacing: .35em; color: #a39782; margin-left: 8px; }
+#counter { font-size: 14px; letter-spacing: .3em; color: #a39782; text-transform: uppercase; }
+#bar { position: absolute; left: 0; top: 0; height: 3px; background: linear-gradient(90deg, #8f6a2b, #f1dca6, #c9a45c); }
+#text { position: absolute; left: 80px; top: 200px; width: 440px; }
+#text .eye { font-size: 15px; letter-spacing: .4em; text-transform: uppercase; color: #c9a45c; font-weight: 500; }
+#text .num { font-family: "Cormorant Garamond", serif; font-size: 150px; line-height: .9; color: #c9a45c; font-weight: 500; margin-top: 6px; }
+#text h2 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 58px; line-height: 1.02; margin: 18px 0 20px; }
+#text p { font-size: 22px; line-height: 1.55; color: #d9cfbd; margin: 0 0 24px; }
+#text ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; font-size: 19px; color: #efe7d8; }
+#text li { display: flex; gap: 14px; align-items: baseline; }
+#text li::before { content: ""; width: 26px; border-top: 1px dashed #c9a45c; flex: none; transform: translateY(-5px); }
+.win { position: absolute; left: 560px; top: 150px; width: 1280px; height: 800px; border-radius: 18px; overflow: hidden; border: 1px solid rgba(201,164,92,.35); box-shadow: 0 40px 90px rgba(0,0,0,.65), 0 0 0 8px rgba(255,255,255,.02); background: #110e0b; }
+.win .stage { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+.win .stage img.full { width: 100%; height: 100%; object-fit: cover; display: block; }
+.win .stage img.tall { width: 100%; display: block; }
+.win .phones { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; gap: 34px; background: radial-gradient(60% 60% at 50% 50%, #2a231a, #110e0b); }
+.win .phones .ph { width: 250px; height: 540px; border-radius: 36px; overflow: hidden; border: 6px solid #2b251d; box-shadow: 0 30px 60px rgba(0,0,0,.6); background: #000; }
+.win .phones img { width: 100%; display: block; }
+.win .pdf { position: absolute; inset: 0; background: radial-gradient(60% 60% at 50% 50%, #2a231a, #110e0b); }
+.win .pdf img { position: absolute; top: 50%; left: 50%; height: 640px; border-radius: 6px; box-shadow: 0 30px 70px rgba(0,0,0,.7); }
+#cap { position: absolute; left: 560px; top: 972px; font-size: 16px; letter-spacing: .12em; color: #a39782; }
+#cap b { color: #e3c98f; font-weight: 500; }
+/* Intro y cierre */
+#full { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; background: radial-gradient(900px 600px at 50% 45%, #211b13, #0c0a08 70%); }
+#full .mark { width: 260px; height: 260px; }
+#full h1 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: 110px; margin: 26px 0 0; }
+#full .sub { letter-spacing: .5em; text-transform: uppercase; font-size: 17px; color: #a39782; margin-top: 16px; }
+#full .tag { font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 44px; color: #e3c98f; margin-top: 34px; }
+#full .note { font-size: 20px; color: #cfc4b0; margin-top: 18px; }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="bar"></div>
+<div id="top"><div class="brand"><svg width="44" height="44" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="g0" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dca6"/><stop offset=".55" stop-color="#c9a45c"/><stop offset="1" stop-color="#8f6a2b"/></linearGradient></defs><circle cx="32" cy="32" r="30" stroke="url(#g0)" stroke-width="1.2"/><path d="M32 12 L18 50M32 12 L46 50" stroke="url(#g0)" stroke-width="3.2" stroke-linecap="round"/><path d="M22.5 37 H41.5" stroke="url(#g0)" stroke-width="1.4" stroke-dasharray="2.4 2"/><circle cx="32" cy="12" r="2.6" fill="url(#g0)"/></svg>AUREA<small>GUÍA EN VIDEO</small></div><div id="counter"></div></div>
+<div id="text"><div class="eye" id="t-eye"></div><div class="num" id="t-num"></div><h2 id="t-title"></h2><p id="t-desc"></p><ul id="t-list"></ul></div>
+<div class="win" id="winB"><div class="stage"></div></div>
+<div class="win" id="winA"><div class="stage"></div></div>
+<div id="cap"></div>
+<div id="full"></div>
+<script>
+const C = 'capturas/', F = 'f3d/', P = 'pdf/';
+const seq = (name, n) => Array.from({ length: n }, (_, i) => `${F}${name}-${String(i).padStart(4, '0')}.jpg`);
+// Escenas: cada paso con su texto y sus tomas. z: [zoom inicial, zoom final], o: punto de enfoque (0..1).
+const S = [
+  { t: 'Ingreso seguro', d: 'Cada persona entra con su propio usuario y contraseña. Las claves se guardan cifradas y el ingreso se bloquea tras cinco intentos fallidos.', l: ['Usuario y contraseña propios', 'Claves cifradas', 'Bloqueo tras 5 intentos'],
+    s: [{ i: '01-ingreso', c: 'Pantalla de ingreso', z: [1, 1.35], o: [.76, .38], d: 5.5 }] },
+  { t: 'Usuarios y roles', d: 'La administradora crea a la secretaria, a los vendedores y al jefe de taller. Cada rol ve solo los módulos que le corresponden.', l: ['Cuatro roles', 'Menú según el rol', 'Activar o desactivar usuarios'],
+    s: [{ i: '20-usuarios', c: 'Usuarios y roles', z: [1, 1.12], o: [.4, .3], d: 5 }] },
+  { t: 'Privacidad total', d: 'Un toque en el candado bloquea la pantalla. El ojo oculta todos los valores cuando hay clientes cerca.', l: ['Bloqueo inmediato', 'Bloqueo por inactividad', 'Modo privado'],
+    s: [{ i: '43-bloqueo', c: 'Pantalla bloqueada', z: [1.05, 1.18], o: [.5, .45], d: 4 }, { i: '42-modo-privado', c: 'Modo privado: montos ocultos', z: [1, 1.12], o: [.5, .3], d: 4 }] },
+  { t: 'Panel principal', d: 'Al entrar se ve todo el negocio: ventas de hoy y del mes, cartera, telas en bodega, agenda, taller y alertas.', l: ['Ventas y recaudo del día', 'Agenda y taller', 'Alertas de reposición'],
+    s: [{ i: '02-panel', c: 'Panel principal', z: [1, 1.22], o: [.55, .25], d: 6 }] },
+  { t: 'Salón de ventas', d: 'Se toca la prenda, se elige la talla y el precio por mayor se aplica solo. Al cobrar sale la factura y se descuenta el inventario.', l: ['Precio mayorista automático', 'Todos los medios de pago', 'Factura al instante'],
+    s: [{ i: '03-pos', c: 'Venta en el mostrador', z: [1, 1.15], o: [.4, .45], d: 5.5 }] },
+  { t: 'Catálogo de lujo', d: 'Las prendas por colecciones con fotos de estudio. Cada una tiene su ficha con tallas, precios y tela.', l: ['Colecciones y sellos', 'Ficha de cada prenda', 'Pedido desde el catálogo'],
+    s: [{ i: '04-catalogo', c: 'Catálogo por colecciones', z: [1, 1.14], o: [.55, .6], d: 4.2 }, { i: '47-ficha-con-3d', c: 'Ficha de la prenda', z: [1.02, 1.14], o: [.4, .5], d: 4.2 }] },
+  { t: 'Vista para el cliente', d: 'Con un botón se ocultan costos y cantidades para mostrar el catálogo. La lista de precios sale lista para WhatsApp.', l: ['Sin costos ni márgenes', 'Lista de precios', 'Exportar a Excel'],
+    s: [{ i: '31-catalogo-cliente', c: 'Vista para cliente', z: [1, 1.1], o: [.5, .5], d: 4 }, { i: '32-lista-precios', c: 'Lista de precios', z: [1, 1.1], o: [.5, .45], d: 4 }] },
+  { t: 'Probador 3D', d: 'La prenda en relieve gira y se mueve con el dedo. La tela real ondea con la luz y la lupa muestra la costura de cerca.', l: ['Prenda que gira', 'Tela real en movimiento', 'Lupa de detalle'],
+    s: [{ q: seq('prenda', 165), c: 'Prenda en 3D', z: [1, 1.06], o: [.35, .5], d: 5.5 }, { q: seq('tela', 165), c: 'Tela real en 3D', z: [1, 1.06], o: [.35, .5], d: 5.5 }, { q: seq('lupa', 120), c: 'Lupa sobre la tela', z: [1, 1.04], o: [.35, .5], d: 4 }] },
+  { t: 'Cotizaciones', d: 'Se arman en segundos con el precio correcto para cada cliente, las notas de bordado y la vigencia.', l: ['Consecutivo automático', 'Estados de cada negocio', 'Factura con un clic'],
+    s: [{ i: '05-cotizaciones', c: 'Lista de cotizaciones', z: [1, 1.1], o: [.5, .3], d: 4 }, { i: '40-cotizacion-editor', c: 'Armando la cotización', z: [1, 1.12], o: [.5, .45], d: 4 }] },
+  { t: 'Cotización con su sello', d: 'Membrete negro y dorado con el logo, la foto de cada prenda, el anticipo, los datos bancarios y la firma.', l: ['Logo y fotos de prendas', 'Condiciones y pago', 'Firma del cliente'],
+    s: [{ i: '53-cotizacion-lujo', c: 'Cotización de lujo', z: [1, 1.2], o: [.45, .35], d: 4.5 }, { i: '54-cotizacion-lujo-condiciones', c: 'Condiciones y firma', z: [1, 1.15], o: [.45, .6], d: 4 }] },
+  { t: 'Facturas', d: 'De contado o a crédito, con abonos parciales y saldo. Se envían por WhatsApp o se guardan en PDF.', l: ['Plazos de 15 a 90 días', 'Abonos parciales', 'Anulación con devolución'],
+    s: [{ i: '55-factura-lujo', c: 'Factura con membrete', z: [1, 1.14], o: [.45, .4], d: 4 }, { i: '06-facturas', c: 'Lista de facturas', z: [1, 1.1], o: [.5, .4], d: 4 }] },
+  { t: 'Cartera', d: 'Quién debe, cuánto y desde hace cuántos días. El botón Recordar abre WhatsApp con el mensaje de cobro listo.', l: ['Días de vencimiento', 'Saldo por cliente', 'Cobro por WhatsApp'],
+    s: [{ i: '07-cartera', c: 'Cuentas por cobrar', z: [1, 1.14], o: [.45, .45], d: 5 }] },
+  { t: 'Clientes', d: 'Detal, mayoristas y empresas con cupo de crédito, descuento, medidas e historial de compras.', l: ['Cupo y descuento', 'Historial completo', 'WhatsApp directo'],
+    s: [{ i: '08-clientes', c: 'Directorio de clientes', z: [1, 1.12], o: [.5, .4], d: 4.8 }] },
+  { t: 'Productos y precios', d: 'Stock por talla, costo y margen. El sistema sugiere qué reponer, compara el conteo físico y ajusta precios en bloque.', l: ['Reposición sugerida', 'Conteo físico', 'Etiquetas con logo'],
+    s: [{ i: '09-productos', c: 'Productos y precios', z: [1, 1.1], o: [.5, .35], d: 3.8 }, { i: '34-reponer', c: 'Reponer stock', z: [1, 1.12], o: [.5, .45], d: 3.6 }, { i: '35-conteo', c: 'Conteo físico', z: [1, 1.1], o: [.5, .45], d: 3.6 }, { i: '33-etiquetas', c: 'Etiquetas de precio', z: [1, 1.15], o: [.5, .4], d: 3.6 }] },
+  { t: 'Inventario de telas', d: 'Cada tela por metro, color y estante, con su valor y cuántas prendas rinde. También los insumos del taller.', l: ['Metros y valor', 'Rendimiento por tela', 'Insumos con mínimos'],
+    s: [{ i: '10-inventario', c: 'Telas e insumos', z: [1, 1.12], o: [.5, .45], d: 4.8 }] },
+  { t: 'Producción', d: 'El tablero del taller: corte, confección, bordado, terminación y listo. Calcula la tela y avisa los atrasos.', l: ['Órdenes por etapa', 'Tela calculada', 'Alertas de entrega'],
+    s: [{ i: '11-produccion', c: 'Tablero del taller', z: [1, 1.12], o: [.5, .45], d: 4 }, { i: '41-nueva-orden', c: 'Nueva orden', z: [1, 1.14], o: [.5, .45], d: 3.8 }] },
+  { t: 'Compras y proveedores', d: 'La tela comprada se suma sola al inventario y las compras a crédito quedan como cuentas por pagar.', l: ['Suma automática', 'Cuentas por pagar', 'Directorio de proveedores'],
+    s: [{ i: '12-compras', c: 'Compras de tela', z: [1, 1.1], o: [.5, .4], d: 3.8 }, { i: '13-proveedores', c: 'Proveedores', z: [1, 1.1], o: [.5, .35], d: 3.6 }] },
+  { t: 'Secretaría', d: 'La agenda de la semana con citas, pruebas y entregas, y las tareas del equipo con su prioridad.', l: ['Agenda de 7 días', 'Tareas con prioridad', 'Accesos rápidos'],
+    s: [{ i: '14-secretaria', c: 'Agenda y tareas', z: [1, 1.12], o: [.45, .4], d: 4.6 }] },
+  { t: 'Mensajes', d: 'WhatsApp, Instagram y correo en una bandeja. El sistema lee la pregunta y propone la respuesta.', l: ['Bandeja unificada', 'Respuesta sugerida', 'Responder por WhatsApp'],
+    s: [{ i: '15-mensajes', c: 'Mensajes con respuesta sugerida', z: [1, 1.14], o: [.6, .45], d: 4.6 }] },
+  { t: 'Personal y destajo', d: 'Personal por salario o por prenda. Se registran las prendas de cada modista y el pago se calcula solo.', l: ['Salario o destajo', 'Pago calculado', 'Nómina del mes'],
+    s: [{ i: '16-empleados', c: 'Personal y destajo', z: [1, 1.1], o: [.5, .35], d: 4.4 }] },
+  { t: 'Gastos y caja', d: 'Los gastos del negocio, lo que entró y salió hoy, y el cierre de caja con faltantes o sobrantes.', l: ['Gastos por categoría', 'Caja del día', 'Cierre de caja'],
+    s: [{ i: '17-gastos', c: 'Gastos de la empresa', z: [1, 1.1], o: [.5, .3], d: 4.4 }] },
+  { t: 'Finanzas del hogar', d: 'Solo para la dueña: los gastos de la casa, el presupuesto, los pagos fijos y las metas de ahorro, sin mezclar con la empresa.', l: ['Presupuesto con alertas', 'Pagos fijos', 'Metas de ahorro'],
+    s: [{ i: '18-hogar', c: 'Resumen del hogar', z: [1, 1.12], o: [.5, .35], d: 3.8 }, { i: '36-hogar-presupuesto', c: 'Presupuesto', z: [1, 1.1], o: [.5, .45], d: 3.4 }, { i: '37-hogar-fijos', c: 'Pagos fijos', z: [1, 1.1], o: [.5, .4], d: 3.4 }, { i: '38-hogar-ahorro', c: 'Metas de ahorro', z: [1, 1.12], o: [.5, .35], d: 3.4 }] },
+  { t: 'Dashboard de ventas', d: 'Ocho indicadores y doce gráficas para decidir: ventas, conversión, crecimiento, metas, canales, vendedores y más.', l: ['Filtros por año, mes y vendedor', '12 gráficas', 'Meta mensual'],
+    s: [{ i: '57-dashboard', c: 'Indicadores y filtros', z: [1, 1.16], o: [.5, .55], d: 4.4 }, { tall: '57-dashboard-completo', c: 'Las doce gráficas', d: 8 }, { i: '58-dashboard-filtrado', c: 'Filtrado por meses y vendedor', z: [1, 1.1], o: [.5, .3], d: 4 }, { i: '60-dashboard-claro', c: 'También en tema claro', z: [1, 1.08], o: [.5, .5], d: 3.6 }] },
+  { t: 'Reportes', d: 'La foto financiera del año: ventas netas, costo, utilidad, margen y los mejores clientes.', l: ['Utilidad y margen', 'Mejores clientes', 'Exportar a Excel'],
+    s: [{ i: '19-reportes', c: 'Reportes del año', z: [1, 1.1], o: [.5, .4], d: 4.4 }] },
+  { t: 'Configuración y respaldo', d: 'Los datos de la empresa, el IVA, los datos de cotización y el respaldo cifrado con contraseña.', l: ['Datos de la empresa', 'Respaldo cifrado', 'Empezar en limpio'],
+    s: [{ i: '22-config', c: 'Configuración', z: [1, 1.1], o: [.5, .4], d: 4.4 }] },
+  { t: 'En el celular', d: 'Todo funciona en el celular y la tableta: el panel, el catálogo, el dashboard y el probador 3D.', l: ['Celular y tableta', 'Mismo diseño de lujo', 'Sin instalar nada'],
+    s: [{ phones: ['44-celular-panel', '45-celular-catalogo', '59-celular-dashboard', '56-celular-probador'], c: 'En el celular', d: 5.5 }] },
+  { t: 'La guía completa en PDF', d: 'Un documento de 49 páginas que explica cada módulo paso a paso y las 228 funciones, con imágenes.', l: ['19 capítulos', '228 funciones explicadas', 'Lista para enviar'],
+    s: [{ pdf: ['g-01', 'g-02', 'g-15', 'g-16', 'g-43'], c: 'Guía completa del sistema', d: 7 }] }
+];
+const INTRO = 6, OUTRO = 6.5, X = 0.55;
+let t0 = INTRO; const SHOTS = [];
+S.forEach((sc, k) => { sc.start = t0; sc.s.forEach(sh => { sh.start = t0; sh.scene = k; t0 += sh.d; SHOTS.push(sh); }); sc.end = t0; });
+const TOTAL = t0 + OUTRO;
+window.DURATION = TOTAL;
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const $ = id => document.getElementById(id);
+const imgCache = {};
+function im(src) { if (!imgCache[src]) { const i = new Image(); i.src = src; imgCache[src] = i; } return imgCache[src]; }
+window.preload = async () => { const all = []; SHOTS.forEach(s => { if (s.i) all.push(C + s.i + '.png'); if (s.tall) all.push(C + s.tall + '.png'); if (s.q) all.push(...s.q); if (s.phones) s.phones.forEach(p => all.push(C + p + '.png')); if (s.pdf) s.pdf.forEach(p => all.push(P + p + '.png')); }); await Promise.all(all.map(src => im(src).decode().catch(() => console.error('falta', src)))); await document.fonts.ready; };
+const LOGO = (id) => `<svg class="mark" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1dca6"/><stop offset=".55" stop-color="#c9a45c"/><stop offset="1" stop-color="#8f6a2b"/></linearGradient></defs>
+  <circle id="${id}c" cx="32" cy="32" r="30" stroke="url(#${id})" stroke-width="1" stroke-dasharray="190" /><circle cx="32" cy="32" r="26.5" stroke="url(#${id})" stroke-width=".5" stroke-dasharray="1.6 2.4" class="fd"/>
+  <path id="${id}a" d="M32 12 L18 50" stroke="url(#${id})" stroke-width="3" stroke-linecap="round" stroke-dasharray="41"/><path id="${id}b" d="M32 12 L46 50" stroke="url(#${id})" stroke-width="3" stroke-linecap="round" stroke-dasharray="41"/>
+  <path id="${id}d" d="M22.5 37 H41.5" stroke="url(#${id})" stroke-width="1.3" stroke-dasharray="19"/><circle cx="32" cy="12" r="2.6" fill="url(#${id})" class="fd"/><g fill="url(#${id})" class="fd"><circle cx="30.6" cy="27.4" r=".9"/><circle cx="33.4" cy="27.4" r=".9"/><circle cx="30.6" cy="30.2" r=".9"/><circle cx="33.4" cy="30.2" r=".9"/></g></svg>`;
+function fullScene(kind, lt) {
+  const f = $('full');
+  if (f.dataset.kind !== kind) {
+    f.dataset.kind = kind;
+    f.innerHTML = kind === 'intro'
+      ? `<div><div style="display:flex;justify-content:center">${LOGO('gi')}</div><h1 id="fh">AUREA</h1><div class="sub" id="fs">Atelier · Confección · Dotación</div><div class="tag" id="ft">Guía en video del sistema</div><div class="note" id="fn">Todo el negocio, paso a paso</div></div>`
+      : `<div><div style="display:flex;justify-content:center">${LOGO('go')}</div><h1 id="fh" style="font-size:90px">AUREA</h1><div class="sub" id="fs">Atelier · Confección · Dotación</div><div class="tag" id="ft">Cada puntada, cada peso, en su lugar.</div><div class="note" id="fn">La guía completa en PDF viene incluida</div></div>`;
+  }
+  const id = kind === 'intro' ? 'gi' : 'go';
+  const dr = (el, len, a, b) => { const e = document.getElementById(id + el); if (e) e.style.strokeDashoffset = len * (1 - ease(clamp((lt - a) / (b - a)))); };
+  dr('c', 190, 0.1, 1.8); dr('a', 41, 0.5, 1.6); dr('b', 41, 0.7, 1.8); dr('d', 19, 1.4, 2.0);
+  f.querySelectorAll('.fd').forEach(e => e.style.opacity = ease(clamp((lt - 1.8) / .8)));
+  const fadeUp = (sel, a) => { const e = $(sel); const k = ease(clamp((lt - a) / 1)); e.style.opacity = k; e.style.transform = `translateY(${(1 - k) * 24}px)`; };
+  const h = $('fh'), k = ease(clamp((lt - 1.9) / 1.6)); h.style.opacity = k; h.style.letterSpacing = (1.2 - .85 * k) + 'em'; h.style.filter = `blur(${(1 - k) * 6}px)`; h.style.marginLeft = (1.2 - .85 * k) + 'em';
+  fadeUp('fs', 2.6); fadeUp('ft', 3.1); fadeUp('fn', 3.6);
+}
+function setShot(win, sh, lt, alpha) {
+  const st = win.querySelector('.stage'); win.style.opacity = alpha;
+  const key = sh ? (sh.i || sh.tall || (sh.q && 'q' + sh.q[0]) || (sh.phones && 'ph') || (sh.pdf && 'pdf')) : '';
+  if (win.dataset.key !== key) {
+    win.dataset.key = key;
+    if (!sh) st.innerHTML = '';
+    else if (sh.i) st.innerHTML = `<img class="full" src="${C + sh.i}.png">`;
+    else if (sh.q) st.innerHTML = `<img class="full" src="${sh.q[0]}">`;
+    else if (sh.tall) st.innerHTML = `<img class="tall" src="${C + sh.tall}.png">`;
+    else if (sh.phones) st.innerHTML = `<div class="phones">${sh.phones.map(p => `<div class="ph"><img src="${C + p}.png"></div>`).join('')}</div>`;
+    else if (sh.pdf) st.innerHTML = `<div class="pdf">${sh.pdf.map(p => `<img src="${P + p}.png">`).join('')}</div>`;
+  }
+  if (!sh) return;
+  const u = clamp(lt / sh.d), e = ease(u);
+  if (sh.q) { const img = st.querySelector('img'); const n = Math.min(sh.q.length - 1, Math.floor(lt * 30)); const src = sh.q[Math.max(0, n)]; if (!img.src.endsWith(src)) img.src = src; }
+  if (sh.tall) { const img = st.querySelector('img'); const h = img.naturalHeight * (1280 / img.naturalWidth); const k = ease(clamp((lt - .6) / (sh.d - 1.4))); img.style.transform = `translateY(${-(h - 800) * k}px)`; st.style.transform = ''; return; }
+  if (sh.phones) { st.querySelectorAll('.ph').forEach((p, i) => { const k = ease(clamp((lt - .15 * i) / 1)); p.style.transform = `translateY(${(1 - k) * 60 + Math.sin(lt * 1.2 + i) * 6}px)`; p.style.opacity = k; const im2 = p.querySelector('img'); const hh = im2.naturalHeight * (250 / im2.naturalWidth) - 528; im2.style.transform = `translateY(${-Math.max(0, hh) * ease(clamp((lt - 1.2) / (sh.d - 1.6)))}px)`; }); return; }
+  if (sh.pdf) { const pages = st.querySelectorAll('img'), n = pages.length; pages.forEach((p, i) => { const k = ease(clamp((lt - .35 * i) / 1.1)); const spread = (i - (n - 1) / 2); p.style.transform = `translate(calc(-50% + ${spread * 190 * k}px), calc(-50% + ${(1 - k) * 80}px)) rotate(${spread * 4 * k}deg) scale(${.82 + .06 * Math.cos(spread)})`; p.style.opacity = k; p.style.zIndex = 10 - Math.abs(Math.round(spread)); }); return; }
+  const z = sh.z || [1, 1.08], o = sh.o || [.5, .5];
+  st.style.transformOrigin = `${o[0] * 100}% ${o[1] * 100}%`;
+  st.style.transform = `scale(${z[0] + (z[1] - z[0]) * e})`;
+}
+window.renderAt = (t) => {
+  $('bar').style.width = (t / TOTAL * 100) + '%';
+  const showFull = t < INTRO || t >= TOTAL - OUTRO;
+  const f = $('full');
+  if (t < INTRO) { fullScene('intro', t); f.style.opacity = 1 - ease(clamp((t - (INTRO - .7)) / .7)); }
+  else if (t >= TOTAL - OUTRO) { fullScene('outro', t - (TOTAL - OUTRO)); f.style.opacity = ease(clamp((t - (TOTAL - OUTRO)) / .7)); }
+  else f.style.opacity = 0;
+  f.style.display = f.style.opacity > 0 ? 'grid' : 'none';
+  const ci = SHOTS.findIndex(s => t >= s.start && t < s.start + s.d);
+  const cur = SHOTS[ci], prev = ci > 0 ? SHOTS[ci - 1] : null;
+  if (!cur) { setShot($('winA'), null, 0, 0); setShot($('winB'), null, 0, 0); $('text').style.opacity = 0; $('cap').style.opacity = 0; $('counter').textContent = ''; return; }
+  const lt = t - cur.start, inX = clamp(lt / X);
+  setShot($('winA'), cur, lt, prev ? ease(inX) : ease(inX));
+  if (prev && inX < 1) setShot($('winB'), prev, t - prev.start, 1); else setShot($('winB'), null, 0, 0);
+  const sc = S[cur.scene], st = t - sc.start, left = sc.end - t;
+  if ($('text').dataset.k !== String(cur.scene)) {
+    $('text').dataset.k = cur.scene;
+    $('t-eye').textContent = 'Paso ' + (cur.scene + 1) + ' de ' + S.length; $('t-num').textContent = String(cur.scene + 1).padStart(2, '0');
+    $('t-title').textContent = sc.t; $('t-desc').textContent = sc.d; $('t-list').innerHTML = sc.l.map(x => `<li>${x}</li>`).join('');
+  }
+  const kin = ease(clamp(st / .7)), kout = ease(clamp(left / .45));
+  const k = Math.min(kin, kout);
+  ['t-eye', 't-num', 't-title', 't-desc', 't-list'].forEach((id, i) => { const e = $(id); const ki = Math.min(ease(clamp((st - i * .08) / .7)), kout); e.style.opacity = ki; e.style.transform = `translateX(${(1 - ki) * -30}px)`; });
+  $('text').style.opacity = 1;
+  $('cap').innerHTML = `<b>${String(cur.scene + 1).padStart(2, '0')}</b> &nbsp;·&nbsp; ${cur.c}`; $('cap').style.opacity = Math.min(ease(inX), kout);
+  $('counter').textContent = `Paso ${cur.scene + 1} / ${S.length}`;
+  // Al cambiar de escena, la ventana entra con un leve desplazamiento.
+  const winIn = ease(clamp(st / .7)); $('winA').style.transform = sc.start === cur.start ? `translateY(${(1 - winIn) * 30}px)` : '';
+};
+</script>
+</body>
+</html>
