@@ -1,0 +1,779 @@
+<!doctype html>
+<!--
+  Aplicación de campaña desarrollada por Opita Digital.
+  © Opita Digital — Todos los derechos reservados. Prohibida su copia o reventa.
+-->
+<html lang="es" data-tema="elegante">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F4EFE6">
+  <title>Campaña</title>
+  <meta name="author" content="Opita Digital">
+  <meta name="copyright" content="© Opita Digital. Todos los derechos reservados.">
+  <meta name="generator" content="Opita Digital">
+  <script src="/tema.js"></script>
+  <link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/public-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <!-- Marca: una papeleta con un trazo de aprobación -->
+  <svg class="oculto" aria-hidden="true">
+    <symbol id="marca" viewBox="0 0 32 32">
+      <rect x="3" y="3" width="26" height="26" rx="5" fill="currentColor"/>
+      <path d="M9.5 16.5l4.5 4.5 9-10" fill="none" class="marca-trazo" stroke-width="3.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-inicio" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-personas" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.8a3.4 3.4 0 0 1 0 6.4M18 14.8c1.9.7 3.1 2.4 3.5 5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-encuesta" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-salir" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-externo" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-descarga" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-semana" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4M7.5 14h2M11 14h2M14.5 14h2M7.5 17h2M11 17h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-tendencia" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-edad" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.8-3.8 3.6-6 7-6s6.2 2.2 7 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-ubicacion" viewBox="0 0 24 24"><path d="M12 21s-6.5-6.2-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-casa" viewBox="0 0 24 24"><path d="M3.5 11.5L12 4l8.5 7.5M6 10v10h12V10M10 20v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-voto" viewBox="0 0 24 24"><path d="M4 13h16v7H4zM8 13V5h8v8M10 9l1.6 1.6L14.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-usuario" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21c.7-4.3 4-7 8-7s7.3 2.7 8 7z" fill="currentColor"/></symbol>
+    <symbol id="i-candado" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor"/></symbol>
+    <symbol id="i-ojo" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-ojo-no" viewBox="0 0 24 24"><path d="M10.6 5.6c.5-.1.9-.1 1.4-.1 6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.7C4 8.4 2.5 12 2.5 12S6 18.5 12 18.5c1.7 0 3.2-.5 4.5-1.2M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-equipo" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19.5c.6-3.6 3.3-5.6 6.5-5.6s5.9 2 6.5 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17.5 4.8l1.4 1.4 2.6-2.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-android" viewBox="0 0 24 24"><path d="M6 10h12v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM6 9a6 6 0 0 1 12 0zM8 4.5 6.8 3M16 4.5 17.2 3M3.5 11v5M20.5 11v5M9.5 19v2.5M14.5 19v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="7" r=".9" fill="currentColor"/><circle cx="14.5" cy="7" r=".9" fill="currentColor"/></symbol>
+    <symbol id="i-excel" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v6h6M8.5 12.5l4 5M12.5 12.5l-4 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-pdf" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v6h6M8 13h8M8 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-compartir" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h1M20 14h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></symbol>
+    <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M4.5 19.5l1.1-3.6A8 8 0 1 1 8.4 18.6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8.6c.2-.5.6-.6 1-.5l.7 1.6c.1.3 0 .6-.2.8l-.4.4c.5 1.1 1.4 2 2.5 2.5l.4-.4c.2-.2.5-.3.8-.2l1.6.7c.1.4 0 .8-.5 1-1.6.8-6.7-3.2-5.9-5.9z" fill="currentColor"/></symbol>
+    <symbol id="i-imprimir" viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-enlace" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-papelera" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <!-- Marca de agua de Opita Digital -->
+  <div class="marca-agua" aria-hidden="true"></div>
+
+  <div id="raiz"></div>
+
+  <!-- ============ PARTE PÚBLICA ============ -->
+  <template id="tpl-publico">
+    <header class="cabecera">
+      <a href="#/" class="logo"><svg><use href="#marca"/></svg><span data-nombre></span></a>
+      <nav class="nav-publica" aria-label="Principal">
+        <a href="#/">Regístrate</a>
+        <a href="#/encuestas">Encuestas</a>
+        <a href="#/panel" class="nav-equipo"><svg class="icono"><use href="#i-usuario"/></svg>Iniciar sesión</a>
+      </nav>
+    </header>
+    <main id="vista"></main>
+    <footer class="pie">
+      <div class="pie-fila">
+        <span data-nombre></span>
+        <span>Sus datos se tratan según la Ley 1581 de 2012.</span>
+      </div>
+      <div class="credito" data-credito></div>
+    </footer>
+  </template>
+
+  <template id="tpl-registro">
+    <div class="registro">
+      <aside class="cartel">
+        <p class="sobretitulo">Registro ciudadano · <span data-nombre></span></p>
+        <h1 class="cartel-titulo" id="cartel-titulo"></h1>
+        <p class="cartel-texto">Déjanos tus datos y entérate primero de las reuniones, propuestas
+          y jornadas que pasan en tu comuna.</p>
+        <div class="contador">
+          <span class="contador-num" id="contador">—</span>
+          <span class="contador-txt">personas ya se sumaron</span>
+        </div>
+        <!-- Montañas del Huila (decoración de los diseños Elegante y Opita) -->
+        <svg class="cartel-montanas" viewBox="0 0 1440 260" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+          <path class="m-lejos" d="M0 190L120 150 220 170 340 112 420 136 520 82 600 58 668 78 742 122 862 96 982 142 1102 104 1222 150 1342 124 1440 160V260H0Z"/>
+          <path class="m-cresta" d="M0 190L120 150 220 170 340 112 420 136 520 82 600 58 668 78 742 122 862 96 982 142 1102 104 1222 150 1342 124 1440 160"/>
+          <path class="m-nieve" d="M556 72L600 58 644 71 626 80 608 72 590 83 574 76Z"/>
+          <path class="m-medio" d="M0 222L160 178 300 206 460 162 620 202 780 152 940 196 1100 166 1280 206 1440 182V260H0Z"/>
+          <path class="m-cerca" d="M0 246C240 216 480 252 720 232S1200 214 1440 240V260H0Z"/>
+        </svg>
+      </aside>
+
+      <form id="form-registro" class="formulario" novalidate>
+        <fieldset>
+          <legend><span class="paso">01</span> ¿Quién eres?</legend>
+          <div class="campos dos">
+            <div class="campo">
+              <label for="r-nombre">Nombre</label>
+              <input id="r-nombre" maxlength="60" autocomplete="given-name" required>
+            </div>
+            <div class="campo">
+              <label for="r-apellido">Apellido</label>
+              <input id="r-apellido" maxlength="60" autocomplete="family-name" required>
+            </div>
+            <div class="campo">
+              <label for="r-cedula">Cédula</label>
+              <input id="r-cedula" inputmode="numeric" maxlength="13" required placeholder="Sin puntos ni espacios">
+            </div>
+            <div class="campo">
+              <label for="r-edad">Edad</label>
+              <input id="r-edad" type="number" min="18" max="120" inputmode="numeric" required>
+            </div>
+            <div class="campo ancho-completo">
+              <label for="r-telefono">Teléfono o celular</label>
+              <input id="r-telefono" type="tel" maxlength="15" autocomplete="tel" required placeholder="300 000 0000">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="paso">02</span> ¿Dónde vives?</legend>
+          <div class="campos dos">
+            <div class="campo autocompletar">
+              <label for="r-barrio">Barrio</label>
+              <input id="r-barrio" maxlength="80" required autocomplete="off"
+                     role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugerencias-barrio">
+              <ul id="sugerencias-barrio" class="sugerencias" role="listbox" hidden></ul>
+            </div>
+            <div class="campo">
+              <label for="r-comuna">Comuna</label>
+              <input id="r-comuna" maxlength="40" required placeholder="Ej.: 5">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="paso">03</span> Firma</legend>
+          <div class="firma-caja" id="r-firma">
+            <canvas id="firma" width="640" height="200" aria-label="Espacio para firmar"></canvas>
+            <span class="firma-linea" aria-hidden="true"></span>
+            <span class="firma-guia" id="firma-guia">Firma aquí con el dedo o el mouse</span>
+            <button type="button" id="borrar-firma" class="enlace firma-borrar">Borrar</button>
+          </div>
+
+          <label class="consentimiento">
+            <input type="checkbox" id="r-autorizacion" required>
+            <span>Autorizo de manera libre, previa y expresa el tratamiento de mis datos personales
+              para fines de la campaña (Ley 1581 de 2012). Puedo consultarlos, corregirlos o
+              pedir que se eliminen cuando quiera.</span>
+          </label>
+        </fieldset>
+
+        <p class="error" id="error-registro" role="alert"></p>
+        <button type="submit" class="boton boton-acento boton-grande">Sumarme a la campaña</button>
+      </form>
+    </div>
+  </template>
+
+  <template id="tpl-registro-ok">
+    <section class="exito">
+      <svg class="exito-marca"><use href="#marca"/></svg>
+      <h1 id="gracias"></h1>
+      <p>Tus datos quedaron guardados. Pronto te contactaremos con novedades de tu comuna.</p>
+      <button type="button" id="otro-registro" class="boton">Registrar a otra persona</button>
+    </section>
+  </template>
+
+  <template id="tpl-encuestas-publicas">
+    <section class="pagina-angosta">
+      <p class="sobretitulo">Tu opinión cuenta</p>
+      <h1 class="titulo-pagina">Encuestas abiertas</h1>
+      <ul id="lista-encuestas" class="lista-encuestas"></ul>
+    </section>
+  </template>
+
+  <template id="tpl-encuesta">
+    <section class="pagina-angosta">
+      <a href="#/encuestas" class="volver">← Todas las encuestas</a>
+      <p class="sobretitulo" id="estado-encuesta"></p>
+      <h1 class="titulo-pagina" id="titulo"></h1>
+      <p class="meta" id="meta"></p>
+      <form id="form-votar" hidden>
+        <div id="opciones-voto" class="opciones"></div>
+        <p class="error" id="error-votar" role="alert"></p>
+        <button type="submit" class="boton boton-acento">Enviar mi voto</button>
+      </form>
+      <div id="resultados" class="barras" hidden></div>
+      <div class="acciones">
+        <button type="button" id="copiar" class="boton boton-borde">Copiar enlace</button>
+      </div>
+    </section>
+  </template>
+
+  <!-- ============ ACCESO DEL EQUIPO ============ -->
+  <template id="tpl-login">
+    <div class="acceso">
+      <header class="acceso-barra">
+        <a href="#/" class="logo"><svg><use href="#marca"/></svg><span data-nombre></span></a>
+        <span class="pastilla-sesion"><svg class="icono"><use href="#i-usuario"/></svg>Iniciar sesión</span>
+      </header>
+      <div class="acceso-tarjeta">
+        <div class="acceso-banda">
+          <div class="acceso-logo" id="acceso-logo"></div>
+          <h1 class="acceso-nombre" data-nombre></h1>
+          <p class="acceso-eslogan" id="acceso-eslogan"></p>
+        </div>
+        <form id="form-login" class="acceso-form" novalidate>
+          <h2>Iniciar sesión</h2>
+          <p class="meta">Acceso para el equipo de campaña.</p>
+          <div class="campo">
+            <label for="correo-login">Correo</label>
+            <input id="correo-login" type="email" autocomplete="username" placeholder="nombre@correo.com">
+          </div>
+          <div class="campo">
+            <label for="clave">Contraseña</label>
+            <div class="campo-icono">
+              <input id="clave" type="password" autocomplete="current-password" required placeholder="Su contraseña">
+              <button type="button" class="icono-boton boton-ojo" data-ojo="clave" aria-label="Mostrar contraseña" title="Mostrar contraseña"><svg><use href="#i-ojo"/></svg></button>
+            </div>
+          </div>
+          <p class="error" id="error-login" role="alert"></p>
+          <button type="submit" class="boton boton-acento boton-bloque boton-grande">Entrar</button>
+          <button type="button" id="olvide" class="enlace enlace-centro">Olvidé mi contraseña</button>
+        </form>
+
+        <form id="form-codigo" class="acceso-form caja-olvide" novalidate hidden>
+          <h3>Revise su correo</h3>
+          <p class="meta">Le enviamos un código de 6 dígitos a <b id="codigo-correo"></b> para confirmar que el correo es suyo. Solo se pide la primera vez.</p>
+          <div class="campo">
+            <label for="codigo-entrada">Código</label>
+            <input id="codigo-entrada" class="entrada-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+          </div>
+          <p class="error" id="error-codigo" role="alert"></p>
+          <button type="submit" class="boton boton-acento boton-bloque">Verificar y entrar</button>
+          <div class="reenviar"><button type="button" id="reenviar-codigo" class="enlace" disabled>Reenviar código</button><span id="espera-codigo" class="meta"></span></div>
+          <p class="ayuda-correo">¿No le llega? Espere un minuto y revise <b>Spam</b> o <b>Promociones</b>. Si sigue sin llegar, el director puede marcar su correo como verificado en Usuarios.</p>
+          <button type="button" class="enlace enlace-centro" data-volver-login>Volver</button>
+        </form>
+
+        <form id="form-olvide" class="acceso-form caja-olvide" novalidate hidden>
+          <h3>¿Olvidó su contraseña?</h3>
+          <p class="meta">Escriba su correo. El director de la campaña recibirá el aviso y le asignará una contraseña nueva.</p>
+          <div class="campo">
+            <label for="correo-olvide">Correo</label>
+            <input id="correo-olvide" type="email" autocomplete="username" placeholder="nombre@correo.com">
+          </div>
+          <p class="error" id="error-olvide" role="alert"></p>
+          <p class="exito-olvide" id="exito-olvide" hidden>Listo. Si el correo tiene un perfil, el director ya puede ver su solicitud en <b>Usuarios</b>. Pregúntele por su contraseña nueva.</p>
+          <div id="paso-codigo-clave" hidden>
+            <p class="exito-olvide">Si el correo tiene un perfil, le llegó un código de 6 dígitos. Revise también Spam o Promociones.</p>
+            <div class="campo">
+              <label for="codigo-clave">Código del correo</label>
+              <input id="codigo-clave" class="entrada-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+            </div>
+            <div class="campo">
+              <label for="nueva-clave">Contraseña nueva</label>
+              <div class="campo-icono">
+                <input id="nueva-clave" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+                <button type="button" class="icono-boton boton-ojo" data-ojo="nueva-clave" aria-label="Mostrar contraseña" title="Mostrar contraseña"><svg><use href="#i-ojo"/></svg></button>
+              </div>
+            </div>
+            <div class="reenviar"><button type="button" id="reenviar-clave" class="enlace" disabled>Reenviar código</button><span id="espera-clave" class="meta"></span></div>
+          </div>
+          <p class="exito-olvide" id="clave-lista" hidden>Su contraseña quedó cambiada. Ya puede entrar con ella.</p>
+          <div class="acciones sin-margen">
+            <button type="submit" class="boton boton-acento" id="boton-olvide">Enviar</button>
+            <button type="button" id="volver-login" class="boton boton-borde" data-volver-login>Volver</button>
+          </div>
+          <p class="meta nota-director">¿Es el director? Entre dejando el correo vacío y use la clave maestra.</p>
+        </form>
+
+        <div class="acceso-form acceso-opciones">
+
+          <div class="separador separador-tambien" id="separador-tambien" hidden><span>O también</span></div>
+          <a href="/descargas/campana.apk" id="bajar-apk-login" class="opcion-acceso" download="campana.apk" hidden>
+            <span class="opcion-icono opcion-android"><svg><use href="#i-android"/></svg></span>
+            <span class="opcion-texto"><strong>APK Android</strong><small id="apk-login-texto">Descargar campana.apk (última versión)</small></span>
+            <svg class="opcion-flecha"><use href="#i-descarga"/></svg>
+          </a>
+          <div class="credito" data-credito></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ============ PANEL ============ -->
+  <template id="tpl-panel">
+    <div class="panel">
+      <aside class="lateral">
+        <a href="#/panel" class="logo logo-claro"><svg><use href="#marca"/></svg><span data-nombre></span></a>
+        <nav class="nav-panel" aria-label="Panel">
+          <a href="#/panel" data-permiso="tablero"><svg><use href="#i-inicio"/></svg>Inicio</a>
+          <a href="#/panel/registros" data-permiso="registros"><svg><use href="#i-personas"/></svg>Registros</a>
+          <a href="#/panel/encuestas" data-permiso="encuestas"><svg><use href="#i-encuesta"/></svg>Encuestas</a>
+          <a href="#/panel/compartir" data-permiso="compartir"><svg><use href="#i-compartir"/></svg>Compartir</a>
+          <a href="#/panel/usuarios" data-permiso="usuarios"><svg><use href="#i-equipo"/></svg>Usuarios</a>
+          <a href="#/panel/ajustes" data-permiso="ajustes"><svg><use href="#i-ajustes"/></svg>Ajustes</a>
+        </nav>
+        <div class="lateral-pie">
+          <a href="#/panel/cuenta" class="yo" id="yo">
+            <span class="avatar" id="yo-iniciales"></span>
+            <span class="yo-texto"><strong id="yo-nombre"></strong><small id="yo-puesto"></small></span>
+          </a>
+          <a href="#/" target="_blank" rel="noopener"><svg><use href="#i-externo"/></svg>Ver formulario</a>
+          <button type="button" id="salir"><svg><use href="#i-salir"/></svg>Cerrar sesión</button>
+          <div class="credito credito-lateral" data-credito></div>
+        </div>
+      </aside>
+      <main id="vista-panel" class="contenido"></main>
+    </div>
+  </template>
+
+  <template id="tpl-panel-inicio">
+    <header class="tablero-cab">
+      <div class="candidato">
+        <div class="candidato-foto" id="cand-foto" aria-hidden="true"></div>
+        <div>
+          <p class="sobretitulo" id="fecha-hoy"></p>
+          <h1 class="titulo-pagina" data-nombre></h1>
+          <p class="candidato-nombre" id="cand-nombre"></p>
+        </div>
+      </div>
+      <div class="tablero-acciones">
+        <a id="bajar-excel" class="boton boton-borde" download data-requiere="exportar"><svg class="icono"><use href="#i-excel"/></svg>Excel</a>
+        <a id="bajar-pdf" class="boton boton-borde" download data-requiere="exportar"><svg class="icono"><use href="#i-pdf"/></svg>PDF</a>
+        <a href="#/panel/compartir" class="boton boton-acento"><svg class="icono"><use href="#i-compartir"/></svg>Compartir registro</a>
+      </div>
+    </header>
+
+    <section class="filtros-panel" aria-label="Filtros">
+      <span class="etiqueta">Periodo</span>
+      <div class="segmentado" role="radiogroup" aria-label="Periodo">
+        <button type="button" data-periodo="7" role="radio">7 días</button>
+        <button type="button" data-periodo="30" role="radio">30 días</button>
+        <button type="button" data-periodo="90" role="radio">90 días</button>
+        <button type="button" data-periodo="todo" role="radio">Todo</button>
+      </div>
+      <select id="f-comuna" aria-label="Filtrar por comuna"><option value="">Todas las comunas</option></select>
+      <select id="f-edad" aria-label="Filtrar por edad"><option value="">Todas las edades</option></select>
+      <button type="button" class="enlace" id="f-limpiar" hidden>Quitar filtros</button>
+    </section>
+
+    <section class="kpis-grid" aria-label="Resumen">
+      <article class="kpi2 destacado">
+        <h2>Personas registradas</h2><span class="kpi-icono"><svg><use href="#i-personas"/></svg></span>
+        <p class="kpi-num" id="k-total">0</p><p class="kpi-nota" id="k-total-nota"></p>
+      </article>
+      <article class="kpi2">
+        <h2>Hoy</h2><span class="kpi-icono"><svg><use href="#i-calendario"/></svg></span>
+        <p class="kpi-num" id="k-hoy">0</p><p class="kpi-nota">registros nuevos</p>
+      </article>
+      <article class="kpi2">
+        <h2>Últimos 7 días</h2><span class="kpi-icono"><svg><use href="#i-semana"/></svg></span>
+        <p class="kpi-num" id="k-semana">0</p><p class="kpi-nota">registros</p>
+      </article>
+      <article class="kpi2">
+        <h2>Crecimiento semanal</h2><span class="kpi-icono"><svg><use href="#i-tendencia"/></svg></span>
+        <p class="kpi-num" id="k-crecimiento">—</p><p class="kpi-nota" id="k-crecimiento-nota"></p>
+      </article>
+      <article class="kpi2">
+        <h2>Edad promedio</h2><span class="kpi-icono"><svg><use href="#i-edad"/></svg></span>
+        <p class="kpi-num" id="k-edad">—</p><p class="kpi-nota">años</p>
+      </article>
+      <article class="kpi2">
+        <h2>Comunas</h2><span class="kpi-icono"><svg><use href="#i-ubicacion"/></svg></span>
+        <p class="kpi-num" id="k-comunas">0</p><p class="kpi-nota">con presencia</p>
+      </article>
+      <article class="kpi2">
+        <h2>Barrios</h2><span class="kpi-icono"><svg><use href="#i-casa"/></svg></span>
+        <p class="kpi-num" id="k-barrios">0</p><p class="kpi-nota">alcanzados</p>
+      </article>
+      <article class="kpi2">
+        <h2>Votos en encuestas</h2><span class="kpi-icono"><svg><use href="#i-voto"/></svg></span>
+        <p class="kpi-num" id="k-votos">0</p><p class="kpi-nota" id="k-votos-nota"></p>
+      </article>
+    </section>
+
+    <section class="app-android" id="app-android" hidden>
+      <div class="app-android-texto">
+        <p class="sobretitulo">Aplicación Android</p>
+        <h2>Lleve la campaña en su celular</h2>
+        <p id="app-detalle">Formulario, encuestas y panel en una app con su propio ícono. Se actualiza sola cuando hay una versión nueva.</p>
+        <div class="acciones">
+          <a id="app-descargar" class="boton boton-acento" download><svg class="icono"><use href="#i-android"/></svg>Descargar APK</a>
+          <button type="button" id="app-como" class="boton boton-borde-claro">Cómo instalarla</button>
+        </div>
+        <ol class="app-pasos" id="app-pasos" hidden>
+          <li>Descargue el archivo <b>campana.apk</b> en el celular (o escanee el código).</li>
+          <li>Ábralo. Si Android pregunta, permita <b>"Instalar apps desconocidas"</b> para el navegador.</li>
+          <li>Abra la app, escriba la dirección de la página de la campaña y listo.</li>
+          <li>Acepte las notificaciones. Cuando salga una versión nueva, la app la descarga sola: solo toque <b>"Instalar"</b>.</li>
+        </ol>
+      </div>
+      <div class="app-android-qr">
+        <canvas id="app-qr" width="300" height="300" aria-label="Código QR para descargar la app"></canvas>
+        <span>Escanee para descargar</span>
+      </div>
+    </section>
+
+    <section class="rejilla-panel">
+      <article class="bloque col-8">
+        <header class="bloque-cab"><h2>Registros por día</h2><span class="bloque-sub" id="sub-dias"></span></header>
+        <div id="g-dias" class="grafico"></div>
+      </article>
+      <article class="bloque col-4">
+        <header class="bloque-cab"><h2>Hora del registro</h2><span class="bloque-sub">Franja del día</span></header>
+        <div id="g-hora"></div>
+      </article>
+
+      <article class="bloque col-6">
+        <header class="bloque-cab"><h2>Crecimiento acumulado</h2><span class="bloque-sub">Total de personas</span></header>
+        <div id="g-acumulado" class="grafico"></div>
+      </article>
+      <article class="bloque col-6">
+        <header class="bloque-cab"><h2>Día de la semana</h2><span class="bloque-sub">Cuándo se registra la gente</span></header>
+        <div id="g-semana" class="grafico"></div>
+      </article>
+
+      <article class="bloque col-4">
+        <header class="bloque-cab"><h2>Por comuna</h2><span class="bloque-sub">Personas</span></header>
+        <div id="g-comunas" class="barras"></div>
+      </article>
+      <article class="bloque col-4">
+        <header class="bloque-cab"><h2>Por edad</h2><span class="bloque-sub">Años</span></header>
+        <div id="g-edades" class="grafico"></div>
+      </article>
+      <article class="bloque col-4">
+        <header class="bloque-cab"><h2>Barrios más fuertes</h2><span class="bloque-sub">Top 8</span></header>
+        <ol id="l-barrios" class="ranking"></ol>
+      </article>
+
+      <article class="bloque col-4 encuesta-destacada">
+        <header class="bloque-cab"><h2>Encuesta destacada</h2><a href="#/panel/encuestas" class="enlace">Ver encuestas</a></header>
+        <div id="l-encuesta"></div>
+      </article>
+      <article class="bloque col-4">
+        <header class="bloque-cab"><h2>Últimos registros</h2><a href="#/panel/registros" class="enlace">Ver todos</a></header>
+        <ul id="l-recientes" class="recientes"></ul>
+      </article>
+      <article class="bloque col-4 bloque-qr" data-requiere="compartir">
+        <header class="bloque-cab"><h2>Comparte el registro</h2><a href="#/panel/compartir" class="enlace">Más opciones</a></header>
+        <div class="qr-rapido">
+          <canvas id="qr-tablero" width="320" height="320" aria-label="Código QR del formulario"></canvas>
+          <p class="meta">Que la gente lo escanee con la cámara del celular.</p>
+        </div>
+        <div class="enlace-caja">
+          <svg class="icono"><use href="#i-enlace"/></svg>
+          <input id="enlace-tablero" readonly aria-label="Enlace del formulario">
+          <button type="button" id="copiar-tablero" class="boton boton-mini">Copiar</button>
+        </div>
+        <div class="acciones qr-acciones">
+          <a id="whatsapp-tablero" class="boton boton-whatsapp boton-mini" target="_blank" rel="noopener"><svg class="icono"><use href="#i-whatsapp"/></svg>WhatsApp</a>
+          <button type="button" id="bajar-qr-tablero" class="boton boton-borde boton-mini"><svg class="icono"><use href="#i-descarga"/></svg>Descargar QR</button>
+        </div>
+      </article>
+    </section>
+  </template>
+
+  <template id="tpl-panel-registros">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Base de datos</p>
+        <h1 class="titulo-pagina">Registros</h1>
+      </div>
+      <div class="tablero-acciones">
+        <a href="/api/tablero.xlsx?periodo=todo" id="exportar-xlsx" class="boton boton-acento" download data-requiere="exportar">
+          <svg class="icono"><use href="#i-excel"/></svg>Excel con tablero</a>
+        <a href="/api/reporte.pdf?periodo=todo" id="exportar-pdf" class="boton boton-borde" download data-requiere="exportar">
+          <svg class="icono"><use href="#i-pdf"/></svg>PDF</a>
+        <button type="button" id="exportar" class="boton boton-borde" data-requiere="exportar">
+          <svg class="icono"><use href="#i-descarga"/></svg>CSV</button>
+      </div>
+    </header>
+    <div class="filtros">
+      <input id="buscar" type="search" placeholder="Buscar por nombre, cédula, teléfono o barrio" aria-label="Buscar">
+      <select id="filtro-comuna" aria-label="Filtrar por comuna">
+        <option value="">Todas las comunas</option>
+      </select>
+    </div>
+    <p class="meta" id="resumen"></p>
+    <div class="tabla-marco">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Nombre</th><th>Cédula</th><th class="num">Edad</th><th>Teléfono</th>
+            <th>Barrio</th><th>Comuna</th><th>Firma</th><th>Registro</th><th><span class="oculto-visual">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody id="filas"></tbody>
+      </table>
+    </div>
+  </template>
+
+  <template id="tpl-panel-encuestas">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Consultas a la comunidad</p>
+        <h1 class="titulo-pagina">Encuestas</h1>
+      </div>
+    </header>
+    <section class="rejilla-panel">
+      <article class="bloque col-5">
+        <header class="bloque-cab"><h2>Nueva encuesta</h2></header>
+        <form id="form-crear" novalidate>
+          <div class="campo">
+            <label for="pregunta">Pregunta</label>
+            <input id="pregunta" maxlength="200" required placeholder="¿Qué tema priorizamos en la comuna?">
+          </div>
+          <div class="campo">
+            <span class="etiqueta">Opciones <span class="meta">(2 a 10)</span></span>
+            <div id="lista-opciones"></div>
+            <button type="button" id="agregar-opcion" class="enlace">+ Agregar opción</button>
+          </div>
+          <p class="error" id="error-crear" role="alert"></p>
+          <button type="submit" class="boton boton-acento">Publicar encuesta</button>
+        </form>
+      </article>
+      <div class="col-7 pila" id="admin-encuestas"></div>
+    </section>
+  </template>
+
+  <template id="tpl-panel-compartir">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Invita a la gente</p>
+        <h1 class="titulo-pagina">Compartir el registro</h1>
+      </div>
+    </header>
+    <section class="rejilla-panel">
+      <article class="bloque col-7 bloque-afiche">
+        <header class="bloque-cab">
+          <h2>Anuncio listo para compartir</h2>
+          <div class="formatos" role="radiogroup" aria-label="Formato del anuncio">
+            <button type="button" class="formato activo" data-formato="post" role="radio" aria-checked="true">Post 4:5</button>
+            <button type="button" class="formato" data-formato="historia" role="radio" aria-checked="false">Historia 9:16</button>
+            <button type="button" class="formato" data-formato="cuadrado" role="radio" aria-checked="false">Cuadrado</button>
+          </div>
+        </header>
+        <div class="afiche-marco"><canvas id="afiche" aria-label="Vista previa del anuncio"></canvas></div>
+      </article>
+      <div class="col-5 pila">
+        <article class="bloque">
+          <header class="bloque-cab"><h2>Enlace del formulario</h2></header>
+          <div class="enlace-caja">
+            <svg class="icono"><use href="#i-enlace"/></svg>
+            <input id="enlace-publico" readonly aria-label="Enlace del formulario">
+            <button type="button" id="copiar-enlace" class="boton boton-mini">Copiar</button>
+          </div>
+          <p class="meta" id="aviso-enlace"></p>
+        </article>
+        <article class="bloque">
+          <header class="bloque-cab"><h2>Compartir</h2></header>
+          <div class="botones-compartir">
+            <a id="compartir-whatsapp" class="boton boton-whatsapp" target="_blank" rel="noopener">
+              <svg class="icono"><use href="#i-whatsapp"/></svg>Enviar por WhatsApp</a>
+            <button type="button" id="compartir-nativo" class="boton boton-borde" hidden>Compartir…</button>
+            <button type="button" id="descargar-afiche" class="boton boton-acento">
+              <svg class="icono"><use href="#i-descarga"/></svg>Descargar anuncio (PNG)</button>
+            <button type="button" id="descargar-qr" class="boton boton-borde">
+              <svg class="icono"><use href="#i-compartir"/></svg>Descargar solo el QR</button>
+            <button type="button" id="imprimir-afiche" class="boton boton-borde">
+              <svg class="icono"><use href="#i-imprimir"/></svg>Imprimir</button>
+          </div>
+        </article>
+        <article class="bloque">
+          <header class="bloque-cab"><h2>Texto para el mensaje</h2></header>
+          <textarea id="texto-mensaje" rows="4" aria-label="Texto del mensaje"></textarea>
+        </article>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-panel-ajustes">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Apariencia y datos</p>
+        <h1 class="titulo-pagina">Ajustes</h1>
+      </div>
+    </header>
+    <form id="form-ajustes" class="rejilla-panel" novalidate>
+      <article class="bloque col-12">
+        <header class="bloque-cab">
+          <h2>Diseño de la aplicación</h2>
+          <span class="bloque-sub">Se aplica en el formulario, el panel y el anuncio</span>
+        </header>
+        <div class="temas" role="radiogroup" aria-label="Diseño">
+          <label class="tema-opcion" data-muestra="elegante">
+            <input type="radio" name="tema" value="elegante">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Elegante</strong><span>Azul medianoche, dorado y letras clásicas. Montañas del Huila.</span>
+          </label>
+          <label class="tema-opcion" data-muestra="opita">
+            <input type="radio" name="tema" value="opita">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Opita</strong><span>Verde y amarillo del Huila, con la cinta del sombrero.</span>
+          </label>
+          <label class="tema-opcion" data-muestra="oscuro">
+            <input type="radio" name="tema" value="oscuro">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Moderno oscuro</strong><span>Fondo oscuro con acentos verde neón.</span>
+          </label>
+          <label class="tema-opcion" data-muestra="limpio">
+            <input type="radio" name="tema" value="limpio">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Limpio</strong><span>Blanco, sobrio y profesional, acento azul.</span>
+          </label>
+          <label class="tema-opcion" data-muestra="popular">
+            <input type="radio" name="tema" value="popular">
+            <span class="tema-muestra"><i></i><i></i><i></i><b></b></span>
+            <strong>Popular</strong><span>Rojo de afiche, letras grandes y fuertes.</span>
+          </label>
+        </div>
+      </article>
+      <article class="bloque col-6">
+        <header class="bloque-cab"><h2>Datos de la campaña</h2></header>
+        <div class="campo">
+          <label for="a-nombre">Nombre de la campaña</label>
+          <input id="a-nombre" maxlength="40" required>
+        </div>
+        <div class="campo">
+          <label for="a-eslogan">Eslogan</label>
+          <input id="a-eslogan" maxlength="80" required>
+          <p class="meta">La última palabra se resalta en el formulario y el anuncio.</p>
+        </div>
+        <div class="campo">
+          <label for="a-candidato">Nombre del candidato o candidata (opcional)</label>
+          <input id="a-candidato" maxlength="60" placeholder="Ej.: Ana María Gómez">
+        </div>
+        <div class="campo">
+          <span class="etiqueta">Foto para el panel (opcional)</span>
+          <div class="foto-ajuste">
+            <div class="candidato-foto" id="a-foto-vista"></div>
+            <label class="boton boton-borde boton-mini" for="a-foto">Subir foto</label>
+            <input id="a-foto" type="file" accept="image/png,image/jpeg,image/webp" class="oculto-visual">
+            <button type="button" id="a-foto-quitar" class="enlace" hidden>Quitar</button>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="a-urlPublica">Enlace público (opcional)</label>
+          <input id="a-urlPublica" type="url" placeholder="https://www.sucampana.com" maxlength="200">
+          <p class="meta">Si publica la app en un dominio propio, póngalo aquí para que el QR apunte a él.</p>
+        </div>
+        <p class="error" id="error-ajustes" role="alert"></p>
+        <button type="submit" class="boton boton-acento">Guardar cambios</button>
+        <span class="meta guardado" id="guardado" hidden>Cambios guardados</span>
+      </article>
+      <article class="bloque col-12" id="bloque-correo">
+        <header class="bloque-cab">
+          <h2>Correo de envío</h2>
+          <span class="estado-correo" id="estado-correo"></span>
+        </header>
+        <p class="meta">Desde este correo salen los códigos de verificación y de cambio de contraseña. Escoja su proveedor para llenar los datos del servidor.</p>
+        <div class="proveedores" role="group" aria-label="Proveedor de correo">
+          <button type="button" class="formato" data-proveedor="gmail">Gmail</button>
+          <button type="button" class="formato" data-proveedor="outlook">Outlook / Hotmail</button>
+          <button type="button" class="formato" data-proveedor="hostinger">Hostinger</button>
+          <button type="button" class="formato" data-proveedor="otro">Otro</button>
+        </div>
+        <div class="ayuda-gmail" id="ayuda-gmail" hidden>
+          <b>Gmail:</b> la contraseña normal no sirve. Active la verificación en 2 pasos en su cuenta de Google y cree una
+          <b>contraseña de aplicación</b> (Cuenta de Google → Seguridad → Contraseñas de aplicaciones). Pegue aquí esa clave de 16 letras.
+        </div>
+        <div class="campos-correo">
+          <div class="campo"><label for="m-host">Servidor (SMTP)</label><input id="m-host" placeholder="smtp.gmail.com"></div>
+          <div class="campo"><label for="m-puerto">Puerto</label><input id="m-puerto" inputmode="numeric" placeholder="465"></div>
+          <div class="campo"><label for="m-seguridad">Seguridad</label>
+            <select id="m-seguridad"><option value="ssl">SSL (puerto 465)</option><option value="starttls">STARTTLS (puerto 587)</option></select></div>
+          <div class="campo"><label for="m-usuario">Correo de la cuenta</label><input id="m-usuario" type="email" placeholder="campana@gmail.com" autocomplete="off"></div>
+          <div class="campo"><label for="m-clave">Contraseña del correo</label>
+            <div class="campo-icono"><input id="m-clave" type="password" autocomplete="new-password" placeholder="Contraseña o clave de aplicación">
+              <button type="button" class="icono-boton boton-ojo" data-ojo="m-clave" aria-label="Mostrar contraseña" title="Mostrar contraseña"><svg><use href="#i-ojo"/></svg></button></div></div>
+          <div class="campo"><label for="m-nombre">Nombre que verá la gente</label><input id="m-nombre" maxlength="60" placeholder="Equipo Neiva Primero"></div>
+        </div>
+        <p class="error" id="error-correo" role="alert"></p>
+        <div class="acciones sin-margen">
+          <button type="button" id="guardar-correo" class="boton boton-acento">Guardar correo</button>
+        </div>
+        <div class="prueba-correo">
+          <div class="campo"><label for="m-para">Enviar un correo de prueba a</label><input id="m-para" type="email" placeholder="su-correo@gmail.com"></div>
+          <button type="button" id="probar-correo" class="boton boton-borde">Enviar prueba</button>
+        </div>
+        <div id="resultado-prueba" class="resultado-prueba" hidden></div>
+        <details class="historial-correo">
+          <summary>Historial de envíos <span id="cuenta-envios" class="meta"></span></summary>
+          <div class="tabla-marco"><table class="tabla"><thead><tr><th>Fecha</th><th>Para</th><th>Asunto</th><th>Estado</th></tr></thead><tbody id="filas-envios"></tbody></table></div>
+        </details>
+      </article>
+      <article class="bloque col-6 bloque-autor">
+        <header class="bloque-cab"><h2>Desarrollado por</h2></header>
+        <div class="autor" id="autor"></div>
+      </article>
+    </form>
+  </template>
+
+  <template id="tpl-panel-usuarios">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Equipo de campaña</p>
+        <h1 class="titulo-pagina">Usuarios y permisos</h1>
+      </div>
+      <button type="button" id="nuevo-usuario" class="boton boton-acento"><svg class="icono"><use href="#i-equipo"/></svg>Nuevo perfil</button>
+    </header>
+    <section class="rejilla-panel">
+      <article class="bloque col-5" id="bloque-form-usuario">
+        <header class="bloque-cab"><h2 id="titulo-form-usuario">Nuevo perfil</h2><button type="button" id="cancelar-usuario" class="enlace" hidden>Cancelar</button></header>
+        <form id="form-usuario" novalidate>
+          <div class="campo"><label for="u-nombre">Nombre completo</label><input id="u-nombre" maxlength="60" autocomplete="off"></div>
+          <div class="campo"><label for="u-correo">Correo</label><input id="u-correo" type="email" maxlength="120" autocomplete="off" placeholder="nombre@correo.com"></div>
+          <div class="campo">
+            <label for="u-clave" id="etiqueta-clave">Contraseña</label>
+            <div class="campo-icono">
+              <input id="u-clave" type="password" maxlength="128" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+              <button type="button" class="icono-boton boton-ojo" data-ojo="u-clave" aria-label="Mostrar contraseña" title="Mostrar contraseña"><svg><use href="#i-ojo"/></svg></button>
+            </div>
+          </div>
+          <button type="button" id="generar-clave" class="enlace boton-generar-abajo">Generar una contraseña segura</button>
+          <div class="campo"><label for="u-puesto">Puesto</label><input id="u-puesto" maxlength="60" placeholder="Ej.: Coordinadora Comuna 4"></div>
+          <div class="campo">
+            <label for="u-rol">Rol</label>
+            <select id="u-rol"></select>
+          </div>
+          <fieldset class="permisos">
+            <legend class="etiqueta">Permisos</legend>
+            <div id="u-permisos"></div>
+          </fieldset>
+          <label class="interruptor"><input type="checkbox" id="u-activo" checked><span>Perfil activo (puede entrar)</span></label>
+          <p class="error" id="error-usuario" role="alert"></p>
+          <button type="submit" class="boton boton-acento" id="guardar-usuario">Crear perfil</button>
+          <p class="meta">Comparta la contraseña con la persona por un medio seguro. Ella la puede cambiar en "Mi cuenta".</p>
+        </form>
+      </article>
+      <div class="col-7 pila" id="lista-usuarios"></div>
+    </section>
+  </template>
+
+  <template id="tpl-panel-cuenta">
+    <header class="encabezado">
+      <div>
+        <p class="sobretitulo">Mi cuenta</p>
+        <h1 class="titulo-pagina" id="cuenta-nombre"></h1>
+        <p class="meta" id="cuenta-detalle"></p>
+      </div>
+    </header>
+    <section class="rejilla-panel">
+      <article class="bloque col-6">
+        <header class="bloque-cab"><h2>Mis permisos</h2></header>
+        <ul class="lista-permisos" id="cuenta-permisos"></ul>
+      </article>
+      <article class="bloque col-6">
+        <header class="bloque-cab"><h2>Cambiar mi contraseña</h2></header>
+        <form id="form-mi-clave" novalidate>
+          <div class="campo"><label for="c-actual">Contraseña actual</label><div class="campo-icono"><input id="c-actual" type="password" autocomplete="current-password"><button type="button" class="icono-boton boton-ojo" data-ojo="c-actual" aria-label="Mostrar contraseña" title="Mostrar contraseña"><svg><use href="#i-ojo"/></svg></button></div></div>
+          <div class="campo"><label for="c-nueva">Contraseña nueva</label><div class="campo-icono"><input id="c-nueva" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"><button type="button" class="icono-boton boton-ojo" data-ojo="c-nueva" aria-label="Mostrar contraseña" title="Mostrar contraseña"><svg><use href="#i-ojo"/></svg></button></div></div>
+          <p class="error" id="error-mi-clave" role="alert"></p>
+          <button type="submit" class="boton boton-acento">Cambiar contraseña</button>
+          <span class="meta guardado" id="clave-cambiada" hidden>Contraseña cambiada</span>
+        </form>
+        <p class="meta" id="cuenta-maestra" hidden>Usted entró con la clave maestra. Esa clave se cambia en el servidor (variable ADMIN_PASSWORD).</p>
+      </article>
+    </section>
+  </template>
+
+  <div id="tooltip" class="tooltip" role="status" hidden></div>
+  <script src="/vendor/qrcode.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

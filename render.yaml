@@ -1,0 +1,32 @@
+# Despliegue en Render (https://render.com): New → Blueprint → este repositorio.
+# Los datos viven en un disco persistente PRIVADO; no están en el repositorio.
+services:
+  - type: web
+    name: campana-opita
+    runtime: node
+    rootDir: app-votacion
+    plan: starter
+    buildCommand: "true"
+    startCommand: node server.js
+    healthCheckPath: /api/config
+    disk:
+      name: datos
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: ADMIN_PASSWORD
+        sync: false        # la escribe usted en el panel de Render
+      - key: NOMBRE_CAMPANA
+        sync: false
+      - key: TRUST_PROXY
+        value: "1"
+      - key: DATA_FILE
+        value: /var/data/encuestas.json
+      - key: REGISTROS_FILE
+        value: /var/data/registros.json
+      - key: AJUSTES_FILE
+        value: /var/data/ajustes.json
+      - key: USUARIOS_FILE
+        value: /var/data/usuarios.json
+      - key: CORREO_FILE
+        value: /var/data/correo.json
