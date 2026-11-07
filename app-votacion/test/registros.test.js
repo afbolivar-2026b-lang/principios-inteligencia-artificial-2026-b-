@@ -391,7 +391,7 @@ test('perfiles: correo y contraseña, puesto, roles y permisos', async () => {
     // Olvidé mi contraseña: misma respuesta exista o no el correo; el director ve la solicitud
     const olvide = (correo) => fetch(`${url}/api/olvide`, { method: 'POST', headers: json, body: JSON.stringify({ correo }) });
     assert.equal((await olvide('laura@campana.co')).status, 200);
-    assert.deepEqual(await (await olvide('nadie@campana.co')).json(), { ok: true });
+    assert.deepEqual(await (await olvide('nadie@campana.co')).json(), { ok: true, modo: 'director' });
     let lauraLista = (await (await fetch(`${url}/api/usuarios`, { headers: MAESTRA })).json()).usuarios.find((u) => u.id === laura.id);
     assert.ok(lauraLista.solicitudClave, 'el director ve que Laura pidió una contraseña nueva');
     await fetch(`${url}/api/usuarios/${laura.id}`, { method: 'PUT', headers: MAESTRA, body: JSON.stringify({ clave: 'asignada-por-director' }) });

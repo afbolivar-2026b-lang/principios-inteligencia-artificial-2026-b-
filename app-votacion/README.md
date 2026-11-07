@@ -231,10 +231,50 @@ Roles de plantilla: **Director/CEO** (todo), **Coordinador**, **Digitador**,
 - Nadie se puede quitar a sí mismo el permiso de administrar usuarios, ni
   desactivarse o eliminarse.
 - Cada persona puede cambiar su contraseña en **Mi cuenta**.
-- **Olvidé mi contraseña:** la persona escribe su correo y al director le aparece
-  el aviso en **Usuarios** (con un contador en el menú). Con el botón *Asignar
-  contraseña nueva* se genera una y se le entrega a la persona. La respuesta es la
-  misma exista o no el correo, y hay un límite de solicitudes por IP.
+- **Olvidé mi contraseña:** si el correo de envío está configurado, a la persona
+  le llega un **código de 6 dígitos** y con él pone su contraseña nueva. Si no
+  está configurado, al director le aparece el aviso en **Usuarios** (con un
+  contador en el menú) y con *Asignar contraseña nueva* genera una. La respuesta
+  es la misma exista o no el correo, y hay un límite de solicitudes por IP.
 - En todos los campos de contraseña hay un **ojo** para verla u ocultarla.
 - La **clave maestra** (`ADMIN_PASSWORD`) es la del dueño: entra dejando el correo
   vacío y siempre tiene todos los permisos.
+
+## Correo de envío y códigos
+
+En **Panel → Ajustes → Correo de envío** se conecta la cuenta que manda los
+correos. Hay botones listos para **Gmail**, **Outlook/Hotmail**, **Hostinger** y
+*Otro* (servidor, puerto y seguridad a mano).
+
+- **Gmail:** no sirve la contraseña normal. Hay que activar la verificación en
+  dos pasos y crear una **contraseña de aplicación** en
+  *myaccount.google.com → Seguridad → Contraseñas de aplicaciones*; esa clave de
+  16 letras es la que se pega en la app.
+- Con **Enviar prueba** se manda un correo a la dirección que usted escriba y se
+  ve al instante si salió o por qué falló (explicado en español).
+- El **historial de envíos** muestra cada correo: a quién, qué, si salió y el
+  motivo del error si no salió.
+- La contraseña del correo nunca se muestra ni sale del servidor; se guarda en
+  `data/correo.json` (con permisos 0600).
+
+Qué hacen los códigos:
+
+1. **Verificar la cuenta.** Cuando el director crea un perfil, la primera vez que
+   esa persona entra le llega un código a su correo. Al escribirlo, la cuenta
+   queda *✓ Correo verificado* y ya no se le vuelve a pedir.
+2. **Cambiar la contraseña olvidada** (ver arriba).
+
+Para que los correos lleguen:
+
+- Los códigos duran **15 minutos** y admiten 5 intentos.
+- **Reenviar código** se habilita a los 60 segundos.
+- Si un servidor falla por un problema temporal, la app **reintenta** sola.
+- Los correos llevan fecha, identificador y versión en texto y HTML, lo que
+  ayuda a que no caigan en *Spam*. Aun así, la pantalla del código recuerda
+  revisar **Spam** y **Promociones**.
+- Si a alguien nunca le llega, el director puede pulsar **Marcar verificado** en
+  **Usuarios** para dejarlo entrar.
+
+También se puede configurar con variables de entorno (útil en el servidor):
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` (`ssl` o `starttls`), `SMTP_USER`,
+`SMTP_PASS`, `SMTP_FROM` y `SMTP_NAME`.

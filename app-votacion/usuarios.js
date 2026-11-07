@@ -64,7 +64,7 @@ function crearUsuarios(archivo) {
     fs.renameSync(tmp, archivo);
   }
 
-  const publico = ({ claveHash, ...u }) => ({ ...u });
+  const publico = ({ claveHash, codigo, ...u }) => ({ ...u, correoVerificado: Boolean(u.correoVerificado) });
 
   function texto(v, campo, { min = 1, max = 60, clave } = {}) {
     const t = typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : '';
@@ -119,6 +119,7 @@ function crearUsuarios(archivo) {
       claveHash: cifrar(validarClave(datos.clave)),
       creado: new Date().toISOString(),
       ultimoAcceso: null,
+      correoVerificado: false,
     };
     usuarios.push(u);
     guardar();
@@ -137,6 +138,8 @@ function crearUsuarios(archivo) {
       nuevo.permisos = validarPermisos(nuevo.rol, datos.permisos);
     }
     if ('activo' in datos) nuevo.activo = datos.activo !== false;
+    if (datos.correoVerificado === true) nuevo.correoVerificado = true;
+    if ('correo' in datos && nuevo.correo !== u.correo) nuevo.correoVerificado = false; // correo nuevo, se verifica otra vez
     if (datos.clave) {
       nuevo.claveHash = cifrar(validarClave(datos.clave));
       nuevo.solicitudClave = null; // el director ya le asignó una nueva
@@ -183,6 +186,61 @@ function crearUsuarios(archivo) {
     if (u) { u.ultimoAcceso = new Date().toISOString(); guardar(); }
   }
 
+  // ---------- Códigos por correo (6 dígitos, 15 minutos, 5 intentos) ----------
+  const hashCodigo = (c) => crypto.createHash('sha256').update(String(c)).digest('hex');
+  const MINUTOS_CODIGO = 15;
+
+  /** Crea un código para el perfil. tipo: 'verificar' | 'clave'. Devuelve el código o null. */
+  function generarCodigo(id, tipo) {
+    const u = usuarios.find((x) => x.id === id && x.activo);
+    if (!u) return null;
+    const codigo = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+    u.codigo = { hash: hashCodigo(codigo), tipo, vence: Date.now() + MINUTOS_CODIGO * 60000, intentos: 0, enviado: Date.now() };
+    guardar();
+    return codigo;
+  }
+
+  /** ¿Ya pasó un minuto desde el último código? (para "Reenviar código") */
+  function puedeReenviar(id) {
+    const u = usuarios.find((x) => x.id === id);
+    return !u || !u.codigo || Date.now() - u.codigo.enviado >= 60000;
+  }
+
+  function comprobarCodigo(u, codigo, tipo) {
+    const c = u && u.codigo;
+    if (!c || c.tipo !== tipo || c.vence < Date.now() || c.intentos >= 5) return false;
+    c.intentos += 1;
+    const ok = crypto.timingSafeEqual(Buffer.from(c.hash, 'hex'), Buffer.from(hashCodigo(String(codigo || '').trim()), 'hex'));
+    if (ok) u.codigo = null;
+    guardar();
+    return ok;
+  }
+
+  function verificarCorreo(id, codigo) {
+    const u = usuarios.find((x) => x.id === id && x.activo);
+    if (!comprobarCodigo(u, codigo, 'verificar')) return false;
+    u.correoVerificado = true;
+    guardar();
+    return true;
+  }
+
+  function idPorCorreo(correo) {
+    const u = usuarios.find((x) => x.correo === String(correo || '').trim().toLowerCase() && x.activo);
+    return u ? u.id : null;
+  }
+
+  /** Cambia la contraseña con el código que llegó al correo. */
+  function nuevaClaveConCodigo(correo, codigo, nueva) {
+    const u = usuarios.find((x) => x.correo === String(correo || '').trim().toLowerCase() && x.activo);
+    validarClave(nueva);
+    if (!comprobarCodigo(u, codigo, 'clave')) throw new ErrorValidacion('El código no es correcto o ya venció. Pida uno nuevo.', 400, 'codigo');
+    u.claveHash = cifrar(nueva);
+    u.correoVerificado = true; // demostró que el correo es suyo
+    u.solicitudClave = null;
+    guardar();
+    return publico(u);
+  }
+
   // "Olvidé mi contraseña": queda la solicitud para que el director asigne una nueva
   function solicitarClave(correo) {
     const u = usuarios.find((x) => x.correo === String(correo || '').trim().toLowerCase() && x.activo);
@@ -201,6 +259,7 @@ function crearUsuarios(archivo) {
   return {
     listar: () => usuarios.map(publico).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
     crear, actualizar, eliminar, verificar, porCorreo, activo, registrarAcceso, cambiarClavePropia, solicitarClave,
+    generarCodigo, puedeReenviar, verificarCorreo, idPorCorreo, nuevaClaveConCodigo, MINUTOS_CODIGO,
   };
 }
 

@@ -154,6 +154,18 @@ function protegerMarca() {
   setInterval(revisar, 4000);
 }
 
+// "Reenviar código" se habilita después de una espera
+function cuentaRegresiva(boton, texto, segundos) {
+  clearInterval(boton._reloj);
+  let quedan = segundos;
+  const pintar = () => {
+    boton.disabled = quedan > 0;
+    texto.textContent = quedan > 0 ? `en ${quedan} s` : '';
+  };
+  pintar();
+  boton._reloj = setInterval(() => { quedan -= 1; pintar(); if (quedan <= 0) clearInterval(boton._reloj); }, 1000);
+}
+
 // Ver u ocultar contraseñas: cualquier botón con data-ojo="id-del-campo"
 function ponerOjo(boton, visible) {
   const campo = document.getElementById(boton.dataset.ojo);
@@ -682,34 +694,106 @@ function vistaLogin() {
   const clave = document.getElementById('clave');
   correo.focus();
 
-  // Olvidé mi contraseña: deja la solicitud para el director
   const formLogin = document.getElementById('form-login');
   const formOlvide = document.getElementById('form-olvide');
+  const formCodigo = document.getElementById('form-codigo');
+  const mostrar = (f) => { for (const x of [formLogin, formOlvide, formCodigo]) x.hidden = x !== f; };
+  for (const b of raiz.querySelectorAll('[data-volver-login]')) {
+    b.addEventListener('click', () => { mostrar(formLogin); correo.focus(); });
+  }
+
+  // Paso del código al entrar por primera vez
+  let pendiente = null;
+  function pedirCodigo(r) {
+    pendiente = r.pendiente;
+    document.getElementById('codigo-correo').textContent = r.correo;
+    document.getElementById('error-codigo').textContent = r.aviso || '';
+    document.getElementById('codigo-entrada').value = '';
+    mostrar(formCodigo);
+    document.getElementById('codigo-entrada').focus();
+    cuentaRegresiva(document.getElementById('reenviar-codigo'), document.getElementById('espera-codigo'), r.aviso ? 0 : 60);
+  }
+  formCodigo.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const error = document.getElementById('error-codigo');
+    error.textContent = '';
+    try {
+      const r = await api('/api/sesion/codigo', { method: 'POST', body: JSON.stringify({ pendiente, codigo: document.getElementById('codigo-entrada').value.trim() }) });
+      usuarioActual = r.usuario;
+      sesionAdmin = true;
+      enrutar();
+    } catch (e) {
+      error.textContent = e.message;
+      if (e.estado === 401) setTimeout(() => mostrar(formLogin), 1800);
+    }
+  });
+  document.getElementById('reenviar-codigo').addEventListener('click', async () => {
+    const error = document.getElementById('error-codigo');
+    error.textContent = '';
+    try {
+      await api('/api/sesion/reenviar', { method: 'POST', body: JSON.stringify({ pendiente }) });
+      error.textContent = '';
+      document.getElementById('espera-codigo').textContent = 'Código reenviado.';
+      cuentaRegresiva(document.getElementById('reenviar-codigo'), document.getElementById('espera-codigo'), 60);
+    } catch (e) {
+      error.textContent = e.message;
+    }
+  });
+
+  // Olvidé mi contraseña: código por correo, o aviso al director si no hay correo configurado
+  let pasoOlvide = 1;
+  const botonOlvide = document.getElementById('boton-olvide');
+  function reiniciarOlvide() {
+    pasoOlvide = 1;
+    botonOlvide.hidden = false;
+    botonOlvide.textContent = 'Enviar';
+    for (const id of ['exito-olvide', 'paso-codigo-clave', 'clave-lista']) document.getElementById(id).hidden = true;
+    document.getElementById('error-olvide').textContent = '';
+  }
   document.getElementById('olvide').addEventListener('click', () => {
-    formLogin.hidden = true;
-    formOlvide.hidden = false;
-    document.getElementById('exito-olvide').hidden = true;
+    reiniciarOlvide();
+    mostrar(formOlvide);
     document.getElementById('correo-olvide').value = correo.value;
     document.getElementById('correo-olvide').focus();
   });
-  document.getElementById('volver-login').addEventListener('click', () => {
-    formOlvide.hidden = true;
-    formLogin.hidden = false;
-    correo.focus();
+  async function pedirCodigoClave() {
+    const r = await api('/api/olvide', { method: 'POST', body: JSON.stringify({ correo: document.getElementById('correo-olvide').value.trim() }) });
+    if (r.modo === 'codigo') {
+      pasoOlvide = 2;
+      document.getElementById('paso-codigo-clave').hidden = false;
+      botonOlvide.textContent = 'Cambiar contraseña';
+      document.getElementById('codigo-clave').focus();
+      cuentaRegresiva(document.getElementById('reenviar-clave'), document.getElementById('espera-clave'), 60);
+    } else {
+      document.getElementById('exito-olvide').hidden = false;
+    }
+  }
+  document.getElementById('reenviar-clave').addEventListener('click', async () => {
+    try { await pedirCodigoClave(); document.getElementById('espera-clave').textContent = 'Código reenviado.'; } catch (e) { document.getElementById('error-olvide').textContent = e.message; }
   });
   formOlvide.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const error = document.getElementById('error-olvide');
-    const boton = formOlvide.querySelector('button[type="submit"]');
     error.textContent = '';
-    boton.disabled = true;
+    botonOlvide.disabled = true;
     try {
-      await api('/api/olvide', { method: 'POST', body: JSON.stringify({ correo: document.getElementById('correo-olvide').value.trim() }) });
-      document.getElementById('exito-olvide').hidden = false;
+      if (pasoOlvide === 1) {
+        await pedirCodigoClave();
+      } else {
+        await api('/api/olvide/confirmar', { method: 'POST', body: JSON.stringify({
+          correo: document.getElementById('correo-olvide').value.trim(),
+          codigo: document.getElementById('codigo-clave').value.trim(),
+          nueva: document.getElementById('nueva-clave').value,
+        }) });
+        document.getElementById('paso-codigo-clave').hidden = true;
+        document.getElementById('clave-lista').hidden = false;
+        botonOlvide.hidden = true;
+        correo.value = document.getElementById('correo-olvide').value.trim();
+      }
     } catch (e) {
       error.textContent = e.message;
     } finally {
-      boton.disabled = false;
+      botonOlvide.disabled = false;
     }
   });
 
@@ -745,6 +829,7 @@ function vistaLogin() {
     boton.disabled = true;
     try {
       const r = await api('/api/sesion', { method: 'POST', body: JSON.stringify({ correo: correo.value.trim(), clave: clave.value }) });
+      if (r.requiereCodigo) { boton.disabled = false; pedirCodigo(r); return; }
       usuarioActual = r.usuario;
       sesionAdmin = true;
       enrutar();
@@ -1753,6 +1838,91 @@ function vistaPanelAjustes() {
     }
   });
 
+  // Correo de envío
+  const PROVEEDORES = {
+    gmail: { host: 'smtp.gmail.com', puerto: 465, seguridad: 'ssl' },
+    outlook: { host: 'smtp-mail.outlook.com', puerto: 587, seguridad: 'starttls' },
+    hostinger: { host: 'smtp.hostinger.com', puerto: 465, seguridad: 'ssl' },
+    otro: null,
+  };
+  const val = (id) => document.getElementById(id).value;
+  const poner = (id, v) => { document.getElementById(id).value = v ?? ''; };
+  function marcarProveedor() {
+    const host = val('m-host');
+    const p = Object.entries(PROVEEDORES).find(([, c]) => c && c.host === host);
+    for (const b of vista.querySelectorAll('[data-proveedor]')) b.classList.toggle('activo', b.dataset.proveedor === (p ? p[0] : host ? 'otro' : ''));
+    document.getElementById('ayuda-gmail').hidden = !(p && p[0] === 'gmail');
+  }
+  for (const b of vista.querySelectorAll('[data-proveedor]')) {
+    b.addEventListener('click', () => {
+      const c = PROVEEDORES[b.dataset.proveedor];
+      if (c) { poner('m-host', c.host); poner('m-puerto', c.puerto); poner('m-seguridad', c.seguridad); }
+      else { poner('m-host', ''); document.getElementById('m-host').focus(); }
+      marcarProveedor();
+      if (b.dataset.proveedor === 'otro') { for (const x of vista.querySelectorAll('[data-proveedor]')) x.classList.toggle('activo', x === b); }
+    });
+  }
+  document.getElementById('m-host').addEventListener('input', marcarProveedor);
+  document.getElementById('m-seguridad').addEventListener('change', () => {
+    poner('m-puerto', val('m-seguridad') === 'starttls' ? 587 : 465);
+  });
+  function pintarCorreo(c) {
+    const estado = document.getElementById('estado-correo');
+    estado.className = `estado-correo ${c.configurado ? 'si' : 'no'}`;
+    estado.textContent = c.configurado ? 'Configurado' : 'Sin configurar';
+    poner('m-host', c.host); poner('m-puerto', c.puerto); poner('m-seguridad', c.seguridad === 'starttls' ? 'starttls' : 'ssl');
+    poner('m-usuario', c.usuario); poner('m-nombre', c.nombre || config.nombre);
+    document.getElementById('m-clave').placeholder = c.tieneClave ? '•••••••• (guardada; escriba para cambiarla)' : 'Contraseña o clave de aplicación';
+    if (!val('m-para')) poner('m-para', usuarioActual && usuarioActual.correo ? usuarioActual.correo : c.usuario);
+    marcarProveedor();
+    const filas = document.getElementById('filas-envios');
+    document.getElementById('cuenta-envios').textContent = c.envios.length ? `(${c.envios.length})` : '';
+    filas.replaceChildren(...(c.envios.length ? c.envios.map((e) => el('tr', {},
+      el('td', { className: 'mono', textContent: new Date(e.fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) }),
+      el('td', { textContent: e.para }),
+      el('td', { textContent: e.asunto }),
+      el('td', {}, el('span', { className: e.ok ? 'envio-ok' : 'envio-mal', textContent: e.ok ? `✓ Enviado${e.intentos > 1 ? ` (al intento ${e.intentos})` : ''}` : '✗ No salió' }),
+        e.ok ? '' : el('span', { className: 'envio-detalle', textContent: e.detalle }))))
+      : [el('tr', {}, el('td', { colSpan: 4, className: 'vacio', textContent: 'Todavía no se ha enviado ningún correo.' }))]));
+  }
+  api('/api/correo').then(pintarCorreo).catch(() => { document.getElementById('bloque-correo').hidden = true; });
+  document.getElementById('guardar-correo').addEventListener('click', async () => {
+    const error = document.getElementById('error-correo');
+    error.textContent = '';
+    try {
+      const c = await api('/api/correo', { method: 'PUT', body: JSON.stringify({
+        host: val('m-host'), puerto: Number(val('m-puerto')), seguridad: val('m-seguridad'),
+        usuario: val('m-usuario'), clave: val('m-clave'), remitente: val('m-usuario'), nombre: val('m-nombre'),
+      }) });
+      poner('m-clave', '');
+      pintarCorreo(c);
+      guardado.hidden = false;
+      setTimeout(() => { guardado.hidden = true; }, 2500);
+    } catch (e) {
+      error.textContent = e.message;
+    }
+  });
+  document.getElementById('probar-correo').addEventListener('click', async (ev) => {
+    const caja = document.getElementById('resultado-prueba');
+    const boton = ev.currentTarget;
+    boton.disabled = true;
+    boton.textContent = 'Enviando…';
+    caja.hidden = true;
+    try {
+      const r = await api('/api/correo/prueba', { method: 'POST', body: JSON.stringify({ para: val('m-para') }) });
+      caja.className = 'resultado-prueba ok';
+      caja.textContent = `✓ El correo salió hacia ${r.para}. Revise la bandeja de entrada (y Spam o Promociones). Si llegó, todo funciona.`;
+    } catch (e) {
+      caja.className = 'resultado-prueba mal';
+      caja.textContent = `✗ No se pudo enviar. ${e.message}`;
+    } finally {
+      caja.hidden = false;
+      boton.disabled = false;
+      boton.textContent = 'Enviar prueba';
+      api('/api/correo').then(pintarCorreo).catch(() => {});
+    }
+  });
+
   // Ficha de Opita Digital
   const m = config.marca || {};
   const contactos = enlacesContacto(m);
@@ -1907,6 +2077,13 @@ async function vistaPanelUsuarios() {
       acciones.append(asignar);
     }
     acciones.append(editarB);
+    if (!u.correoVerificado) {
+      const verificarB = el('button', { type: 'button', className: 'boton boton-borde boton-mini', textContent: 'Marcar verificado', title: 'Úselo si el código no le llega a la persona' });
+      verificarB.addEventListener('click', async () => {
+        try { await api(`/api/usuarios/${u.id}`, { method: 'PUT', body: JSON.stringify({ correoVerificado: true }) }); vistaPanelUsuarios(); } catch (e) { alert(e.message); }
+      });
+      acciones.append(verificarB);
+    }
     if (!esYo) {
       const activar = el('button', { type: 'button', className: 'boton boton-borde boton-mini', textContent: u.activo ? 'Desactivar' : 'Activar' });
       activar.addEventListener('click', async () => {
@@ -1928,6 +2105,7 @@ async function vistaPanelUsuarios() {
       el('span', { className: `etiqueta-estado ${u.activo ? 'abierta' : 'cerrada'} tu-estado`, textContent: u.activo ? 'Activo' : 'Inactivo' }),
       el('div', { className: 'tu-permisos' },
         el('span', { className: 'chip rol', textContent: datos.roles[u.rol] ? datos.roles[u.rol].nombre : u.rol }),
+        el('span', { className: `chip ${u.correoVerificado ? 'verificado' : 'sin-verificar'}`, textContent: u.correoVerificado ? '✓ Correo verificado' : 'Correo sin verificar' }),
         u.solicitudClave ? el('span', { className: 'chip pide-clave', textContent: `Pidió contraseña nueva ${hace(u.solicitudClave)}` }) : null,
         ...u.permisos.map((p) => el('span', { className: 'chip', textContent: nombrePermiso[p] || p }))),
       el('div', { className: 'tu-pie' },

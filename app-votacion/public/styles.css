@@ -1320,3 +1320,32 @@ textarea:focus { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3p
 .chip.pide-clave { background: var(--acento-suave); color: var(--acento); }
 .contador-nav { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: #C9A45C; color: #0E1B2C; font: 700 11px/1 var(--f-texto); }
 .tarjeta-usuario.pide { border-color: var(--oro, var(--acento)); box-shadow: 0 0 0 3px var(--acento-suave); }
+
+/* Códigos por correo */
+.entrada-codigo { font: 600 26px/1 var(--f-mono) !important; letter-spacing: .5em; text-align: center; }
+.reenviar { display: flex; align-items: center; gap: 10px; justify-content: center; margin-top: 14px; }
+.reenviar .enlace:disabled { color: var(--tenue); cursor: default; text-decoration: none; }
+.ayuda-correo { font-size: 13px; color: var(--tenue); margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--superficie); }
+/* Ajustes: correo de envío */
+.proveedores { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; padding: 4px; background: var(--superficie-2); border-radius: 12px; width: fit-content; }
+.proveedores .formato.activo { background: var(--superficie); color: var(--tinta); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+.ayuda-gmail { font-size: 14px; padding: 12px 14px; border-radius: 10px; background: var(--acento-suave); color: var(--tinta-2); margin-bottom: 14px; }
+.campos-correo { display: grid; grid-template-columns: 2fr 1fr 1.4fr; gap: 0 16px; }
+.campos-correo .campo:nth-child(4), .campos-correo .campo:nth-child(5) { grid-column: span 1; }
+.prueba-correo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--linea); }
+.prueba-correo .campo { flex: 1; min-width: 220px; margin-bottom: 0; }
+.resultado-prueba { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: 14px; }
+.resultado-prueba.ok { background: var(--verde-suave); color: var(--verde); }
+.resultado-prueba.mal { background: var(--acento-suave); color: var(--acento); }
+.estado-correo { font: 600 12px var(--f-texto); padding: 5px 10px; border-radius: 999px; }
+.estado-correo.si { background: var(--verde-suave); color: var(--verde); }
+.estado-correo.no { background: var(--superficie-2); color: var(--tenue); }
+.historial-correo { margin-top: 18px; }
+.historial-correo summary { cursor: pointer; font-weight: 600; }
+.historial-correo .tabla td { white-space: normal; }
+.envio-ok { color: var(--verde); font-weight: 600; }
+.envio-mal { color: var(--acento); font-weight: 600; }
+.envio-detalle { display: block; font-size: 12px; color: var(--tenue); font-weight: 400; }
+.chip.verificado { background: var(--verde-suave); color: var(--verde); }
+.chip.sin-verificar { background: var(--superficie-2); color: var(--tenue); }
+@media (max-width: 800px) { .campos-correo { grid-template-columns: 1fr; } }

@@ -14,6 +14,7 @@ const { crearStore, ErrorValidacion } = require('./store');
 const { crearRegistros, MAX_FIRMA } = require('./registros');
 const { crearAjustes } = require('./ajustes');
 const { crearUsuarios, PERMISOS, ROLES, IDS_PERMISOS } = require('./usuarios');
+const { crearCorreo, plantillaCodigo } = require('./correo');
 const MARCA = require('./marca');
 const { crearExcelTablero } = require('./exportar/excel');
 const { crearReportePDF } = require('./exportar/pdf');
@@ -143,8 +144,23 @@ function leerVersionApp() {
   }
 }
 
-function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, claveAdmin, nombreCampana } = {}) {
+function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, archivoCorreo, claveAdmin, nombreCampana, enviadorCorreo } = {}) {
   const usuarios = crearUsuarios(archivoUsuarios);
+  const correo = crearCorreo(archivoCorreo, enviadorCorreo ? { enviador: enviadorCorreo, esperas: [10, 10] } : {});
+  const pendientes = new Map(); // inicio de sesión esperando el código del correo -> { usuarioId, vence }
+
+  const ocultarCorreo = (c) => c.replace(/^(.)(.*)(@.*)$/, (m, a, b, d) => `${a}${'•'.repeat(Math.min(6, b.length))}${d}`);
+
+  async function enviarCodigo(usuario, tipo) {
+    const codigo = usuarios.generarCodigo(usuario.id, tipo);
+    if (!codigo) return { ok: false, error: 'Perfil no disponible' };
+    const campana = ajustes.obtener().nombre;
+    const textos = tipo === 'verificar'
+      ? { asunto: `${codigo} es su código para entrar · ${campana}`, titulo: 'Confirme su correo', intro: `Hola ${usuario.nombre.split(' ')[0]}. Para terminar de activar su cuenta del equipo de campaña, escriba este código en la app.` }
+      : { asunto: `${codigo} es su código para cambiar la contraseña · ${campana}`, titulo: 'Cambiar su contraseña', intro: `Hola ${usuario.nombre.split(' ')[0]}. Recibimos una solicitud para cambiar su contraseña. Escriba este código en la app.` };
+    const { texto, html } = plantillaCodigo({ campana, titulo: textos.titulo, intro: textos.intro, codigo, minutos: usuarios.MINUTOS_CODIGO });
+    return correo.enviar({ para: usuario.correo, asunto: textos.asunto, texto, html });
+  }
   const store = crearStore(archivoDatos);
   const registros = crearRegistros(archivoRegistros);
   const ajustes = crearAjustes(archivoAjustes, { nombre: nombreCampana });
@@ -285,22 +301,61 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
       if (ruta === '/api/sesion' && req.method === 'POST') {
         const ip = req.socket.remoteAddress || '';
         verificarBloqueo(ip);
-        const { correo, clave } = await leerCuerpo(req);
+        const { correo: correoLogin, clave } = await leerCuerpo(req);
         let quien = null;
-        if (correo && String(correo).trim()) {
-          const u = usuarios.verificar(correo, clave);
+        if (correoLogin && String(correoLogin).trim()) {
+          const u = usuarios.verificar(correoLogin, clave);
           if (u) quien = { ...u, maestro: false };
         } else if (claveCorrecta(clave)) {
           quien = MAESTRO;
         }
         if (!quien) {
           registrarFallo(ip);
-          throw new ErrorValidacion(correo ? 'Correo o contraseña incorrectos' : 'Contraseña incorrecta', 401);
+          throw new ErrorValidacion(correoLogin ? 'Correo o contraseña incorrectos' : 'Contraseña incorrecta', 401);
         }
         fallos.delete(ip);
+        // Primera vez (o correo nuevo): se pide el código que llega al correo
+        if (!quien.maestro && !quien.correoVerificado && correo.configurado()) {
+          const pendiente = crypto.randomBytes(24).toString('base64url');
+          pendientes.set(pendiente, { usuarioId: quien.id, vence: Date.now() + 15 * 60000 });
+          const envio = await enviarCodigo(quien, 'verificar');
+          enviarJSON(res, 200, {
+            requiereCodigo: true, pendiente, correo: ocultarCorreo(quien.correo),
+            envio: envio.ok ? 'enviado' : 'fallo',
+            ...(envio.ok ? {} : { aviso: 'No se pudo enviar el código. Toque "Reenviar código" o avise al director.' }),
+          }, extra);
+          return;
+        }
         const cookiesSalida = [crearSesion(quien.id)];
         if (extra['Set-Cookie']) cookiesSalida.push(extra['Set-Cookie']);
         enviarJSON(res, 200, datosSesion(quien), { 'Set-Cookie': cookiesSalida });
+        return;
+      }
+      if (ruta === '/api/sesion/codigo' && req.method === 'POST') {
+        const ip = req.socket.remoteAddress || '';
+        verificarBloqueo(ip);
+        const { pendiente, codigo } = await leerCuerpo(req);
+        const p = pendientes.get(pendiente);
+        if (!p || p.vence < Date.now()) throw new ErrorValidacion('El tiempo para escribir el código terminó. Entre de nuevo.', 401);
+        if (!usuarios.verificarCorreo(p.usuarioId, codigo)) {
+          registrarFallo(ip);
+          throw new ErrorValidacion('El código no es correcto o ya venció', 400, 'codigo');
+        }
+        pendientes.delete(pendiente);
+        const u = usuarios.activo(p.usuarioId);
+        const cookiesSalida = [crearSesion(u.id)];
+        if (extra['Set-Cookie']) cookiesSalida.push(extra['Set-Cookie']);
+        enviarJSON(res, 200, datosSesion({ ...u, maestro: false }), { 'Set-Cookie': cookiesSalida });
+        return;
+      }
+      if (ruta === '/api/sesion/reenviar' && req.method === 'POST') {
+        const { pendiente } = await leerCuerpo(req);
+        const p = pendientes.get(pendiente);
+        if (!p || p.vence < Date.now()) throw new ErrorValidacion('El tiempo terminó. Entre de nuevo.', 401);
+        if (!usuarios.puedeReenviar(p.usuarioId)) throw new ErrorValidacion('Espere un minuto antes de pedir otro código', 429);
+        const envio = await enviarCodigo(usuarios.activo(p.usuarioId), 'verificar');
+        if (!envio.ok) throw new ErrorValidacion(`No se pudo enviar: ${envio.error}`, 502);
+        enviarJSON(res, 200, { ok: true }, extra);
         return;
       }
       if (ruta === '/api/sesion' && req.method === 'DELETE') {
@@ -320,10 +375,55 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
         if (actual.n >= 5) throw new ErrorValidacion('Demasiadas solicitudes. Espere 15 minutos.', 429);
         actual.n += 1;
         pedidosClave.set(ip, actual);
-        const { correo } = await leerCuerpo(req);
-        if (!correo || !String(correo).includes('@')) throw new ErrorValidacion('Escriba su correo', 400, 'correo');
-        usuarios.solicitarClave(correo);
+        const { correo: correoPide } = await leerCuerpo(req);
+        if (!correoPide || !String(correoPide).includes('@')) throw new ErrorValidacion('Escriba su correo', 400, 'correo');
+        // Con correo configurado llega un código; si no, se avisa al director.
+        // La respuesta es la misma exista o no el perfil.
+        const id = usuarios.idPorCorreo(correoPide);
+        if (correo.configurado()) {
+          if (id && usuarios.puedeReenviar(id)) await enviarCodigo(usuarios.activo(id), 'clave');
+          if (id) usuarios.solicitarClave(correoPide);
+          enviarJSON(res, 200, { ok: true, modo: 'codigo' }, extra);
+          return;
+        }
+        usuarios.solicitarClave(correoPide);
+        enviarJSON(res, 200, { ok: true, modo: 'director' }, extra);
+        return;
+      }
+      if (ruta === '/api/olvide/confirmar' && req.method === 'POST') {
+        const ip = req.socket.remoteAddress || '';
+        verificarBloqueo(ip);
+        const { correo: c, codigo, nueva } = await leerCuerpo(req);
+        try {
+          usuarios.nuevaClaveConCodigo(c, codigo, nueva);
+        } catch (e) {
+          if (e.campo === 'codigo') registrarFallo(ip);
+          throw e;
+        }
         enviarJSON(res, 200, { ok: true }, extra);
+        return;
+      }
+
+      // ---- Correo de envío (Ajustes) ----
+      if (ruta === '/api/correo' && req.method === 'GET') {
+        exigirPermiso(req, 'ajustes');
+        enviarJSON(res, 200, correo.publico(), extra);
+        return;
+      }
+      if (ruta === '/api/correo' && req.method === 'PUT') {
+        exigirPermiso(req, 'ajustes');
+        enviarJSON(res, 200, correo.configurar(await leerCuerpo(req)), extra);
+        return;
+      }
+      if (ruta === '/api/correo/prueba' && req.method === 'POST') {
+        const quien = exigirPermiso(req, 'ajustes');
+        const { para } = await leerCuerpo(req);
+        const destino = String(para || quien.correo || '').trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(destino)) throw new ErrorValidacion('Escriba a qué correo enviar la prueba', 400, 'para');
+        const campana = ajustes.obtener().nombre;
+        const { texto, html } = plantillaCodigo({ campana, titulo: 'Correo de prueba', intro: 'Si está leyendo esto, el envío de correos de la app funciona. Este es un código de ejemplo:', codigo: '123456', minutos: 15 });
+        const r = await correo.enviar({ para: destino, asunto: `Prueba de envío · ${campana}`, texto, html });
+        enviarJSON(res, r.ok ? 200 : 502, r.ok ? { ok: true, para: destino } : { error: r.error }, extra);
         return;
       }
 
@@ -524,7 +624,8 @@ if (require.main === module) {
   const nombreCampana = process.env.NOMBRE_CAMPANA;
   const archivoAjustes = process.env.AJUSTES_FILE || path.join(__dirname, 'data', 'ajustes.json');
   const archivoUsuarios = process.env.USUARIOS_FILE || path.join(__dirname, 'data', 'usuarios.json');
-  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, claveAdmin, nombreCampana }).listen(puerto, () => {
+  const archivoCorreo = process.env.CORREO_FILE || path.join(__dirname, 'data', 'correo.json');
+  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, archivoCorreo, claveAdmin, nombreCampana }).listen(puerto, () => {
     console.log(`Formulario público: http://localhost:${puerto}/`);
     console.log(`Panel del equipo:   http://localhost:${puerto}/#/panel`);
   });

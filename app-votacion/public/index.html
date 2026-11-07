@@ -235,6 +235,20 @@
           <button type="button" id="olvide" class="enlace enlace-centro">Olvidé mi contraseña</button>
         </form>
 
+        <form id="form-codigo" class="acceso-form caja-olvide" novalidate hidden>
+          <h3>Revise su correo</h3>
+          <p class="meta">Le enviamos un código de 6 dígitos a <b id="codigo-correo"></b> para confirmar que el correo es suyo. Solo se pide la primera vez.</p>
+          <div class="campo">
+            <label for="codigo-entrada">Código</label>
+            <input id="codigo-entrada" class="entrada-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+          </div>
+          <p class="error" id="error-codigo" role="alert"></p>
+          <button type="submit" class="boton boton-acento boton-bloque">Verificar y entrar</button>
+          <div class="reenviar"><button type="button" id="reenviar-codigo" class="enlace" disabled>Reenviar código</button><span id="espera-codigo" class="meta"></span></div>
+          <p class="ayuda-correo">¿No le llega? Espere un minuto y revise <b>Spam</b> o <b>Promociones</b>. Si sigue sin llegar, el director puede marcar su correo como verificado en Usuarios.</p>
+          <button type="button" class="enlace enlace-centro" data-volver-login>Volver</button>
+        </form>
+
         <form id="form-olvide" class="acceso-form caja-olvide" novalidate hidden>
           <h3>¿Olvidó su contraseña?</h3>
           <p class="meta">Escriba su correo. El director de la campaña recibirá el aviso y le asignará una contraseña nueva.</p>
@@ -244,9 +258,25 @@
           </div>
           <p class="error" id="error-olvide" role="alert"></p>
           <p class="exito-olvide" id="exito-olvide" hidden>Listo. Si el correo tiene un perfil, el director ya puede ver su solicitud en <b>Usuarios</b>. Pregúntele por su contraseña nueva.</p>
+          <div id="paso-codigo-clave" hidden>
+            <p class="exito-olvide">Si el correo tiene un perfil, le llegó un código de 6 dígitos. Revise también Spam o Promociones.</p>
+            <div class="campo">
+              <label for="codigo-clave">Código del correo</label>
+              <input id="codigo-clave" class="entrada-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+            </div>
+            <div class="campo">
+              <label for="nueva-clave">Contraseña nueva</label>
+              <div class="campo-icono">
+                <input id="nueva-clave" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
+                <button type="button" class="icono-boton boton-ojo" data-ojo="nueva-clave" aria-label="Mostrar contraseña" title="Mostrar contraseña"><svg><use href="#i-ojo"/></svg></button>
+              </div>
+            </div>
+            <div class="reenviar"><button type="button" id="reenviar-clave" class="enlace" disabled>Reenviar código</button><span id="espera-clave" class="meta"></span></div>
+          </div>
+          <p class="exito-olvide" id="clave-lista" hidden>Su contraseña quedó cambiada. Ya puede entrar con ella.</p>
           <div class="acciones sin-margen">
-            <button type="submit" class="boton boton-acento">Enviar solicitud</button>
-            <button type="button" id="volver-login" class="boton boton-borde">Volver</button>
+            <button type="submit" class="boton boton-acento" id="boton-olvide">Enviar</button>
+            <button type="button" id="volver-login" class="boton boton-borde" data-volver-login>Volver</button>
           </div>
           <p class="meta nota-director">¿Es el director? Entre dejando el correo vacío y use la clave maestra.</p>
         </form>
@@ -625,6 +655,47 @@
         <p class="error" id="error-ajustes" role="alert"></p>
         <button type="submit" class="boton boton-acento">Guardar cambios</button>
         <span class="meta guardado" id="guardado" hidden>Cambios guardados</span>
+      </article>
+      <article class="bloque col-12" id="bloque-correo">
+        <header class="bloque-cab">
+          <h2>Correo de envío</h2>
+          <span class="estado-correo" id="estado-correo"></span>
+        </header>
+        <p class="meta">Desde este correo salen los códigos de verificación y de cambio de contraseña. Escoja su proveedor para llenar los datos del servidor.</p>
+        <div class="proveedores" role="group" aria-label="Proveedor de correo">
+          <button type="button" class="formato" data-proveedor="gmail">Gmail</button>
+          <button type="button" class="formato" data-proveedor="outlook">Outlook / Hotmail</button>
+          <button type="button" class="formato" data-proveedor="hostinger">Hostinger</button>
+          <button type="button" class="formato" data-proveedor="otro">Otro</button>
+        </div>
+        <div class="ayuda-gmail" id="ayuda-gmail" hidden>
+          <b>Gmail:</b> la contraseña normal no sirve. Active la verificación en 2 pasos en su cuenta de Google y cree una
+          <b>contraseña de aplicación</b> (Cuenta de Google → Seguridad → Contraseñas de aplicaciones). Pegue aquí esa clave de 16 letras.
+        </div>
+        <div class="campos-correo">
+          <div class="campo"><label for="m-host">Servidor (SMTP)</label><input id="m-host" placeholder="smtp.gmail.com"></div>
+          <div class="campo"><label for="m-puerto">Puerto</label><input id="m-puerto" inputmode="numeric" placeholder="465"></div>
+          <div class="campo"><label for="m-seguridad">Seguridad</label>
+            <select id="m-seguridad"><option value="ssl">SSL (puerto 465)</option><option value="starttls">STARTTLS (puerto 587)</option></select></div>
+          <div class="campo"><label for="m-usuario">Correo de la cuenta</label><input id="m-usuario" type="email" placeholder="campana@gmail.com" autocomplete="off"></div>
+          <div class="campo"><label for="m-clave">Contraseña del correo</label>
+            <div class="campo-icono"><input id="m-clave" type="password" autocomplete="new-password" placeholder="Contraseña o clave de aplicación">
+              <button type="button" class="icono-boton boton-ojo" data-ojo="m-clave" aria-label="Mostrar contraseña" title="Mostrar contraseña"><svg><use href="#i-ojo"/></svg></button></div></div>
+          <div class="campo"><label for="m-nombre">Nombre que verá la gente</label><input id="m-nombre" maxlength="60" placeholder="Equipo Neiva Primero"></div>
+        </div>
+        <p class="error" id="error-correo" role="alert"></p>
+        <div class="acciones sin-margen">
+          <button type="button" id="guardar-correo" class="boton boton-acento">Guardar correo</button>
+        </div>
+        <div class="prueba-correo">
+          <div class="campo"><label for="m-para">Enviar un correo de prueba a</label><input id="m-para" type="email" placeholder="su-correo@gmail.com"></div>
+          <button type="button" id="probar-correo" class="boton boton-borde">Enviar prueba</button>
+        </div>
+        <div id="resultado-prueba" class="resultado-prueba" hidden></div>
+        <details class="historial-correo">
+          <summary>Historial de envíos <span id="cuenta-envios" class="meta"></span></summary>
+          <div class="tabla-marco"><table class="tabla"><thead><tr><th>Fecha</th><th>Para</th><th>Asunto</th><th>Estado</th></tr></thead><tbody id="filas-envios"></tbody></table></div>
+        </details>
       </article>
       <article class="bloque col-6 bloque-autor">
         <header class="bloque-cab"><h2>Desarrollado por</h2></header>
