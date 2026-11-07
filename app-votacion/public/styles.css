@@ -1112,8 +1112,6 @@ textarea:focus { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3p
 .app-android-qr canvas { width: 132px; height: 132px; background: #fff; border-radius: 12px; padding: 8px; }
 .separador { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: var(--tenue); font-size: 13px; }
 .separador::before, .separador::after { content: ""; flex: 1; height: 1px; background: var(--linea); }
-.boton-google { background: #fff; color: #1F1F1F; border-color: #DADCE0; }
-.boton-google:hover { background: #F7F8F8; }
 @media (max-width: 700px) {
   .app-android { grid-template-columns: 1fr; padding: 22px 18px; }
   .app-android-qr { justify-items: start; }
@@ -1305,3 +1303,20 @@ textarea:focus { outline: none; border-color: var(--tinta); box-shadow: 0 0 0 3p
 .opcion-acceso.al-dia { cursor: default; }
 .opcion-acceso.al-dia:hover { transform: none; border-color: var(--linea); }
 .opcion-acceso.al-dia .opcion-flecha { display: none; }
+
+/* Ver u ocultar contraseña */
+.boton-ojo { color: var(--tenue); }
+.boton-ojo:hover, .boton-ojo[aria-pressed="true"] { color: var(--tinta); border-color: transparent; background: var(--superficie-2); }
+.boton-generar-abajo { display: block; margin: -8px 0 18px; }
+/* Olvidé mi contraseña */
+.acceso-form + .acceso-opciones { padding-top: 0; }
+.caja-olvide { border-top: 1px solid var(--linea); background: var(--superficie-2); }
+.caja-olvide h3 { font: 500 24px/1.2 var(--f-display); }
+.caja-olvide > .meta { margin: 6px 0 18px; }
+.caja-olvide input { background: #fff; }
+.exito-olvide { margin: 0 0 14px; padding: 12px 14px; border-radius: 10px; background: var(--verde-suave); color: var(--verde); font-size: 14px; }
+.nota-director { margin-top: 14px; font-size: 13px; }
+/* Solicitud de contraseña en Usuarios */
+.chip.pide-clave { background: var(--acento-suave); color: var(--acento); }
+.contador-nav { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: #C9A45C; color: #0E1B2C; font: 700 11px/1 var(--f-texto); }
+.tarjeta-usuario.pide { border-color: var(--oro, var(--acento)); box-shadow: 0 0 0 3px var(--acento-suave); }

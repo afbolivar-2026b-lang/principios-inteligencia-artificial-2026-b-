@@ -154,6 +154,23 @@ function protegerMarca() {
   setInterval(revisar, 4000);
 }
 
+// Ver u ocultar contraseñas: cualquier botón con data-ojo="id-del-campo"
+function ponerOjo(boton, visible) {
+  const campo = document.getElementById(boton.dataset.ojo);
+  if (!campo) return;
+  campo.type = visible ? 'text' : 'password';
+  boton.setAttribute('aria-pressed', String(visible));
+  boton.setAttribute('aria-label', visible ? 'Ocultar contraseña' : 'Mostrar contraseña');
+  boton.title = visible ? 'Ocultar contraseña' : 'Mostrar contraseña';
+  boton.querySelector('use').setAttribute('href', visible ? '#i-ojo-no' : '#i-ojo');
+}
+document.addEventListener('click', (ev) => {
+  const boton = ev.target.closest('[data-ojo]');
+  if (!boton) return;
+  const campo = document.getElementById(boton.dataset.ojo);
+  if (campo) ponerOjo(boton, campo.type === 'password');
+});
+
 // Versión de la app Android que está abriendo la página (null si es un navegador)
 function versionApp() {
   try {
@@ -664,22 +681,40 @@ function vistaLogin() {
   const correo = document.getElementById('correo-login');
   const clave = document.getElementById('clave');
   correo.focus();
-  document.getElementById('ver-clave').addEventListener('click', () => {
-    clave.type = clave.type === 'password' ? 'text' : 'password';
-  });
+
+  // Olvidé mi contraseña: deja la solicitud para el director
+  const formLogin = document.getElementById('form-login');
+  const formOlvide = document.getElementById('form-olvide');
   document.getElementById('olvide').addEventListener('click', () => {
-    const a = document.getElementById('ayuda-olvide');
-    a.hidden = !a.hidden;
+    formLogin.hidden = true;
+    formOlvide.hidden = false;
+    document.getElementById('exito-olvide').hidden = true;
+    document.getElementById('correo-olvide').value = correo.value;
+    document.getElementById('correo-olvide').focus();
+  });
+  document.getElementById('volver-login').addEventListener('click', () => {
+    formOlvide.hidden = true;
+    formLogin.hidden = false;
+    correo.focus();
+  });
+  formOlvide.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const error = document.getElementById('error-olvide');
+    const boton = formOlvide.querySelector('button[type="submit"]');
+    error.textContent = '';
+    boton.disabled = true;
+    try {
+      await api('/api/olvide', { method: 'POST', body: JSON.stringify({ correo: document.getElementById('correo-olvide').value.trim() }) });
+      document.getElementById('exito-olvide').hidden = false;
+    } catch (e) {
+      error.textContent = e.message;
+    } finally {
+      boton.disabled = false;
+    }
   });
 
-  // "O también": Google y la APK
+  // "O también": la APK
   const tambien = document.getElementById('separador-tambien');
-  if (config.google) {
-    tambien.hidden = false;
-    const g = document.getElementById('entrar-google');
-    g.hidden = false;
-    if (/OpitaCampanaApp/.test(navigator.userAgent)) g.href = '/auth/google?app=1';
-  }
   // APK Android: en el navegador se descarga; dentro de la app se actualiza sola
   api('/api/app/version').then((v) => {
     if (!v.disponible) return;
@@ -700,19 +735,6 @@ function vistaLogin() {
       tarjeta.classList.add('al-dia');
     }
   }).catch(() => {});
-
-  const motivos = {
-    'correo-no-autorizado': 'Esa cuenta de Google no tiene un perfil activo. Pídale al director que la agregue en Usuarios.',
-    'google-no-configurado': 'El inicio con Google todavía no está configurado en el servidor.',
-    estado: 'El inicio de sesión expiró. Intente de nuevo.',
-    'enlace-vencido': 'El enlace de acceso venció. Intente de nuevo.',
-    google: 'Google no permitió el inicio de sesión. Intente de nuevo.',
-  };
-  const acceso = new URLSearchParams(location.search).get('acceso');
-  if (acceso) {
-    document.getElementById('error-login').textContent = motivos[acceso] || 'No se pudo entrar.';
-    history.replaceState(null, '', `/${location.hash}`);
-  }
 
   document.getElementById('form-login').addEventListener('submit', async (ev) => {
     ev.preventDefault();
@@ -743,6 +765,13 @@ function montarPanel() {
   document.getElementById('yo-iniciales').textContent = iniciales(...usuarioActual.nombre.split(' '));
   document.getElementById('yo-nombre').textContent = usuarioActual.nombre;
   document.getElementById('yo-puesto').textContent = usuarioActual.puesto || 'Mi cuenta';
+  if (puede('usuarios')) {
+    api('/api/usuarios').then((d) => {
+      const n = d.usuarios.filter((u) => u.solicitudClave).length;
+      const enlace = raiz.querySelector('.nav-panel a[href="#/panel/usuarios"]');
+      if (n && enlace) enlace.append(el('span', { className: 'contador-nav', textContent: String(n), title: `${n} solicitud(es) de contraseña` }));
+    }).catch(() => {});
+  }
   document.getElementById('salir').addEventListener('click', async () => {
     await api('/api/sesion', { method: 'DELETE' }).catch(() => {});
     sesionAdmin = false;
@@ -1643,10 +1672,6 @@ function vistaPanelAjustes() {
   document.getElementById('a-eslogan').value = config.eslogan;
   document.getElementById('a-urlPublica').value = config.urlPublica || '';
   document.getElementById('a-candidato').value = config.candidato || '';
-  if (!config.google) {
-    document.getElementById('nota-google').textContent =
-      'Para activar "Entrar con Google", el servidor necesita GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET (ver README).';
-  }
   const vistaFoto = document.getElementById('a-foto-vista');
   const quitarFoto = document.getElementById('a-foto-quitar');
   const pintarFoto = () => { pintarFotoCandidato(vistaFoto); quitarFoto.hidden = !config.foto; };
@@ -1787,8 +1812,10 @@ async function vistaPanelUsuarios() {
       r.permisos.length === marcados.length && r.permisos.every((p) => marcados.includes(p)));
     rol.value = coincide ? coincide[0] : 'personalizado';
   });
+  const ojoClave = form.querySelector('[data-ojo="u-clave"]');
   document.getElementById('generar-clave').addEventListener('click', () => {
     document.getElementById('u-clave').value = generarClave();
+    ponerOjo(ojoClave, true); // se muestra para poder copiarla y entregarla
   });
 
   function limpiarForm() {
@@ -1802,6 +1829,7 @@ async function vistaPanelUsuarios() {
     document.getElementById('etiqueta-clave').textContent = 'Contraseña';
     document.getElementById('u-clave').placeholder = 'Mínimo 8 caracteres';
     document.getElementById('cancelar-usuario').hidden = true;
+    ponerOjo(ojoClave, false);
     error.textContent = '';
     for (const n of form.querySelectorAll('[aria-invalid="true"]')) n.removeAttribute('aria-invalid');
   }
@@ -1868,7 +1896,17 @@ async function vistaPanelUsuarios() {
     const editarB = el('button', { type: 'button', className: 'boton boton-borde boton-mini', textContent: 'Editar' });
     editarB.addEventListener('click', () => editar(u));
     const esYo = usuarioActual && usuarioActual.id === u.id;
-    const acciones = el('div', { className: 'tu-acciones' }, editarB);
+    const acciones = el('div', { className: 'tu-acciones' });
+    if (u.solicitudClave) {
+      const asignar = el('button', { type: 'button', className: 'boton boton-acento boton-mini', textContent: 'Asignar contraseña nueva' });
+      asignar.addEventListener('click', () => {
+        editar(u);
+        document.getElementById('u-clave').value = generarClave();
+        ponerOjo(ojoClave, true);
+      });
+      acciones.append(asignar);
+    }
+    acciones.append(editarB);
     if (!esYo) {
       const activar = el('button', { type: 'button', className: 'boton boton-borde boton-mini', textContent: u.activo ? 'Desactivar' : 'Activar' });
       activar.addEventListener('click', async () => {
@@ -1881,7 +1919,7 @@ async function vistaPanelUsuarios() {
       });
       acciones.append(activar, borrar);
     }
-    return el('article', { className: `bloque tarjeta-usuario${u.activo ? '' : ' inactivo'}` },
+    return el('article', { className: `bloque tarjeta-usuario${u.activo ? '' : ' inactivo'}${u.solicitudClave ? ' pide' : ''}` },
       el('span', { className: 'avatar', textContent: iniciales(...u.nombre.split(' ')) }),
       el('div', {},
         el('div', { className: 'tu-nombre', textContent: `${u.nombre}${esYo ? ' (usted)' : ''}` }),
@@ -1890,6 +1928,7 @@ async function vistaPanelUsuarios() {
       el('span', { className: `etiqueta-estado ${u.activo ? 'abierta' : 'cerrada'} tu-estado`, textContent: u.activo ? 'Activo' : 'Inactivo' }),
       el('div', { className: 'tu-permisos' },
         el('span', { className: 'chip rol', textContent: datos.roles[u.rol] ? datos.roles[u.rol].nombre : u.rol }),
+        u.solicitudClave ? el('span', { className: 'chip pide-clave', textContent: `Pidió contraseña nueva ${hace(u.solicitudClave)}` }) : null,
         ...u.permisos.map((p) => el('span', { className: 'chip', textContent: nombrePermiso[p] || p }))),
       el('div', { className: 'tu-pie' },
         el('span', { className: 'meta', textContent: u.ultimoAcceso ? `Último acceso ${hace(u.ultimoAcceso)}` : 'Todavía no ha entrado' }),

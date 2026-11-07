@@ -13,7 +13,6 @@ const crypto = require('node:crypto');
 const { crearStore, ErrorValidacion } = require('./store');
 const { crearRegistros, MAX_FIRMA } = require('./registros');
 const { crearAjustes } = require('./ajustes');
-const { crearGoogle } = require('./google');
 const { crearUsuarios, PERMISOS, ROLES, IDS_PERMISOS } = require('./usuarios');
 const MARCA = require('./marca');
 const { crearExcelTablero } = require('./exportar/excel');
@@ -144,10 +143,8 @@ function leerVersionApp() {
   }
 }
 
-function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, claveAdmin, nombreCampana, google: opcionesGoogle } = {}) {
-  const google = crearGoogle(opcionesGoogle);
+function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, claveAdmin, nombreCampana } = {}) {
   const usuarios = crearUsuarios(archivoUsuarios);
-  const canjes = new Map(); // token de un solo uso (app Android) -> { vence, usuarioId }
   const store = crearStore(archivoDatos);
   const registros = crearRegistros(archivoRegistros);
   const ajustes = crearAjustes(archivoAjustes, { nombre: nombreCampana });
@@ -167,64 +164,9 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
     id: null, maestro: true, nombre: 'Director (clave maestra)', puesto: 'Dueño de la cuenta', correo: '', permisos: IDS_PERMISOS,
   });
 
-  function urlBase(req) {
-    const publica = ajustes.obtener().urlPublica;
-    if (publica) return new URL(publica).origin;
-    const proto = req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
-    return `${proto}://${req.headers.host}`;
-  }
-
-  function redirigir(res, destino, cookies = []) {
-    res.writeHead(302, { ...CABECERAS_SEGURIDAD, Location: destino, 'Cache-Control': 'no-store', ...(cookies.length ? { 'Set-Cookie': cookies } : {}) });
-    res.end();
-  }
-
-  // Rutas de "Entrar con Google". Devuelve true si atendió la petición.
-  async function rutasGoogle(req, res, url, ruta, cookies) {
-    if (!ruta.startsWith('/auth/') || req.method !== 'GET') return false;
-    const fallo = (motivo) => redirigir(res, `/?acceso=${encodeURIComponent(motivo)}#/panel`,
-      ['oauth_estado=; Path=/auth; HttpOnly; SameSite=Lax; Max-Age=0']);
-
-    if (ruta === '/auth/google') {
-      if (!google.configurado) { fallo('google-no-configurado'); return true; }
-      const estado = `${crypto.randomBytes(24).toString('base64url')}${url.searchParams.get('app') ? '.app' : ''}`;
-      redirigir(res, google.urlAutorizacion(`${urlBase(req)}/auth/google/callback`, estado),
-        [`oauth_estado=${estado}; Path=/auth; HttpOnly; SameSite=Lax; Max-Age=600`]);
-      return true;
-    }
-    if (ruta === '/auth/google/callback') {
-      const estado = url.searchParams.get('state') || '';
-      if (!google.configurado || !cookies.oauth_estado || estado !== cookies.oauth_estado) { fallo('estado'); return true; }
-      try {
-        const { correo } = await google.canjear(url.searchParams.get('code') || '', `${urlBase(req)}/auth/google/callback`);
-        const perfil = usuarios.porCorreo(correo);
-        if (!perfil) { fallo('correo-no-autorizado'); return true; }
-        const borrarEstado = 'oauth_estado=; Path=/auth; HttpOnly; SameSite=Lax; Max-Age=0';
-        if (estado.endsWith('.app')) {
-          const t = crypto.randomBytes(32).toString('base64url');
-          canjes.set(t, { vence: Date.now() + 2 * 60 * 1000, usuarioId: perfil.id });
-          redirigir(res, `opitacampana://sesion?t=${t}`, [borrarEstado]);
-        } else {
-          redirigir(res, '/#/panel', [crearSesion(perfil.id), borrarEstado]);
-        }
-      } catch {
-        fallo('google');
-      }
-      return true;
-    }
-    if (ruta === '/auth/canje') {
-      const t = url.searchParams.get('t') || '';
-      const canje = canjes.get(t);
-      canjes.delete(t);
-      if (!canje || canje.vence < Date.now() || !usuarios.activo(canje.usuarioId)) { fallo('enlace-vencido'); return true; }
-      redirigir(res, '/#/panel', [crearSesion(canje.usuarioId)]);
-      return true;
-    }
-    return false;
-  }
-
   // Bloqueo simple contra fuerza bruta: 10 intentos fallidos por IP cada 15 min.
   const fallos = new Map();
+  const pedidosClave = new Map(); // solicitudes de "olvidé mi contraseña" por IP
   const VENTANA = 15 * 60 * 1000;
 
   function verificarBloqueo(ip) {
@@ -298,8 +240,6 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
     }
 
     try {
-      if (await rutasGoogle(req, res, url, ruta, cookies)) return;
-
       if (!ruta.startsWith('/api/')) {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           enviarJSON(res, 405, { error: 'Método no permitido' });
@@ -320,7 +260,7 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
       // ---- Configuración y sesión ----
       if (ruta === '/api/config' && req.method === 'GET') {
         const { correosEquipo, ...publicos } = ajustes.obtener();
-        enviarJSON(res, 200, { ...publicos, totalRegistros: registros.total(), marca: MARCA, google: google.configurado }, extra);
+        enviarJSON(res, 200, { ...publicos, totalRegistros: registros.total(), marca: MARCA }, extra);
         return;
       }
       if (ruta === '/api/ajustes' && req.method === 'GET') {
@@ -368,6 +308,22 @@ function crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivo
         enviarJSON(res, 200, { admin: false }, {
           'Set-Cookie': 'sesion=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0',
         });
+        return;
+      }
+
+      // ---- Olvidé mi contraseña: avisa al director (la respuesta es igual exista o no el correo) ----
+      if (ruta === '/api/olvide' && req.method === 'POST') {
+        const ip = req.socket.remoteAddress || '';
+        const p = pedidosClave.get(ip);
+        if (p && Date.now() - p.desde > VENTANA) pedidosClave.delete(ip);
+        const actual = pedidosClave.get(ip) || { n: 0, desde: Date.now() };
+        if (actual.n >= 5) throw new ErrorValidacion('Demasiadas solicitudes. Espere 15 minutos.', 429);
+        actual.n += 1;
+        pedidosClave.set(ip, actual);
+        const { correo } = await leerCuerpo(req);
+        if (!correo || !String(correo).includes('@')) throw new ErrorValidacion('Escriba su correo', 400, 'correo');
+        usuarios.solicitarClave(correo);
+        enviarJSON(res, 200, { ok: true }, extra);
         return;
       }
 
@@ -568,8 +524,7 @@ if (require.main === module) {
   const nombreCampana = process.env.NOMBRE_CAMPANA;
   const archivoAjustes = process.env.AJUSTES_FILE || path.join(__dirname, 'data', 'ajustes.json');
   const archivoUsuarios = process.env.USUARIOS_FILE || path.join(__dirname, 'data', 'usuarios.json');
-  const google = { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET };
-  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, claveAdmin, nombreCampana, google }).listen(puerto, () => {
+  crearServidor({ archivoDatos, archivoRegistros, archivoAjustes, archivoUsuarios, claveAdmin, nombreCampana }).listen(puerto, () => {
     console.log(`Formulario público: http://localhost:${puerto}/`);
     console.log(`Panel del equipo:   http://localhost:${puerto}/#/panel`);
   });

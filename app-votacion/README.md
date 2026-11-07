@@ -26,7 +26,6 @@ npm test           # ejecuta las pruebas
 | `NOMBRE_CAMPANA`  | `Mi Campaña`           | Nombre inicial de la campaña (después se cambia en Ajustes) |
 | `AJUSTES_FILE`    | `data/ajustes.json`    | Archivo de los ajustes (diseño, nombre, eslogan, enlace) |
 | `USUARIOS_FILE`   | `data/usuarios.json`   | Perfiles del equipo (contraseñas cifradas) |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | (vacío) | Activan "Entrar con Google" |
 | `PORT`            | `3000`                 | Puerto del servidor                      |
 | `REGISTROS_FILE`  | `data/registros.json`  | Archivo de los registros                 |
 | `DATA_FILE`       | `data/encuestas.json`  | Archivo de las encuestas                 |
@@ -205,24 +204,11 @@ servidor, todas las apps instaladas reciben el aviso.
 > GitHub). Guarde una copia segura: sin ella no se pueden publicar
 > actualizaciones que se instalen encima de la app anterior.
 
-## Entrar con Google
-
-1. En [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-   cree un **ID de cliente de OAuth** de tipo *Aplicación web*.
-2. En *URI de redireccionamiento autorizados* agregue
-   `https://SU-DOMINIO/auth/google/callback`.
-3. Inicie el servidor con `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
-4. Cree en **Panel → Usuarios** un perfil con el correo de Google de cada persona.
-   Solo entran los correos que tienen un perfil activo; cualquier otro es rechazado.
-
-En la app Android, "Entrar con Google" se abre en el navegador (Google no lo
-permite dentro de apps) y vuelve a la app con un enlace de un solo uso.
-
 ## Usuarios, puestos y permisos
 
 En **Panel → Usuarios** el director crea los perfiles del equipo: nombre, correo,
 contraseña (o el botón *Generar*), **puesto** y **permisos**. Cada persona entra
-con su correo y su contraseña (o con Google) y solo ve lo que su perfil permite.
+con su correo y su contraseña y solo ve lo que su perfil permite.
 
 | Permiso | Qué permite |
 |---|---|
@@ -245,5 +231,10 @@ Roles de plantilla: **Director/CEO** (todo), **Coordinador**, **Digitador**,
 - Nadie se puede quitar a sí mismo el permiso de administrar usuarios, ni
   desactivarse o eliminarse.
 - Cada persona puede cambiar su contraseña en **Mi cuenta**.
+- **Olvidé mi contraseña:** la persona escribe su correo y al director le aparece
+  el aviso en **Usuarios** (con un contador en el menú). Con el botón *Asignar
+  contraseña nueva* se genera una y se le entrega a la persona. La respuesta es la
+  misma exista o no el correo, y hay un límite de solicitudes por IP.
+- En todos los campos de contraseña hay un **ojo** para verla u ocultarla.
 - La **clave maestra** (`ADMIN_PASSWORD`) es la del dueño: entra dejando el correo
   vacío y siempre tiene todos los permisos.

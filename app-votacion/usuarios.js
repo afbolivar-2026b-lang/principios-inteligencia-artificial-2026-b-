@@ -137,7 +137,10 @@ function crearUsuarios(archivo) {
       nuevo.permisos = validarPermisos(nuevo.rol, datos.permisos);
     }
     if ('activo' in datos) nuevo.activo = datos.activo !== false;
-    if (datos.clave) nuevo.claveHash = cifrar(validarClave(datos.clave));
+    if (datos.clave) {
+      nuevo.claveHash = cifrar(validarClave(datos.clave));
+      nuevo.solicitudClave = null; // el director ya le asignó una nueva
+    }
     if (autorId === id) {
       // Nadie se puede dejar por fuera a sí mismo
       if (!nuevo.activo) throw new ErrorValidacion('No puede desactivar su propio perfil', 400, 'activo');
@@ -180,6 +183,14 @@ function crearUsuarios(archivo) {
     if (u) { u.ultimoAcceso = new Date().toISOString(); guardar(); }
   }
 
+  // "Olvidé mi contraseña": queda la solicitud para que el director asigne una nueva
+  function solicitarClave(correo) {
+    const u = usuarios.find((x) => x.correo === String(correo || '').trim().toLowerCase() && x.activo);
+    if (!u) return;
+    u.solicitudClave = new Date().toISOString();
+    guardar();
+  }
+
   function cambiarClavePropia(id, actual, nueva) {
     const u = buscar(id);
     if (!comprobar(actual, u.claveHash)) throw new ErrorValidacion('La contraseña actual no es correcta', 400, 'actual');
@@ -189,7 +200,7 @@ function crearUsuarios(archivo) {
 
   return {
     listar: () => usuarios.map(publico).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
-    crear, actualizar, eliminar, verificar, porCorreo, activo, registrarAcceso, cambiarClavePropia,
+    crear, actualizar, eliminar, verificar, porCorreo, activo, registrarAcceso, cambiarClavePropia, solicitarClave,
   };
 }
 

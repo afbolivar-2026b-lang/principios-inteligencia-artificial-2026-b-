@@ -186,7 +186,7 @@ test('sesión con cookie, estadísticas del panel y eliminación', async () => {
 
     // La configuración pública no expone datos personales
     const cfg = await (await fetch(`${url}/api/config`)).json();
-    assert.deepEqual(Object.keys(cfg).sort(), ['candidato', 'eslogan', 'foto', 'google', 'marca', 'nombre', 'tema', 'totalRegistros', 'urlPublica']);
+    assert.deepEqual(Object.keys(cfg).sort(), ['candidato', 'eslogan', 'foto', 'marca', 'nombre', 'tema', 'totalRegistros', 'urlPublica']);
     assert.equal(cfg.marca.empresa, 'Opita Digital');
   } finally {
     otro.close();
@@ -310,92 +310,11 @@ test('descargas: Excel con tablero y reporte PDF (solo el equipo)', async () => 
   }
 });
 
-test('entrar con Google: solo correos autorizados, web y app Android', async () => {
-  const http = require('node:http');
-  // Google de mentira: responde un id_token con el correo que se le indique
-  let correoGoogle = 'equipo@gmail.com';
-  const falsoGoogle = http.createServer((req, res) => {
-    let cuerpo = '';
-    req.on('data', (c) => { cuerpo += c; });
-    req.on('end', () => {
-      const q = new URLSearchParams(cuerpo);
-      assert.equal(q.get('client_secret'), 'secreto');
-      const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
-      const idToken = `${b64({ alg: 'RS256' })}.${b64({
-        iss: 'https://accounts.google.com', aud: 'cliente-123', email: correoGoogle, email_verified: true,
-        exp: Math.floor(Date.now() / 1000) + 300,
-      })}.firma`;
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ id_token: idToken }));
-    });
-  });
-  await new Promise((r) => falsoGoogle.listen(0, r));
-  const otro = crearServidor({
-    claveAdmin: CLAVE,
-    google: { clientId: 'cliente-123', clientSecret: 'secreto', tokenUrl: `http://127.0.0.1:${falsoGoogle.address().port}/token` },
-  });
+test('versión de la app Android', async () => {
+  const otro = crearServidor({ claveAdmin: CLAVE });
   await new Promise((r) => otro.listen(0, r));
   const url = `http://127.0.0.1:${otro.address().port}`;
-  const sinSeguir = { redirect: 'manual' };
   try {
-    const cfg = await (await fetch(`${url}/api/config`)).json();
-    assert.equal(cfg.google, true);
-    assert.equal(cfg.correosEquipo, undefined, 'los correos del equipo no son públicos');
-
-    // Entra con Google quien tenga un perfil activo con ese correo
-    for (const [correo, rol] of [['Equipo@Gmail.com', 'coordinador'], ['otro@campana.co', 'digitador']]) {
-      const r = await fetch(`${url}/api/usuarios`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${CLAVE}` },
-        body: JSON.stringify({ nombre: 'Persona', correo, clave: 'unaclave123', rol }),
-      });
-      assert.equal(r.status, 201);
-    }
-    assert.equal((await fetch(`${url}/api/ajustes`)).status, 401);
-
-    // 1. Ir a Google
-    const ir = await fetch(`${url}/auth/google`, sinSeguir);
-    assert.equal(ir.status, 302);
-    const destino = new URL(ir.headers.get('location'));
-    assert.equal(destino.host, 'accounts.google.com');
-    assert.equal(destino.searchParams.get('client_id'), 'cliente-123');
-    const estado = destino.searchParams.get('state');
-    const cookieEstado = ir.headers.getSetCookie().find((c) => c.startsWith('oauth_estado=')).split(';')[0];
-
-    // Estado falso: rechazado
-    const malo = await fetch(`${url}/auth/google/callback?code=x&state=otro`, { ...sinSeguir, headers: { Cookie: cookieEstado } });
-    assert.match(malo.headers.get('location'), /acceso=estado/);
-
-    // 2. Volver de Google con un correo autorizado -> sesión del panel
-    const vuelta = await fetch(`${url}/auth/google/callback?code=abc&state=${estado}`, { ...sinSeguir, headers: { Cookie: cookieEstado } });
-    assert.equal(vuelta.headers.get('location'), '/#/panel');
-    const sesion = vuelta.headers.getSetCookie().find((c) => c.startsWith('sesion=')).split(';')[0];
-    assert.equal((await fetch(`${url}/api/panel`, { headers: { Cookie: sesion } })).status, 200);
-
-    // Correo no autorizado
-    correoGoogle = 'intruso@gmail.com';
-    const ir2 = await fetch(`${url}/auth/google`, sinSeguir);
-    const e2 = new URL(ir2.headers.get('location')).searchParams.get('state');
-    const c2 = ir2.headers.getSetCookie()[0].split(';')[0];
-    const no = await fetch(`${url}/auth/google/callback?code=abc&state=${e2}`, { ...sinSeguir, headers: { Cookie: c2 } });
-    assert.match(no.headers.get('location'), /acceso=correo-no-autorizado/);
-
-    // 3. Desde la app Android: vuelve a la app con un token de un solo uso
-    correoGoogle = 'otro@campana.co';
-    const ir3 = await fetch(`${url}/auth/google?app=1`, sinSeguir);
-    const e3 = new URL(ir3.headers.get('location')).searchParams.get('state');
-    assert.ok(e3.endsWith('.app'));
-    const c3 = ir3.headers.getSetCookie()[0].split(';')[0];
-    const app = await fetch(`${url}/auth/google/callback?code=abc&state=${e3}`, { ...sinSeguir, headers: { Cookie: c3 } });
-    const enlace = new URL(app.headers.get('location'));
-    assert.equal(enlace.protocol, 'opitacampana:');
-    const t = enlace.searchParams.get('t');
-    const canje = await fetch(`${url}/auth/canje?t=${t}`, sinSeguir);
-    assert.equal(canje.headers.get('location'), '/#/panel');
-    assert.ok(canje.headers.getSetCookie().some((c) => c.startsWith('sesion=')));
-    const repetido = await fetch(`${url}/auth/canje?t=${t}`, sinSeguir);
-    assert.match(repetido.headers.get('location'), /enlace-vencido/, 'el token sirve una sola vez');
-
-    // Versión de la app Android
     const v = await (await fetch(`${url}/api/app/version`)).json();
     assert.equal(typeof v.disponible, 'boolean');
     if (v.disponible) {
@@ -405,7 +324,6 @@ test('entrar con Google: solo correos autorizados, web y app Android', async () 
     }
   } finally {
     otro.close();
-    falsoGoogle.close();
   }
 });
 
@@ -470,10 +388,23 @@ test('perfiles: correo y contraseña, puesto, roles y permisos', async () => {
     assert.equal((await fetch(`${url}/api/mi-clave`, { method: 'PUT', headers: l.h, body: JSON.stringify({ actual: 'clave-segura-1', nueva: 'nueva-clave-1' }) })).status, 200);
     assert.equal((await entrar('laura@campana.co', 'nueva-clave-1')).estado, 200);
 
+    // Olvidé mi contraseña: misma respuesta exista o no el correo; el director ve la solicitud
+    const olvide = (correo) => fetch(`${url}/api/olvide`, { method: 'POST', headers: json, body: JSON.stringify({ correo }) });
+    assert.equal((await olvide('laura@campana.co')).status, 200);
+    assert.deepEqual(await (await olvide('nadie@campana.co')).json(), { ok: true });
+    let lauraLista = (await (await fetch(`${url}/api/usuarios`, { headers: MAESTRA })).json()).usuarios.find((u) => u.id === laura.id);
+    assert.ok(lauraLista.solicitudClave, 'el director ve que Laura pidió una contraseña nueva');
+    await fetch(`${url}/api/usuarios/${laura.id}`, { method: 'PUT', headers: MAESTRA, body: JSON.stringify({ clave: 'asignada-por-director' }) });
+    lauraLista = (await (await fetch(`${url}/api/usuarios`, { headers: MAESTRA })).json()).usuarios.find((u) => u.id === laura.id);
+    assert.equal(lauraLista.solicitudClave, null, 'la solicitud se cierra al asignar la contraseña');
+    assert.equal((await entrar('laura@campana.co', 'asignada-por-director')).estado, 200);
+    for (let k = 0; k < 4; k++) await olvide('x@y.co');
+    assert.equal((await olvide('x@y.co')).status, 429, 'límite de solicitudes por IP');
+
     // Desactivar el perfil cierra su sesión
     await fetch(`${url}/api/usuarios/${laura.id}`, { method: 'PUT', headers: MAESTRA, body: JSON.stringify({ activo: false }) });
     assert.equal((await fetch(`${url}/api/panel`, { headers: l.h })).status, 401);
-    assert.equal((await entrar('laura@campana.co', 'nueva-clave-1')).estado, 401);
+    assert.equal((await entrar('laura@campana.co', 'asignada-por-director')).estado, 401);
 
     // Un administrador de usuarios no se puede dejar por fuera a sí mismo
     const j = await entrar('jefe@campana.co', 'clave-jefe-99');
