@@ -51,6 +51,19 @@ Desde el probador se cotiza el conjunto con la foto del maniquí dentro de la co
 - Cada cambio se sube solo a la nube. Si dos equipos guardan al mismo tiempo, se avisa y se carga la versión más reciente. Al volver a la pestaña se traen los cambios de otros equipos.
 - Sin internet se sigue trabajando con los datos del equipo.
 
+## Inicio, contraseñas y app Android
+
+- La pantalla de inicio tiene un candado para ver u ocultar la contraseña y la opción «Olvidé mi contraseña».
+  - La cuenta del taller se recupera con el correo y el código del taller.
+  - El usuario del equipo se recupera con el código del taller, desde un equipo conectado a la nube.
+- La cuenta del taller se crea sin esperar correos. La función `aurea_crear_cuenta` de Supabase la deja confirmada solo si trae el código del taller, porque el correo gratuito de Supabase no llega a direcciones externas.
+- Catálogo para clientes sin iniciar sesión (botón «Ver el catálogo» o el enlace `…/#catalogo-clientes`). Se publica en la tabla `aurea_catalogo` cada vez que se guarda en la nube, con nombre, color, precios y foto, y cada prenda trae el botón «Pedir por WhatsApp».
+- **App Android:** `descargas/aurea-atelier.apk`, que también se descarga desde la pantalla de inicio. Abre la página publicada.
+  - Guarda las descargas (Excel, PDF, fotos) en *Descargas/Aurea Atelier*, imprime con el menú de Android, deja elegir fotos y abre WhatsApp.
+  - Fuentes en `android/`; se arma con `android/build.sh VERSIÓN NÚMERO` usando aapt2, javac, d8 y apksigner.
+  - La llave de firma está guardada en Supabase (`aurea_secretos`, sin acceso desde la página). Hay que firmar siempre con la misma llave para que cada versión se instale encima de la anterior.
+- **Aviso de versión nueva:** `version.json` dice la versión de la página (`web`) y la del APK (`apk.version`). Cada 5 minutos, y al volver a la pestaña, la página compara con su versión (`AUREA_VERSION` en `js/acceso.js`) y muestra «Actualizar ahora». Dentro de la app, si hay un APK más nuevo, muestra «Descargar». Al publicar cambios se sube `web` en los dos lugares.
+
 ## Dashboard: descargas
 
 - **Descargar Excel**: libro `.xlsx` con tres hojas.

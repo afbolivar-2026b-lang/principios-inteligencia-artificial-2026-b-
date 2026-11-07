@@ -594,3 +594,72 @@ td.num, th.num { text-align: right; }
 .nube-pill.guardando { color: var(--gold-soft); }
 .nube-pill.error, .nube-pill.sin-conexión { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
 @media (max-width: 600px) { .nube-pill span { display: none; } }
+
+/* ---------------- Pantalla de inicio ---------------- */
+.acceso { min-height: 100%; background: radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--gold) 10%, var(--bg)), var(--bg) 70%); display: flex; flex-direction: column; }
+.acc-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 92%, transparent); position: sticky; top: 0; z-index: 3; }
+.acc-top .logo-lockup { min-width: 0; }
+.acc-top-r { display: flex; align-items: center; gap: 10px; flex: none; }
+.acc-link { background: none; border: 0; color: var(--gold-soft); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; font: 500 14px var(--body); padding: 6px 2px; }
+.acc-main { flex: 1; display: grid; justify-items: center; align-content: start; padding: 28px 16px 20px; }
+.acc-card { width: min(460px, 100%); border-radius: 26px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.acc-head { background: linear-gradient(160deg, #1d1914, #0f0d0b); color: #f3e6c8; text-align: center; padding: 30px 20px 24px; display: grid; justify-items: center; gap: 10px; border-bottom: 1px solid #3a3022; }
+.acc-logo { width: 116px; height: 116px; border-radius: 26px; display: grid; place-items: center; background: #0f0d0b; border: 3px solid #c9a45c; box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 4px #1d1914; }
+.acc-name { font-family: var(--display); font-size: 30px; letter-spacing: .14em; line-height: 1.1; color: #f3e6c8; }
+.acc-sub { color: #c9a45c; font-size: 15px; letter-spacing: .04em; }
+.acc-body { padding: 26px 24px 24px; display: grid; gap: 16px; }
+.acc-body h2 { font-size: 38px; margin: 0 0 4px; }
+.acc-body p { margin: 0; }
+.acc-go { justify-content: center; padding: 14px; font-size: 16px; border-radius: 14px; }
+.acc-forgot { justify-self: center; background: none; border: 0; color: var(--gold-soft); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; font: 500 14px var(--body); padding: 2px; }
+.acc-msg { font-size: 14px; min-height: 0; }
+.acc-msg:empty { display: none; }
+.acc-msg.bad { color: var(--bad); }
+.acc-msg.ok { color: var(--ok); }
+.acc-or { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 12.5px; letter-spacing: .2em; text-transform: uppercase; margin-top: 6px; }
+.acc-or::before, .acc-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.acc-opt { display: flex; align-items: center; gap: 14px; text-align: left; padding: 14px 16px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel-2); color: inherit; text-decoration: none; cursor: pointer; font: inherit; width: 100%; }
+.acc-opt:hover { border-color: var(--gold); }
+.acc-opt.quiet { cursor: default; }
+.acc-opt > span:nth-child(2) { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.acc-opt b { font-size: 17px; }
+.acc-opt small { color: var(--muted); font-size: 13.5px; }
+.acc-opt > svg { width: 20px; height: 20px; color: var(--muted); flex: none; }
+.acc-ic { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--gold) 14%, var(--panel)); color: var(--gold-soft); flex: none; }
+.acc-ic svg { width: 24px; height: 24px; }
+.acc-ic.android { background: color-mix(in srgb, #3ddc84 18%, var(--panel)); color: #3ddc84; }
+.acc-ver { color: var(--muted); font-size: 12px; margin: 14px 0 0; }
+.acceso .hint { font-size: 12.5px; }
+/* Candado para ver u ocultar la contraseña */
+.clave-wrap { position: relative; display: block; }
+.clave-wrap input { width: 100%; padding-right: 48px; }
+.clave-ojo { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border: 0; background: none; color: var(--muted); cursor: pointer; display: grid; place-items: center; border-radius: 10px; }
+.clave-ojo:hover { color: var(--gold-soft); background: var(--panel-2); }
+.clave-ojo svg { width: 20px; height: 20px; }
+/* Catálogo para clientes */
+.pub { width: min(1100px, 100%); margin: 0 auto; padding: 24px 16px; }
+.pub-head { display: flex; gap: 18px; align-items: center; margin-bottom: 10px; }
+.pub-head .acc-logo { width: 90px; height: 90px; border-radius: 20px; flex: none; }
+.pub-head h1 { margin: 2px 0; }
+.pub-cat { margin: 26px 0 10px; }
+.pub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.pub-card { border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--panel); display: grid; }
+.pub-img { aspect-ratio: 1; background: #1a1612; }
+.pub-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pub-info { padding: 12px 14px 14px; display: grid; gap: 4px; }
+.pub-info b { font-family: var(--display); font-size: 20px; line-height: 1.15; }
+.pub-price { font-family: var(--display); font-size: 24px; color: var(--gold-soft); }
+.pub-info .btn { justify-self: start; margin-top: 6px; }
+/* Aviso de versión nueva */
+.aviso-version { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 9999; width: min(560px, calc(100% - 24px)); display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; border-radius: 16px; background: #15120f; color: #efe7d8; border: 1px solid #c9a45c; box-shadow: 0 18px 50px rgba(0,0,0,.5); }
+.aviso-version > div { flex: 1; display: grid; min-width: 0; }
+.aviso-version small { color: #a39782; }
+.av-ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: rgba(201,164,92,.15); color: #e3c98f; flex: none; }
+.av-ic svg { width: 20px; height: 20px; }
+@media (max-width: 520px) {
+  .acc-top .logo-sub { display: none; }
+  .acc-top .logo-name { font-size: 18px; }
+  .acc-body { padding: 22px 18px; }
+  .acc-body h2 { font-size: 32px; }
+  .acc-name { font-size: 25px; }
+}

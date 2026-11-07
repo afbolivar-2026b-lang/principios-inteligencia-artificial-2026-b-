@@ -1,0 +1,5 @@
+{
+  "web": "2026.11.07-1",
+  "notas": "Nueva pantalla de inicio, ver u ocultar la contraseña, olvidé mi contraseña, catálogo para clientes y app Android.",
+  "apk": { "version": "1.0.0", "url": "descargas/aurea-atelier.apk", "notas": "Descárguela e instálela encima de la actual; no se pierden los datos." }
+}
